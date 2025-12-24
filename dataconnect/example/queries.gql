@@ -1,0 +1,29 @@
+mutation AddReview($bookingId: UUID!, $experienceId: UUID!, $travelerId: UUID!, $comment: String!, $rating: Int!, $createdAt: Timestamp!) @auth(level: USER) {
+  review_insert(data: {bookingId: $bookingId, experienceId: $experienceId, travelerId: $travelerId, comment: $comment, rating: $rating, createdAt: $createdAt})
+}
+
+query GetExperience($id: UUID!) @auth(level: PUBLIC, insecureReason: "This operation is safe to expose to the public") {
+  experience(id: $id) {
+    id
+    title
+    description
+    price
+    location
+    imageUrls
+  }
+}
+
+mutation CreateWishlist($travelerId: UUID!, $name: String!, $createdAt: Timestamp!) @auth(level: USER) {
+  wishlist_insert(data: {travelerId: $travelerId, name: $name, createdAt: $createdAt})
+}
+
+query ListExperiencesByCategory($category: String!) @auth(level: PUBLIC, insecureReason: "This operation is safe to expose to the public") {
+  experiences(where: {category: {eq: $category}}) {
+    id
+    title
+    description
+    price
+    location
+    imageUrls
+  }
+}

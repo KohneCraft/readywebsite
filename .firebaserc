@@ -1,0 +1,8 @@
+{
+  "projects": {
+    "default": "vavyapi-66",
+    "vavyapi": "vavyapi-66"
+  },
+  "targets": {},
+  "etags": {}
+}
