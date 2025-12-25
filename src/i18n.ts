@@ -4,7 +4,6 @@
 // ============================================
 
 import { getRequestConfig } from 'next-intl/server';
-import { notFound } from 'next/navigation';
 
 export const locales = ['tr', 'en', 'de', 'fr'] as const;
 export type Locale = (typeof locales)[number];
@@ -27,11 +26,11 @@ export const localeFlags: Record<Locale, string> = {
 
 export default getRequestConfig(async ({ requestLocale }) => {
   // Get the locale from the request
-  const locale = await requestLocale;
+  let locale = await requestLocale;
 
-  // Validate that the incoming locale is valid
+  // Fallback to default locale if not valid
   if (!locale || !locales.includes(locale as Locale)) {
-    notFound();
+    locale = defaultLocale;
   }
 
   return {

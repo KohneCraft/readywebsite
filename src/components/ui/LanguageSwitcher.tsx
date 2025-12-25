@@ -7,7 +7,7 @@
 
 import { useLocale, useTranslations } from 'next-intl';
 import { useRouter, usePathname } from 'next/navigation';
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useTransition } from 'react';
 import { ChevronDown, Globe } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { locales, localeNames, localeFlags, type Locale } from '@/i18n';
@@ -22,6 +22,7 @@ export function LanguageSwitcher({ className, variant = 'dropdown' }: LanguageSw
   const router = useRouter();
   const pathname = usePathname();
   const [isOpen, setIsOpen] = useState(false);
+  const [isPending, startTransition] = useTransition();
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   // Close dropdown when clicking outside
@@ -36,8 +37,12 @@ export function LanguageSwitcher({ className, variant = 'dropdown' }: LanguageSw
   }, []);
 
   const switchLocale = (newLocale: Locale) => {
+    if (newLocale === locale) {
+      setIsOpen(false);
+      return;
+    }
+
     // Remove current locale from pathname
-    // Handle both /en/page and /page formats
     let pathWithoutLocale = pathname;
     
     // Check if path starts with any locale
@@ -53,13 +58,13 @@ export function LanguageSwitcher({ className, variant = 'dropdown' }: LanguageSw
       pathWithoutLocale = '/' + pathWithoutLocale;
     }
     
-    // For Turkish, use path without locale prefix, for others add prefix
-    const newPath = newLocale === 'tr' 
-      ? pathWithoutLocale 
-      : `/${newLocale}${pathWithoutLocale === '/' ? '' : pathWithoutLocale}`;
+    // Build new path with new locale
+    const newPath = `/${newLocale}${pathWithoutLocale === '/' ? '' : pathWithoutLocale}`;
     
-    router.push(newPath);
     setIsOpen(false);
+    
+    // Tam reload ile locale context güncelle (next-intl App Router için önerilen yöntem)
+    window.location.href = newPath;
   };
 
   if (variant === 'buttons') {

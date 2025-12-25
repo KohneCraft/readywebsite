@@ -46,6 +46,8 @@
   --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
   --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
   --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+  
+  color-scheme: light;
 }
 
 /* Dark Theme */
@@ -60,18 +62,77 @@
   
   --color-accent: 52 211 153;
   
-  --color-background: 17 24 39; /* gray-900 */
+  --color-background: 3 7 18; /* Daha koyu arka plan */
   --color-foreground: 249 250 251; /* gray-50 */
   --color-muted: 156 163 175;
   --color-muted-foreground: 107 114 128;
   --color-border: 55 65 81; /* gray-700 */
-  --color-card: 31 41 55; /* gray-800 */
+  --color-card: 17 24 39; /* gray-900 */
   --color-card-foreground: 249 250 251;
   
   --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.3);
   --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.4), 0 2px 4px -2px rgb(0 0 0 / 0.4);
   --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.4), 0 4px 6px -4px rgb(0 0 0 / 0.4);
   --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.4), 0 8px 10px -6px rgb(0 0 0 / 0.4);
+  
+  color-scheme: dark;
+}
+
+/* ============================================
+   Dark Mode Overrides - Tailwind Compatible
+   ============================================ */
+.dark body,
+.dark main,
+.dark header,
+.dark footer,
+.dark section,
+.dark article,
+.dark aside,
+.dark nav,
+.dark div {
+  color-scheme: dark;
+}
+
+/* Force dark backgrounds on common elements */
+.dark {
+  background-color: rgb(3 7 18);
+  color: rgb(249 250 251);
+}
+
+.dark .bg-white {
+  background-color: rgb(17 24 39) !important;
+}
+
+.dark .bg-gray-50 {
+  background-color: rgb(17 24 39) !important;
+}
+
+.dark .bg-gray-100 {
+  background-color: rgb(31 41 55) !important;
+}
+
+.dark .text-gray-900 {
+  color: rgb(249 250 251) !important;
+}
+
+.dark .text-gray-800 {
+  color: rgb(229 231 235) !important;
+}
+
+.dark .text-gray-700 {
+  color: rgb(209 213 219) !important;
+}
+
+.dark .text-gray-600 {
+  color: rgb(156 163 175) !important;
+}
+
+.dark .border-gray-200 {
+  border-color: rgb(55 65 81) !important;
+}
+
+.dark .border-gray-300 {
+  border-color: rgb(75 85 99) !important;
 }
 
 /* ============================================
