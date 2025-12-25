@@ -16,6 +16,9 @@ import {
 } from 'firebase/firestore';
 import { db } from '@/lib/firebase/config';
 
+// Force dynamic rendering - prevent build-time Firebase initialization
+export const dynamic = 'force-dynamic';
+
 // GET /api/projects - Get all projects
 export async function GET(request: NextRequest) {
   try {

@@ -7,6 +7,9 @@ import { NextRequest, NextResponse } from 'next/server';
 import { doc, getDoc, setDoc, Timestamp } from 'firebase/firestore';
 import { db } from '@/lib/firebase/config';
 
+// Force dynamic rendering - prevent build-time Firebase initialization
+export const dynamic = 'force-dynamic';
+
 const SETTINGS_DOC_ID = 'site-settings';
 
 // GET /api/settings - Get site settings
