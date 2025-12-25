@@ -5,6 +5,7 @@
 // Site footer with links and info
 // ============================================
 
+import { useMemo, useCallback } from 'react';
 import Link from 'next/link';
 import { useLocale, useTranslations } from 'next-intl';
 import { 
@@ -26,27 +27,27 @@ export function Footer() {
   const tNav = useTranslations('nav');
   const locale = useLocale() as Locale;
 
-  const getLocalizedHref = (href: string) => {
+  const getLocalizedHref = useCallback((href: string) => {
     if (locale === 'tr') return href;
     return `/${locale}${href}`;
-  };
+  }, [locale]);
 
-  const quickLinks = [
+  const quickLinks = useMemo(() => [
     { href: '/', label: tNav('home') },
     { href: '/about', label: tNav('about') },
     { href: '/projects', label: tNav('projects') },
     { href: '/services', label: tNav('services') },
     { href: '/contact', label: tNav('contact') },
-  ];
+  ], [tNav]);
 
-  const socialLinks = [
+  const socialLinks = useMemo(() => [
     { icon: Facebook, href: 'https://facebook.com', label: 'Facebook' },
     { icon: Instagram, href: 'https://instagram.com', label: 'Instagram' },
     { icon: Linkedin, href: 'https://linkedin.com', label: 'LinkedIn' },
     { icon: Youtube, href: 'https://youtube.com', label: 'YouTube' },
-  ];
+  ], []);
 
-  const currentYear = new Date().getFullYear();
+  const currentYear = useMemo(() => new Date().getFullYear(), []);
 
   return (
     <footer className="bg-gray-900 text-gray-300">

@@ -150,6 +150,10 @@ export async function getProjects(
     lastDoc,
   } = options;
 
+  // Limit max page size to prevent large queries
+  const maxLimit = 100;
+  const safeLimit = Math.min(pageLimit, maxLimit);
+
   const constraints: QueryConstraint[] = [];
 
   // Filters
@@ -170,7 +174,7 @@ export async function getProjects(
   constraints.push(orderBy(sort.field, sort.direction));
 
   // Pagination
-  constraints.push(limit(pageLimit + 1)); // +1 to check hasMore
+  constraints.push(limit(safeLimit + 1)); // +1 to check hasMore
   if (lastDoc) {
     constraints.push(startAfter(lastDoc));
   }
@@ -182,7 +186,7 @@ export async function getProjects(
   let hasMore = false;
 
   snapshot.docs.forEach((doc, index) => {
-    if (index < pageLimit) {
+    if (index < safeLimit) {
       const project = docToProject(doc);
       if (project) {
         projects.push(projectToSummary(project, locale));
@@ -195,7 +199,7 @@ export async function getProjects(
   // Total count (ayrı sorgu gerekebilir)
   // Şimdilik basit tutuyoruz
   const total = projects.length;
-  const totalPages = Math.ceil(total / pageLimit);
+  const totalPages = Math.ceil(total / safeLimit);
 
   return {
     projects,

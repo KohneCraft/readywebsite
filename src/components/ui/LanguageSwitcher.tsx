@@ -5,12 +5,15 @@
 // Multi-language selector dropdown
 // ============================================
 
-import { useLocale, useTranslations } from 'next-intl';
-import { useRouter, usePathname } from 'next/navigation';
-import { useState, useRef, useEffect, useTransition } from 'react';
+import { useLocale } from 'next-intl';
+import { createNavigation } from 'next-intl/navigation';
+import { useState, useRef, useEffect, useMemo } from 'react';
 import { ChevronDown, Globe } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { locales, localeNames, localeFlags, type Locale } from '@/i18n';
+import { locales, localeNames, type Locale } from '@/i18n';
+
+// Create navigation hooks for next-intl 4.x
+const { Link, usePathname } = createNavigation();
 
 interface LanguageSwitcherProps {
   className?: string;
@@ -19,10 +22,8 @@ interface LanguageSwitcherProps {
 
 export function LanguageSwitcher({ className, variant = 'dropdown' }: LanguageSwitcherProps) {
   const locale = useLocale() as Locale;
-  const router = useRouter();
   const pathname = usePathname();
   const [isOpen, setIsOpen] = useState(false);
-  const [isPending, startTransition] = useTransition();
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   // Close dropdown when clicking outside
@@ -36,54 +37,27 @@ export function LanguageSwitcher({ className, variant = 'dropdown' }: LanguageSw
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  const switchLocale = (newLocale: Locale) => {
-    if (newLocale === locale) {
-      setIsOpen(false);
-      return;
-    }
-
-    // Remove current locale from pathname
-    let pathWithoutLocale = pathname;
-    
-    // Check if path starts with any locale
-    for (const loc of locales) {
-      if (pathname === `/${loc}` || pathname.startsWith(`/${loc}/`)) {
-        pathWithoutLocale = pathname.replace(`/${loc}`, '') || '/';
-        break;
-      }
-    }
-    
-    // Ensure path starts with /
-    if (!pathWithoutLocale.startsWith('/')) {
-      pathWithoutLocale = '/' + pathWithoutLocale;
-    }
-    
-    // Build new path with new locale
-    const newPath = `/${newLocale}${pathWithoutLocale === '/' ? '' : pathWithoutLocale}`;
-    
-    setIsOpen(false);
-    
-    // Tam reload ile locale context güncelle (next-intl App Router için önerilen yöntem)
-    window.location.href = newPath;
-  };
+  // next-intl's usePathname already returns pathname without locale prefix
+  const currentPath = useMemo(() => pathname || '/', [pathname]);
 
   if (variant === 'buttons') {
     return (
       <div className={cn('flex items-center gap-1', className)}>
         {locales.map((l) => (
-          <button
+          <Link
             key={l}
-            onClick={() => switchLocale(l)}
-            disabled={locale === l}
+            href={currentPath}
+            locale={l}
+            onClick={() => setIsOpen(false)}
             className={cn(
               'px-2 py-1 text-sm font-medium rounded-md transition-colors',
               locale === l
-                ? 'bg-primary-600 text-white cursor-default'
+                ? 'bg-primary-600 text-white cursor-default pointer-events-none'
                 : 'bg-gray-100 dark:bg-gray-800 hover:bg-primary-100 dark:hover:bg-primary-900 hover:text-primary-700 dark:hover:text-primary-300'
             )}
           >
             {l.toUpperCase()}
-          </button>
+          </Link>
         ))}
       </div>
     );
@@ -118,9 +92,11 @@ export function LanguageSwitcher({ className, variant = 'dropdown' }: LanguageSw
           role="listbox"
         >
           {locales.map((l) => (
-            <button
+            <Link
               key={l}
-              onClick={() => switchLocale(l)}
+              href={currentPath}
+              locale={l}
+              onClick={() => setIsOpen(false)}
               className={cn(
                 'w-full flex items-center gap-3 px-4 py-2.5 text-sm',
                 'hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors',
@@ -134,7 +110,7 @@ export function LanguageSwitcher({ className, variant = 'dropdown' }: LanguageSw
               <span className="font-bold text-xs w-6">{l.toUpperCase()}</span>
               <span>{localeNames[l]}</span>
               {locale === l && <span className="ml-auto">✓</span>}
-            </button>
+            </Link>
           ))}
         </div>
       )}

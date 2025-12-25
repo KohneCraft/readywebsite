@@ -5,6 +5,8 @@
 // Main landing page with all sections
 // ============================================
 
+import { useMemo, useCallback } from 'react';
+import dynamic from 'next/dynamic';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useLocale, useTranslations } from 'next-intl';
@@ -17,15 +19,23 @@ import {
   Hammer,
   CheckCircle2,
   ChevronRight,
-  Play,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { buttonVariants } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
-import { HeroSlider } from '@/components/home/HeroSlider';
-import { PartnersSection } from '@/components/home/PartnersSection';
 import type { Locale } from '@/i18n';
+
+// Lazy load heavy components
+const HeroSlider = dynamic(() => import('@/components/home/HeroSlider').then(mod => ({ default: mod.HeroSlider })), {
+  loading: () => <div className="min-h-[90vh] bg-gray-900 animate-pulse" />,
+  ssr: true,
+});
+
+const PartnersSection = dynamic(() => import('@/components/home/PartnersSection').then(mod => ({ default: mod.PartnersSection })), {
+  loading: () => <div className="h-32 bg-gray-100 dark:bg-gray-800 animate-pulse" />,
+  ssr: true,
+});
 
 // Animation variants
 const fadeInUp = {
@@ -45,21 +55,21 @@ export default function HomePage() {
   const t = useTranslations('home');
   const locale = useLocale() as Locale;
 
-  const getLocalizedHref = (href: string) => {
+  const getLocalizedHref = useCallback((href: string) => {
     if (locale === 'tr') return href;
     return `/${locale}${href}`;
-  };
+  }, [locale]);
 
   // Stats data
-  const stats = [
+  const stats = useMemo(() => [
     { value: '30+', label: t('about.experience') },
     { value: '500+', label: t('about.projects') },
     { value: '1000+', label: t('about.clients') },
     { value: '200+', label: t('about.employees') },
-  ];
+  ], [t]);
 
   // Services data
-  const services = [
+  const services = useMemo(() => [
     {
       icon: Building2,
       title: t('services.residential.title'),
@@ -80,7 +90,7 @@ export default function HomePage() {
       title: t('services.renovation.title'),
       description: t('services.renovation.description'),
     },
-  ];
+  ], [t]);
 
   return (
     <>
@@ -95,6 +105,8 @@ export default function HomePage() {
             fill
             className="object-cover"
             priority
+            sizes="100vw"
+            quality={90}
           />
         </div>
 
@@ -204,6 +216,9 @@ export default function HomePage() {
                   alt="About Vav Yapı"
                   fill
                   className="object-cover"
+                  sizes="(max-width: 768px) 100vw, 50vw"
+                  loading="lazy"
+                  quality={85}
                 />
               </div>
               {/* Floating card */}
@@ -337,6 +352,9 @@ export default function HomePage() {
                       alt={`Project ${i}`}
                       fill
                       className="object-cover transition-transform duration-500 group-hover:scale-105"
+                      sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                      loading="lazy"
+                      quality={85}
                     />
                     <div className="absolute top-4 left-4">
                       <Badge variant={i === 1 ? 'success' : i === 2 ? 'warning' : 'primary'}>

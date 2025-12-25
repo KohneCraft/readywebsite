@@ -5,7 +5,7 @@
 // Dynamic carousel for homepage
 // ============================================
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useLocale, useTranslations } from 'next-intl';
@@ -102,19 +102,49 @@ export function HeroSlider({ slides = defaultSlides, autoplaySpeed = 6000, showD
     return () => clearInterval(interval);
   }, [isAutoplay, slides.length, autoplaySpeed]);
 
-  const goToSlide = (index: number) => { setCurrentSlide(index); setIsAutoplay(false); setTimeout(() => setIsAutoplay(true), 10000); };
-  const goToPrev = () => { setCurrentSlide((prev) => (prev - 1 + slides.length) % slides.length); setIsAutoplay(false); setTimeout(() => setIsAutoplay(true), 10000); };
-  const goToNext = () => { setCurrentSlide((prev) => (prev + 1) % slides.length); setIsAutoplay(false); setTimeout(() => setIsAutoplay(true), 10000); };
-  const getLocalizedHref = (href: string) => locale === 'tr' ? href : `/${locale}${href}`;
+  const goToSlide = useCallback((index: number) => { 
+    setCurrentSlide(index); 
+    setIsAutoplay(false); 
+    setTimeout(() => setIsAutoplay(true), 10000); 
+  }, []);
+  
+  const goToPrev = useCallback(() => { 
+    setCurrentSlide((prev) => (prev - 1 + slides.length) % slides.length); 
+    setIsAutoplay(false); 
+    setTimeout(() => setIsAutoplay(true), 10000); 
+  }, [slides.length]);
+  
+  const goToNext = useCallback(() => { 
+    setCurrentSlide((prev) => (prev + 1) % slides.length); 
+    setIsAutoplay(false); 
+    setTimeout(() => setIsAutoplay(true), 10000); 
+  }, [slides.length]);
+  
+  const getLocalizedHref = useCallback((href: string) => locale === 'tr' ? href : `/${locale}${href}`, [locale]);
+  
+  const handleMouseEnter = useCallback(() => setIsAutoplay(false), []);
+  const handleMouseLeave = useCallback(() => setIsAutoplay(true), []);
 
   const slide = slides[currentSlide];
 
   return (
-    <section className="relative min-h-[90vh] flex items-center overflow-hidden" onMouseEnter={() => setIsAutoplay(false)} onMouseLeave={() => setIsAutoplay(true)}>
+      <section 
+        className="relative min-h-[90vh] flex items-center overflow-hidden" 
+        onMouseEnter={handleMouseEnter} 
+        onMouseLeave={handleMouseLeave}
+      >
       <AnimatePresence mode="wait">
         <motion.div key={slide.id} initial={{ opacity: 0, scale: 1.1 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.8 }} className="absolute inset-0 z-0">
           <div className="absolute inset-0 bg-gradient-to-r from-gray-900/95 via-gray-900/80 to-gray-900/60 z-10" />
-          <Image src={slide.image} alt={slide.title[locale]} fill className="object-cover" priority />
+          <Image 
+            src={slide.image} 
+            alt={slide.title[locale]} 
+            fill 
+            className="object-cover" 
+            priority 
+            sizes="100vw"
+            quality={90}
+          />
         </motion.div>
       </AnimatePresence>
 

@@ -79,6 +79,87 @@
 }
 
 /* ============================================
+   Light Theme Overrides - Ensure Light Colors
+   ============================================ */
+:root:not(.dark) body,
+:root:not(.dark) main,
+:root:not(.dark) header,
+:root:not(.dark) footer,
+:root:not(.dark) section,
+:root:not(.dark) article,
+:root:not(.dark) aside,
+:root:not(.dark) nav,
+:root:not(.dark) div {
+  color-scheme: light;
+}
+
+/* Force light backgrounds on common elements */
+:root:not(.dark) {
+  background-color: rgb(255 255 255);
+  color: rgb(17 24 39);
+}
+
+:root:not(.dark) .bg-white {
+  background-color: rgb(255 255 255) !important;
+}
+
+:root:not(.dark) .bg-gray-50 {
+  background-color: rgb(249 250 251) !important;
+}
+
+:root:not(.dark) .bg-gray-100 {
+  background-color: rgb(243 244 246) !important;
+}
+
+:root:not(.dark) .bg-gray-900 {
+  background-color: rgb(17 24 39) !important;
+}
+
+:root:not(.dark) .bg-gray-950 {
+  background-color: rgb(3 7 18) !important;
+}
+
+:root:not(.dark) .text-gray-900 {
+  color: rgb(17 24 39) !important;
+}
+
+:root:not(.dark) .text-gray-800 {
+  color: rgb(31 41 55) !important;
+}
+
+:root:not(.dark) .text-gray-700 {
+  color: rgb(55 65 81) !important;
+}
+
+:root:not(.dark) .text-gray-600 {
+  color: rgb(75 85 99) !important;
+}
+
+:root:not(.dark) .text-gray-500 {
+  color: rgb(107 114 128) !important;
+}
+
+:root:not(.dark) .text-gray-400 {
+  color: rgb(156 163 175) !important;
+}
+
+:root:not(.dark) .text-gray-300 {
+  color: rgb(209 213 219) !important;
+}
+
+:root:not(.dark) .text-white {
+  color: rgb(255 255 255) !important;
+}
+
+:root:not(.dark) .border-gray-200 {
+  border-color: rgb(229 231 235) !important;
+}
+
+:root:not(.dark) .border-gray-300 {
+  border-color: rgb(209 213 219) !important;
+}
+
+/* ============================================
    Dark Mode Overrides - Tailwind Compatible
    ============================================ */
 .dark body,
@@ -111,6 +192,14 @@
   background-color: rgb(31 41 55) !important;
 }
 
+.dark .bg-gray-900 {
+  background-color: rgb(17 24 39) !important;
+}
+
+.dark .bg-gray-950 {
+  background-color: rgb(3 7 18) !important;
+}
+
 .dark .text-gray-900 {
   color: rgb(249 250 251) !important;
 }
@@ -125,6 +214,22 @@
 
 .dark .text-gray-600 {
   color: rgb(156 163 175) !important;
+}
+
+.dark .text-gray-500 {
+  color: rgb(107 114 128) !important;
+}
+
+.dark .text-gray-400 {
+  color: rgb(156 163 175) !important;
+}
+
+.dark .text-gray-300 {
+  color: rgb(209 213 219) !important;
+}
+
+.dark .text-white {
+  color: rgb(255 255 255) !important;
 }
 
 .dark .border-gray-200 {
@@ -201,11 +306,43 @@
     -moz-osx-font-smoothing: grayscale;
   }
   
+  /* Light theme body colors */
+  :root:not(.dark) body {
+    background-color: rgb(255 255 255);
+    color: rgb(17 24 39);
+  }
+  
+  /* Dark theme body colors */
+  .dark body {
+    background-color: rgb(3 7 18);
+    color: rgb(249 250 251);
+  }
+  
   h1, h2, h3, h4, h5, h6 {
     font-family: var(--font-heading);
     font-weight: 700;
     line-height: 1.2;
     color: rgb(var(--color-foreground));
+  }
+  
+  /* Light theme headings */
+  :root:not(.dark) h1,
+  :root:not(.dark) h2,
+  :root:not(.dark) h3,
+  :root:not(.dark) h4,
+  :root:not(.dark) h5,
+  :root:not(.dark) h6 {
+    color: rgb(17 24 39);
+  }
+  
+  /* Dark theme headings */
+  .dark h1,
+  .dark h2,
+  .dark h3,
+  .dark h4,
+  .dark h5,
+  .dark h6 {
+    color: rgb(249 250 251);
   }
   
   h1 {
@@ -224,6 +361,16 @@
     color: rgb(var(--color-muted));
   }
   
+  /* Light theme paragraphs */
+  :root:not(.dark) p {
+    color: rgb(107 114 128);
+  }
+  
+  /* Dark theme paragraphs */
+  .dark p {
+    color: rgb(156 163 175);
+  }
+  
   a {
     color: rgb(var(--color-primary));
     text-decoration: none;
@@ -232,6 +379,24 @@
   
   a:hover {
     color: rgb(var(--color-primary-dark));
+  }
+  
+  /* Light theme links */
+  :root:not(.dark) a {
+    color: rgb(23 92 211);
+  }
+  
+  :root:not(.dark) a:hover {
+    color: rgb(30 64 175);
+  }
+  
+  /* Dark theme links */
+  .dark a {
+    color: rgb(59 130 246);
+  }
+  
+  .dark a:hover {
+    color: rgb(96 165 250);
   }
   
   img {

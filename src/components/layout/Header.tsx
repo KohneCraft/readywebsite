@@ -5,7 +5,7 @@
 // Main navigation header
 // ============================================
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useLocale, useTranslations } from 'next-intl';
@@ -29,35 +29,35 @@ export function Header() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   // Navigation items
-  const navItems: NavItem[] = [
+  const navItems: NavItem[] = useMemo(() => [
     { href: '/', label: t('home') },
     { href: '/about', label: t('about') },
     { href: '/projects', label: t('projects') },
     { href: '/services', label: t('services') },
     { href: '/contact', label: t('contact') },
-  ];
+  ], [t]);
 
   // Generate localized href
-  const getLocalizedHref = (href: string) => {
+  const getLocalizedHref = useCallback((href: string) => {
     if (locale === 'tr') return href;
     return `/${locale}${href}`;
-  };
+  }, [locale]);
 
   // Check if link is active
-  const isActive = (href: string) => {
+  const isActive = useCallback((href: string) => {
     const localizedHref = getLocalizedHref(href);
     if (href === '/') {
       return pathname === '/' || pathname === `/${locale}`;
     }
     return pathname.startsWith(localizedHref);
-  };
+  }, [pathname, locale, getLocalizedHref]);
 
   // Handle scroll
   useEffect(() => {
     const handleScroll = () => {
       setIsScrolled(window.scrollY > 20);
     };
-    window.addEventListener('scroll', handleScroll);
+    window.addEventListener('scroll', handleScroll, { passive: true });
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
