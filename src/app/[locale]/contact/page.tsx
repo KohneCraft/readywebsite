@@ -7,7 +7,7 @@
 
 import { useState } from 'react';
 import Image from 'next/image';
-import { useLocale, useTranslations } from 'next-intl';
+import { useTranslations } from 'next-intl';
 import { motion } from 'framer-motion';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -20,7 +20,6 @@ import {
   Send,
   CheckCircle2,
   AlertCircle,
-  Building2,
   Facebook,
   Instagram,
   Twitter,
@@ -31,7 +30,6 @@ import { Input } from '@/components/ui/Input';
 import { Card } from '@/components/ui/Card';
 import { Spinner } from '@/components/ui/Spinner';
 import { GoogleMap } from '@/components/contact/GoogleMap';
-import type { Locale } from '@/i18n';
 
 // Form validation schema
 const contactSchema = z.object({
@@ -45,15 +43,8 @@ const contactSchema = z.object({
 
 type ContactFormData = z.infer<typeof contactSchema>;
 
-// Animation variants
-const fadeInUp = {
-  hidden: { opacity: 0, y: 20 },
-  visible: { opacity: 1, y: 0, transition: { duration: 0.6 } },
-};
-
 export default function ContactPage() {
   const t = useTranslations('contact');
-  const locale = useLocale() as Locale;
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitStatus, setSubmitStatus] = useState<'idle' | 'success' | 'error'>('idle');
 

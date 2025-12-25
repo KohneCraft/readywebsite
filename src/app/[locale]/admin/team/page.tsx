@@ -5,9 +5,8 @@
 
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useTranslations } from 'next-intl';
-import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { 
   Plus, 
@@ -16,7 +15,6 @@ import {
   Search,
   User,
   Mail,
-  Phone,
   GripVertical,
   Eye,
   EyeOff,
@@ -87,10 +85,8 @@ const mockTeamMembers: TeamMember[] = [
 
 export default function AdminTeamPage() {
   const t = useTranslations('admin');
-  const router = useRouter();
   const [members, setMembers] = useState<TeamMember[]>(mockTeamMembers);
   const [searchQuery, setSearchQuery] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
   const [showModal, setShowModal] = useState(false);
   const [editingMember, setEditingMember] = useState<TeamMember | null>(null);
 
@@ -103,10 +99,8 @@ export default function AdminTeamPage() {
   const handleDelete = async (id: string) => {
     if (!confirm(t('team.deleteConfirm'))) return;
     
-    setIsLoading(true);
     // TODO: Implement Firestore delete
     setMembers(prev => prev.filter(m => m.id !== id));
-    setIsLoading(false);
   };
 
   const toggleActive = async (id: string) => {

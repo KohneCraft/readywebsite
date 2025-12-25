@@ -22,10 +22,9 @@ import {
   ChevronRight,
   X,
   Share2,
-  Heart,
 } from 'lucide-react';
 import { Badge } from '@/components/ui/Badge';
-import { Button, buttonVariants } from '@/components/ui/Button';
+import { buttonVariants } from '@/components/ui/Button';
 import { Spinner } from '@/components/ui/Spinner';
 import { cn } from '@/lib/utils';
 import type { Locale } from '@/i18n';

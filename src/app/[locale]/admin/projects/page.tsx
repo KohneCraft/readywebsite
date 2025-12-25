@@ -18,7 +18,6 @@ import {
   Eye,
   Star,
   StarOff,
-  MoreHorizontal,
   Filter,
   ChevronDown,
   RefreshCcw,
@@ -35,7 +34,6 @@ import {
   updateProject 
 } from '@/lib/firebase/firestore';
 import type { Locale } from '@/i18n';
-import type { Project, ProjectSummary } from '@/types';
 
 // Admin project interface for display
 interface AdminProject {

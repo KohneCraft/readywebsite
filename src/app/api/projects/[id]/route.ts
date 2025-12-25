@@ -15,7 +15,7 @@ interface RouteParams {
 }
 
 // GET /api/projects/[id] - Get single project
-export async function GET(request: NextRequest, { params }: RouteParams) {
+export async function GET(_request: NextRequest, { params }: RouteParams) {
   try {
     const { id } = await params;
     const docRef = doc(db, 'projects', id);
@@ -93,7 +93,7 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
 }
 
 // DELETE /api/projects/[id] - Delete project
-export async function DELETE(request: NextRequest, { params }: RouteParams) {
+export async function DELETE(_request: NextRequest, { params }: RouteParams) {
   try {
     const { id } = await params;
     const docRef = doc(db, 'projects', id);

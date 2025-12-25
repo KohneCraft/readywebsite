@@ -353,6 +353,7 @@
       "recentContacts": "Son Mesajlar",
       "quickActions": "Hızlı İşlemler",
       "newProject": "Yeni Proje Ekle",
+      "refresh": "Yenile",
       "stats": {
         "totalProjects": "Toplam Proje",
         "activeProjects": "Aktif Proje",
@@ -416,6 +417,7 @@
     "projects": {
       "title": "Projeler",
       "subtitle": "Tüm projeleri yönetin",
+      "refresh": "Yenile",
       "new": "Yeni Proje",
       "edit": "Proje Düzenle",
       "list": "Proje Listesi",
@@ -474,6 +476,7 @@
     "contacts": {
       "title": "Mesajlar",
       "subtitle": "Gelen mesajları yönetin",
+      "refresh": "Yenile",
       "markAsRead": "Okundu İşaretle",
       "markAsUnread": "Okunmadı İşaretle",
       "markAsReplied": "Yanıtlandı İşaretle",

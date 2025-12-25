@@ -6,7 +6,6 @@
 // ============================================
 
 import { useState, useEffect } from 'react';
-import Link from 'next/link';
 import { useLocale, useTranslations } from 'next-intl';
 import { motion } from 'framer-motion';
 import { 
@@ -16,12 +15,9 @@ import {
   Trash2, 
   Reply,
   Archive,
-  Filter,
-  ChevronDown,
   Clock,
   Phone,
   User,
-  Eye,
   X,
   RefreshCcw,
 } from 'lucide-react';

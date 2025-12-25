@@ -15,7 +15,6 @@ import {
   Search,
   Building2,
   ExternalLink,
-  GripVertical,
   Eye,
   EyeOff,
   Loader2
@@ -72,7 +71,6 @@ export default function AdminPartnersPage() {
   const [partners, setPartners] = useState<Partner[]>(mockPartners);
   const [searchQuery, setSearchQuery] = useState('');
   const [filterCategory, setFilterCategory] = useState<string>('all');
-  const [isLoading, setIsLoading] = useState(false);
   const [showModal, setShowModal] = useState(false);
   const [editingPartner, setEditingPartner] = useState<Partner | null>(null);
 
@@ -86,10 +84,8 @@ export default function AdminPartnersPage() {
   const handleDelete = async (id: string) => {
     if (!confirm(t('partners.deleteConfirm'))) return;
     
-    setIsLoading(true);
     // TODO: Implement Firestore delete
     setPartners(prev => prev.filter(p => p.id !== id));
-    setIsLoading(false);
   };
 
   const toggleActive = async (id: string) => {

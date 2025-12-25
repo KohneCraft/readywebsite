@@ -17,8 +17,6 @@ import {
   Calendar,
   Clock,
   ArrowRight,
-  CheckCircle,
-  AlertCircle,
   RefreshCcw,
 } from 'lucide-react';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/Card';

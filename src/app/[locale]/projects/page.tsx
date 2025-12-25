@@ -12,12 +12,10 @@ import { useLocale, useTranslations } from 'next-intl';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Search, 
-  Filter,
   MapPin,
   Calendar,
   ArrowRight,
   Building2,
-  ShoppingBag,
   Factory,
   Home,
   LayoutGrid,
@@ -32,12 +30,6 @@ import type { Locale } from '@/i18n';
 // Project type definitions for the page
 type PageProjectStatus = 'completed' | 'ongoing' | 'planned' | 'onHold';
 type PageProjectType = 'residential' | 'commercial' | 'industrial' | 'mixed' | 'infrastructure' | 'renovation';
-
-// Animation variants
-const fadeInUp = {
-  hidden: { opacity: 0, y: 20 },
-  visible: { opacity: 1, y: 0, transition: { duration: 0.4 } },
-};
 
 // Mock project data - in production, this would come from Firestore
 const mockProjects = [

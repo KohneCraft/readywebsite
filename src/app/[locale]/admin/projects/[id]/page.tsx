@@ -8,7 +8,6 @@
 import { useState, useEffect } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { useLocale, useTranslations } from 'next-intl';
-import { motion } from 'framer-motion';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -33,9 +32,9 @@ import type { Locale } from '@/i18n';
 const projectSchema = z.object({
   title: z.object({
     tr: z.string().min(1, 'Başlık zorunludur'),
-    en: z.string().min(1, 'Title is required'),
-    de: z.string().min(1, 'Titel erforderlich'),
-    fr: z.string().min(1, 'Titre requis'),
+    en: z.string().optional(),
+    de: z.string().optional(),
+    fr: z.string().optional(),
   }),
   slug: z.string().min(1, 'Slug zorunludur').regex(/^[a-z0-9-]+$/, 'Slug sadece küçük harf, rakam ve tire içerebilir'),
   description: z.object({

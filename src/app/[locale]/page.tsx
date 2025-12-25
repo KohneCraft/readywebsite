@@ -27,11 +27,6 @@ import { Badge } from '@/components/ui/Badge';
 import type { Locale } from '@/i18n';
 
 // Lazy load heavy components
-const HeroSlider = dynamic(() => import('@/components/home/HeroSlider').then(mod => ({ default: mod.HeroSlider })), {
-  loading: () => <div className="min-h-[90vh] bg-gray-900 animate-pulse" />,
-  ssr: true,
-});
-
 const PartnersSection = dynamic(() => import('@/components/home/PartnersSection').then(mod => ({ default: mod.PartnersSection })), {
   loading: () => <div className="h-32 bg-gray-100 dark:bg-gray-800 animate-pulse" />,
   ssr: true,
