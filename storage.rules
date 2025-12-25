@@ -1,0 +1,147 @@
+rules_version = '2';
+
+// ============================================
+// Vav Yapı - Firebase Storage Security Rules
+// Development Mode
+// ============================================
+// Storage Yapısı:
+// - projects/{projectId}/cover/   (kapak görseli)
+// - projects/{projectId}/gallery/ (galeri görselleri)
+// - logos/                        (site logoları)
+// - settings/                     (diğer site görselleri)
+// ============================================
+
+service firebase.storage {
+  match /b/{bucket}/o {
+    
+    // ==========================================
+    // YARDIMCI FONKSİYONLAR
+    // ==========================================
+    
+    // Kullanıcı giriş yapmış mı?
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    // Dosya boyutu limiti (5MB)
+    function isValidSize() {
+      return request.resource.size < 5 * 1024 * 1024;
+    }
+    
+    // İzin verilen görsel formatları
+    function isValidImageType() {
+      return request.resource.contentType.matches('image/(jpeg|jpg|png|webp|gif|svg\\+xml)');
+    }
+    
+    // İzin verilen favicon formatları
+    function isValidFaviconType() {
+      return request.resource.contentType.matches('image/(x-icon|png|ico)');
+    }
+    
+    // Genel görsel validasyonu
+    function isValidImage() {
+      return isValidSize() && isValidImageType();
+    }
+    
+    // ==========================================
+    // PROJECTS KLASÖRÜ
+    // ==========================================
+    // Public read, authenticated write
+    // ==========================================
+    
+    match /projects/{projectId}/{folder}/{fileName} {
+      // Okuma: Herkes (public projeler için)
+      allow read: if true;
+      
+      // Yazma: Authenticated + valid image
+      allow write: if isAuthenticated() && isValidImage();
+      
+      // Silme: Authenticated
+      allow delete: if isAuthenticated();
+    }
+    
+    // Nested paths için (gallery içindeki alt klasörler)
+    match /projects/{projectId}/{allPaths=**} {
+      allow read: if true;
+      allow write: if isAuthenticated() && isValidImage();
+      allow delete: if isAuthenticated();
+    }
+    
+    // ==========================================
+    // LOGOS KLASÖRÜ
+    // ==========================================
+    // Site logoları (light, dark, mobile)
+    // ==========================================
+    
+    match /logos/{fileName} {
+      // Okuma: Herkes
+      allow read: if true;
+      
+      // Yazma: Authenticated + valid image (SVG dahil)
+      allow write: if isAuthenticated() && isValidImage();
+      
+      // Silme: Authenticated
+      allow delete: if isAuthenticated();
+    }
+    
+    // ==========================================
+    // SETTINGS KLASÖRÜ
+    // ==========================================
+    // Favicon ve diğer site görselleri
+    // ==========================================
+    
+    match /settings/{fileName} {
+      // Okuma: Herkes
+      allow read: if true;
+      
+      // Yazma: Authenticated
+      // Favicon için farklı content type kontrolü
+      allow write: if isAuthenticated() 
+        && (isValidImage() || isValidFaviconType());
+      
+      // Silme: Authenticated
+      allow delete: if isAuthenticated();
+    }
+    
+    match /settings/{folder}/{fileName} {
+      allow read: if true;
+      allow write: if isAuthenticated() 
+        && (isValidImage() || isValidFaviconType());
+      allow delete: if isAuthenticated();
+    }
+    
+    // ==========================================
+    // TEMP KLASÖRÜ (Geçici yüklemeler)
+    // ==========================================
+    // Admin panelde yükleme sırasında kullanılır
+    // Cropping/editing sonrası asıl konuma taşınır
+    // ==========================================
+    
+    match /temp/{userId}/{fileName} {
+      // Sadece kendi temp klasörüne
+      allow read: if request.auth != null && request.auth.uid == userId;
+      allow write: if request.auth != null 
+        && request.auth.uid == userId 
+        && isValidImage();
+      allow delete: if request.auth != null && request.auth.uid == userId;
+    }
+    
+    // ==========================================
+    // VARSAYILAN KURAL
+    // ==========================================
+    
+    match /{allPaths=**} {
+      allow read, write: if false;
+    }
+  }
+}
+
+// ============================================
+// PRODUCTION NOTLARI
+// ============================================
+// 1. Dosya boyutu production'da artırılabilir (10MB)
+// 2. Role-based access için Firestore lookup eklenebilir
+// 3. Rate limiting için Cloud Functions kullanılabilir
+// 4. Thumbnail oluşturma için Firebase Extension:
+//    - firebase ext:install storage-resize-images
+// ============================================

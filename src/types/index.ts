@@ -1,0 +1,162 @@
+// ============================================
+// Vav Yapı - Type Exports
+// Merkezi tip export dosyası
+// ============================================
+
+// Project Types
+export type {
+  ProjectStatus,
+  ProjectType,
+  Locale,
+  ProjectTranslation,
+  ProjectImage,
+  Coordinates,
+  Project,
+  ProjectCreateInput,
+  ProjectUpdateInput,
+  ProjectSummary,
+  ProjectFilters,
+  ProjectSortField,
+  SortDirection,
+  ProjectSort,
+  PaginationParams,
+  PaginatedProjects,
+} from './project';
+
+// Contact Types
+export type {
+  ContactStatus,
+  ContactSubject,
+  ContactForm,
+  ContactFormInput,
+  ContactFormUpdate,
+  ContactFormSummary,
+  ContactFormFilters,
+  PaginatedContactForms,
+} from './contact';
+
+export { CONTACT_SUBJECTS, CONTACT_STATUSES } from './contact';
+
+// Settings Types
+export type {
+  Logo,
+  SocialLinks,
+  ContactInfo,
+  SEOSettings,
+  MaintenanceMode,
+  HomepageSettings,
+  FormSettings,
+  Redirect,
+  SiteSettings,
+  SiteSettingsUpdate,
+} from './settings';
+
+export { DEFAULT_SITE_SETTINGS } from './settings';
+
+// User Types
+export type {
+  UserRole,
+  User,
+  UserCreateInput,
+  UserUpdateInput,
+  AuthUser,
+  AuthState,
+  ActivityLog,
+} from './user';
+
+export { ROLE_PERMISSIONS, ROLE_LABELS, hasPermission, hasMinRole } from './user';
+
+// ============================================
+// Common Types
+// ============================================
+
+/**
+ * API Response wrapper
+ */
+export interface ApiResponse<T> {
+  success: boolean;
+  data?: T;
+  error?: string;
+  message?: string;
+}
+
+/**
+ * API Error
+ */
+export interface ApiError {
+  code: string;
+  message: string;
+  details?: Record<string, unknown>;
+}
+
+/**
+ * Form field error
+ */
+export interface FieldError {
+  field: string;
+  message: string;
+}
+
+/**
+ * Validation result
+ */
+export interface ValidationResult {
+  valid: boolean;
+  errors: FieldError[];
+}
+
+/**
+ * Image upload result
+ */
+export interface UploadResult {
+  url: string;
+  path: string;
+  filename: string;
+  size: number;
+  contentType: string;
+}
+
+/**
+ * Batch operation result
+ */
+export interface BatchResult {
+  success: number;
+  failed: number;
+  errors: Array<{ id: string; error: string }>;
+}
+
+/**
+ * Date range
+ */
+export interface DateRange {
+  start: Date;
+  end: Date;
+}
+
+/**
+ * Supported locales tuple
+ */
+export const SUPPORTED_LOCALES = ['tr', 'en', 'de', 'fr'] as const;
+
+/**
+ * Local Locale type for LOCALE_METADATA
+ */
+type LocaleType = 'tr' | 'en' | 'de' | 'fr';
+
+/**
+ * Default locale
+ */
+export const DEFAULT_LOCALE = 'tr' as const;
+
+/**
+ * Locale metadata
+ */
+export const LOCALE_METADATA: Record<
+  LocaleType,
+  { name: string; flag: string; dir: 'ltr' | 'rtl' }
+> = {
+  tr: { name: 'Türkçe', flag: '🇹🇷', dir: 'ltr' },
+  en: { name: 'English', flag: '🇬🇧', dir: 'ltr' },
+  de: { name: 'Deutsch', flag: '🇩🇪', dir: 'ltr' },
+  fr: { name: 'Français', flag: '🇫🇷', dir: 'ltr' },
+};

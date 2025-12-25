@@ -1,0 +1,184 @@
+rules_version = '2';
+
+// ============================================
+// Vav Yapı - Firestore Security Rules
+// Development Mode (Temel Kurallar)
+// ============================================
+// NOT: Production'a geçmeden önce users koleksiyonunda
+// role kontrolü eklenecek (custom claims veya Firestore lookup)
+// ============================================
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // ==========================================
+    // YARDIMCI FONKSİYONLAR
+    // ==========================================
+    
+    // Kullanıcı giriş yapmış mı?
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    // Kendi dokümanı mı? (users koleksiyonu için)
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+    
+    // Geçerli timestamp mı?
+    function isValidTimestamp(field) {
+      return request.resource.data[field] is timestamp;
+    }
+    
+    // ==========================================
+    // PROJECTS KOLEKSİYONU
+    // ==========================================
+    // Public: Yayınlanmış projeleri okuyabilir
+    // Authenticated: CRUD (development için)
+    // ==========================================
+    
+    match /projects/{projectId} {
+      // Okuma: Herkes yayınlanmış projeleri görebilir
+      // veya authenticated kullanıcılar tümünü görebilir
+      allow read: if resource.data.published == true || isAuthenticated();
+      
+      // Oluşturma: Authenticated kullanıcılar
+      allow create: if isAuthenticated()
+        && request.resource.data.keys().hasAll(['slug', 'status', 'translations', 'createdAt', 'createdBy'])
+        && request.resource.data.createdBy == request.auth.uid;
+      
+      // Güncelleme: Authenticated kullanıcılar
+      allow update: if isAuthenticated()
+        && request.resource.data.updatedAt is timestamp;
+      
+      // Silme: Authenticated kullanıcılar
+      allow delete: if isAuthenticated();
+    }
+    
+    // ==========================================
+    // CONTACTFORMS KOLEKSİYONU
+    // ==========================================
+    // Public: Form gönderebilir (create)
+    // Authenticated: Okuma, güncelleme, silme
+    // ==========================================
+    
+    match /contactForms/{formId} {
+      // Okuma: Sadece authenticated kullanıcılar
+      allow read: if isAuthenticated();
+      
+      // Oluşturma: Herkes (public form)
+      // Temel validasyon kuralları
+      allow create: if 
+        request.resource.data.keys().hasAll(['name', 'email', 'message', 'subject', 'kvkkConsent', 'status', 'createdAt'])
+        && request.resource.data.name is string
+        && request.resource.data.name.size() >= 2
+        && request.resource.data.name.size() <= 100
+        && request.resource.data.email is string
+        && request.resource.data.email.matches('^[^@]+@[^@]+\\.[^@]+$')
+        && request.resource.data.message is string
+        && request.resource.data.message.size() >= 20
+        && request.resource.data.message.size() <= 2000
+        && request.resource.data.kvkkConsent == true
+        && request.resource.data.status == 'new';
+      
+      // Güncelleme: Sadece authenticated (admin notu, durum değişikliği)
+      allow update: if isAuthenticated();
+      
+      // Silme: Sadece authenticated
+      allow delete: if isAuthenticated();
+    }
+    
+    // ==========================================
+    // SETTINGS KOLEKSİYONU
+    // ==========================================
+    // Public: Okuma (site ayarları gerekli)
+    // Authenticated: Güncelleme
+    // ==========================================
+    
+    match /settings/{document} {
+      // Okuma: Herkes (navbar, footer için gerekli)
+      allow read: if true;
+      
+      // Yazma: Sadece authenticated
+      allow write: if isAuthenticated();
+    }
+    
+    // ==========================================
+    // USERS KOLEKSİYONU
+    // ==========================================
+    // Authenticated: Kendi profilini okuyabilir
+    // Development: Tüm authenticated CRUD
+    // ==========================================
+    
+    match /users/{userId} {
+      // Okuma: Authenticated kullanıcılar
+      // (Rol kontrolü için admin panelde gerekli)
+      allow read: if isAuthenticated();
+      
+      // Oluşturma: Authenticated (development için)
+      // Production'da sadece superadmin
+      allow create: if isAuthenticated();
+      
+      // Güncelleme: Kendi profili veya authenticated (development)
+      // Production'da role kontrolü eklenecek
+      allow update: if isAuthenticated();
+      
+      // Silme: Authenticated (development)
+      // Production'da sadece superadmin
+      allow delete: if isAuthenticated();
+    }
+    
+    // ==========================================
+    // ACTIVITY LOGS KOLEKSİYONU (Opsiyonel)
+    // ==========================================
+    
+    match /activityLogs/{logId} {
+      // Okuma: Authenticated
+      allow read: if isAuthenticated();
+      
+      // Oluşturma: Authenticated (sistem tarafından)
+      allow create: if isAuthenticated();
+      
+      // Güncelleme/Silme: Yok (loglar değiştirilemez)
+      allow update, delete: if false;
+    }
+    
+    // ==========================================
+    // VARSAYILAN KURAL
+    // ==========================================
+    // Yukarıda tanımlanmayan tüm koleksiyonlar için
+    // ==========================================
+    
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
+
+// ============================================
+// PRODUCTION KURALLARI İÇİN NOT
+// ============================================
+// Production'a geçerken aşağıdaki değişiklikler yapılmalı:
+//
+// 1. users koleksiyonundan role kontrolü:
+//    function getUserRole() {
+//      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role;
+//    }
+//    function isAdmin() {
+//      return getUserRole() in ['admin', 'superadmin'];
+//    }
+//    function isSuperAdmin() {
+//      return getUserRole() == 'superadmin';
+//    }
+//
+// 2. projects write kuralları:
+//    allow create, update: if isAdmin();
+//    allow delete: if isSuperAdmin();
+//
+// 3. users write kuralları:
+//    allow create, delete: if isSuperAdmin();
+//    allow update: if isOwner(userId) || isSuperAdmin();
+//
+// 4. settings write kuralları:
+//    allow write: if isAdmin();
+// ============================================

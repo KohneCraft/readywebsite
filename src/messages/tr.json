@@ -1,0 +1,593 @@
+{
+  "metadata": {
+    "title": "Vav Yapı | İnşaat ve Müteahhitlik",
+    "description": "Güvenilir ve kaliteli inşaat hizmetleri. Konut, ticari ve endüstriyel projeleriniz için profesyonel çözümler.",
+    "keywords": "inşaat, müteahhitlik, konut, ticari, endüstriyel, proje, yapı"
+  },
+  "common": {
+    "loading": "Yükleniyor...",
+    "error": "Bir hata oluştu",
+    "retry": "Tekrar Dene",
+    "save": "Kaydet",
+    "cancel": "İptal",
+    "delete": "Sil",
+    "edit": "Düzenle",
+    "create": "Oluştur",
+    "update": "Güncelle",
+    "close": "Kapat",
+    "back": "Geri",
+    "next": "İleri",
+    "previous": "Önceki",
+    "search": "Ara",
+    "filter": "Filtrele",
+    "all": "Tümü",
+    "none": "Hiçbiri",
+    "yes": "Evet",
+    "no": "Hayır",
+    "or": "veya",
+    "and": "ve",
+    "viewMore": "Daha Fazla",
+    "viewAll": "Tümünü Gör",
+    "readMore": "Devamını Oku",
+    "learnMore": "Daha Fazla Bilgi",
+    "seeDetails": "Detayları Gör",
+    "contactUs": "Bize Ulaşın",
+    "getInTouch": "İletişime Geç",
+    "required": "Zorunlu alan",
+    "optional": "Opsiyonel"
+  },
+  "nav": {
+    "home": "Ana Sayfa",
+    "about": "Hakkımızda",
+    "projects": "Projeler",
+    "services": "Hizmetler",
+    "contact": "İletişim",
+    "admin": "Yönetim Paneli"
+  },
+  "footer": {
+    "description": "Güvenilir ve kaliteli inşaat hizmetleri ile hayallerinizdeki yapıları inşa ediyoruz.",
+    "quickLinks": "Hızlı Bağlantılar",
+    "contactInfo": "İletişim Bilgileri",
+    "followUs": "Bizi Takip Edin",
+    "newsletter": "Bülten",
+    "newsletterDesc": "Yeni projeler ve haberlerden haberdar olun.",
+    "emailPlaceholder": "E-posta adresiniz",
+    "subscribe": "Abone Ol",
+    "copyright": "© {year} Vav Yapı. Tüm hakları saklıdır.",
+    "privacyPolicy": "Gizlilik Politikası",
+    "terms": "Kullanım Koşulları"
+  },
+  "home": {
+    "hero": {
+      "title": "Geleceği Birlikte İnşa Ediyoruz",
+      "subtitle": "Kalite, güvenilirlik ve yenilikçilik ile hayallerinizdeki yapıları gerçeğe dönüştürüyoruz.",
+      "cta": "Projelerimizi Keşfedin",
+      "ctaSecondary": "Teklif Alın"
+    },
+    "about": {
+      "title": "Hakkımızda",
+      "subtitle": "Deneyim ve Güven",
+      "description": "30 yılı aşkın tecrübemizle konut, ticari ve endüstriyel projelerde kaliteli ve güvenilir çözümler sunuyoruz.",
+      "cta": "Daha Fazla Bilgi",
+      "experience": "Yıllık Tecrübe",
+      "projects": "Tamamlanan Proje",
+      "clients": "Mutlu Müşteri",
+      "employees": "Uzman Çalışan"
+    },
+    "featured": {
+      "title": "Öne Çıkan Projeler",
+      "subtitle": "Son dönemde tamamladığımız ve devam eden projelerimiz",
+      "viewAll": "Tüm Projeleri Gör"
+    },
+    "services": {
+      "title": "Hizmetlerimiz",
+      "subtitle": "Kapsamlı inşaat çözümleri",
+      "residential": {
+        "title": "Konut Projeleri",
+        "description": "Modern ve konforlu yaşam alanları tasarlıyor ve inşa ediyoruz."
+      },
+      "commercial": {
+        "title": "Ticari Projeler",
+        "description": "İş merkezleri, AVM'ler ve ofis binaları inşaatı."
+      },
+      "industrial": {
+        "title": "Endüstriyel Projeler",
+        "description": "Fabrika, depo ve üretim tesisleri yapımı."
+      },
+      "renovation": {
+        "title": "Restorasyon",
+        "description": "Tarihi ve modern binaların renovasyon çalışmaları."
+      }
+    },
+    "cta": {
+      "title": "Projenizi Konuşalım",
+      "description": "Yeni bir proje mi planlıyorsunuz? Uzman ekibimiz size yardımcı olmak için hazır.",
+      "button": "Ücretsiz Danışmanlık"
+    },
+    "partners": {
+      "title": "İş Ortaklarımız",
+      "subtitle": "Güvenilir markalarla işbirliği yapıyoruz"
+    }
+  },
+  "about": {
+    "hero": {
+      "title": "1993'ten Bu Yana Mükemmellik İnşa Ediyoruz",
+      "subtitle": "Hikayemiz",
+      "description": "Vav Yapı'nın adanmışlık, yenilikçilik ve kaliteye olan sarsılmaz bağlılığı ile Türkiye'nin önde gelen inşaat şirketlerinden biri haline nasıl geldiğini keşfedin."
+    },
+    "stats": {
+      "experience": "Yıllık Deneyim",
+      "projects": "Tamamlanan Proje",
+      "clients": "Mutlu Müşteri",
+      "employees": "Uzman Çalışan"
+    },
+    "story": {
+      "title": "Hikayemiz",
+      "subtitle": "Mütevazı Başlangıçlardan",
+      "paragraph1": "1993 yılında Türk inşaat sektörünü dönüştürme vizyonuyla kurulan Vav Yapı, sadece bir avuç adanmış usta ile küçük bir aile işletmesi olarak yola çıktı.",
+      "paragraph2": "Otuz yılı aşkın sürede, lüks konutlardan büyük ölçekli endüstriyel komplekslere kadar 500'den fazla başarılı projeyi tamamlayarak inşaat sektörünün en güvenilir isimlerinden biri haline geldik.",
+      "paragraph3": "Başarımız basit bir felsefeye dayanıyor: kaliteden asla ödün verme, daima zamanında teslim et ve her projeye kendi projemizmiş gibi davran."
+    },
+    "values": {
+      "title": "Temel Değerlerimiz",
+      "subtitle": "Neyi Savunuyoruz",
+      "description": "Bu ilkeler, aldığımız her karara ve üstlendiğimiz her projeye rehberlik eder.",
+      "items": {
+        "quality": {
+          "title": "Önce Kalite",
+          "description": "Her projede en yüksek kalite standartlarını, premium malzemeler ve kanıtlanmış tekniklerle uyguluyoruz."
+        },
+        "trust": {
+          "title": "Güven ve Şeffaflık",
+          "description": "Müşterilerimiz, ortaklarımız ve toplumla şeffaf ve güvene dayalı ilişkiler kuruyoruz."
+        },
+        "innovation": {
+          "title": "Sürekli Yenilik",
+          "description": "Daha iyi sonuçları verimli bir şekilde sunmak için en son teknolojileri ve yöntemleri benimsiyoruz."
+        },
+        "customer": {
+          "title": "Müşteri Odaklılık",
+          "description": "Memnuniyetiniz önceliğimizdir. Dinliyor, uyum sağlıyor ve beklentileri aşıyoruz."
+        }
+      }
+    },
+    "timeline": {
+      "title": "Yolculuğumuz",
+      "subtitle": "Kilometre Taşları",
+      "items": {
+        "founding": {
+          "title": "Şirket Kuruluşu",
+          "description": "Vav Yapı, kaliteli inşaat sunma vizyonuyla İstanbul'da kuruldu."
+        },
+        "expansion": {
+          "title": "Bölgesel Genişleme",
+          "description": "Türkiye genelinde birden fazla şehre genişleyerek 100. projemizi tamamladık."
+        },
+        "international": {
+          "title": "Uluslararası Projeler",
+          "description": "Uluslararası projeleri kabul etmeye başladık, Avrupa ve Orta Doğu pazarlarına girdik."
+        },
+        "modernization": {
+          "title": "Dijital Dönüşüm",
+          "description": "Gelişmiş proje yönetimi için son teknoloji ve BIM sistemlerine yatırım yaptık."
+        },
+        "today": {
+          "title": "Sektör Lideri",
+          "description": "500+ tamamlanmış proje ile Türkiye'nin en iyi inşaat şirketlerinden biri olarak tanınıyoruz."
+        }
+      }
+    },
+    "team": {
+      "title": "Liderlik Ekibimiz",
+      "subtitle": "Ekibimiz",
+      "description": "Deneyimli yönetim ekibimiz, her projeye onlarca yıllık birleşik uzmanlık getiriyor.",
+      "roles": {
+        "ceo": "CEO ve Kurucu",
+        "cto": "Teknik Direktör",
+        "architect": "Baş Mimar",
+        "finance": "Finans Direktörü"
+      }
+    },
+    "mission": {
+      "title": "Misyonumuz",
+      "description": "Beklentileri aşan olağanüstü inşaat çözümleri sunmak, müşterilerimiz için kalıcı değer yaratmak ve hizmet verdiğimiz topluluklara olumlu katkıda bulunmak."
+    },
+    "vision": {
+      "title": "Vizyonumuz",
+      "description": "Kalite, sürdürülebilirlik ve müşteri memnuniyetinde yeni standartlar belirleyen, bölgenin en güvenilir ve yenilikçi inşaat şirketi olmak."
+    }
+  },
+  "projects": {
+    "title": "Projelerimiz",
+    "subtitle": "Tamamlanan ve devam eden inşaat projelerimizi keşfedin",
+    "search": {
+      "placeholder": "Proje ara..."
+    },
+    "results": "{count, plural, =0 {Proje bulunamadı} =1 {1 proje bulundu} other {# proje bulundu}}",
+    "filters": {
+      "all": "Tümü",
+      "ongoing": "Devam Eden",
+      "completed": "Tamamlanan",
+      "planned": "Planlanan"
+    },
+    "ongoing": {
+      "title": "Devam Eden Projeler",
+      "description": "Şu anda aktif olarak devam etmekte olan projelerimizi keşfedin",
+      "activeProjects": "aktif proje"
+    },
+    "completed": {
+      "title": "Tamamlanan Projeler",
+      "description": "Başarıyla tamamladığımız projelerimize göz atın",
+      "totalProjects": "tamamlanmış proje"
+    },
+    "backToProjects": "Projelere Dön",
+    "completed": "Tamamlandı",
+    "completedStatus": "Tamamlandı",
+    "progress": "İlerleme",
+    "viewDetails": "Detayları Gör",
+    "projects": "proje",
+    "categories": {
+      "residential": "Konut",
+      "commercial": "Ticari",
+      "industrial": "Endüstriyel",
+      "healthcare": "Sağlık"
+    },
+    "stats": {
+      "completedProjects": "Tamamlanan Proje",
+      "yearsExperience": "Yıl Deneyim",
+      "awardWinning": "Ödüllü Proje",
+      "satisfaction": "Müşteri Memnuniyeti"
+    },
+    "types": {
+      "residential": "Konut",
+      "commercial": "Ticari",
+      "industrial": "Endüstriyel",
+      "mixed": "Karma Kullanım",
+      "infrastructure": "Altyapı",
+      "renovation": "Restorasyon"
+    },
+    "status": {
+      "all": "Tüm Durumlar",
+      "planned": "Planlanan",
+      "planning": "Planlama",
+      "ongoing": "Devam Ediyor",
+      "in_progress": "Devam Ediyor",
+      "completed": "Tamamlandı",
+      "on_hold": "Beklemede",
+      "onHold": "Beklemede"
+    },
+    "year": "Yıl",
+    "location": "Konum",
+    "area": "Alan",
+    "type": "Tip",
+    "backToProjects": "Projelere Dön",
+    "details": {
+      "location": "Konum",
+      "area": "Alan",
+      "startDate": "Başlangıç",
+      "endDate": "Bitiş",
+      "completion": "Tamamlanma",
+      "client": "Müşteri",
+      "architect": "Mimar",
+      "contractor": "Yüklenici",
+      "specifications": "Teknik Özellikler",
+      "gallery": "Galeri",
+      "relatedProjects": "İlgili Projeler"
+    },
+    "empty": {
+      "title": "Proje Bulunamadı",
+      "description": "Arama kriterlerinize uygun proje bulunamadı. Filtrelerinizi değiştirmeyi deneyin."
+    },
+    "cta": {
+      "title": "Aklınızda Bir Proje mi Var?",
+      "description": "Vizyonunuzu nasıl hayata geçirebileceğimizi konuşalım.",
+      "button": "İletişime Geç"
+    }
+  },
+  "contact": {
+    "title": "İletişim",
+    "subtitle": "Sizden haber almaktan mutluluk duyarız",
+    "form": {
+      "title": "Mesaj Gönderin",
+      "name": "Adınız Soyadınız",
+      "namePlaceholder": "Adınızı girin",
+      "email": "E-posta",
+      "emailPlaceholder": "ornek@email.com",
+      "phone": "Telefon",
+      "phonePlaceholder": "+90 (5XX) XXX XX XX",
+      "subject": "Konu",
+      "subjectPlaceholder": "Mesajınızın konusu",
+      "message": "Mesajınız",
+      "messagePlaceholder": "Mesajınızı yazın...",
+      "privacy": "Kişisel verilerimin işlenmesini kabul ediyorum",
+      "submit": "Gönder",
+      "submitting": "Gönderiliyor...",
+      "success": "Mesajınız başarıyla gönderildi!",
+      "successDesc": "En kısa sürede size dönüş yapacağız.",
+      "sendAnother": "Başka bir mesaj gönder",
+      "error": "Mesaj gönderilemedi",
+      "errorDesc": "Lütfen daha sonra tekrar deneyin."
+    },
+    "subjects": {
+      "general": "Genel Bilgi",
+      "quote": "Teklif Talebi",
+      "partnership": "İş Birliği",
+      "career": "Kariyer",
+      "support": "Destek",
+      "other": "Diğer"
+    },
+    "info": {
+      "title": "İletişim Bilgileri",
+      "social": "Bizi Takip Edin",
+      "address": {
+        "title": "Adres",
+        "value": "Levent, İstanbul, Türkiye"
+      },
+      "phone": {
+        "title": "Telefon",
+        "value": "+90 (212) 555 0123"
+      },
+      "email": {
+        "title": "E-posta",
+        "value": "info@vavyapi.com"
+      },
+      "hours": {
+        "title": "Çalışma Saatleri",
+        "value": "Pazartesi - Cuma: 09:00 - 18:00"
+      }
+    },
+    "map": {
+      "title": "Konumumuz",
+      "description": "İstanbul'daki merkezimizi ziyaret edin",
+      "placeholder": "Interaktif harita burada görünecek"
+    }
+  },
+  "admin": {
+    "dashboard": {
+      "title": "Yönetim Paneli",
+      "subtitle": "Vav Yapı yönetim panelinize hoş geldiniz",
+      "welcome": "Hoş Geldiniz, {name}",
+      "overview": "Genel Bakış",
+      "recentActivity": "Son Aktiviteler",
+      "recentProjects": "Son Projeler",
+      "recentContacts": "Son Mesajlar",
+      "quickActions": "Hızlı İşlemler",
+      "newProject": "Yeni Proje Ekle",
+      "stats": {
+        "totalProjects": "Toplam Proje",
+        "activeProjects": "Aktif Proje",
+        "totalContacts": "Toplam Mesaj",
+        "unreadContacts": "Okunmamış Mesaj",
+        "monthlyViews": "Aylık Görüntülenme"
+      },
+      "empty": {
+        "noProjects": "Henüz proje eklenmemiş",
+        "noContacts": "Henüz mesaj gelmemiş"
+      }
+    },
+    "charts": {
+      "monthlyRevenue": "Aylık Gelir",
+      "monthlyProjects": "Aylık Proje Sayısı",
+      "projectStatus": "Proje Durumları",
+      "contactSources": "İletişim Kaynakları",
+      "weeklyVisitors": "Haftalık Ziyaretçi"
+    },
+    "team": {
+      "title": "Ekip Yönetimi",
+      "subtitle": "Ekip üyelerini yönetin",
+      "addMember": "Yeni Üye Ekle",
+      "editMember": "Üye Düzenle",
+      "deleteConfirm": "Bu üyeyi silmek istediğinizden emin misiniz?",
+      "noMembers": "Henüz ekip üyesi eklenmemiş",
+      "searchPlaceholder": "Üye ara...",
+      "name": "Ad Soyad",
+      "position": "Pozisyon",
+      "email": "E-posta",
+      "phone": "Telefon",
+      "imageUrl": "Görsel URL",
+      "status": "Durum",
+      "actions": "İşlemler",
+      "active": "Aktif",
+      "inactive": "Pasif"
+    },
+    "partners": {
+      "title": "Ortaklar & Referanslar",
+      "subtitle": "İş ortaklarını ve referansları yönetin",
+      "addPartner": "Yeni Ortak Ekle",
+      "editPartner": "Ortak Düzenle",
+      "deleteConfirm": "Bu ortağı silmek istediğinizden emin misiniz?",
+      "noPartners": "Henüz ortak eklenmemiş",
+      "searchPlaceholder": "Ortak ara...",
+      "name": "Firma Adı",
+      "logoUrl": "Logo URL",
+      "website": "Web Sitesi",
+      "category": "Kategori",
+      "allCategories": "Tüm Kategoriler",
+      "categoryPartner": "İş Ortağı",
+      "categorySupplier": "Tedarikçi",
+      "categoryClient": "Müşteri",
+      "visitWebsite": "Web Sitesini Ziyaret Et"
+    },
+    "edit": "Düzenle",
+    "delete": "Sil",
+    "save": "Kaydet",
+    "cancel": "İptal",
+    "add": "Ekle",
+    "projects": {
+      "title": "Projeler",
+      "subtitle": "Tüm projeleri yönetin",
+      "new": "Yeni Proje",
+      "edit": "Proje Düzenle",
+      "list": "Proje Listesi",
+      "publish": "Yayınla",
+      "unpublish": "Yayından Kaldır",
+      "feature": "Öne Çıkar",
+      "unfeature": "Öne Çıkarmayı Kaldır",
+      "confirmDelete": "Bu projeyi silmek istediğinizden emin misiniz?",
+      "deleteSuccess": "Proje başarıyla silindi",
+      "saveSuccess": "Proje başarıyla kaydedildi",
+      "noProjects": "Henüz proje eklenmemiş",
+      "addFirst": "İlk projenizi ekleyin",
+      "searchPlaceholder": "Proje ara...",
+      "status": {
+        "planning": "Planlama",
+        "in_progress": "Devam Ediyor",
+        "completed": "Tamamlandı",
+        "on_hold": "Beklemede"
+      },
+      "type": {
+        "residential": "Konut",
+        "commercial": "Ticari",
+        "industrial": "Endüstriyel",
+        "infrastructure": "Altyapı",
+        "renovation": "Renovasyon"
+      },
+      "form": {
+        "title": "Proje Başlığı",
+        "slug": "URL Slug",
+        "description": "Açıklama",
+        "content": "İçerik",
+        "type": "Proje Tipi",
+        "status": "Durum",
+        "client": "Müşteri",
+        "location": "Konum",
+        "year": "Yıl",
+        "area": "Alan (m²)",
+        "coverImage": "Kapak Görseli",
+        "gallery": "Galeri",
+        "isFeatured": "Öne Çıkar",
+        "isPublished": "Yayınla",
+        "seoTitle": "SEO Başlık",
+        "seoDescription": "SEO Açıklama"
+      },
+      "table": {
+        "image": "Görsel",
+        "title": "Başlık",
+        "type": "Tip",
+        "status": "Durum",
+        "year": "Yıl",
+        "featured": "Öne Çıkan",
+        "published": "Yayında",
+        "actions": "İşlemler"
+      }
+    },
+    "contacts": {
+      "title": "Mesajlar",
+      "subtitle": "Gelen mesajları yönetin",
+      "markAsRead": "Okundu İşaretle",
+      "markAsUnread": "Okunmadı İşaretle",
+      "markAsReplied": "Yanıtlandı İşaretle",
+      "archive": "Arşivle",
+      "reply": "Yanıtla",
+      "delete": "Sil",
+      "confirmDelete": "Bu mesajı silmek istediğinizden emin misiniz?",
+      "deleteSuccess": "Mesaj başarıyla silindi",
+      "noMessages": "Henüz mesaj yok",
+      "searchPlaceholder": "Mesaj ara...",
+      "filters": {
+        "all": "Tümü",
+        "unread": "Okunmamış",
+        "read": "Okunmuş",
+        "replied": "Yanıtlanmış",
+        "archived": "Arşivlenmiş"
+      },
+      "table": {
+        "sender": "Gönderen",
+        "subject": "Konu",
+        "date": "Tarih",
+        "status": "Durum",
+        "actions": "İşlemler"
+      },
+      "detail": {
+        "from": "Kimden",
+        "email": "E-posta",
+        "phone": "Telefon",
+        "subject": "Konu",
+        "message": "Mesaj",
+        "receivedAt": "Alınma Tarihi"
+      }
+    },
+    "settings": {
+      "title": "Ayarlar",
+      "subtitle": "Site ayarlarını yönetin",
+      "general": "Genel Ayarlar",
+      "seo": "SEO Ayarları",
+      "appearance": "Görünüm",
+      "maintenance": "Bakım Modu",
+      "saved": "Ayarlar kaydedildi",
+      "sections": {
+        "company": "Firma Bilgileri",
+        "contact": "İletişim Bilgileri",
+        "social": "Sosyal Medya",
+        "seo": "SEO",
+        "maintenance": "Bakım Modu"
+      },
+      "form": {
+        "companyName": "Firma Adı",
+        "slogan": "Slogan",
+        "logo": "Logo",
+        "email": "E-posta",
+        "phone": "Telefon",
+        "address": "Adres",
+        "facebook": "Facebook",
+        "twitter": "Twitter",
+        "instagram": "Instagram",
+        "linkedin": "LinkedIn",
+        "youtube": "YouTube",
+        "metaTitle": "Meta Başlık",
+        "metaDescription": "Meta Açıklama",
+        "metaKeywords": "Anahtar Kelimeler",
+        "googleAnalytics": "Google Analytics ID"
+      }
+    },
+    "users": {
+      "title": "Kullanıcılar",
+      "subtitle": "Kullanıcıları yönetin",
+      "new": "Yeni Kullanıcı",
+      "edit": "Kullanıcı Düzenle",
+      "roles": {
+        "superadmin": "Süper Admin",
+        "admin": "Admin",
+        "editor": "Editör"
+      }
+    },
+    "auth": {
+      "login": "Giriş Yap",
+      "loginTitle": "Yönetim Paneli Girişi",
+      "loginSubtitle": "Devam etmek için giriş yapın",
+      "logout": "Çıkış Yap",
+      "email": "E-posta",
+      "password": "Şifre",
+      "forgotPassword": "Şifremi Unuttum",
+      "loginError": "Giriş başarısız. E-posta veya şifre hatalı.",
+      "loginSuccess": "Giriş başarılı",
+      "logoutSuccess": "Çıkış yapıldı"
+    },
+    "logout": "Çıkış Yap"
+  },
+  "errors": {
+    "notFound": {
+      "title": "Sayfa Bulunamadı",
+      "description": "Aradığınız sayfa mevcut değil veya taşınmış olabilir.",
+      "backHome": "Ana Sayfaya Dön"
+    },
+    "unauthorized": {
+      "title": "Yetkisiz Erişim",
+      "description": "Bu sayfayı görüntüleme yetkiniz bulunmamaktadır."
+    },
+    "serverError": {
+      "title": "Sunucu Hatası",
+      "description": "Bir şeyler ters gitti. Lütfen daha sonra tekrar deneyin."
+    }
+  },
+  "validation": {
+    "required": "Bu alan zorunludur",
+    "email": "Geçerli bir e-posta adresi girin",
+    "phone": "Geçerli bir telefon numarası girin",
+    "minLength": "En az {min} karakter olmalıdır",
+    "maxLength": "En fazla {max} karakter olabilir",
+    "url": "Geçerli bir URL girin",
+    "number": "Geçerli bir sayı girin",
+    "date": "Geçerli bir tarih girin"
+  }
+}
