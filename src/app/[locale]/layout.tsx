@@ -36,14 +36,12 @@ export default async function LocaleLayout({
   const messages = await getMessages();
 
   return (
-    <html lang={locale} suppressHydrationWarning>
-      <body className={`${inter.variable} font-sans antialiased`} suppressHydrationWarning>
-        <NextIntlClientProvider messages={messages}>
-          <ThemeProvider>
-            <PublicLayout>{children}</PublicLayout>
-          </ThemeProvider>
-        </NextIntlClientProvider>
-      </body>
-    </html>
+    <NextIntlClientProvider messages={messages}>
+      <ThemeProvider>
+        <div className={`${inter.variable} font-sans antialiased`}>
+          <PublicLayout>{children}</PublicLayout>
+        </div>
+      </ThemeProvider>
+    </NextIntlClientProvider>
   );
 }
