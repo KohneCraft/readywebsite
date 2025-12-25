@@ -8,11 +8,14 @@
     "source": "dataconnect"
   },
   "hosting": {
-    "public": ".next",
+    "source": ".",
     "ignore": [
       "firebase.json",
       "**/.*",
       "**/node_modules/**"
-    ]
+    ],
+    "frameworksBackend": {
+      "region": "us-central1"
+    }
   }
 }
