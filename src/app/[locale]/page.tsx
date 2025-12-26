@@ -377,7 +377,7 @@ export default function HomePage() {
                         className="object-cover transition-transform duration-500 group-hover:scale-105"
                         sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
                         loading="lazy"
-                        quality={85}
+                        unoptimized
                       />
                       <div className="absolute top-4 left-4">
                         <Badge variant={project.status === 'completed' ? 'success' : project.status === 'ongoing' ? 'warning' : 'primary'}>

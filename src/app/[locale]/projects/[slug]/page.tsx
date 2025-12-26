@@ -147,6 +147,7 @@ export default function ProjectDetailPage() {
             fill
             className="object-cover"
             priority
+            unoptimized
           />
           <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
           
@@ -398,6 +399,7 @@ export default function ProjectDetailPage() {
                         alt={`${translation.name} - ${index + 1}`}
                         fill
                         className="object-cover hover:scale-105 transition-transform duration-300"
+                        unoptimized
                       />
                     </motion.button>
                   ))}
@@ -458,6 +460,7 @@ export default function ProjectDetailPage() {
                 alt={`${translation.name} - ${lightboxIndex + 1}`}
                 fill
                 className="object-contain"
+                unoptimized
               />
             </motion.div>
 

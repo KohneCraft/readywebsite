@@ -561,6 +561,7 @@ export default function AdminProjectFormPage() {
                     alt={coverImage.alt}
                     fill
                     className="object-cover"
+                    unoptimized
                   />
                   <button
                     type="button"
@@ -602,6 +603,7 @@ export default function AdminProjectFormPage() {
                       alt={img.alt}
                       fill
                       className="object-cover"
+                      unoptimized
                     />
                     <button
                       type="button"

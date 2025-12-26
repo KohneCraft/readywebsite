@@ -356,6 +356,7 @@ export default function ProjectsPage() {
                                 alt={project.title[locale]}
                                 fill
                                 className="object-cover transition-transform duration-500 group-hover:scale-105"
+                                unoptimized
                               />
                               <div className="absolute inset-0 bg-gradient-to-t from-gray-900/80 via-gray-900/20 to-transparent" />
                               
@@ -426,6 +427,7 @@ export default function ProjectsPage() {
                                   alt={project.title[locale]}
                                   fill
                                   className="object-cover"
+                                  unoptimized
                                 />
                               </div>
                               <div className="p-6 flex-1">
