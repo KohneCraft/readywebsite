@@ -4,15 +4,13 @@
 // Vav Yapı - Terms of Service Page
 // ============================================
 
-import { useLocale, useTranslations } from 'next-intl';
+import { useTranslations } from 'next-intl';
 import { motion } from 'framer-motion';
 import { FileText, CheckCircle, AlertTriangle, Scale, Gavel, HelpCircle } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/Card';
-import type { Locale } from '@/i18n';
 
 export default function TermsPage() {
   const t = useTranslations('terms');
-  const locale = useLocale() as Locale;
 
   const sections = [
     {

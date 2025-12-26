@@ -22,7 +22,7 @@ import {
   CheckCircle,
 } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/Card';
-import { Button, buttonVariants } from '@/components/ui/Button';
+import { buttonVariants } from '@/components/ui/Button';
 import { cn } from '@/lib/utils';
 import type { Locale } from '@/i18n';
 

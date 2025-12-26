@@ -4,15 +4,13 @@
 // Vav Yapı - Privacy Policy Page
 // ============================================
 
-import { useLocale, useTranslations } from 'next-intl';
+import { useTranslations } from 'next-intl';
 import { motion } from 'framer-motion';
 import { Shield, Lock, Eye, Database, UserCheck, Mail } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/Card';
-import type { Locale } from '@/i18n';
 
 export default function PrivacyPage() {
   const t = useTranslations('privacy');
-  const locale = useLocale() as Locale;
 
   const sections = [
     {
