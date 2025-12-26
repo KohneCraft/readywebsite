@@ -2,7 +2,7 @@
 
 // ============================================
 // Vav Yapı - Project Detail Page
-// Individual project view with gallery
+// Individual project view with gallery, map, video
 // ============================================
 
 import { useState, useEffect } from 'react';
@@ -17,127 +17,30 @@ import {
   MapPin, 
   Ruler, 
   Building2,
-  User,
+  Layers,
+  Home,
   ChevronLeft,
   ChevronRight,
   X,
   Share2,
+  Play,
+  ExternalLink,
 } from 'lucide-react';
 import { Badge } from '@/components/ui/Badge';
 import { buttonVariants } from '@/components/ui/Button';
 import { Spinner } from '@/components/ui/Spinner';
 import { cn } from '@/lib/utils';
+import { getProjectBySlug } from '@/lib/firebase/firestore';
 import type { Locale } from '@/i18n';
+import type { Project } from '@/types';
 
-// Mock project data
-interface ProjectDetail {
-  id: string;
-  slug: string;
-  title: { [key: string]: string };
-  description: { [key: string]: string };
-  content: { [key: string]: string };
-  type: 'residential' | 'commercial' | 'industrial' | 'infrastructure' | 'renovation';
-  status: 'planning' | 'in_progress' | 'completed' | 'on_hold';
-  client: string;
-  location: string;
-  year: number;
-  area: number;
-  coverImage: string;
-  gallery: string[];
+// YouTube URL'den video ID'sini çıkar
+function getYouTubeVideoId(url: string): string | null {
+  if (!url) return null;
+  const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
+  const match = url.match(regExp);
+  return (match && match[2].length === 11) ? match[2] : null;
 }
-
-const mockProject: ProjectDetail = {
-  id: '1',
-  slug: 'istanbul-business-center',
-  title: {
-    tr: 'İstanbul Business Center',
-    en: 'Istanbul Business Center',
-    de: 'Istanbul Business Center',
-    fr: 'Centre d\'affaires Istanbul',
-  },
-  description: {
-    tr: 'İstanbul\'un kalbinde modern ve sürdürülebilir bir iş merkezi projesi.',
-    en: 'A modern and sustainable business center project in the heart of Istanbul.',
-    de: 'Ein modernes und nachhaltiges Geschäftszentrum im Herzen von Istanbul.',
-    fr: 'Un centre d\'affaires moderne et durable au cœur d\'Istanbul.',
-  },
-  content: {
-    tr: `İstanbul Business Center, şehrin en prestijli bölgelerinden birinde konumlanan, A+ sınıfı ofis binası projesidir.
-
-## Proje Özellikleri
-
-- 45 katlı modern yapı
-- 25.000 m² kullanım alanı
-- LEED Gold sertifikası hedefi
-- Akıllı bina teknolojileri
-- Yer altı otoparkı (500 araç kapasiteli)
-
-## Sürdürülebilirlik
-
-Projede enerji verimliliği ve çevre dostu tasarım ön plandadır. Güneş panelleri, yağmur suyu toplama sistemleri ve yeşil çatı uygulamaları ile karbon ayak izini minimize etmeyi hedefliyoruz.
-
-## Konum Avantajları
-
-Metro ve metrobüs hatlarına yürüme mesafesinde bulunan proje, toplu taşıma erişimi açısından benzersiz bir konuma sahiptir. Ayrıca bölgedeki alışveriş merkezleri, oteller ve restoranlara yakınlığı ile çalışanlar için ideal bir iş ortamı sunmaktadır.`,
-    en: `Istanbul Business Center is an A+ class office building project located in one of the most prestigious districts of the city.
-
-## Project Features
-
-- 45-story modern building
-- 25,000 m² usable area
-- LEED Gold certification target
-- Smart building technologies
-- Underground parking (500 vehicle capacity)
-
-## Sustainability
-
-Energy efficiency and eco-friendly design are at the forefront of this project. We aim to minimize carbon footprint with solar panels, rainwater harvesting systems, and green roof applications.
-
-## Location Advantages
-
-Walking distance to metro and metrobus lines, the project has a unique location in terms of public transportation access. Its proximity to shopping centers, hotels, and restaurants in the area provides an ideal work environment for employees.`,
-    de: `Istanbul Business Center ist ein A+ Klasse Bürogebäudeprojekt in einem der prestigeträchtigsten Viertel der Stadt.
-
-## Projektmerkmale
-
-- 45-stöckiges modernes Gebäude
-- 25.000 m² Nutzfläche
-- LEED Gold Zertifizierungsziel
-- Intelligente Gebäudetechnologien
-- Tiefgarage (500 Fahrzeuge Kapazität)
-
-## Nachhaltigkeit
-
-Energieeffizienz und umweltfreundliches Design stehen bei diesem Projekt im Vordergrund. Wir streben danach, den CO2-Fußabdruck mit Sonnenkollektoren, Regenwassernutzungssystemen und Dachbegrünung zu minimieren.`,
-    fr: `Istanbul Business Center est un projet d'immeuble de bureaux de classe A+ situé dans l'un des quartiers les plus prestigieux de la ville.
-
-## Caractéristiques du projet
-
-- Bâtiment moderne de 45 étages
-- 25 000 m² de surface utilisable
-- Objectif de certification LEED Gold
-- Technologies de bâtiment intelligent
-- Parking souterrain (500 véhicules)
-
-## Durabilité
-
-L'efficacité énergétique et la conception écologique sont au premier plan de ce projet. Nous visons à minimiser l'empreinte carbone avec des panneaux solaires, des systèmes de récupération des eaux de pluie et des toitures végétalisées.`,
-  },
-  type: 'commercial',
-  status: 'in_progress',
-  client: 'ABC Holding',
-  location: 'Levent, İstanbul',
-  year: 2024,
-  area: 25000,
-  coverImage: 'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=1200&h=800&fit=crop',
-  gallery: [
-    'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=1200&h=800&fit=crop',
-    'https://images.unsplash.com/photo-1497366216548-37526070297c?w=1200&h=800&fit=crop',
-    'https://images.unsplash.com/photo-1497366754035-f200968a6e72?w=1200&h=800&fit=crop',
-    'https://images.unsplash.com/photo-1497366811353-6870744d04b2?w=1200&h=800&fit=crop',
-    'https://images.unsplash.com/photo-1560179707-f14e90ef3623?w=1200&h=800&fit=crop',
-  ],
-};
 
 export default function ProjectDetailPage() {
   const t = useTranslations('projects');
@@ -145,19 +48,26 @@ export default function ProjectDetailPage() {
   const params = useParams();
   const slug = params?.slug as string;
   
-  const [project, setProject] = useState<ProjectDetail | null>(null);
+  const [project, setProject] = useState<Project | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const [lightboxIndex, setLightboxIndex] = useState(0);
+  const [showVideo, setShowVideo] = useState(false);
 
   useEffect(() => {
-    // In production, fetch from Firestore by slug
     const loadProject = async () => {
-      await new Promise(resolve => setTimeout(resolve, 500));
-      setProject(mockProject);
-      setIsLoading(false);
+      try {
+        const projectData = await getProjectBySlug(slug);
+        setProject(projectData);
+      } catch (error) {
+        console.error('Failed to load project:', error);
+      } finally {
+        setIsLoading(false);
+      }
     };
-    loadProject();
+    if (slug) {
+      loadProject();
+    }
   }, [slug]);
 
   const getLocalizedHref = (href: string) => {
@@ -167,10 +77,14 @@ export default function ProjectDetailPage() {
 
   const statusColors = {
     planning: 'secondary',
-    in_progress: 'primary',
+    ongoing: 'primary',
     completed: 'success',
-    on_hold: 'warning',
   } as const;
+
+  const galleryImages = project?.gallery?.map(img => img.url) || [];
+  const allImages = project?.coverImage?.url 
+    ? [project.coverImage.url, ...galleryImages]
+    : galleryImages;
 
   const openLightbox = (index: number) => {
     setLightboxIndex(index);
@@ -178,16 +92,22 @@ export default function ProjectDetailPage() {
   };
 
   const nextImage = () => {
-    if (project) {
-      setLightboxIndex((prev) => (prev + 1) % project.gallery.length);
-    }
+    setLightboxIndex((prev) => (prev + 1) % allImages.length);
   };
 
   const prevImage = () => {
-    if (project) {
-      setLightboxIndex((prev) => (prev - 1 + project.gallery.length) % project.gallery.length);
-    }
+    setLightboxIndex((prev) => (prev - 1 + allImages.length) % allImages.length);
   };
+
+  // Extend Project type for new fields
+  const extendedProject = project as Project & { 
+    roomLayout?: string; 
+    youtubeUrl?: string;
+  };
+
+  const youtubeVideoId = extendedProject?.youtubeUrl 
+    ? getYouTubeVideoId(extendedProject.youtubeUrl) 
+    : null;
 
   if (isLoading) {
     return (
@@ -201,17 +121,20 @@ export default function ProjectDetailPage() {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center gap-4">
         <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
-          Proje Bulunamadı
+          {t('notFound')}
         </h1>
         <Link
           href={getLocalizedHref('/projects')}
           className={buttonVariants({ variant: 'primary' })}
         >
-          Projelere Dön
+          {t('backToProjects')}
         </Link>
       </div>
     );
   }
+
+  const translation = project.translations[locale];
+  const statusKey = project.status as keyof typeof statusColors;
 
   return (
     <>
@@ -219,8 +142,8 @@ export default function ProjectDetailPage() {
         {/* Hero */}
         <section className="relative h-[60vh] min-h-[400px]">
           <Image
-            src={project.coverImage}
-            alt={project.title[locale]}
+            src={project.coverImage?.url || 'https://via.placeholder.com/1200x800?text=No+Image'}
+            alt={translation.name}
             fill
             className="object-cover"
             priority
@@ -237,21 +160,24 @@ export default function ProjectDetailPage() {
           </Link>
 
           {/* Share button */}
-          <button className="absolute top-8 right-8 p-3 bg-white/10 backdrop-blur-sm rounded-full hover:bg-white/20 transition-colors z-10">
+          <button 
+            onClick={() => navigator.share?.({ title: translation.name, url: window.location.href })}
+            className="absolute top-8 right-8 p-3 bg-white/10 backdrop-blur-sm rounded-full hover:bg-white/20 transition-colors z-10"
+          >
             <Share2 className="w-5 h-5 text-white" />
           </button>
 
           {/* Title overlay */}
           <div className="absolute bottom-0 left-0 right-0 p-8 md:p-12">
             <div className="container mx-auto">
-              <Badge variant={statusColors[project.status]} className="mb-4">
+              <Badge variant={statusColors[statusKey] || 'secondary'} className="mb-4">
                 {t(`status.${project.status}`)}
               </Badge>
               <h1 className="text-3xl md:text-5xl font-bold text-white mb-4">
-                {project.title[locale]}
+                {translation.name}
               </h1>
               <p className="text-lg text-white/80 max-w-3xl">
-                {project.description[locale]}
+                {translation.shortDescription}
               </p>
             </div>
           </div>
@@ -268,119 +194,223 @@ export default function ProjectDetailPage() {
                   <div className="bg-gray-50 dark:bg-gray-800 rounded-xl p-4 text-center">
                     <Calendar className="w-6 h-6 text-primary-600 dark:text-primary-400 mx-auto mb-2" />
                     <p className="text-sm text-gray-500 dark:text-gray-400">{t('year')}</p>
-                    <p className="text-lg font-semibold text-gray-900 dark:text-white">{project.year}</p>
+                    <p className="text-lg font-semibold text-gray-900 dark:text-white">
+                      {project.startDate.getFullYear()}
+                    </p>
                   </div>
                   <div className="bg-gray-50 dark:bg-gray-800 rounded-xl p-4 text-center">
                     <MapPin className="w-6 h-6 text-primary-600 dark:text-primary-400 mx-auto mb-2" />
                     <p className="text-sm text-gray-500 dark:text-gray-400">{t('location')}</p>
-                    <p className="text-lg font-semibold text-gray-900 dark:text-white">{project.location}</p>
+                    <p className="text-lg font-semibold text-gray-900 dark:text-white">
+                      {translation.location?.city || translation.location?.fullAddress || '-'}
+                    </p>
                   </div>
                   <div className="bg-gray-50 dark:bg-gray-800 rounded-xl p-4 text-center">
                     <Ruler className="w-6 h-6 text-primary-600 dark:text-primary-400 mx-auto mb-2" />
                     <p className="text-sm text-gray-500 dark:text-gray-400">{t('area')}</p>
-                    <p className="text-lg font-semibold text-gray-900 dark:text-white">{project.area.toLocaleString()} m²</p>
+                    <p className="text-lg font-semibold text-gray-900 dark:text-white">
+                      {project.totalArea?.toLocaleString() || '-'} m²
+                    </p>
                   </div>
                   <div className="bg-gray-50 dark:bg-gray-800 rounded-xl p-4 text-center">
                     <Building2 className="w-6 h-6 text-primary-600 dark:text-primary-400 mx-auto mb-2" />
                     <p className="text-sm text-gray-500 dark:text-gray-400">{t('type')}</p>
-                    <p className="text-lg font-semibold text-gray-900 dark:text-white">{t(`types.${project.type}`)}</p>
+                    <p className="text-lg font-semibold text-gray-900 dark:text-white">
+                      {t(`types.${project.type}`)}
+                    </p>
                   </div>
                 </div>
 
-                {/* Content */}
-                <div className="prose prose-lg dark:prose-invert max-w-none">
-                  {project.content[locale].split('\n\n').map((paragraph, index) => {
-                    if (paragraph.startsWith('## ')) {
-                      return (
-                        <h2 key={index} className="text-2xl font-bold mt-8 mb-4">
-                          {paragraph.replace('## ', '')}
-                        </h2>
-                      );
-                    }
-                    if (paragraph.startsWith('- ')) {
-                      const items = paragraph.split('\n').filter(item => item.startsWith('- '));
-                      return (
-                        <ul key={index} className="list-disc pl-6 space-y-2">
-                          {items.map((item, i) => (
-                            <li key={i}>{item.replace('- ', '')}</li>
-                          ))}
-                        </ul>
-                      );
-                    }
-                    return <p key={index}>{paragraph}</p>;
-                  })}
+                {/* Additional info cards */}
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-12">
+                  {project.floors && project.floors > 0 && (
+                    <div className="bg-gray-50 dark:bg-gray-800 rounded-xl p-4 text-center">
+                      <Layers className="w-6 h-6 text-primary-600 dark:text-primary-400 mx-auto mb-2" />
+                      <p className="text-sm text-gray-500 dark:text-gray-400">{t('floors')}</p>
+                      <p className="text-lg font-semibold text-gray-900 dark:text-white">
+                        {project.floors}
+                      </p>
+                    </div>
+                  )}
+                  {extendedProject.roomLayout && (
+                    <div className="bg-gray-50 dark:bg-gray-800 rounded-xl p-4 text-center">
+                      <Home className="w-6 h-6 text-primary-600 dark:text-primary-400 mx-auto mb-2" />
+                      <p className="text-sm text-gray-500 dark:text-gray-400">{t('roomLayout')}</p>
+                      <p className="text-lg font-semibold text-gray-900 dark:text-white">
+                        {extendedProject.roomLayout}
+                      </p>
+                    </div>
+                  )}
                 </div>
+
+                {/* Description */}
+                <div className="prose prose-lg dark:prose-invert max-w-none mb-12">
+                  <h2 className="text-2xl font-bold mb-4">{t('description')}</h2>
+                  <div className="whitespace-pre-line">
+                    {translation.description}
+                  </div>
+                </div>
+
+                {/* YouTube Video */}
+                {youtubeVideoId && (
+                  <div className="mb-12">
+                    <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">
+                      {t('video')}
+                    </h2>
+                    {showVideo ? (
+                      <div className="relative aspect-video rounded-2xl overflow-hidden">
+                        <iframe
+                          src={`https://www.youtube.com/embed/${youtubeVideoId}?autoplay=1`}
+                          title="Project Video"
+                          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                          allowFullScreen
+                          className="absolute inset-0 w-full h-full"
+                        />
+                      </div>
+                    ) : (
+                      <button
+                        onClick={() => setShowVideo(true)}
+                        className="relative aspect-video w-full rounded-2xl overflow-hidden group"
+                      >
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img
+                          src={`https://img.youtube.com/vi/${youtubeVideoId}/hqdefault.jpg`}
+                          alt="Video thumbnail"
+                          className="absolute inset-0 w-full h-full object-cover"
+                        />
+                        <div className="absolute inset-0 bg-black/40 group-hover:bg-black/50 transition-colors flex items-center justify-center">
+                          <div className="w-20 h-20 bg-white/90 rounded-full flex items-center justify-center group-hover:scale-110 transition-transform">
+                            <Play className="w-8 h-8 text-primary-600 ml-1" />
+                          </div>
+                        </div>
+                      </button>
+                    )}
+                  </div>
+                )}
+
+                {/* Map */}
+                {project.coordinates && project.coordinates.lat && project.coordinates.lng && (
+                  <div className="mb-12">
+                    <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">
+                      {t('map')}
+                    </h2>
+                    <div className="relative aspect-video rounded-2xl overflow-hidden">
+                      <iframe
+                        src={`https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3000!2d${project.coordinates.lng}!3d${project.coordinates.lat}!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zM!5e0!3m2!1str!2str!4v1234567890`}
+                        width="100%"
+                        height="100%"
+                        style={{ border: 0 }}
+                        allowFullScreen
+                        loading="lazy"
+                        referrerPolicy="no-referrer-when-downgrade"
+                        className="absolute inset-0"
+                      />
+                    </div>
+                    <a
+                      href={`https://www.google.com/maps?q=${project.coordinates.lat},${project.coordinates.lng}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-2 mt-4 text-primary-600 dark:text-primary-400 hover:underline"
+                    >
+                      {t('openInMaps')}
+                      <ExternalLink className="w-4 h-4" />
+                    </a>
+                  </div>
+                )}
               </div>
 
               {/* Sidebar */}
               <div className="lg:col-span-1">
-                {/* Client info */}
+                {/* Project summary */}
                 <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6 mb-6">
                   <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-                    Proje Bilgileri
+                    {t('projectInfo')}
                   </h3>
                   <div className="space-y-4">
-                    <div className="flex items-center gap-3">
-                      <User className="w-5 h-5 text-gray-400" />
-                      <div>
-                        <p className="text-sm text-gray-500 dark:text-gray-400">Müşteri</p>
-                        <p className="font-medium text-gray-900 dark:text-white">{project.client}</p>
-                      </div>
+                    <div className="flex justify-between items-center py-2 border-b border-gray-100 dark:border-gray-700">
+                      <span className="text-gray-500 dark:text-gray-400">{t('status.label')}</span>
+                      <Badge variant={statusColors[statusKey] || 'secondary'}>
+                        {t(`status.${project.status}`)}
+                      </Badge>
                     </div>
+                    <div className="flex justify-between items-center py-2 border-b border-gray-100 dark:border-gray-700">
+                      <span className="text-gray-500 dark:text-gray-400">{t('type')}</span>
+                      <span className="font-medium text-gray-900 dark:text-white">
+                        {t(`types.${project.type}`)}
+                      </span>
+                    </div>
+                    {project.completionPercentage !== undefined && project.completionPercentage > 0 && (
+                      <div className="py-2">
+                        <div className="flex justify-between items-center mb-2">
+                          <span className="text-gray-500 dark:text-gray-400">{t('completion')}</span>
+                          <span className="font-medium text-gray-900 dark:text-white">
+                            {project.completionPercentage}%
+                          </span>
+                        </div>
+                        <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+                          <div 
+                            className="bg-primary-600 h-2 rounded-full transition-all"
+                            style={{ width: `${project.completionPercentage}%` }}
+                          />
+                        </div>
+                      </div>
+                    )}
                   </div>
                 </div>
 
                 {/* CTA */}
                 <div className="bg-primary-600 rounded-2xl p-6 text-white">
                   <h3 className="text-lg font-semibold mb-2">
-                    Benzer bir proje mi düşünüyorsunuz?
+                    {t('cta.title')}
                   </h3>
                   <p className="text-white/80 mb-4 text-sm">
-                    Size özel çözümler için bizimle iletişime geçin.
+                    {t('cta.description')}
                   </p>
                   <Link
                     href={getLocalizedHref('/contact')}
                     className="inline-block bg-white text-primary-600 px-6 py-3 rounded-lg font-semibold hover:bg-primary-50 transition-colors"
                   >
-                    İletişime Geç
+                    {t('cta.button')}
                   </Link>
                 </div>
               </div>
             </div>
 
             {/* Gallery */}
-            <div className="mt-16">
-              <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-8">
-                Proje Galerisi
-              </h2>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                {project.gallery.map((image, index) => (
-                  <motion.button
-                    key={index}
-                    whileHover={{ scale: 1.02 }}
-                    onClick={() => openLightbox(index)}
-                    className={cn(
-                      'relative rounded-xl overflow-hidden cursor-pointer',
-                      index === 0 ? 'col-span-2 row-span-2 aspect-square' : 'aspect-video'
-                    )}
-                  >
-                    <Image
-                      src={image}
-                      alt={`${project.title[locale]} - ${index + 1}`}
-                      fill
-                      className="object-cover hover:scale-105 transition-transform duration-300"
-                    />
-                  </motion.button>
-                ))}
+            {allImages.length > 0 && (
+              <div className="mt-16">
+                <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-8">
+                  {t('gallery')}
+                </h2>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                  {allImages.map((image, index) => (
+                    <motion.button
+                      key={index}
+                      whileHover={{ scale: 1.02 }}
+                      onClick={() => openLightbox(index)}
+                      className={cn(
+                        'relative rounded-xl overflow-hidden cursor-pointer',
+                        index === 0 ? 'col-span-2 row-span-2 aspect-square' : 'aspect-video'
+                      )}
+                    >
+                      <Image
+                        src={image}
+                        alt={`${translation.name} - ${index + 1}`}
+                        fill
+                        className="object-cover hover:scale-105 transition-transform duration-300"
+                      />
+                    </motion.button>
+                  ))}
+                </div>
               </div>
-            </div>
+            )}
           </div>
         </section>
       </article>
 
       {/* Lightbox */}
       <AnimatePresence>
-        {lightboxOpen && (
+        {lightboxOpen && allImages.length > 0 && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -397,18 +427,22 @@ export default function ProjectDetailPage() {
             </button>
 
             {/* Navigation */}
-            <button
-              onClick={(e) => { e.stopPropagation(); prevImage(); }}
-              className="absolute left-6 top-1/2 -translate-y-1/2 p-3 text-white/70 hover:text-white transition-colors"
-            >
-              <ChevronLeft className="w-10 h-10" />
-            </button>
-            <button
-              onClick={(e) => { e.stopPropagation(); nextImage(); }}
-              className="absolute right-6 top-1/2 -translate-y-1/2 p-3 text-white/70 hover:text-white transition-colors"
-            >
-              <ChevronRight className="w-10 h-10" />
-            </button>
+            {allImages.length > 1 && (
+              <>
+                <button
+                  onClick={(e) => { e.stopPropagation(); prevImage(); }}
+                  className="absolute left-6 top-1/2 -translate-y-1/2 p-3 text-white/70 hover:text-white transition-colors"
+                >
+                  <ChevronLeft className="w-10 h-10" />
+                </button>
+                <button
+                  onClick={(e) => { e.stopPropagation(); nextImage(); }}
+                  className="absolute right-6 top-1/2 -translate-y-1/2 p-3 text-white/70 hover:text-white transition-colors"
+                >
+                  <ChevronRight className="w-10 h-10" />
+                </button>
+              </>
+            )}
 
             {/* Image */}
             <motion.div
@@ -420,8 +454,8 @@ export default function ProjectDetailPage() {
               onClick={(e) => e.stopPropagation()}
             >
               <Image
-                src={project.gallery[lightboxIndex]}
-                alt={`${project.title[locale]} - ${lightboxIndex + 1}`}
+                src={allImages[lightboxIndex]}
+                alt={`${translation.name} - ${lightboxIndex + 1}`}
                 fill
                 className="object-contain"
               />
@@ -429,7 +463,7 @@ export default function ProjectDetailPage() {
 
             {/* Counter */}
             <div className="absolute bottom-6 left-1/2 -translate-x-1/2 text-white/70">
-              {lightboxIndex + 1} / {project.gallery.length}
+              {lightboxIndex + 1} / {allImages.length}
             </div>
           </motion.div>
         )}

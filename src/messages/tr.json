@@ -77,7 +77,14 @@
     "featured": {
       "title": "Öne Çıkan Projeler",
       "subtitle": "Son dönemde tamamladığımız ve devam eden projelerimiz",
-      "viewAll": "Tüm Projeleri Gör"
+      "viewAll": "Tüm Projeleri Gör",
+      "viewDetails": "Detayları Gör",
+      "noProjects": "Henüz proje eklenmemiş"
+    },
+    "projectStatus": {
+      "completed": "Tamamlandı",
+      "ongoing": "Devam Ediyor",
+      "planning": "Planlama"
     },
     "services": {
       "title": "Hizmetlerimiz",
@@ -244,9 +251,11 @@
       "industrial": "Endüstriyel",
       "mixed": "Karma Kullanım",
       "infrastructure": "Altyapı",
-      "renovation": "Restorasyon"
+      "renovation": "Restorasyon",
+      "public": "Kamu"
     },
     "status": {
+      "label": "Durum",
       "all": "Tüm Durumlar",
       "planned": "Planlanan",
       "planning": "Planlama",
@@ -260,6 +269,16 @@
     "location": "Konum",
     "area": "Alan",
     "type": "Tip",
+    "floors": "Kat Sayısı",
+    "roomLayout": "Oda Düzeni",
+    "video": "Proje Videosu",
+    "map": "Konum",
+    "openInMaps": "Haritada Aç",
+    "projectInfo": "Proje Bilgileri",
+    "description": "Açıklama",
+    "gallery": "Proje Galerisi",
+    "completion": "Tamamlanma Oranı",
+    "notFound": "Proje Bulunamadı",
     "backToProjects": "Projelere Dön",
     "details": {
       "location": "Konum",
@@ -418,6 +437,7 @@
       "title": "Projeler",
       "subtitle": "Tüm projeleri yönetin",
       "refresh": "Yenile",
+      "loadError": "Projeler yüklenemedi",
       "new": "Yeni Proje",
       "edit": "Proje Düzenle",
       "list": "Proje Listesi",
@@ -592,5 +612,131 @@
     "url": "Geçerli bir URL girin",
     "number": "Geçerli bir sayı girin",
     "date": "Geçerli bir tarih girin"
+  },
+  "privacy": {
+    "title": "Gizlilik Politikası",
+    "subtitle": "Kişisel verilerinizin korunması bizim için önemlidir",
+    "lastUpdated": "Son güncelleme",
+    "intro": "Vav Yapı olarak, kişisel verilerinizin gizliliğine önem veriyoruz. Bu gizlilik politikası, web sitemizi kullandığınızda toplanan bilgilerin nasıl işlendiğini açıklamaktadır.",
+    "sections": {
+      "dataCollection": {
+        "title": "Veri Toplama",
+        "content": "Web sitemizi ziyaret ettiğinizde, iletişim formları aracılığıyla bize sağladığınız bilgileri (ad, e-posta, telefon numarası, mesaj içeriği) topluyoruz. Ayrıca, tarayıcınızın gönderdiği teknik bilgiler (IP adresi, tarayıcı türü, ziyaret edilen sayfalar) otomatik olarak kaydedilmektedir."
+      },
+      "dataUsage": {
+        "title": "Verilerin Kullanımı",
+        "content": "Topladığımız veriler şu amaçlarla kullanılmaktadır:\n• Taleplerinize yanıt vermek\n• Hizmetlerimizi geliştirmek\n• Sizinle iletişim kurmak\n• Yasal yükümlülüklerimizi yerine getirmek"
+      },
+      "dataSecurity": {
+        "title": "Veri Güvenliği",
+        "content": "Kişisel verilerinizi korumak için endüstri standardı güvenlik önlemleri kullanıyoruz. Verileriniz şifrelenmiş bağlantılar üzerinden iletilmekte ve güvenli sunucularda saklanmaktadır."
+      },
+      "userRights": {
+        "title": "Kullanıcı Hakları",
+        "content": "KVKK kapsamında, kişisel verilerinize erişim, düzeltme, silme ve işlemenin kısıtlanmasını talep etme hakkına sahipsiniz. Bu haklarınızı kullanmak için bizimle iletişime geçebilirsiniz."
+      },
+      "cookies": {
+        "title": "Çerezler",
+        "content": "Web sitemiz, kullanıcı deneyimini iyileştirmek için çerezler kullanmaktadır. Çerezler, tercihlerinizi hatırlamak ve site trafiğini analiz etmek için kullanılır. Tarayıcı ayarlarınızdan çerezleri devre dışı bırakabilirsiniz."
+      },
+      "contact": {
+        "title": "İletişim",
+        "content": "Gizlilik politikamız hakkında sorularınız için info@vavyapi.com adresinden veya iletişim formumuz aracılığıyla bize ulaşabilirsiniz."
+      }
+    }
+  },
+  "terms": {
+    "title": "Kullanım Koşulları",
+    "subtitle": "Web sitemizi kullanmadan önce lütfen okuyunuz",
+    "lastUpdated": "Son güncelleme",
+    "intro": "Bu kullanım koşulları, Vav Yapı web sitesini kullanımınızı düzenlemektedir. Sitemizi kullanarak bu koşulları kabul etmiş sayılırsınız.",
+    "sections": {
+      "acceptance": {
+        "title": "Koşulların Kabulü",
+        "content": "Bu web sitesine erişerek ve kullanarak, bu kullanım koşullarını okuduğunuzu, anladığınızı ve kabul ettiğinizi beyan etmiş olursunuz. Bu koşulları kabul etmiyorsanız, lütfen sitemizi kullanmayınız."
+      },
+      "services": {
+        "title": "Hizmetler",
+        "content": "Vav Yapı, inşaat ve müteahhitlik hizmetleri sunmaktadır. Web sitemiz, hizmetlerimiz hakkında bilgi vermek ve potansiyel müşterilerle iletişim kurmak amacıyla tasarlanmıştır."
+      },
+      "responsibilities": {
+        "title": "Kullanıcı Sorumlulukları",
+        "content": "Kullanıcılar:\n• Doğru ve güncel bilgi sağlamakla\n• Siteyi yasalara uygun şekilde kullanmakla\n• Başkalarının haklarına saygı göstermekle\n• Zararlı içerik paylaşmamakla yükümlüdür"
+      },
+      "intellectualProperty": {
+        "title": "Fikri Mülkiyet",
+        "content": "Bu web sitesindeki tüm içerik (metin, görseller, logolar, tasarımlar) Vav Yapı'ya aittir ve telif hakkı ile korunmaktadır. İçeriklerin izinsiz kullanımı, kopyalanması veya dağıtılması yasaktır."
+      },
+      "liability": {
+        "title": "Sorumluluk Sınırı",
+        "content": "Vav Yapı, web sitesinin kesintisiz veya hatasız çalışacağını garanti etmez. Sitedeki bilgilerin doğruluğu için azami özen gösterilmekle birlikte, olası hatalardan sorumluluk kabul edilmez."
+      },
+      "disputes": {
+        "title": "Uyuşmazlıklar",
+        "content": "Bu koşullardan doğan uyuşmazlıklarda Türkiye Cumhuriyeti kanunları uygulanacak olup, İstanbul Mahkemeleri ve İcra Daireleri yetkilidir."
+      }
+    }
+  },
+  "services": {
+    "title": "Hizmetlerimiz",
+    "subtitle": "Kapsamlı inşaat çözümleri ile hayallerinizi gerçeğe dönüştürüyoruz",
+    "residential": {
+      "title": "Konut Projeleri",
+      "description": "Modern ve konforlu yaşam alanları tasarlıyor ve inşa ediyoruz. Her bütçeye uygun, kaliteli konut çözümleri sunuyoruz.",
+      "features": {
+        "design": "Mimari tasarım",
+        "construction": "Anahtar teslim inşaat",
+        "renovation": "Tadilat ve yenileme",
+        "landscaping": "Peyzaj düzenleme"
+      }
+    },
+    "commercial": {
+      "title": "Ticari Projeler",
+      "description": "İş dünyasının ihtiyaçlarına uygun, modern ve fonksiyonel ticari yapılar inşa ediyoruz.",
+      "features": {
+        "office": "Ofis binaları",
+        "retail": "Alışveriş merkezleri",
+        "hotel": "Otel projeleri",
+        "mixed": "Karma kullanımlı yapılar"
+      }
+    },
+    "industrial": {
+      "title": "Endüstriyel Projeler",
+      "description": "Sanayi ve üretim tesisleri için güvenilir ve dayanıklı yapılar inşa ediyoruz.",
+      "features": {
+        "factory": "Fabrika binaları",
+        "warehouse": "Depo ve antrepolar",
+        "logistics": "Lojistik merkezleri",
+        "energy": "Enerji tesisleri"
+      }
+    },
+    "renovation": {
+      "title": "Restorasyon ve Yenileme",
+      "description": "Mevcut yapıları restore ediyor, modernize ediyor ve güçlendiriyoruz.",
+      "features": {
+        "restoration": "Tarihi yapı restorasyonu",
+        "modernization": "Modernizasyon",
+        "expansion": "Genişletme projeleri",
+        "reinforcement": "Güçlendirme"
+      }
+    },
+    "additionalTitle": "Ek Hizmetler",
+    "additionalSubtitle": "Projenizin her aşamasında yanınızdayız",
+    "additional": {
+      "design": "Mimari Tasarım",
+      "designDesc": "Yaratıcı ve fonksiyonel mimari çözümler",
+      "planning": "Proje Planlama",
+      "planningDesc": "Detaylı proje planlama ve yönetimi",
+      "supervision": "Yapı Denetimi",
+      "supervisionDesc": "Profesyonel yapı denetim hizmetleri",
+      "consulting": "Danışmanlık",
+      "consultingDesc": "Uzman mühendislik danışmanlığı"
+    },
+    "getQuote": "Teklif Al",
+    "cta": {
+      "title": "Projenizi Hayata Geçirelim",
+      "description": "Uzman ekibimizle tanışın ve projenizi konuşalım.",
+      "button": "Bizimle İletişime Geçin"
+    }
   }
 }

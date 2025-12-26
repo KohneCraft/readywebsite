@@ -77,7 +77,14 @@
     "featured": {
       "title": "Featured Projects",
       "subtitle": "Our recently completed and ongoing projects",
-      "viewAll": "View All Projects"
+      "viewAll": "View All Projects",
+      "viewDetails": "View Details",
+      "noProjects": "No projects added yet"
+    },
+    "projectStatus": {
+      "completed": "Completed",
+      "ongoing": "Ongoing",
+      "planning": "Planning"
     },
     "services": {
       "title": "Our Services",
@@ -216,9 +223,11 @@
       "industrial": "Industrial",
       "mixed": "Mixed Use",
       "infrastructure": "Infrastructure",
-      "renovation": "Renovation"
+      "renovation": "Renovation",
+      "public": "Public"
     },
     "status": {
+      "label": "Status",
       "all": "All Status",
       "planned": "Planned",
       "planning": "Planning",
@@ -232,6 +241,16 @@
     "location": "Location",
     "area": "Area",
     "type": "Type",
+    "floors": "Floors",
+    "roomLayout": "Room Layout",
+    "video": "Project Video",
+    "map": "Location",
+    "openInMaps": "Open in Maps",
+    "projectInfo": "Project Info",
+    "description": "Description",
+    "gallery": "Project Gallery",
+    "completion": "Completion Rate",
+    "notFound": "Project Not Found",
     "backToProjects": "Back to Projects",
     "details": {
       "location": "Location",
@@ -342,6 +361,7 @@
       "title": "Projects",
       "subtitle": "Manage all projects",
       "refresh": "Refresh",
+      "loadError": "Failed to load projects",
       "new": "New Project",
       "edit": "Edit Project",
       "list": "Project List",
@@ -563,5 +583,131 @@
     "url": "Enter a valid URL",
     "number": "Enter a valid number",
     "date": "Enter a valid date"
+  },
+  "privacy": {
+    "title": "Privacy Policy",
+    "subtitle": "Protecting your personal data is important to us",
+    "lastUpdated": "Last updated",
+    "intro": "At Vav Yapı, we value the privacy of your personal data. This privacy policy explains how information collected when you use our website is processed.",
+    "sections": {
+      "dataCollection": {
+        "title": "Data Collection",
+        "content": "When you visit our website, we collect information you provide through contact forms (name, email, phone number, message content). Additionally, technical information sent by your browser (IP address, browser type, visited pages) is automatically recorded."
+      },
+      "dataUsage": {
+        "title": "Data Usage",
+        "content": "The data we collect is used for the following purposes:\n• Responding to your requests\n• Improving our services\n• Communicating with you\n• Fulfilling our legal obligations"
+      },
+      "dataSecurity": {
+        "title": "Data Security",
+        "content": "We use industry-standard security measures to protect your personal data. Your data is transmitted over encrypted connections and stored on secure servers."
+      },
+      "userRights": {
+        "title": "User Rights",
+        "content": "Under GDPR, you have the right to request access, correction, deletion, and restriction of processing of your personal data. You can contact us to exercise these rights."
+      },
+      "cookies": {
+        "title": "Cookies",
+        "content": "Our website uses cookies to improve user experience. Cookies are used to remember your preferences and analyze site traffic. You can disable cookies in your browser settings."
+      },
+      "contact": {
+        "title": "Contact",
+        "content": "For questions about our privacy policy, you can reach us at info@vavyapi.com or through our contact form."
+      }
+    }
+  },
+  "terms": {
+    "title": "Terms of Service",
+    "subtitle": "Please read before using our website",
+    "lastUpdated": "Last updated",
+    "intro": "These terms of service govern your use of the Vav Yapı website. By using our site, you agree to these terms.",
+    "sections": {
+      "acceptance": {
+        "title": "Acceptance of Terms",
+        "content": "By accessing and using this website, you acknowledge that you have read, understood, and agreed to these terms of use. If you do not accept these terms, please do not use our site."
+      },
+      "services": {
+        "title": "Services",
+        "content": "Vav Yapı provides construction and contracting services. Our website is designed to provide information about our services and communicate with potential clients."
+      },
+      "responsibilities": {
+        "title": "User Responsibilities",
+        "content": "Users are obligated to:\n• Provide accurate and up-to-date information\n• Use the site in compliance with laws\n• Respect the rights of others\n• Not share harmful content"
+      },
+      "intellectualProperty": {
+        "title": "Intellectual Property",
+        "content": "All content on this website (text, images, logos, designs) belongs to Vav Yapı and is protected by copyright. Unauthorized use, copying, or distribution of content is prohibited."
+      },
+      "liability": {
+        "title": "Limitation of Liability",
+        "content": "Vav Yapı does not guarantee that the website will operate without interruption or error. While maximum care is taken for the accuracy of information on the site, no responsibility is accepted for possible errors."
+      },
+      "disputes": {
+        "title": "Disputes",
+        "content": "Turkish law shall apply to disputes arising from these terms, and Istanbul Courts and Enforcement Offices shall have jurisdiction."
+      }
+    }
+  },
+  "services": {
+    "title": "Our Services",
+    "subtitle": "We turn your dreams into reality with comprehensive construction solutions",
+    "residential": {
+      "title": "Residential Projects",
+      "description": "We design and build modern and comfortable living spaces. We offer quality housing solutions for every budget.",
+      "features": {
+        "design": "Architectural design",
+        "construction": "Turnkey construction",
+        "renovation": "Renovation and renewal",
+        "landscaping": "Landscaping"
+      }
+    },
+    "commercial": {
+      "title": "Commercial Projects",
+      "description": "We build modern and functional commercial structures suitable for the needs of the business world.",
+      "features": {
+        "office": "Office buildings",
+        "retail": "Shopping centers",
+        "hotel": "Hotel projects",
+        "mixed": "Mixed-use buildings"
+      }
+    },
+    "industrial": {
+      "title": "Industrial Projects",
+      "description": "We build reliable and durable structures for industrial and production facilities.",
+      "features": {
+        "factory": "Factory buildings",
+        "warehouse": "Warehouses and depots",
+        "logistics": "Logistics centers",
+        "energy": "Energy facilities"
+      }
+    },
+    "renovation": {
+      "title": "Restoration and Renovation",
+      "description": "We restore, modernize and reinforce existing structures.",
+      "features": {
+        "restoration": "Historic building restoration",
+        "modernization": "Modernization",
+        "expansion": "Expansion projects",
+        "reinforcement": "Reinforcement"
+      }
+    },
+    "additionalTitle": "Additional Services",
+    "additionalSubtitle": "We are with you at every stage of your project",
+    "additional": {
+      "design": "Architectural Design",
+      "designDesc": "Creative and functional architectural solutions",
+      "planning": "Project Planning",
+      "planningDesc": "Detailed project planning and management",
+      "supervision": "Construction Supervision",
+      "supervisionDesc": "Professional construction supervision services",
+      "consulting": "Consulting",
+      "consultingDesc": "Expert engineering consulting"
+    },
+    "getQuote": "Get Quote",
+    "cta": {
+      "title": "Let's Bring Your Project to Life",
+      "description": "Meet our expert team and let's discuss your project.",
+      "button": "Contact Us"
+    }
   }
 }

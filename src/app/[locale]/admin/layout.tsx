@@ -20,17 +20,22 @@ import {
   User,
   ChevronDown,
   Bell,
+  Users,
+  Handshake,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Spinner } from '@/components/ui/Spinner';
+import { onAuthStateChanged, signOut as firebaseSignOut, getUserProfile } from '@/lib/firebase/auth';
 import type { Locale } from '@/i18n';
+import type { User as UserType } from '@/types';
 
 // Auth context for admin
 interface AdminUser {
   id: string;
   email: string;
   displayName: string;
-  role: 'admin' | 'editor';
+  role: 'admin' | 'editor' | 'superadmin';
+  profile?: UserType | null;
 }
 
 interface AdminContextType {
@@ -63,36 +68,66 @@ export default function AdminLayout({
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
 
+  // Check if on login page
+  const isLoginPage = pathname?.includes('/admin/login');
+
   // Check auth on mount
   useEffect(() => {
-    const checkAuth = async () => {
-      try {
-        // In production, check Firebase Auth
-        // For now, simulate logged in admin
-        await new Promise((resolve) => setTimeout(resolve, 500));
-        
-        // Mock user - in production, get from Firebase
-        setUser({
-          id: '1',
-          email: 'admin@vavyapi.com',
-          displayName: 'Admin',
-          role: 'admin',
-        });
-      } catch (error) {
-        console.error('Auth check failed:', error);
-        router.push(`/${locale === 'tr' ? '' : locale}/admin/login`);
-      } finally {
-        setIsLoading(false);
+    if (isLoginPage) {
+      setIsLoading(false);
+      return;
+    }
+
+    const unsubscribe = onAuthStateChanged(async (firebaseUser) => {
+      if (firebaseUser) {
+        try {
+          // Get user profile from Firestore
+          const profile = await getUserProfile(firebaseUser.uid);
+          
+          setUser({
+            id: firebaseUser.uid,
+            email: firebaseUser.email || '',
+            displayName: firebaseUser.displayName || profile?.displayName || 'Admin',
+            role: profile?.role || 'admin',
+            profile,
+          });
+        } catch (error) {
+          console.error('Failed to get user profile:', error);
+          // Still allow access if Firebase Auth succeeds but profile fetch fails
+          setUser({
+            id: firebaseUser.uid,
+            email: firebaseUser.email || '',
+            displayName: firebaseUser.displayName || 'Admin',
+            role: 'admin',
+          });
+        }
+      } else {
+        // Not logged in, redirect to login
+        setUser(null);
+        const loginPath = locale === 'tr' ? '/admin/login' : `/${locale}/admin/login`;
+        router.push(loginPath);
       }
-    };
+      setIsLoading(false);
+    });
 
-    checkAuth();
-  }, [locale, router]);
+    return () => unsubscribe();
+  }, [locale, router, isLoginPage]);
 
-  const logout = () => {
-    // In production, sign out from Firebase
-    setUser(null);
-    router.push(`/${locale === 'tr' ? '' : locale}/admin/login`);
+  const logout = async () => {
+    try {
+      // First sign out from Firebase
+      await firebaseSignOut();
+      // Clear local state
+      setUser(null);
+      // Force redirect with window.location for clean navigation
+      const loginPath = locale === 'tr' ? '/admin/login' : `/${locale}/admin/login`;
+      window.location.href = loginPath;
+    } catch (error) {
+      console.error('Logout failed:', error);
+      // Even if signOut fails, redirect to login
+      const loginPath = locale === 'tr' ? '/admin/login' : `/${locale}/admin/login`;
+      window.location.href = loginPath;
+    }
   };
 
   // Navigation items
@@ -100,6 +135,8 @@ export default function AdminLayout({
     { href: '/admin', icon: LayoutDashboard, label: t('dashboard.title') },
     { href: '/admin/projects', icon: FolderKanban, label: t('projects.title') },
     { href: '/admin/contacts', icon: Mail, label: t('contacts.title') },
+    { href: '/admin/team', icon: Users, label: t('team.title') },
+    { href: '/admin/partners', icon: Handshake, label: t('partners.title') },
     { href: '/admin/settings', icon: Settings, label: t('settings.title') },
   ];
 
@@ -115,6 +152,11 @@ export default function AdminLayout({
     }
     return pathname.startsWith(localizedHref);
   };
+
+  // Don't show admin layout on login page
+  if (isLoginPage) {
+    return <>{children}</>;
+  }
 
   if (isLoading) {
     return (

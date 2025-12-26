@@ -301,6 +301,39 @@ export async function getCompletedProjects(
 }
 
 /**
+ * Yayınlanmış tüm projeleri getir
+ */
+export async function getPublishedProjects(
+  pageLimit: number = 50
+): Promise<Project[]> {
+  try {
+    // Önce tüm projeleri çek, sonra client-side filtrele
+    // Bu yaklaşım index gerektirmez
+    const q = query(
+      collection(db, COLLECTIONS.projects),
+      limit(pageLimit)
+    );
+    
+    const snapshot = await getDocs(q);
+    const allProjects = snapshot.docs
+      .map(doc => docToProject(doc))
+      .filter((p): p is Project => p !== null);
+    
+    // Client-side: sadece published olanları filtrele ve tarihe göre sırala
+    return allProjects
+      .filter(p => p.published === true)
+      .sort((a, b) => {
+        const dateA = a.createdAt?.getTime() || 0;
+        const dateB = b.createdAt?.getTime() || 0;
+        return dateB - dateA;
+      });
+  } catch (error) {
+    console.error('getPublishedProjects error:', error);
+    return [];
+  }
+}
+
+/**
  * Yeni proje oluştur
  */
 export async function createProject(

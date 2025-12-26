@@ -5,7 +5,7 @@
 // Authentication page for admin panel
 // ============================================
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useLocale, useTranslations } from 'next-intl';
 import { motion } from 'framer-motion';
@@ -17,6 +17,7 @@ import { Card, CardContent } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Spinner } from '@/components/ui/Spinner';
+import { signIn, getCurrentUser } from '@/lib/firebase/auth';
 import type { Locale } from '@/i18n';
 
 const loginSchema = z.object({
@@ -32,6 +33,7 @@ export default function AdminLoginPage() {
   const router = useRouter();
   
   const [isLoading, setIsLoading] = useState(false);
+  const [isCheckingAuth, setIsCheckingAuth] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   const {
@@ -47,30 +49,76 @@ export default function AdminLoginPage() {
     return `/${locale}${href}`;
   };
 
+  // Check if already logged in
+  useEffect(() => {
+    const checkAuth = async () => {
+      try {
+        const user = await getCurrentUser();
+        if (user) {
+          router.push(getLocalizedHref('/admin'));
+        }
+      } catch {
+        // Not logged in, stay on login page
+      } finally {
+        setIsCheckingAuth(false);
+      }
+    };
+    checkAuth();
+  }, [router, locale]);
+
+  // Firebase hata kodlarını kullanıcı dostu mesajlara çevir
+  const getErrorMessage = (error: unknown): string => {
+    if (error instanceof Error) {
+      const message = error.message;
+      
+      // Firebase Auth hata kodları
+      if (message.includes('auth/invalid-credential') || message.includes('auth/wrong-password')) {
+        return 'E-posta veya şifre hatalı';
+      }
+      if (message.includes('auth/user-not-found')) {
+        return 'Bu e-posta ile kayıtlı kullanıcı bulunamadı';
+      }
+      if (message.includes('auth/invalid-email')) {
+        return 'Geçersiz e-posta adresi';
+      }
+      if (message.includes('auth/too-many-requests')) {
+        return 'Çok fazla başarısız deneme. Lütfen daha sonra tekrar deneyin';
+      }
+      if (message.includes('auth/user-disabled')) {
+        return 'Bu hesap devre dışı bırakılmış';
+      }
+      if (message.includes('auth/network-request-failed')) {
+        return 'Ağ bağlantısı hatası. İnternet bağlantınızı kontrol edin';
+      }
+      
+      return message;
+    }
+    return t('loginError');
+  };
+
   const onSubmit = async (data: LoginFormData) => {
     setIsLoading(true);
     setError(null);
     
     try {
-      // In production, authenticate with Firebase
-      // const { signInWithEmailAndPassword } = await import('firebase/auth');
-      // const { auth } = await import('@/lib/firebase/config');
-      // await signInWithEmailAndPassword(auth, data.email, data.password);
-      
-      // Mock authentication
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      if (data.email === 'admin@vavyapi.com' && data.password === 'admin123') {
-        router.push(getLocalizedHref('/admin'));
-      } else {
-        setError(t('loginError'));
-      }
+      // Authenticate with Firebase
+      await signIn(data.email, data.password);
+      router.push(getLocalizedHref('/admin'));
     } catch (err) {
-      setError(t('loginError'));
+      console.error('Login error:', err);
+      setError(getErrorMessage(err));
     } finally {
       setIsLoading(false);
     }
   };
+
+  if (isCheckingAuth) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-100 dark:bg-gray-900">
+        <Spinner size="lg" />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-100 dark:bg-gray-900 p-4">
@@ -173,19 +221,15 @@ export default function AdminLoginPage() {
               </Button>
             </form>
 
-            {/* Demo credentials */}
+            {/* Info */}
             <div className="mt-6 pt-6 border-t border-gray-200 dark:border-gray-700">
-              <p className="text-sm text-gray-500 dark:text-gray-400 text-center mb-2">
-                Demo bilgileri:
+              <p className="text-sm text-gray-500 dark:text-gray-400 text-center">
+                Firebase Authentication ile giriş yapın.
+                <br />
+                <span className="text-xs">
+                  İlk kullanım için Firebase Console&apos;dan kullanıcı oluşturun.
+                </span>
               </p>
-              <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-3 text-sm">
-                <p className="text-gray-600 dark:text-gray-400">
-                  <span className="font-medium">E-posta:</span> admin@vavyapi.com
-                </p>
-                <p className="text-gray-600 dark:text-gray-400">
-                  <span className="font-medium">Şifre:</span> admin123
-                </p>
-              </div>
             </div>
           </CardContent>
         </Card>

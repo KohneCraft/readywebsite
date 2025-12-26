@@ -5,7 +5,7 @@
 // Project listing with filters and pagination
 // ============================================
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useLocale, useTranslations } from 'next-intl';
@@ -26,114 +26,115 @@ import { Input } from '@/components/ui/Input';
 import { Card } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
 import { buttonVariants } from '@/components/ui/Button';
+import { Spinner } from '@/components/ui/Spinner';
+import { getPublishedProjects } from '@/lib/firebase/firestore';
 import type { Locale } from '@/i18n';
-// Project type definitions for the page
-type PageProjectStatus = 'completed' | 'ongoing' | 'planned' | 'onHold';
-type PageProjectType = 'residential' | 'commercial' | 'industrial' | 'mixed' | 'infrastructure' | 'renovation';
+import type { Project } from '@/types';
 
-// Mock project data - in production, this would come from Firestore
-const mockProjects = [
-  {
-    id: '1',
-    title: { tr: 'Vav Residence', en: 'Vav Residence', de: 'Vav Residenz', fr: 'Résidence Vav' },
-    description: { 
-      tr: 'Modern yaşam alanları sunan lüks konut projesi',
-      en: 'Luxury residential project offering modern living spaces',
-      de: 'Luxuswohnprojekt mit modernen Wohnräumen',
-      fr: 'Projet résidentiel de luxe offrant des espaces de vie modernes'
-    },
-    type: 'residential' as PageProjectType,
-    status: 'completed' as PageProjectStatus,
-    coverImage: 'https://images.unsplash.com/photo-1545324418-cc69e901e8cc?w=800',
-    location: { tr: 'İstanbul, Türkiye', en: 'Istanbul, Turkey', de: 'Istanbul, Türkei', fr: 'Istanbul, Turquie' },
-    completionDate: '2023-06-15',
-  },
-  {
-    id: '2',
-    title: { tr: 'Metro Business Center', en: 'Metro Business Center', de: 'Metro Geschäftszentrum', fr: 'Centre d\'Affaires Metro' },
-    description: { 
-      tr: 'A+ ofis alanları ile modern iş merkezi',
-      en: 'Modern business center with A+ office spaces',
-      de: 'Modernes Geschäftszentrum mit A+ Büroflächen',
-      fr: 'Centre d\'affaires moderne avec des espaces de bureau A+'
-    },
-    type: 'commercial' as PageProjectType,
-    status: 'ongoing' as PageProjectStatus,
-    coverImage: 'https://images.unsplash.com/photo-1486325212027-8a9603f8853e?w=800',
-    location: { tr: 'Ankara, Türkiye', en: 'Ankara, Turkey', de: 'Ankara, Türkei', fr: 'Ankara, Turquie' },
-    completionDate: '2024-12-01',
-  },
-  {
-    id: '3',
-    title: { tr: 'Tekno Fabrika', en: 'Techno Factory', de: 'Techno Fabrik', fr: 'Usine Techno' },
-    description: { 
-      tr: 'Son teknoloji üretim tesisi',
-      en: 'State-of-the-art manufacturing facility',
-      de: 'Hochmoderne Produktionsanlage',
-      fr: 'Installation de fabrication de pointe'
-    },
-    type: 'industrial' as PageProjectType,
-    status: 'completed' as PageProjectStatus,
-    coverImage: 'https://images.unsplash.com/photo-1487958449943-2429e8be8625?w=800',
-    location: { tr: 'İzmir, Türkiye', en: 'Izmir, Turkey', de: 'Izmir, Türkei', fr: 'Izmir, Turquie' },
-    completionDate: '2022-09-20',
-  },
-  {
-    id: '4',
-    title: { tr: 'Green Valley Villaları', en: 'Green Valley Villas', de: 'Green Valley Villen', fr: 'Villas Green Valley' },
-    description: { 
-      tr: 'Doğayla iç içe lüks villa projesi',
-      en: 'Luxury villa project surrounded by nature',
-      de: 'Luxusvillenprojekt inmitten der Natur',
-      fr: 'Projet de villas de luxe entouré par la nature'
-    },
-    type: 'residential' as PageProjectType,
-    status: 'ongoing' as PageProjectStatus,
-    coverImage: 'https://images.unsplash.com/photo-1512917774080-9991f1c4c750?w=800',
-    location: { tr: 'Bodrum, Türkiye', en: 'Bodrum, Turkey', de: 'Bodrum, Türkei', fr: 'Bodrum, Turquie' },
-    completionDate: '2025-03-01',
-  },
-  {
-    id: '5',
-    title: { tr: 'Central AVM', en: 'Central Mall', de: 'Central Einkaufszentrum', fr: 'Centre Commercial Central' },
-    description: { 
-      tr: 'Şehrin kalbinde modern alışveriş merkezi',
-      en: 'Modern shopping mall in the heart of the city',
-      de: 'Modernes Einkaufszentrum im Herzen der Stadt',
-      fr: 'Centre commercial moderne au cœur de la ville'
-    },
-    type: 'commercial' as PageProjectType,
-    status: 'completed' as PageProjectStatus,
-    coverImage: 'https://images.unsplash.com/photo-1519567241046-7f570eee3ce6?w=800',
-    location: { tr: 'Bursa, Türkiye', en: 'Bursa, Turkey', de: 'Bursa, Türkei', fr: 'Bursa, Turquie' },
-    completionDate: '2021-11-15',
-  },
-  {
-    id: '6',
-    title: { tr: 'Lojistik Merkezi', en: 'Logistics Center', de: 'Logistikzentrum', fr: 'Centre Logistique' },
-    description: { 
-      tr: 'Entegre depolama ve dağıtım tesisi',
-      en: 'Integrated storage and distribution facility',
-      de: 'Integrierte Lager- und Vertriebsanlage',
-      fr: 'Installation de stockage et de distribution intégrée'
-    },
-    type: 'industrial' as PageProjectType,
-    status: 'planned' as PageProjectStatus,
-    coverImage: 'https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?w=800',
-    location: { tr: 'Kocaeli, Türkiye', en: 'Kocaeli, Turkey', de: 'Kocaeli, Türkei', fr: 'Kocaeli, Turquie' },
-    completionDate: '2026-06-01',
-  },
-];
+// Project type definitions for the page
+type PageProjectStatus = 'completed' | 'ongoing' | 'planning' | 'onHold';
+type PageProjectType = 'residential' | 'commercial' | 'industrial' | 'mixed' | 'public' | 'infrastructure' | 'renovation';
+
+// Helper to convert Project to display format
+interface DisplayProject {
+  id: string;
+  title: Record<Locale, string>;
+  description: Record<Locale, string>;
+  type: PageProjectType;
+  status: PageProjectStatus;
+  coverImage: string;
+  location: Record<Locale, string>;
+  completionDate: string;
+  slug: string;
+}
+
+// Location nesnesinden string çıkar
+function getLocationString(location: { city?: string; district?: string; fullAddress?: string } | string | undefined): string {
+  if (!location) return '';
+  if (typeof location === 'string') return location;
+  return location.fullAddress || location.city || '';
+}
+
+function projectToDisplay(project: Project): DisplayProject | null {
+  try {
+    // translations kontrolü
+    if (!project.translations) {
+      console.warn('Project missing translations:', project.id);
+      return null;
+    }
+    
+    // En azından tr translation olmalı
+    const tr = project.translations.tr || {};
+    const en = project.translations.en || project.translations.tr || {};
+    const de = project.translations.de || project.translations.tr || {};
+    const fr = project.translations.fr || project.translations.tr || {};
+    
+    return {
+      id: project.id,
+      slug: project.slug || project.id,
+      title: {
+        tr: tr.name || '',
+        en: en.name || tr.name || '',
+        de: de.name || tr.name || '',
+        fr: fr.name || tr.name || '',
+      },
+      description: {
+        tr: tr.shortDescription || tr.description || '',
+        en: en.shortDescription || en.description || tr.shortDescription || '',
+        de: de.shortDescription || de.description || tr.shortDescription || '',
+        fr: fr.shortDescription || fr.description || tr.shortDescription || '',
+      },
+      type: (project.type || 'residential') as PageProjectType,
+      status: (project.status || 'planning') as PageProjectStatus,
+      coverImage: project.coverImage?.url || 'https://via.placeholder.com/800x600?text=No+Image',
+      location: {
+        tr: getLocationString(tr.location),
+        en: getLocationString(en.location),
+        de: getLocationString(de.location),
+        fr: getLocationString(fr.location),
+      },
+      completionDate: project.startDate?.toISOString?.() || new Date().toISOString(),
+    };
+  } catch (error) {
+    console.error('Error converting project:', project.id, error);
+    return null;
+  }
+}
 
 export default function ProjectsPage() {
   const t = useTranslations('projects');
   const locale = useLocale() as Locale;
   
   // State
+  const [projects, setProjects] = useState<DisplayProject[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedType, setSelectedType] = useState<PageProjectType | 'all'>('all');
   const [selectedStatus, setSelectedStatus] = useState<PageProjectStatus | 'all'>('all');
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
+
+  // Load projects from Firebase
+  useEffect(() => {
+    const loadProjects = async () => {
+      try {
+        console.log('Loading projects from Firebase...');
+        const firebaseProjects = await getPublishedProjects();
+        console.log('Firebase projects loaded:', firebaseProjects.length);
+        
+        const displayProjects = firebaseProjects
+          .map(projectToDisplay)
+          .filter((p): p is DisplayProject => p !== null);
+        
+        console.log('Display projects:', displayProjects.length);
+        setProjects(displayProjects);
+      } catch (error) {
+        console.error('Failed to load projects:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    loadProjects();
+  }, []);
 
   // Getters
   const getLocalizedHref = (href: string) => {
@@ -143,7 +144,7 @@ export default function ProjectsPage() {
 
   // Filter projects
   const filteredProjects = useMemo(() => {
-    return mockProjects.filter((project) => {
+    return projects.filter((project) => {
       // Search filter
       const searchLower = searchQuery.toLowerCase();
       const matchesSearch = 
@@ -159,7 +160,7 @@ export default function ProjectsPage() {
 
       return matchesSearch && matchesType && matchesStatus;
     });
-  }, [searchQuery, selectedType, selectedStatus, locale]);
+  }, [projects, searchQuery, selectedType, selectedStatus, locale]);
 
   // Project type icons
   const typeIcons: Record<PageProjectType, typeof Building2> = {
@@ -167,6 +168,7 @@ export default function ProjectsPage() {
     commercial: Building2,
     industrial: Factory,
     mixed: LayoutGrid,
+    public: Building2,
     infrastructure: Building2,
     renovation: Building2,
   };
@@ -175,9 +177,18 @@ export default function ProjectsPage() {
   const statusVariants: Record<PageProjectStatus, 'success' | 'warning' | 'primary' | 'secondary'> = {
     completed: 'success',
     ongoing: 'warning',
-    planned: 'primary',
+    planning: 'primary',
     onHold: 'secondary',
   };
+
+  // Loading state
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <Spinner size="lg" />
+      </div>
+    );
+  }
 
   return (
     <>
@@ -268,7 +279,7 @@ export default function ProjectsPage() {
                 <option value="all">{t('status.all')}</option>
                 <option value="completed">{t('status.completed')}</option>
                 <option value="ongoing">{t('status.ongoing')}</option>
-                <option value="planned">{t('status.planned')}</option>
+                <option value="planning">{t('status.planning')}</option>
               </select>
 
               <div className="flex border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden">
@@ -337,7 +348,7 @@ export default function ProjectsPage() {
                         exit={{ opacity: 0, scale: 0.9 }}
                         transition={{ delay: index * 0.05 }}
                       >
-                        <Link href={getLocalizedHref(`/projects/${project.id}`)}>
+                        <Link href={getLocalizedHref(`/projects/${project.slug}`)}>
                           <Card hover className="overflow-hidden group h-full">
                             <div className="relative aspect-[4/3]">
                               <Image
@@ -406,7 +417,7 @@ export default function ProjectsPage() {
                         exit={{ opacity: 0, x: 20 }}
                         transition={{ delay: index * 0.05 }}
                       >
-                        <Link href={getLocalizedHref(`/projects/${project.id}`)}>
+                        <Link href={getLocalizedHref(`/projects/${project.slug}`)}>
                           <Card hover className="overflow-hidden">
                             <div className="flex flex-col md:flex-row">
                               <div className="relative w-full md:w-64 aspect-[16/9] md:aspect-square flex-shrink-0">

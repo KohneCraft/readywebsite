@@ -5,7 +5,7 @@
 // Main landing page with all sections
 // ============================================
 
-import { useMemo, useCallback } from 'react';
+import { useMemo, useCallback, useState, useEffect } from 'react';
 import dynamic from 'next/dynamic';
 import Link from 'next/link';
 import Image from 'next/image';
@@ -19,12 +19,16 @@ import {
   Hammer,
   CheckCircle2,
   ChevronRight,
+  MapPin,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { buttonVariants } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
+import { Spinner } from '@/components/ui/Spinner';
+import { getFeaturedProjects } from '@/lib/firebase/firestore';
 import type { Locale } from '@/i18n';
+import type { ProjectSummary } from '@/types';
 
 // Lazy load heavy components
 const PartnersSection = dynamic(() => import('@/components/home/PartnersSection').then(mod => ({ default: mod.PartnersSection })), {
@@ -49,10 +53,29 @@ const stagger = {
 export default function HomePage() {
   const t = useTranslations('home');
   const locale = useLocale() as Locale;
+  
+  // Featured projects state
+  const [featuredProjects, setFeaturedProjects] = useState<ProjectSummary[]>([]);
+  const [isLoadingProjects, setIsLoadingProjects] = useState(true);
 
   const getLocalizedHref = useCallback((href: string) => {
     if (locale === 'tr') return href;
     return `/${locale}${href}`;
+  }, [locale]);
+
+  // Load featured projects from Firebase
+  useEffect(() => {
+    const loadProjects = async () => {
+      try {
+        const projects = await getFeaturedProjects(locale, 3);
+        setFeaturedProjects(projects);
+      } catch (error) {
+        console.error('Failed to load featured projects:', error);
+      } finally {
+        setIsLoadingProjects(false);
+      }
+    };
+    loadProjects();
   }, [locale]);
 
   // Stats data
@@ -330,52 +353,65 @@ export default function HomePage() {
             </Link>
           </motion.div>
 
-          {/* Placeholder for featured projects */}
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {[1, 2, 3].map((i) => (
-              <motion.div
-                key={i}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ delay: i * 0.1 }}
-                viewport={{ once: true }}
-              >
-                <Card hover className="overflow-hidden">
-                  <div className="relative aspect-[4/3]">
-                    <Image
-                      src={`https://images.unsplash.com/photo-${i === 1 ? '1486325212027-8a9603f8853e' : i === 2 ? '1545324418-cc69e901e8cc' : '1487958449943-2429e8be8625'}?q=80&w=800`}
-                      alt={`Project ${i}`}
-                      fill
-                      className="object-cover transition-transform duration-500 group-hover:scale-105"
-                      sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
-                      loading="lazy"
-                      quality={85}
-                    />
-                    <div className="absolute top-4 left-4">
-                      <Badge variant={i === 1 ? 'success' : i === 2 ? 'warning' : 'primary'}>
-                        {i === 1 ? 'Tamamlandı' : i === 2 ? 'Devam Ediyor' : 'Konut'}
-                      </Badge>
+          {/* Featured projects from Firebase */}
+          {isLoadingProjects ? (
+            <div className="flex justify-center py-12">
+              <Spinner size="lg" />
+            </div>
+          ) : featuredProjects.length > 0 ? (
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {featuredProjects.map((project, index) => (
+                <motion.div
+                  key={project.id}
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  transition={{ delay: index * 0.1 }}
+                  viewport={{ once: true }}
+                >
+                  <Card hover className="overflow-hidden">
+                    <div className="relative aspect-[4/3]">
+                      <Image
+                        src={project.coverImage?.url || 'https://via.placeholder.com/800x600?text=No+Image'}
+                        alt={project.name}
+                        fill
+                        className="object-cover transition-transform duration-500 group-hover:scale-105"
+                        sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                        loading="lazy"
+                        quality={85}
+                      />
+                      <div className="absolute top-4 left-4">
+                        <Badge variant={project.status === 'completed' ? 'success' : project.status === 'ongoing' ? 'warning' : 'primary'}>
+                          {project.status === 'completed' ? t('projectStatus.completed') : 
+                           project.status === 'ongoing' ? t('projectStatus.ongoing') : 
+                           t('projectStatus.planning')}
+                        </Badge>
+                      </div>
                     </div>
-                  </div>
-                  <div className="p-6">
-                    <h3 className="text-xl font-semibold mb-2 text-gray-900 dark:text-white">
-                      Örnek Proje {i}
-                    </h3>
-                    <p className="text-gray-600 dark:text-gray-400 text-sm mb-4">
-                      İstanbul, Türkiye
-                    </p>
-                    <Link
-                      href={getLocalizedHref(`/projects/project-${i}`)}
-                      className="inline-flex items-center gap-2 text-primary-600 dark:text-primary-400 font-medium hover:gap-3 transition-all"
-                    >
-                      Detayları Gör
-                      <ArrowRight className="w-4 h-4" />
-                    </Link>
-                  </div>
-                </Card>
-              </motion.div>
-            ))}
-          </div>
+                    <div className="p-6">
+                      <h3 className="text-xl font-semibold mb-2 text-gray-900 dark:text-white">
+                        {project.name}
+                      </h3>
+                      <p className="text-gray-600 dark:text-gray-400 text-sm mb-4 flex items-center gap-1">
+                        <MapPin className="w-4 h-4" />
+                        {project.location?.city || project.location?.district || ''}
+                      </p>
+                      <Link
+                        href={getLocalizedHref(`/projects/${project.slug}`)}
+                        className="inline-flex items-center gap-2 text-primary-600 dark:text-primary-400 font-medium hover:gap-3 transition-all"
+                      >
+                        {t('featured.viewDetails')}
+                        <ArrowRight className="w-4 h-4" />
+                      </Link>
+                    </div>
+                  </Card>
+                </motion.div>
+              ))}
+            </div>
+          ) : (
+            <div className="text-center py-12">
+              <p className="text-gray-500 dark:text-gray-400">{t('featured.noProjects')}</p>
+            </div>
+          )}
         </div>
       </section>
 

@@ -34,10 +34,23 @@ export async function signIn(
   );
 
   // Firestore'dan kullanıcı profilini al
-  const profile = await getUserProfile(credential.user.uid);
+  let profile = await getUserProfile(credential.user.uid);
   
+  // Profil yoksa otomatik oluştur
   if (!profile) {
-    throw new Error('Kullanıcı profili bulunamadı');
+    console.log('User profile not found, creating default profile...');
+    await createUserProfile(credential.user.uid, {
+      email: credential.user.email || email,
+      displayName: credential.user.displayName || email.split('@')[0],
+      role: 'admin', // İlk kullanıcı admin olarak başlar
+    });
+    
+    // Yeni oluşturulan profili al
+    profile = await getUserProfile(credential.user.uid);
+    
+    if (!profile) {
+      throw new Error('Profil oluşturulamadı. Lütfen tekrar deneyin.');
+    }
   }
   
   if (!profile.active) {
