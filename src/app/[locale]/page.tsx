@@ -3,6 +3,7 @@
 // ============================================
 // Vav Yapı - Home Page
 // Main landing page with all sections
+// Dynamic layout support via usePageLayout
 // ============================================
 
 import { useMemo, useCallback, useState, useEffect } from 'react';
@@ -27,6 +28,7 @@ import { Card } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
 import { Spinner } from '@/components/ui/Spinner';
 import { getFeaturedProjects } from '@/lib/firebase/firestore';
+import { usePageLayout } from '@/hooks/usePageLayout';
 import type { Locale } from '@/i18n';
 import type { ProjectSummary } from '@/types';
 
@@ -53,6 +55,14 @@ const stagger = {
 export default function HomePage() {
   const t = useTranslations('home');
   const locale = useLocale() as Locale;
+  
+  // Dynamic layout support
+  const { elements, isLoading: layoutLoading, isElementVisible } = usePageLayout('home');
+  
+  // Sort elements by order
+  const sortedElements = useMemo(() => {
+    return [...elements].sort((a, b) => a.order - b.order);
+  }, [elements]);
   
   // Featured projects state
   const [featuredProjects, setFeaturedProjects] = useState<ProjectSummary[]>([]);
@@ -110,9 +120,20 @@ export default function HomePage() {
     },
   ], [t]);
 
-  return (
-    <>
-      {/* Hero Section */}
+  // Loading state
+  if (layoutLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <Spinner size="lg" />
+      </div>
+    );
+  }
+
+  // Render Hero Section
+  const renderHero = () => {
+    if (!isElementVisible('hero')) return null;
+    
+    return (
       <section className="relative min-h-[90vh] flex items-center overflow-hidden">
         {/* Background */}
         <div className="absolute inset-0 z-0">
@@ -193,8 +214,14 @@ export default function HomePage() {
           </div>
         </motion.div>
       </section>
+    );
+  };
 
-      {/* Stats Section */}
+  // Render Stats/Features Section
+  const renderFeatures = () => {
+    if (!isElementVisible('features')) return null;
+    
+    return (
       <section className="py-12 bg-primary-600">
         <div className="container">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
@@ -216,8 +243,14 @@ export default function HomePage() {
           </div>
         </div>
       </section>
+    );
+  };
 
-      {/* About Section */}
+  // Render About/Info Cards Section
+  const renderInfoCards = () => {
+    if (!isElementVisible('info-cards')) return null;
+    
+    return (
       <section className="section bg-gray-50 dark:bg-gray-900">
         <div className="container">
           <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
@@ -287,8 +320,12 @@ export default function HomePage() {
           </div>
         </div>
       </section>
+    );
+  };
 
-      {/* Services Section */}
+  // Render Services Section
+  const renderServices = () => {
+    return (
       <section className="section">
         <div className="container">
           <motion.div
@@ -328,8 +365,14 @@ export default function HomePage() {
           </div>
         </div>
       </section>
+    );
+  };
 
-      {/* Featured Projects Section */}
+  // Render Featured Projects / Testimonials Section
+  const renderTestimonials = () => {
+    if (!isElementVisible('testimonials')) return null;
+    
+    return (
       <section className="section bg-gray-50 dark:bg-gray-900">
         <div className="container">
           <motion.div
@@ -414,8 +457,14 @@ export default function HomePage() {
           )}
         </div>
       </section>
+    );
+  };
 
-      {/* CTA Section */}
+  // Render CTA Section
+  const renderCta = () => {
+    if (!isElementVisible('cta')) return null;
+    
+    return (
       <section className="relative py-24 overflow-hidden">
         {/* Background */}
         <div className="absolute inset-0 z-0">
@@ -453,7 +502,34 @@ export default function HomePage() {
           </motion.div>
         </div>
       </section>
+    );
+  };
 
+  return (
+    <>
+      {/* Render elements based on layout order */}
+      {sortedElements.map((element) => {
+        if (!element.visible) return null;
+        
+        switch (element.type) {
+          case 'hero':
+            return <div key={element.id}>{renderHero()}</div>;
+          case 'features':
+            return <div key={element.id}>{renderFeatures()}</div>;
+          case 'info-cards':
+            return <div key={element.id}>{renderInfoCards()}</div>;
+          case 'testimonials':
+            return <div key={element.id}>{renderTestimonials()}</div>;
+          case 'cta':
+            return <div key={element.id}>{renderCta()}</div>;
+          default:
+            return null;
+        }
+      })}
+      
+      {/* Services section - always show if there are any visible elements */}
+      {elements.length > 0 && renderServices()}
+      
       {/* Partners Section */}
       <PartnersSection />
     </>

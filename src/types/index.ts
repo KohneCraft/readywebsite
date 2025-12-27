@@ -85,8 +85,11 @@ export type {
 export {
   DEFAULT_ELEMENT_SETTINGS,
   PROJECT_DETAIL_DEFAULT_ELEMENTS,
+  HOME_DEFAULT_ELEMENTS,
+  CONTACT_DEFAULT_ELEMENTS,
   ELEMENT_TYPE_LABELS,
   PAGE_TYPE_LABELS,
+  getDefaultElementsForPage,
 } from './pageLayout';
 
 // ============================================

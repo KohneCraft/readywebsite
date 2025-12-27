@@ -49,7 +49,7 @@ import type {
   PageType,
   PageElement,
 } from '@/types';
-import { DEFAULT_SITE_SETTINGS, PROJECT_DETAIL_DEFAULT_ELEMENTS } from '@/types';
+import { DEFAULT_SITE_SETTINGS, getDefaultElementsForPage } from '@/types';
 
 // ============================================
 // COLLECTION REFERENCES
@@ -754,11 +754,8 @@ export async function getOrCreateDefaultLayout(pageId: PageType, createdBy: stri
   const existing = await getActivePageLayout(pageId);
   if (existing) return existing;
   
-  // Yoksa varsayılan düzeni oluştur
-  let defaultElements = PROJECT_DETAIL_DEFAULT_ELEMENTS;
-  
-  // Diğer sayfa tipleri için farklı varsayılanlar eklenebilir
-  // if (pageId === 'home') defaultElements = HOME_DEFAULT_ELEMENTS;
+  // Sayfa tipine göre varsayılan elementleri al
+  const defaultElements = getDefaultElementsForPage(pageId);
   
   const layoutId = await createPageLayout({
     pageId,

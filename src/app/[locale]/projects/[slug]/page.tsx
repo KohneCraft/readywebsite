@@ -3,6 +3,7 @@
 // ============================================
 // Vav Yapı - Project Detail Page
 // Individual project view with gallery, map, video
+// Layout-aware dynamic rendering
 // ============================================
 
 import { useState, useEffect } from 'react';
@@ -37,6 +38,7 @@ import { buttonVariants } from '@/components/ui/Button';
 import { Spinner } from '@/components/ui/Spinner';
 import { cn } from '@/lib/utils';
 import { getProjectBySlug } from '@/lib/firebase/firestore';
+import { usePageLayout } from '@/hooks/usePageLayout';
 import type { Locale } from '@/i18n';
 import type { Project } from '@/types';
 
@@ -61,6 +63,9 @@ export default function ProjectDetailPage() {
   const [showVideo, setShowVideo] = useState(false);
   const [showShareMenu, setShowShareMenu] = useState(false);
   const [linkCopied, setLinkCopied] = useState(false);
+
+  // Layout hook'u - Firebase'den sayfa düzenini oku
+  const { isElementVisible, getElementSettings } = usePageLayout('project-detail');
 
   useEffect(() => {
     const loadProject = async () => {
@@ -199,383 +204,402 @@ export default function ProjectDetailPage() {
   const translation = project.translations[locale];
   const statusKey = project.status as keyof typeof statusColors;
 
+  // Element render fonksiyonları
+  const renderHero = () => {
+    if (!isElementVisible('hero')) return null;
+    const settings = getElementSettings('hero');
+    
+    return (
+      <section 
+        className="relative h-[60vh] min-h-[400px]"
+        style={settings ? { 
+          marginTop: settings.margin.top,
+          marginBottom: settings.margin.bottom 
+        } : undefined}
+      >
+        <Image
+          src={project.coverImage?.url || 'https://via.placeholder.com/1200x800?text=No+Image'}
+          alt={translation.name}
+          fill
+          className="object-cover"
+          priority
+          unoptimized
+        />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
+        
+        {/* Back button */}
+        <Link
+          href={getLocalizedHref('/projects')}
+          className="absolute top-8 left-8 flex items-center gap-2 text-white/80 hover:text-white transition-colors z-10"
+        >
+          <ArrowLeft className="w-5 h-5" />
+          <span>{t('backToProjects')}</span>
+        </Link>
+
+        {/* Share button */}
+        <div className="absolute top-8 right-8 z-20">
+          <button 
+            onClick={handleShare}
+            className="w-12 h-12 bg-white/20 backdrop-blur-md rounded-full hover:bg-white/30 hover:scale-110 transition-all duration-300 flex items-center justify-center shadow-lg border border-white/20"
+            title={t('share')}
+          >
+            <Share2 className="w-6 h-6 text-white" />
+          </button>
+
+          {/* Share Menu */}
+          <AnimatePresence>
+            {showShareMenu && (
+              <motion.div
+                initial={{ opacity: 0, scale: 0.9, y: -10 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.9, y: -10 }}
+                className="absolute right-0 mt-2 bg-white dark:bg-gray-800 rounded-xl shadow-2xl p-3 min-w-[200px]"
+              >
+                <div className="flex flex-col gap-2">
+                  <button onClick={() => shareToSocial('facebook')} className="flex items-center gap-3 px-4 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
+                    <Facebook className="w-5 h-5 text-blue-600" />
+                    <span className="text-gray-700 dark:text-gray-200">Facebook</span>
+                  </button>
+                  <button onClick={() => shareToSocial('twitter')} className="flex items-center gap-3 px-4 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
+                    <Twitter className="w-5 h-5 text-sky-500" />
+                    <span className="text-gray-700 dark:text-gray-200">Twitter</span>
+                  </button>
+                  <button onClick={() => shareToSocial('linkedin')} className="flex items-center gap-3 px-4 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
+                    <Linkedin className="w-5 h-5 text-blue-700" />
+                    <span className="text-gray-700 dark:text-gray-200">LinkedIn</span>
+                  </button>
+                  <button onClick={() => shareToSocial('whatsapp')} className="flex items-center gap-3 px-4 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
+                    <MessageCircle className="w-5 h-5 text-green-500" />
+                    <span className="text-gray-700 dark:text-gray-200">WhatsApp</span>
+                  </button>
+                  <hr className="border-gray-200 dark:border-gray-700" />
+                  <button onClick={copyLink} className="flex items-center gap-3 px-4 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors">
+                    {linkCopied ? (
+                      <>
+                        <Check className="w-5 h-5 text-green-500" />
+                        <span className="text-green-500">{t('linkCopied')}</span>
+                      </>
+                    ) : (
+                      <>
+                        <Link2 className="w-5 h-5 text-gray-500" />
+                        <span className="text-gray-700 dark:text-gray-200">{t('copyLink')}</span>
+                      </>
+                    )}
+                  </button>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
+
+        {showShareMenu && <div className="fixed inset-0 z-10" onClick={() => setShowShareMenu(false)} />}
+
+        {/* Title overlay */}
+        <div className="absolute bottom-0 left-0 right-0 p-8 md:p-12">
+          <div className="container mx-auto">
+            <Badge variant={statusColors[statusKey] || 'secondary'} className="mb-4">
+              {t(`status.${project.status}`)}
+            </Badge>
+            <h1 className="text-3xl md:text-5xl font-bold text-white mb-4">
+              {translation.name}
+            </h1>
+            {translation.shortDescription && (
+              <p className="text-lg text-white/90 max-w-3xl backdrop-blur-sm bg-black/20 rounded-lg px-4 py-2 inline-block">
+                {translation.shortDescription}
+              </p>
+            )}
+          </div>
+        </div>
+      </section>
+    );
+  };
+
+  const renderDescription = () => {
+    if (!isElementVisible('description')) return null;
+    const settings = getElementSettings('description');
+    const widthClass = settings?.width === 'two-thirds' ? 'lg:col-span-2' : 
+                       settings?.width === 'full' ? 'lg:col-span-3' : 'lg:col-span-2';
+    
+    return (
+      <div className={widthClass}>
+        <div className="prose prose-lg dark:prose-invert max-w-none">
+          <h2 className="text-2xl font-bold mb-6 text-gray-900 dark:text-white">
+            {t('description')}
+          </h2>
+          <div className="whitespace-pre-line text-gray-600 dark:text-gray-300 leading-relaxed">
+            {translation.description}
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  const renderSidebar = () => {
+    if (!isElementVisible('sidebar')) return null;
+    
+    return (
+      <div className="lg:col-span-1">
+        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6 sticky top-24">
+          <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-6 pb-4 border-b border-gray-100 dark:border-gray-700">
+            {t('projectInfo')}
+          </h3>
+          <div className="space-y-4">
+            {/* Durum */}
+            <div className="flex justify-between items-center py-3 border-b border-gray-100 dark:border-gray-700">
+              <span className="text-gray-500 dark:text-gray-400 flex items-center gap-2">
+                <div className="w-2 h-2 rounded-full bg-primary-500" />
+                {t('status.label')}
+              </span>
+              <Badge variant={statusColors[statusKey] || 'secondary'}>
+                {t(`status.${project.status}`)}
+              </Badge>
+            </div>
+            
+            {/* Yıl */}
+            <div className="flex justify-between items-center py-3 border-b border-gray-100 dark:border-gray-700">
+              <span className="text-gray-500 dark:text-gray-400 flex items-center gap-2">
+                <Calendar className="w-4 h-4" />
+                {t('year')}
+              </span>
+              <span className="font-semibold text-gray-900 dark:text-white">
+                {project.startDate.getFullYear()}
+              </span>
+            </div>
+
+            {/* Konum */}
+            <div className="flex justify-between items-center py-3 border-b border-gray-100 dark:border-gray-700">
+              <span className="text-gray-500 dark:text-gray-400 flex items-center gap-2">
+                <MapPin className="w-4 h-4" />
+                {t('location')}
+              </span>
+              <span className="font-semibold text-gray-900 dark:text-white text-right">
+                {translation.location?.city || translation.location?.fullAddress || '-'}
+              </span>
+            </div>
+
+            {/* Alan */}
+            {project.totalArea && (
+              <div className="flex justify-between items-center py-3 border-b border-gray-100 dark:border-gray-700">
+                <span className="text-gray-500 dark:text-gray-400 flex items-center gap-2">
+                  <Ruler className="w-4 h-4" />
+                  {t('area')}
+                </span>
+                <span className="font-semibold text-gray-900 dark:text-white">
+                  {project.totalArea.toLocaleString()} m²
+                </span>
+              </div>
+            )}
+
+            {/* Tip */}
+            <div className="flex justify-between items-center py-3 border-b border-gray-100 dark:border-gray-700">
+              <span className="text-gray-500 dark:text-gray-400 flex items-center gap-2">
+                <Building2 className="w-4 h-4" />
+                {t('type')}
+              </span>
+              <span className="font-semibold text-gray-900 dark:text-white">
+                {t(`types.${project.type}`)}
+              </span>
+            </div>
+
+            {/* Kat Sayısı */}
+            {project.floors && project.floors > 0 && (
+              <div className="flex justify-between items-center py-3 border-b border-gray-100 dark:border-gray-700">
+                <span className="text-gray-500 dark:text-gray-400 flex items-center gap-2">
+                  <Layers className="w-4 h-4" />
+                  {t('floors')}
+                </span>
+                <span className="font-semibold text-gray-900 dark:text-white">
+                  {project.floors}
+                </span>
+              </div>
+            )}
+
+            {/* Oda Düzeni */}
+            {extendedProject.roomLayout && (
+              <div className="flex justify-between items-center py-3 border-b border-gray-100 dark:border-gray-700">
+                <span className="text-gray-500 dark:text-gray-400 flex items-center gap-2">
+                  <Home className="w-4 h-4" />
+                  {t('roomLayout')}
+                </span>
+                <span className="font-semibold text-gray-900 dark:text-white">
+                  {extendedProject.roomLayout}
+                </span>
+              </div>
+            )}
+
+            {/* Tamamlanma Yüzdesi */}
+            {project.completionPercentage !== undefined && project.completionPercentage > 0 && (
+              <div className="py-3">
+                <div className="flex justify-between items-center mb-3">
+                  <span className="text-gray-500 dark:text-gray-400">{t('completion')}</span>
+                  <span className="font-semibold text-gray-900 dark:text-white">
+                    {project.completionPercentage}%
+                  </span>
+                </div>
+                <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-3">
+                  <div 
+                    className="bg-gradient-to-r from-primary-500 to-primary-600 h-3 rounded-full transition-all"
+                    style={{ width: `${project.completionPercentage}%` }}
+                  />
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* CTA */}
+          {isElementVisible('cta') && (
+            <div className="mt-8 pt-6 border-t border-gray-100 dark:border-gray-700">
+              <div className="bg-gradient-to-br from-primary-500 to-primary-700 rounded-xl p-5 text-white">
+                <h4 className="font-semibold mb-2">{t('cta.title')}</h4>
+                <p className="text-white/80 text-sm mb-4">{t('cta.description')}</p>
+                <Link
+                  href={getLocalizedHref('/contact')}
+                  className="inline-block bg-white text-primary-600 px-5 py-2.5 rounded-lg font-semibold hover:bg-primary-50 transition-colors text-sm"
+                >
+                  {t('cta.button')}
+                </Link>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  };
+
+  const renderVideo = () => {
+    if (!isElementVisible('video') || !youtubeVideoId) return null;
+    
+    return (
+      <div className="flex-1">
+        <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">
+          {t('video')}
+        </h2>
+        {showVideo ? (
+          <div className="relative aspect-video rounded-2xl overflow-hidden shadow-xl">
+            <iframe
+              src={`https://www.youtube.com/embed/${youtubeVideoId}?autoplay=1`}
+              title="Project Video"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              allowFullScreen
+              className="absolute inset-0 w-full h-full"
+            />
+          </div>
+        ) : (
+          <button
+            onClick={() => setShowVideo(true)}
+            className="relative aspect-video w-full rounded-2xl overflow-hidden group shadow-xl"
+          >
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={`https://img.youtube.com/vi/${youtubeVideoId}/hqdefault.jpg`}
+              alt="Video thumbnail"
+              className="absolute inset-0 w-full h-full object-cover"
+            />
+            <div className="absolute inset-0 bg-black/40 group-hover:bg-black/50 transition-colors flex items-center justify-center">
+              <div className="w-20 h-20 bg-white/90 rounded-full flex items-center justify-center group-hover:scale-110 transition-transform shadow-lg">
+                <Play className="w-8 h-8 text-primary-600 ml-1" />
+              </div>
+            </div>
+          </button>
+        )}
+      </div>
+    );
+  };
+
+  const renderMap = () => {
+    if (!isElementVisible('map') || !project.coordinates?.lat || !project.coordinates?.lng) return null;
+    
+    return (
+      <div className="flex-1">
+        <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">
+          {t('map')}
+        </h2>
+        <div className="relative aspect-video rounded-2xl overflow-hidden shadow-xl">
+          <iframe
+            src={`https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3000!2d${project.coordinates.lng}!3d${project.coordinates.lat}!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zM!5e0!3m2!1str!2str!4v1234567890`}
+            width="100%"
+            height="100%"
+            style={{ border: 0 }}
+            allowFullScreen
+            loading="lazy"
+            referrerPolicy="no-referrer-when-downgrade"
+            className="absolute inset-0"
+          />
+        </div>
+        <a
+          href={`https://www.google.com/maps?q=${project.coordinates.lat},${project.coordinates.lng}`}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-flex items-center gap-2 mt-4 text-primary-600 dark:text-primary-400 hover:underline font-medium"
+        >
+          {t('openInMaps')}
+          <ExternalLink className="w-4 h-4" />
+        </a>
+      </div>
+    );
+  };
+
+  const renderGallery = () => {
+    if (!isElementVisible('gallery') || allImages.length === 0) return null;
+    
+    return (
+      <div className="mt-16">
+        <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-8">
+          {t('gallery')}
+        </h2>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          {allImages.map((image, index) => (
+            <motion.button
+              key={index}
+              whileHover={{ scale: 1.02 }}
+              onClick={() => openLightbox(index)}
+              className={cn(
+                'relative rounded-xl overflow-hidden cursor-pointer shadow-lg',
+                index === 0 ? 'col-span-2 row-span-2 aspect-square' : 'aspect-video'
+              )}
+            >
+              <Image
+                src={image}
+                alt={`${translation.name} - ${index + 1}`}
+                fill
+                className="object-cover hover:scale-105 transition-transform duration-300"
+                unoptimized
+              />
+            </motion.button>
+          ))}
+        </div>
+      </div>
+    );
+  };
+
   return (
     <>
       <article className="min-h-screen">
-        {/* Hero */}
-        <section className="relative h-[60vh] min-h-[400px]">
-          <Image
-            src={project.coverImage?.url || 'https://via.placeholder.com/1200x800?text=No+Image'}
-            alt={translation.name}
-            fill
-            className="object-cover"
-            priority
-            unoptimized
-          />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
-          
-          {/* Back button */}
-          <Link
-            href={getLocalizedHref('/projects')}
-            className="absolute top-8 left-8 flex items-center gap-2 text-white/80 hover:text-white transition-colors z-10"
-          >
-            <ArrowLeft className="w-5 h-5" />
-            <span>{t('backToProjects')}</span>
-          </Link>
+        {/* Hero - Layout'a göre */}
+        {renderHero()}
 
-          {/* Share button - İyileştirilmiş */}
-          <div className="absolute top-8 right-8 z-20">
-            <button 
-              onClick={handleShare}
-              className="w-12 h-12 bg-white/20 backdrop-blur-md rounded-full hover:bg-white/30 hover:scale-110 transition-all duration-300 flex items-center justify-center shadow-lg border border-white/20"
-              title={t('share')}
-            >
-              <Share2 className="w-6 h-6 text-white" />
-            </button>
-
-            {/* Share Menu */}
-            <AnimatePresence>
-              {showShareMenu && (
-                <motion.div
-                  initial={{ opacity: 0, scale: 0.9, y: -10 }}
-                  animate={{ opacity: 1, scale: 1, y: 0 }}
-                  exit={{ opacity: 0, scale: 0.9, y: -10 }}
-                  className="absolute right-0 mt-2 bg-white dark:bg-gray-800 rounded-xl shadow-2xl p-3 min-w-[200px]"
-                >
-                  <div className="flex flex-col gap-2">
-                    <button
-                      onClick={() => shareToSocial('facebook')}
-                      className="flex items-center gap-3 px-4 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
-                    >
-                      <Facebook className="w-5 h-5 text-blue-600" />
-                      <span className="text-gray-700 dark:text-gray-200">Facebook</span>
-                    </button>
-                    <button
-                      onClick={() => shareToSocial('twitter')}
-                      className="flex items-center gap-3 px-4 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
-                    >
-                      <Twitter className="w-5 h-5 text-sky-500" />
-                      <span className="text-gray-700 dark:text-gray-200">Twitter</span>
-                    </button>
-                    <button
-                      onClick={() => shareToSocial('linkedin')}
-                      className="flex items-center gap-3 px-4 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
-                    >
-                      <Linkedin className="w-5 h-5 text-blue-700" />
-                      <span className="text-gray-700 dark:text-gray-200">LinkedIn</span>
-                    </button>
-                    <button
-                      onClick={() => shareToSocial('whatsapp')}
-                      className="flex items-center gap-3 px-4 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
-                    >
-                      <MessageCircle className="w-5 h-5 text-green-500" />
-                      <span className="text-gray-700 dark:text-gray-200">WhatsApp</span>
-                    </button>
-                    <hr className="border-gray-200 dark:border-gray-700" />
-                    <button
-                      onClick={copyLink}
-                      className="flex items-center gap-3 px-4 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
-                    >
-                      {linkCopied ? (
-                        <>
-                          <Check className="w-5 h-5 text-green-500" />
-                          <span className="text-green-500">{t('linkCopied')}</span>
-                        </>
-                      ) : (
-                        <>
-                          <Link2 className="w-5 h-5 text-gray-500" />
-                          <span className="text-gray-700 dark:text-gray-200">{t('copyLink')}</span>
-                        </>
-                      )}
-                    </button>
-                  </div>
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </div>
-
-          {/* Click outside to close share menu */}
-          {showShareMenu && (
-            <div 
-              className="fixed inset-0 z-10" 
-              onClick={() => setShowShareMenu(false)}
-            />
-          )}
-
-          {/* Title overlay */}
-          <div className="absolute bottom-0 left-0 right-0 p-8 md:p-12">
-            <div className="container mx-auto">
-              <Badge variant={statusColors[statusKey] || 'secondary'} className="mb-4">
-                {t(`status.${project.status}`)}
-              </Badge>
-              <h1 className="text-3xl md:text-5xl font-bold text-white mb-4">
-                {translation.name}
-              </h1>
-              {/* Kısa açıklama - Fotoğraf üzerinde */}
-              {translation.shortDescription && (
-                <p className="text-lg text-white/90 max-w-3xl backdrop-blur-sm bg-black/20 rounded-lg px-4 py-2 inline-block">
-                  {translation.shortDescription}
-                </p>
-              )}
-            </div>
-          </div>
-        </section>
-
-        {/* Content - Yeni Düzen: Sol Açıklama, Sağ Tüm Bilgiler */}
+        {/* Content - Layout'a göre dinamik sıralama */}
         <section className="py-16 md:py-24">
           <div className="container mx-auto px-4">
+            {/* Açıklama ve Sidebar Grid */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
-              {/* Sol Taraf - Sadece Açıklama */}
-              <div className="lg:col-span-2">
-                {/* Detaylı Açıklama */}
-                <div className="prose prose-lg dark:prose-invert max-w-none">
-                  <h2 className="text-2xl font-bold mb-6 text-gray-900 dark:text-white">
-                    {t('description')}
-                  </h2>
-                  <div className="whitespace-pre-line text-gray-600 dark:text-gray-300 leading-relaxed">
-                    {translation.description}
-                  </div>
-                </div>
-              </div>
-
-              {/* Sağ Taraf - Tüm Proje Bilgileri */}
-              <div className="lg:col-span-1">
-                <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6 sticky top-24">
-                  <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-6 pb-4 border-b border-gray-100 dark:border-gray-700">
-                    {t('projectInfo')}
-                  </h3>
-                  <div className="space-y-4">
-                    {/* Durum */}
-                    <div className="flex justify-between items-center py-3 border-b border-gray-100 dark:border-gray-700">
-                      <span className="text-gray-500 dark:text-gray-400 flex items-center gap-2">
-                        <div className="w-2 h-2 rounded-full bg-primary-500" />
-                        {t('status.label')}
-                      </span>
-                      <Badge variant={statusColors[statusKey] || 'secondary'}>
-                        {t(`status.${project.status}`)}
-                      </Badge>
-                    </div>
-                    
-                    {/* Yıl */}
-                    <div className="flex justify-between items-center py-3 border-b border-gray-100 dark:border-gray-700">
-                      <span className="text-gray-500 dark:text-gray-400 flex items-center gap-2">
-                        <Calendar className="w-4 h-4" />
-                        {t('year')}
-                      </span>
-                      <span className="font-semibold text-gray-900 dark:text-white">
-                        {project.startDate.getFullYear()}
-                      </span>
-                    </div>
-
-                    {/* Konum */}
-                    <div className="flex justify-between items-center py-3 border-b border-gray-100 dark:border-gray-700">
-                      <span className="text-gray-500 dark:text-gray-400 flex items-center gap-2">
-                        <MapPin className="w-4 h-4" />
-                        {t('location')}
-                      </span>
-                      <span className="font-semibold text-gray-900 dark:text-white text-right">
-                        {translation.location?.city || translation.location?.fullAddress || '-'}
-                      </span>
-                    </div>
-
-                    {/* Alan */}
-                    {project.totalArea && (
-                      <div className="flex justify-between items-center py-3 border-b border-gray-100 dark:border-gray-700">
-                        <span className="text-gray-500 dark:text-gray-400 flex items-center gap-2">
-                          <Ruler className="w-4 h-4" />
-                          {t('area')}
-                        </span>
-                        <span className="font-semibold text-gray-900 dark:text-white">
-                          {project.totalArea.toLocaleString()} m²
-                        </span>
-                      </div>
-                    )}
-
-                    {/* Tip */}
-                    <div className="flex justify-between items-center py-3 border-b border-gray-100 dark:border-gray-700">
-                      <span className="text-gray-500 dark:text-gray-400 flex items-center gap-2">
-                        <Building2 className="w-4 h-4" />
-                        {t('type')}
-                      </span>
-                      <span className="font-semibold text-gray-900 dark:text-white">
-                        {t(`types.${project.type}`)}
-                      </span>
-                    </div>
-
-                    {/* Kat Sayısı */}
-                    {project.floors && project.floors > 0 && (
-                      <div className="flex justify-between items-center py-3 border-b border-gray-100 dark:border-gray-700">
-                        <span className="text-gray-500 dark:text-gray-400 flex items-center gap-2">
-                          <Layers className="w-4 h-4" />
-                          {t('floors')}
-                        </span>
-                        <span className="font-semibold text-gray-900 dark:text-white">
-                          {project.floors}
-                        </span>
-                      </div>
-                    )}
-
-                    {/* Oda Düzeni */}
-                    {extendedProject.roomLayout && (
-                      <div className="flex justify-between items-center py-3 border-b border-gray-100 dark:border-gray-700">
-                        <span className="text-gray-500 dark:text-gray-400 flex items-center gap-2">
-                          <Home className="w-4 h-4" />
-                          {t('roomLayout')}
-                        </span>
-                        <span className="font-semibold text-gray-900 dark:text-white">
-                          {extendedProject.roomLayout}
-                        </span>
-                      </div>
-                    )}
-
-                    {/* Tamamlanma Yüzdesi */}
-                    {project.completionPercentage !== undefined && project.completionPercentage > 0 && (
-                      <div className="py-3">
-                        <div className="flex justify-between items-center mb-3">
-                          <span className="text-gray-500 dark:text-gray-400">{t('completion')}</span>
-                          <span className="font-semibold text-gray-900 dark:text-white">
-                            {project.completionPercentage}%
-                          </span>
-                        </div>
-                        <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-3">
-                          <div 
-                            className="bg-gradient-to-r from-primary-500 to-primary-600 h-3 rounded-full transition-all"
-                            style={{ width: `${project.completionPercentage}%` }}
-                          />
-                        </div>
-                      </div>
-                    )}
-                  </div>
-
-                  {/* CTA */}
-                  <div className="mt-8 pt-6 border-t border-gray-100 dark:border-gray-700">
-                    <div className="bg-gradient-to-br from-primary-500 to-primary-700 rounded-xl p-5 text-white">
-                      <h4 className="font-semibold mb-2">
-                        {t('cta.title')}
-                      </h4>
-                      <p className="text-white/80 text-sm mb-4">
-                        {t('cta.description')}
-                      </p>
-                      <Link
-                        href={getLocalizedHref('/contact')}
-                        className="inline-block bg-white text-primary-600 px-5 py-2.5 rounded-lg font-semibold hover:bg-primary-50 transition-colors text-sm"
-                      >
-                        {t('cta.button')}
-                      </Link>
-                    </div>
-                  </div>
-                </div>
-              </div>
+              {renderDescription()}
+              {renderSidebar()}
             </div>
 
-            {/* Video ve Harita - Yan Yana (50-50) */}
-            {(youtubeVideoId || (project.coordinates?.lat && project.coordinates?.lng)) && (
+            {/* Video ve Harita - Yan Yana */}
+            {(isElementVisible('video') || isElementVisible('map')) && 
+             (youtubeVideoId || (project.coordinates?.lat && project.coordinates?.lng)) && (
               <div className="mt-16">
-                <div className={cn(
-                  'grid gap-8',
-                  youtubeVideoId && project.coordinates?.lat && project.coordinates?.lng
-                    ? 'grid-cols-1 lg:grid-cols-2'
-                    : 'grid-cols-1'
-                )}>
-                  {/* Video */}
-                  {youtubeVideoId && (
-                    <div>
-                      <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">
-                        {t('video')}
-                      </h2>
-                      {showVideo ? (
-                        <div className="relative aspect-video rounded-2xl overflow-hidden shadow-xl">
-                          <iframe
-                            src={`https://www.youtube.com/embed/${youtubeVideoId}?autoplay=1`}
-                            title="Project Video"
-                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                            allowFullScreen
-                            className="absolute inset-0 w-full h-full"
-                          />
-                        </div>
-                      ) : (
-                        <button
-                          onClick={() => setShowVideo(true)}
-                          className="relative aspect-video w-full rounded-2xl overflow-hidden group shadow-xl"
-                        >
-                          {/* eslint-disable-next-line @next/next/no-img-element */}
-                          <img
-                            src={`https://img.youtube.com/vi/${youtubeVideoId}/hqdefault.jpg`}
-                            alt="Video thumbnail"
-                            className="absolute inset-0 w-full h-full object-cover"
-                          />
-                          <div className="absolute inset-0 bg-black/40 group-hover:bg-black/50 transition-colors flex items-center justify-center">
-                            <div className="w-20 h-20 bg-white/90 rounded-full flex items-center justify-center group-hover:scale-110 transition-transform shadow-lg">
-                              <Play className="w-8 h-8 text-primary-600 ml-1" />
-                            </div>
-                          </div>
-                        </button>
-                      )}
-                    </div>
-                  )}
-
-                  {/* Harita */}
-                  {project.coordinates && project.coordinates.lat && project.coordinates.lng && (
-                    <div>
-                      <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">
-                        {t('map')}
-                      </h2>
-                      <div className="relative aspect-video rounded-2xl overflow-hidden shadow-xl">
-                        <iframe
-                          src={`https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3000!2d${project.coordinates.lng}!3d${project.coordinates.lat}!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zM!5e0!3m2!1str!2str!4v1234567890`}
-                          width="100%"
-                          height="100%"
-                          style={{ border: 0 }}
-                          allowFullScreen
-                          loading="lazy"
-                          referrerPolicy="no-referrer-when-downgrade"
-                          className="absolute inset-0"
-                        />
-                      </div>
-                      <a
-                        href={`https://www.google.com/maps?q=${project.coordinates.lat},${project.coordinates.lng}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="inline-flex items-center gap-2 mt-4 text-primary-600 dark:text-primary-400 hover:underline font-medium"
-                      >
-                        {t('openInMaps')}
-                        <ExternalLink className="w-4 h-4" />
-                      </a>
-                    </div>
-                  )}
+                <div className="flex flex-col lg:flex-row gap-8">
+                  {renderVideo()}
+                  {renderMap()}
                 </div>
               </div>
             )}
 
-            {/* Galeri - En Altta */}
-            {allImages.length > 0 && (
-              <div className="mt-16">
-                <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-8">
-                  {t('gallery')}
-                </h2>
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                  {allImages.map((image, index) => (
-                    <motion.button
-                      key={index}
-                      whileHover={{ scale: 1.02 }}
-                      onClick={() => openLightbox(index)}
-                      className={cn(
-                        'relative rounded-xl overflow-hidden cursor-pointer shadow-lg',
-                        index === 0 ? 'col-span-2 row-span-2 aspect-square' : 'aspect-video'
-                      )}
-                    >
-                      <Image
-                        src={image}
-                        alt={`${translation.name} - ${index + 1}`}
-                        fill
-                        className="object-cover hover:scale-105 transition-transform duration-300"
-                        unoptimized
-                      />
-                    </motion.button>
-                  ))}
-                </div>
-              </div>
-            )}
+            {/* Galeri */}
+            {renderGallery()}
           </div>
         </section>
       </article>
@@ -590,7 +614,6 @@ export default function ProjectDetailPage() {
             className="fixed inset-0 bg-black/95 z-50 flex items-center justify-center"
             onClick={() => setLightboxOpen(false)}
           >
-            {/* Close button */}
             <button
               onClick={() => setLightboxOpen(false)}
               className="absolute top-6 right-6 p-3 text-white/70 hover:text-white transition-colors z-10"
@@ -598,7 +621,6 @@ export default function ProjectDetailPage() {
               <X className="w-8 h-8" />
             </button>
 
-            {/* Navigation */}
             {allImages.length > 1 && (
               <>
                 <button
@@ -616,7 +638,6 @@ export default function ProjectDetailPage() {
               </>
             )}
 
-            {/* Image */}
             <motion.div
               key={lightboxIndex}
               initial={{ opacity: 0, scale: 0.9 }}
@@ -634,7 +655,6 @@ export default function ProjectDetailPage() {
               />
             </motion.div>
 
-            {/* Counter */}
             <div className="absolute bottom-6 left-1/2 -translate-x-1/2 text-white/70">
               {lightboxIndex + 1} / {allImages.length}
             </div>

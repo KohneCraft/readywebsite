@@ -7,6 +7,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { useLocale, useTranslations } from 'next-intl';
 import { 
   LayoutDashboard, 
@@ -17,10 +18,12 @@ import {
   Plus,
   Layers,
   X,
+  Info,
+  Briefcase,
+  Check,
 } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
-import { Input } from '@/components/ui/Input';
 import { cn } from '@/lib/utils';
 import { getPageLayoutsByType } from '@/lib/firebase/firestore';
 import type { Locale } from '@/i18n';
@@ -48,6 +51,40 @@ const DEFAULT_PAGES: { id: PageType; name: string; description: string; icon: ty
   },
 ];
 
+// Sitedeki tüm sayfalar (eklenebilir olanlar dahil)
+const ALL_AVAILABLE_PAGES: { id: PageType; name: string; description: string; icon: typeof Home }[] = [
+  { 
+    id: 'home', 
+    name: 'Anasayfa', 
+    description: 'Ana sayfa bölümlerini düzenleyin',
+    icon: Home 
+  },
+  { 
+    id: 'contact', 
+    name: 'İletişim', 
+    description: 'İletişim sayfasını düzenleyin',
+    icon: Mail 
+  },
+  { 
+    id: 'project-detail', 
+    name: 'Proje Detay', 
+    description: 'Proje detay sayfasının düzenini özelleştirin',
+    icon: FileText 
+  },
+  { 
+    id: 'about', 
+    name: 'Hakkımızda', 
+    description: 'Hakkımızda sayfasını düzenleyin',
+    icon: Info 
+  },
+  { 
+    id: 'services', 
+    name: 'Hizmetler', 
+    description: 'Hizmetler sayfasını düzenleyin',
+    icon: Briefcase 
+  },
+];
+
 interface PageInfo {
   id: PageType;
   name: string;
@@ -60,10 +97,11 @@ interface PageInfo {
 export default function PageBuilderListPage() {
   const t = useTranslations('admin');
   const locale = useLocale() as Locale;
+  const router = useRouter();
   const [pages, setPages] = useState<PageInfo[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [showAddModal, setShowAddModal] = useState(false);
-  const [newPageName, setNewPageName] = useState('');
+  const [selectedPageId, setSelectedPageId] = useState<PageType | null>(null);
 
   const getLocalizedHref = useCallback((href: string) => {
     if (locale === 'tr') return href;
@@ -103,11 +141,24 @@ export default function PageBuilderListPage() {
     loadPages();
   }, []);
 
+  // Zaten listeye eklenmiş sayfa ID'leri
+  const addedPageIds = pages.map(p => p.id);
+
+  // Henüz eklenmemiş sayfalar
+  const availableToAdd = ALL_AVAILABLE_PAGES.filter(p => !addedPageIds.includes(p.id));
+
   const handleAddPage = () => {
-    // TODO: Özel sayfa ekleme işlemi
-    console.log('Yeni sayfa ekleniyor:', newPageName);
-    setShowAddModal(false);
-    setNewPageName('');
+    if (selectedPageId) {
+      // Seçilen sayfayı listeye ekle
+      const pageToAdd = ALL_AVAILABLE_PAGES.find(p => p.id === selectedPageId);
+      if (pageToAdd) {
+        setPages(prev => [...prev, { ...pageToAdd, layoutCount: 0, hasActiveLayout: false }]);
+      }
+      // Sayfa düzenleyicisine yönlendir
+      router.push(getLocalizedHref(`/admin/page-builder/${selectedPageId}`));
+      setShowAddModal(false);
+      setSelectedPageId(null);
+    }
   };
 
   // Varsayılan sayfalar yüklenmeden önce bile göster
@@ -215,13 +266,13 @@ export default function PageBuilderListPage() {
       {/* Add New Page Modal */}
       {showAddModal && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <div className="bg-white dark:bg-gray-800 rounded-xl p-6 w-full max-w-md mx-4 shadow-2xl">
+          <div className="bg-white dark:bg-gray-800 rounded-xl p-6 w-full max-w-lg mx-4 shadow-2xl">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-                Yeni Sayfa Ekle
+                Sayfa Düzeni Ekle
               </h3>
               <button
-                onClick={() => setShowAddModal(false)}
+                onClick={() => { setShowAddModal(false); setSelectedPageId(null); }}
                 className="p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
               >
                 <X className="w-5 h-5 text-gray-500" />
@@ -229,28 +280,64 @@ export default function PageBuilderListPage() {
             </div>
             
             <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  Sayfa Adı
-                </label>
-                <Input
-                  type="text"
-                  placeholder="Örn: Hakkımızda, Hizmetler..."
-                  value={newPageName}
-                  onChange={(e) => setNewPageName(e.target.value)}
-                />
-              </div>
-              
-              <div className="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg p-3">
-                <p className="text-sm text-amber-700 dark:text-amber-300">
-                  ⚠️ Bu özellik şu an geliştirme aşamasındadır. Varsayılan sayfaları (Anasayfa, İletişim, Proje Detay) düzenleyebilirsiniz.
-                </p>
-              </div>
+              <p className="text-sm text-gray-500 dark:text-gray-400">
+                Düzenlemek istediğiniz sayfayı seçin:
+              </p>
+
+              {availableToAdd.length > 0 ? (
+                <div className="space-y-2 max-h-[300px] overflow-y-auto">
+                  {availableToAdd.map((page) => {
+                    const Icon = page.icon;
+                    const isSelected = selectedPageId === page.id;
+                    return (
+                      <div
+                        key={page.id}
+                        onClick={() => setSelectedPageId(page.id)}
+                        className={cn(
+                          'flex items-center gap-4 p-4 rounded-lg cursor-pointer transition-all border-2',
+                          isSelected
+                            ? 'border-primary-500 bg-primary-50 dark:bg-primary-900/20'
+                            : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600'
+                        )}
+                      >
+                        <div className={cn(
+                          'w-10 h-10 rounded-lg flex items-center justify-center',
+                          isSelected
+                            ? 'bg-primary-100 dark:bg-primary-900/30'
+                            : 'bg-gray-100 dark:bg-gray-800'
+                        )}>
+                          <Icon className={cn(
+                            'w-5 h-5',
+                            isSelected
+                              ? 'text-primary-600 dark:text-primary-400'
+                              : 'text-gray-500 dark:text-gray-400'
+                          )} />
+                        </div>
+                        <div className="flex-1">
+                          <h4 className="font-medium text-gray-900 dark:text-white">
+                            {page.name}
+                          </h4>
+                          <p className="text-sm text-gray-500 dark:text-gray-400">
+                            {page.description}
+                          </p>
+                        </div>
+                        {isSelected && (
+                          <Check className="w-5 h-5 text-primary-600 dark:text-primary-400" />
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              ) : (
+                <div className="text-center py-8 text-gray-500 dark:text-gray-400">
+                  <p>Tüm sayfalar zaten eklenmiş.</p>
+                </div>
+              )}
               
               <div className="flex gap-3 pt-2">
                 <Button
                   variant="outline"
-                  onClick={() => setShowAddModal(false)}
+                  onClick={() => { setShowAddModal(false); setSelectedPageId(null); }}
                   className="flex-1"
                 >
                   İptal
@@ -258,9 +345,9 @@ export default function PageBuilderListPage() {
                 <Button
                   onClick={handleAddPage}
                   className="flex-1"
-                  disabled={!newPageName.trim()}
+                  disabled={!selectedPageId}
                 >
-                  Ekle
+                  Düzenle
                 </Button>
               </div>
             </div>

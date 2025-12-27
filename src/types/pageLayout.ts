@@ -197,6 +197,180 @@ export const PROJECT_DETAIL_DEFAULT_ELEMENTS: Omit<PageElement, 'id'>[] = [
 ];
 
 /**
+ * Ana sayfa için varsayılan elementler
+ */
+export const HOME_DEFAULT_ELEMENTS: Omit<PageElement, 'id'>[] = [
+  {
+    type: 'hero',
+    label: 'Ana Slider / Hero',
+    order: 0,
+    visible: true,
+    settings: { ...DEFAULT_ELEMENT_SETTINGS },
+  },
+  {
+    type: 'features',
+    label: 'Öne Çıkan Özellikler',
+    order: 1,
+    visible: true,
+    settings: { ...DEFAULT_ELEMENT_SETTINGS },
+  },
+  {
+    type: 'info-cards',
+    label: 'Öne Çıkan Projeler',
+    order: 2,
+    visible: true,
+    settings: { ...DEFAULT_ELEMENT_SETTINGS },
+  },
+  {
+    type: 'description',
+    label: 'Hakkımızda Kısa',
+    order: 3,
+    visible: true,
+    settings: { ...DEFAULT_ELEMENT_SETTINGS, width: 'two-thirds' },
+  },
+  {
+    type: 'sidebar',
+    label: 'İstatistikler',
+    order: 4,
+    visible: true,
+    settings: { ...DEFAULT_ELEMENT_SETTINGS, width: 'third', position: 'right' },
+  },
+  {
+    type: 'testimonials',
+    label: 'Müşteri Yorumları',
+    order: 5,
+    visible: true,
+    settings: { ...DEFAULT_ELEMENT_SETTINGS },
+  },
+  {
+    type: 'cta',
+    label: 'İletişim Çağrısı',
+    order: 6,
+    visible: true,
+    settings: { ...DEFAULT_ELEMENT_SETTINGS },
+  },
+];
+
+/**
+ * İletişim sayfası için varsayılan elementler
+ */
+export const CONTACT_DEFAULT_ELEMENTS: Omit<PageElement, 'id'>[] = [
+  {
+    type: 'hero',
+    label: 'Sayfa Başlığı',
+    order: 0,
+    visible: true,
+    settings: { ...DEFAULT_ELEMENT_SETTINGS },
+  },
+  {
+    type: 'contact-form',
+    label: 'İletişim Formu',
+    order: 1,
+    visible: true,
+    settings: { ...DEFAULT_ELEMENT_SETTINGS, width: 'two-thirds' },
+  },
+  {
+    type: 'sidebar',
+    label: 'İletişim Bilgileri',
+    order: 2,
+    visible: true,
+    settings: { ...DEFAULT_ELEMENT_SETTINGS, width: 'third', position: 'right' },
+  },
+  {
+    type: 'map',
+    label: 'Konum Haritası',
+    order: 3,
+    visible: true,
+    settings: { ...DEFAULT_ELEMENT_SETTINGS },
+  },
+];
+
+/**
+ * Sayfa tipine göre varsayılan elementleri getir
+ */
+export function getDefaultElementsForPage(pageType: PageType): Omit<PageElement, 'id'>[] {
+  switch (pageType) {
+    case 'home':
+      return HOME_DEFAULT_ELEMENTS;
+    case 'contact':
+      return CONTACT_DEFAULT_ELEMENTS;
+    case 'project-detail':
+      return PROJECT_DETAIL_DEFAULT_ELEMENTS;
+    case 'about':
+      return [
+        {
+          type: 'hero',
+          label: 'Sayfa Başlığı',
+          order: 0,
+          visible: true,
+          settings: { ...DEFAULT_ELEMENT_SETTINGS },
+        },
+        {
+          type: 'description',
+          label: 'Şirket Hakkında',
+          order: 1,
+          visible: true,
+          settings: { ...DEFAULT_ELEMENT_SETTINGS },
+        },
+        {
+          type: 'features',
+          label: 'Değerlerimiz',
+          order: 2,
+          visible: true,
+          settings: { ...DEFAULT_ELEMENT_SETTINGS },
+        },
+        {
+          type: 'info-cards',
+          label: 'Ekibimiz',
+          order: 3,
+          visible: true,
+          settings: { ...DEFAULT_ELEMENT_SETTINGS },
+        },
+        {
+          type: 'cta',
+          label: 'İletişim Çağrısı',
+          order: 4,
+          visible: true,
+          settings: { ...DEFAULT_ELEMENT_SETTINGS },
+        },
+      ];
+    case 'services':
+      return [
+        {
+          type: 'hero',
+          label: 'Sayfa Başlığı',
+          order: 0,
+          visible: true,
+          settings: { ...DEFAULT_ELEMENT_SETTINGS },
+        },
+        {
+          type: 'features',
+          label: 'Hizmetlerimiz',
+          order: 1,
+          visible: true,
+          settings: { ...DEFAULT_ELEMENT_SETTINGS },
+        },
+        {
+          type: 'info-cards',
+          label: 'Hizmet Detayları',
+          order: 2,
+          visible: true,
+          settings: { ...DEFAULT_ELEMENT_SETTINGS },
+        },
+        {
+          type: 'cta',
+          label: 'Teklif Al',
+          order: 3,
+          visible: true,
+          settings: { ...DEFAULT_ELEMENT_SETTINGS },
+        },
+      ];
+    default:
+      return PROJECT_DETAIL_DEFAULT_ELEMENTS;
+  }
+}
+
+/**
  * Element tipleri için Türkçe etiketler
  */
 export const ELEMENT_TYPE_LABELS: Record<ElementType, string> = {
