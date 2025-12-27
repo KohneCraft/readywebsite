@@ -41,6 +41,12 @@ const projectSchema = z.object({
     fr: z.string().optional(),
   }),
   slug: z.string().min(1, 'Slug zorunludur').regex(/^[a-z0-9-]+$/, 'Slug sadece küçük harf, rakam ve tire içerebilir'),
+  shortDescription: z.object({
+    tr: z.string().max(200, 'Kısa açıklama en fazla 200 karakter olabilir').optional(),
+    en: z.string().max(200).optional(),
+    de: z.string().max(200).optional(),
+    fr: z.string().max(200).optional(),
+  }),
   description: z.object({
     tr: z.string().min(1, 'Açıklama zorunludur'),
     en: z.string().optional(),
@@ -72,6 +78,7 @@ type ProjectFormData = z.infer<typeof projectSchema>;
 const defaultValues: ProjectFormData = {
   title: { tr: '', en: '', de: '', fr: '' },
   slug: '',
+  shortDescription: { tr: '', en: '', de: '', fr: '' },
   description: { tr: '', en: '', de: '', fr: '' },
   type: 'residential',
   status: 'planning',
@@ -155,6 +162,12 @@ export default function AdminProjectFormPage() {
               fr: project.translations.fr.name,
             });
             setValue('slug', project.slug);
+            setValue('shortDescription', {
+              tr: project.translations.tr.shortDescription || '',
+              en: project.translations.en?.shortDescription || '',
+              de: project.translations.de?.shortDescription || '',
+              fr: project.translations.fr?.shortDescription || '',
+            });
             setValue('description', {
               tr: project.translations.tr.description,
               en: project.translations.en.description,
@@ -215,7 +228,7 @@ export default function AdminProjectFormPage() {
         translations: {
           tr: {
             name: data.title.tr || '',
-            shortDescription: (data.description.tr || '').substring(0, 150),
+            shortDescription: data.shortDescription?.tr || (data.description.tr || '').substring(0, 150),
             description: data.description.tr || '',
             location: {
               city: data.location?.split(',')[0]?.trim() || '',
@@ -227,7 +240,7 @@ export default function AdminProjectFormPage() {
           },
           en: {
             name: data.title.en || data.title.tr || '',
-            shortDescription: (data.description.en || data.description.tr || '').substring(0, 150),
+            shortDescription: data.shortDescription?.en || data.shortDescription?.tr || (data.description.en || data.description.tr || '').substring(0, 150),
             description: data.description.en || data.description.tr || '',
             location: {
               city: data.location?.split(',')[0]?.trim() || '',
@@ -239,7 +252,7 @@ export default function AdminProjectFormPage() {
           },
           de: {
             name: data.title.de || data.title.tr || '',
-            shortDescription: (data.description.de || data.description.tr || '').substring(0, 150),
+            shortDescription: data.shortDescription?.de || data.shortDescription?.tr || (data.description.de || data.description.tr || '').substring(0, 150),
             description: data.description.de || data.description.tr || '',
             location: {
               city: data.location?.split(',')[0]?.trim() || '',
@@ -251,7 +264,7 @@ export default function AdminProjectFormPage() {
           },
           fr: {
             name: data.title.fr || data.title.tr || '',
-            shortDescription: (data.description.fr || data.description.tr || '').substring(0, 150),
+            shortDescription: data.shortDescription?.fr || data.shortDescription?.tr || (data.description.fr || data.description.tr || '').substring(0, 150),
             description: data.description.fr || data.description.tr || '',
             location: {
               city: data.location?.split(',')[0]?.trim() || '',
@@ -513,10 +526,33 @@ export default function AdminProjectFormPage() {
                 )}
               </div>
 
-              {/* Description */}
+              {/* Short Description - Fotoğraf üzerinde gösterilecek */}
+              <div className="mb-4">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                  Kısa Açıklama (Fotoğraf üzerinde)
+                  <span className="text-xs text-gray-400 ml-2">(Max 200 karakter)</span>
+                </label>
+                <Input
+                  {...register(`shortDescription.${activeTab}` as const)}
+                  placeholder={`Kısa açıklama - görsel üzerinde gösterilecek (${activeTab.toUpperCase()})`}
+                  maxLength={200}
+                  className={errors.shortDescription?.[activeTab] ? 'border-red-500' : ''}
+                />
+                {errors.shortDescription?.[activeTab] && (
+                  <p className="mt-1 text-sm text-red-500">
+                    {errors.shortDescription[activeTab]?.message}
+                  </p>
+                )}
+                <p className="mt-1 text-xs text-gray-500">
+                  Bu metin proje kapak fotoğrafının üzerinde görüntülenecek
+                </p>
+              </div>
+
+              {/* Description - Detaylı Açıklama */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                  {t('projects.form.description')} *
+                  Detaylı Proje Açıklaması *
+                  <span className="text-xs text-gray-400 ml-2">(Sınırsız)</span>
                 </label>
                 <textarea
                   {...register(`description.${activeTab}` as const)}

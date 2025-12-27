@@ -5,7 +5,7 @@
 // Interactive map with company location
 // ============================================
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, useCallback } from 'react';
 import { MapPin, Navigation, ExternalLink } from 'lucide-react';
 
 interface GoogleMapProps {
@@ -33,6 +33,39 @@ export function GoogleMap({
   const [error, setError] = useState<string | null>(null);
 
   const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
+
+  const initMap = useCallback(() => {
+    if (!mapRef.current || !window.google?.maps) return;
+
+    try {
+      const map = new window.google.maps.Map(mapRef.current, {
+        center: { lat, lng },
+        zoom,
+        styles: [
+          {
+            featureType: 'poi',
+            elementType: 'labels',
+            stylers: [{ visibility: 'off' }],
+          },
+        ],
+        mapTypeControl: false,
+        fullscreenControl: true,
+        streetViewControl: false,
+      });
+
+      // Add marker
+      new window.google.maps.Marker({
+        position: { lat, lng },
+        map,
+        title: 'Vav Yapı',
+        animation: window.google.maps.Animation.DROP,
+      });
+
+      setMapLoaded(true);
+    } catch {
+      setError('Harita yüklenirken bir hata oluştu');
+    }
+  }, [lat, lng, zoom]);
 
   useEffect(() => {
     // If no API key, show fallback
@@ -65,40 +98,7 @@ export function GoogleMap({
     return () => {
       // Cleanup if needed
     };
-  }, [apiKey, lat, lng, zoom]);
-
-  const initMap = () => {
-    if (!mapRef.current || !window.google?.maps) return;
-
-    try {
-      const map = new window.google.maps.Map(mapRef.current, {
-        center: { lat, lng },
-        zoom,
-        styles: [
-          {
-            featureType: 'poi',
-            elementType: 'labels',
-            stylers: [{ visibility: 'off' }],
-          },
-        ],
-        mapTypeControl: false,
-        fullscreenControl: true,
-        streetViewControl: false,
-      });
-
-      // Add marker
-      new window.google.maps.Marker({
-        position: { lat, lng },
-        map,
-        title: 'Vav Yapı',
-        animation: window.google.maps.Animation.DROP,
-      });
-
-      setMapLoaded(true);
-    } catch (err) {
-      setError('Harita yüklenirken bir hata oluştu');
-    }
-  };
+  }, [apiKey, initMap]);
 
   const openInGoogleMaps = () => {
     const url = `https://www.google.com/maps/search/?api=1&query=${lat},${lng}`;

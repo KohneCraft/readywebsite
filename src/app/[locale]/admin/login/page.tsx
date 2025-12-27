@@ -5,7 +5,7 @@
 // Authentication page for admin panel
 // ============================================
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { useLocale, useTranslations } from 'next-intl';
 import { motion } from 'framer-motion';
@@ -44,10 +44,10 @@ export default function AdminLoginPage() {
     resolver: zodResolver(loginSchema),
   });
 
-  const getLocalizedHref = (href: string) => {
+  const getLocalizedHref = useCallback((href: string) => {
     if (locale === 'tr') return href;
     return `/${locale}${href}`;
-  };
+  }, [locale]);
 
   // Check if already logged in
   useEffect(() => {
@@ -64,7 +64,7 @@ export default function AdminLoginPage() {
       }
     };
     checkAuth();
-  }, [router, locale]);
+  }, [router, getLocalizedHref]);
 
   // Firebase hata kodlarını kullanıcı dostu mesajlara çevir
   const getErrorMessage = (error: unknown): string => {

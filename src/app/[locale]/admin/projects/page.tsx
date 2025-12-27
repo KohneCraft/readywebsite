@@ -5,7 +5,7 @@
 // Project management list with CRUD operations
 // ============================================
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useLocale, useTranslations } from 'next-intl';
@@ -69,7 +69,7 @@ export default function AdminProjectsPage() {
   const [error, setError] = useState<string | null>(null);
 
   // Load projects from Firestore
-  const loadProjects = async () => {
+  const loadProjects = useCallback(async () => {
     setIsLoading(true);
     setError(null);
     try {
@@ -102,11 +102,11 @@ export default function AdminProjectsPage() {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [locale, t]);
 
   useEffect(() => {
     loadProjects();
-  }, [locale]);
+  }, [loadProjects]);
 
   const getLocalizedHref = (href: string) => {
     if (locale === 'tr') return href;

@@ -66,6 +66,29 @@ export type {
 
 export { ROLE_PERMISSIONS, ROLE_LABELS, hasPermission, hasMinRole } from './user';
 
+// Page Layout Types
+export type {
+  PageType,
+  ElementType,
+  ElementWidth,
+  ElementPosition,
+  Breakpoint,
+  Spacing,
+  ResponsiveSettings,
+  ElementSettings,
+  PageElement,
+  PageLayout,
+  PageLayoutCreateInput,
+  PageLayoutUpdateInput,
+} from './pageLayout';
+
+export {
+  DEFAULT_ELEMENT_SETTINGS,
+  PROJECT_DETAIL_DEFAULT_ELEMENTS,
+  ELEMENT_TYPE_LABELS,
+  PAGE_TYPE_LABELS,
+} from './pageLayout';
+
 // ============================================
 // Common Types
 // ============================================

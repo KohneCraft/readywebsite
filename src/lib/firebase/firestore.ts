@@ -43,8 +43,13 @@ import type {
   UserCreateInput,
   UserUpdateInput,
   Locale,
+  PageLayout,
+  PageLayoutCreateInput,
+  PageLayoutUpdateInput,
+  PageType,
+  PageElement,
 } from '@/types';
-import { DEFAULT_SITE_SETTINGS } from '@/types';
+import { DEFAULT_SITE_SETTINGS, PROJECT_DETAIL_DEFAULT_ELEMENTS } from '@/types';
 
 // ============================================
 // COLLECTION REFERENCES
@@ -56,6 +61,7 @@ const COLLECTIONS = {
   settings: 'settings',
   users: 'users',
   activityLogs: 'activityLogs',
+  pageLayouts: 'pageLayouts',
 } as const;
 
 // ============================================
@@ -673,4 +679,167 @@ export async function getUsers(): Promise<User[]> {
       lastLoginAt: data.lastLoginAt ? convertTimestamp(data.lastLoginAt) : undefined,
     } as User;
   });
+}
+
+// ============================================
+// PAGE LAYOUT FUNCTIONS
+// ============================================
+
+/**
+ * Document data'yı PageLayout'a çevir
+ */
+function docToPageLayout(docSnap: DocumentSnapshot): PageLayout | null {
+  const data = docSnap.data();
+  if (!data) return null;
+  
+  return {
+    ...data,
+    id: docSnap.id,
+    createdAt: convertTimestamp(data.createdAt),
+    updatedAt: convertTimestamp(data.updatedAt),
+  } as PageLayout;
+}
+
+/**
+ * Sayfa düzeni oluştur
+ */
+export async function createPageLayout(input: PageLayoutCreateInput): Promise<string> {
+  const elements: PageElement[] = input.elements.map((el, index) => ({
+    ...el,
+    id: `element-${Date.now()}-${index}`,
+  }));
+  
+  const docRef = await addDoc(collection(db, COLLECTIONS.pageLayouts), {
+    ...input,
+    elements,
+    createdAt: serverTimestamp(),
+    updatedAt: serverTimestamp(),
+    isDefault: input.isDefault ?? false,
+    isActive: input.isActive ?? true,
+  });
+  
+  return docRef.id;
+}
+
+/**
+ * Sayfa düzeni ID ile getir
+ */
+export async function getPageLayoutById(id: string): Promise<PageLayout | null> {
+  const docSnap = await getDoc(doc(db, COLLECTIONS.pageLayouts, id));
+  return docToPageLayout(docSnap);
+}
+
+/**
+ * Sayfa tipine göre aktif düzeni getir
+ */
+export async function getActivePageLayout(pageId: PageType): Promise<PageLayout | null> {
+  const q = query(
+    collection(db, COLLECTIONS.pageLayouts),
+    where('pageId', '==', pageId),
+    where('isActive', '==', true),
+    limit(1)
+  );
+  
+  const snapshot = await getDocs(q);
+  if (snapshot.empty) return null;
+  
+  return docToPageLayout(snapshot.docs[0]);
+}
+
+/**
+ * Sayfa tipine göre varsayılan düzeni getir veya oluştur
+ */
+export async function getOrCreateDefaultLayout(pageId: PageType, createdBy: string): Promise<PageLayout> {
+  // Önce mevcut aktif düzeni kontrol et
+  const existing = await getActivePageLayout(pageId);
+  if (existing) return existing;
+  
+  // Yoksa varsayılan düzeni oluştur
+  let defaultElements = PROJECT_DETAIL_DEFAULT_ELEMENTS;
+  
+  // Diğer sayfa tipleri için farklı varsayılanlar eklenebilir
+  // if (pageId === 'home') defaultElements = HOME_DEFAULT_ELEMENTS;
+  
+  const layoutId = await createPageLayout({
+    pageId,
+    name: `${pageId} - Varsayılan`,
+    elements: defaultElements,
+    createdBy,
+    isDefault: true,
+    isActive: true,
+  });
+  
+  const layout = await getPageLayoutById(layoutId);
+  if (!layout) throw new Error('Layout oluşturulamadı');
+  
+  return layout;
+}
+
+/**
+ * Sayfa düzeni güncelle
+ */
+export async function updatePageLayout(id: string, input: PageLayoutUpdateInput): Promise<void> {
+  const docRef = doc(db, COLLECTIONS.pageLayouts, id);
+  await updateDoc(docRef, {
+    ...input,
+    updatedAt: serverTimestamp(),
+  });
+}
+
+/**
+ * Sayfa düzeni sil
+ */
+export async function deletePageLayout(id: string): Promise<void> {
+  await deleteDoc(doc(db, COLLECTIONS.pageLayouts, id));
+}
+
+/**
+ * Tüm sayfa düzenlerini getir
+ */
+export async function getAllPageLayouts(): Promise<PageLayout[]> {
+  const q = query(
+    collection(db, COLLECTIONS.pageLayouts),
+    orderBy('createdAt', 'desc')
+  );
+  
+  const snapshot = await getDocs(q);
+  return snapshot.docs
+    .map(doc => docToPageLayout(doc))
+    .filter((layout): layout is PageLayout => layout !== null);
+}
+
+/**
+ * Sayfa tipine göre düzenleri getir
+ */
+export async function getPageLayoutsByType(pageId: PageType): Promise<PageLayout[]> {
+  const q = query(
+    collection(db, COLLECTIONS.pageLayouts),
+    where('pageId', '==', pageId),
+    orderBy('createdAt', 'desc')
+  );
+  
+  const snapshot = await getDocs(q);
+  return snapshot.docs
+    .map(doc => docToPageLayout(doc))
+    .filter((layout): layout is PageLayout => layout !== null);
+}
+
+/**
+ * Aktif düzeni değiştir
+ */
+export async function setActivePageLayout(pageId: PageType, layoutId: string): Promise<void> {
+  // Önce aynı sayfa tipindeki tüm düzenleri pasif yap
+  const existingLayouts = await getPageLayoutsByType(pageId);
+  const batch = writeBatch(db);
+  
+  for (const layout of existingLayouts) {
+    const docRef = doc(db, COLLECTIONS.pageLayouts, layout.id);
+    batch.update(docRef, { isActive: false });
+  }
+  
+  // Seçilen düzeni aktif yap
+  const targetDocRef = doc(db, COLLECTIONS.pageLayouts, layoutId);
+  batch.update(targetDocRef, { isActive: true, updatedAt: serverTimestamp() });
+  
+  await batch.commit();
 }

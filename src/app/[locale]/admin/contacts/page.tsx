@@ -5,7 +5,7 @@
 // Contact message management with Firestore integration
 // ============================================
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useLocale, useTranslations } from 'next-intl';
 import { motion } from 'framer-motion';
 import { 
@@ -63,7 +63,7 @@ export default function AdminContactsPage() {
   const [error, setError] = useState<string | null>(null);
 
   // Load contacts from Firestore
-  const loadContacts = async () => {
+  const loadContacts = useCallback(async () => {
     setIsLoading(true);
     setError(null);
     try {
@@ -90,11 +90,11 @@ export default function AdminContactsPage() {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [t]);
 
   useEffect(() => {
     loadContacts();
-  }, []);
+  }, [loadContacts]);
 
   // Filter contacts
   const filteredContacts = contacts.filter(contact => {

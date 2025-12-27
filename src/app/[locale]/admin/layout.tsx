@@ -22,6 +22,7 @@ import {
   Bell,
   Users,
   Handshake,
+  Layers,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Spinner } from '@/components/ui/Spinner';
@@ -137,6 +138,7 @@ export default function AdminLayout({
     { href: '/admin/contacts', icon: Mail, label: t('contacts.title') },
     { href: '/admin/team', icon: Users, label: t('team.title') },
     { href: '/admin/partners', icon: Handshake, label: t('partners.title') },
+    { href: '/admin/page-builder', icon: Layers, label: t('pageBuilder.title') },
     { href: '/admin/settings', icon: Settings, label: t('settings.title') },
   ];
 

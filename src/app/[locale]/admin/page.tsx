@@ -5,7 +5,7 @@
 // Main dashboard with stats and recent activity
 // ============================================
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import { useLocale, useTranslations } from 'next-intl';
 import { motion } from 'framer-motion';
@@ -61,7 +61,7 @@ export default function AdminDashboard() {
   const [recentContacts, setRecentContacts] = useState<RecentContact[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
-  const loadDashboardData = async () => {
+  const loadDashboardData = useCallback(async () => {
     setIsLoading(true);
     try {
       // Load projects from Firestore
@@ -108,11 +108,11 @@ export default function AdminDashboard() {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [locale]);
 
   useEffect(() => {
     loadDashboardData();
-  }, [locale]);
+  }, [loadDashboardData]);
 
   const getLocalizedHref = (href: string) => {
     if (locale === 'tr') return href;
