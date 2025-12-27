@@ -2,7 +2,10 @@ rules_version = '2';
 
 // ============================================
 // Vav Yapı - Firebase Storage Security Rules
-// Development Mode
+// Development Mode (Esnek Kurallar)
+// ============================================
+// ⚠️ DİKKAT: Bu kurallar development içindir!
+// Production'a geçmeden önce sıkılaştırılmalıdır.
 // ============================================
 // Storage Yapısı:
 // - projects/{projectId}/cover/   (kapak görseli)
@@ -46,15 +49,15 @@ service firebase.storage {
     // ==========================================
     // PROJECTS KLASÖRÜ
     // ==========================================
-    // Public read, authenticated write
+    // Development: Authenticated kullanıcılar tam erişim
     // ==========================================
     
     match /projects/{projectId}/{folder}/{fileName} {
-      // Okuma: Herkes (public projeler için)
+      // Okuma: Herkes
       allow read: if true;
       
-      // Yazma: Authenticated + valid image
-      allow write: if isAuthenticated() && isValidImage();
+      // Yazma: Authenticated (development için esnek)
+      allow write: if isAuthenticated();
       
       // Silme: Authenticated
       allow delete: if isAuthenticated();
@@ -63,7 +66,7 @@ service firebase.storage {
     // Nested paths için (gallery içindeki alt klasörler)
     match /projects/{projectId}/{allPaths=**} {
       allow read: if true;
-      allow write: if isAuthenticated() && isValidImage();
+      allow write: if isAuthenticated();
       allow delete: if isAuthenticated();
     }
     
@@ -127,11 +130,15 @@ service firebase.storage {
     }
     
     // ==========================================
-    // VARSAYILAN KURAL
+    // VARSAYILAN KURAL (Development)
+    // ==========================================
+    // ⚠️ Development için tüm authenticated kullanıcılara izin ver
+    // Production'da bu kuralı kaldırın!
     // ==========================================
     
     match /{allPaths=**} {
-      allow read, write: if false;
+      allow read: if true;
+      allow write: if request.auth != null;
     }
   }
 }

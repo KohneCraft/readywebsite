@@ -2,10 +2,10 @@ rules_version = '2';
 
 // ============================================
 // Vav Yapı - Firestore Security Rules
-// Development Mode (Temel Kurallar)
+// Development Mode (Esnek Kurallar)
 // ============================================
-// NOT: Production'a geçmeden önce users koleksiyonunda
-// role kontrolü eklenecek (custom claims veya Firestore lookup)
+// ⚠️ DİKKAT: Bu kurallar development içindir!
+// Production'a geçmeden önce sıkılaştırılmalıdır.
 // ============================================
 
 service cloud.firestore {
@@ -33,25 +33,16 @@ service cloud.firestore {
     // ==========================================
     // PROJECTS KOLEKSİYONU
     // ==========================================
-    // Public: Yayınlanmış projeleri okuyabilir
-    // Authenticated: CRUD (development için)
+    // Development: Authenticated kullanıcılar tam erişim
     // ==========================================
     
     match /projects/{projectId} {
-      // Okuma: Herkes yayınlanmış projeleri görebilir
-      // veya authenticated kullanıcılar tümünü görebilir
-      allow read: if resource.data.published == true || isAuthenticated();
+      // Okuma: Herkes okuyabilir (development)
+      allow read: if true;
       
-      // Oluşturma: Authenticated kullanıcılar
-      allow create: if isAuthenticated()
-        && request.resource.data.keys().hasAll(['slug', 'status', 'translations', 'createdAt', 'createdBy'])
-        && request.resource.data.createdBy == request.auth.uid;
-      
-      // Güncelleme: Authenticated kullanıcılar
-      allow update: if isAuthenticated()
-        && request.resource.data.updatedAt is timestamp;
-      
-      // Silme: Authenticated kullanıcılar
+      // Yazma: Authenticated kullanıcılar (development için esnek)
+      allow create: if isAuthenticated();
+      allow update: if isAuthenticated();
       allow delete: if isAuthenticated();
     }
     
