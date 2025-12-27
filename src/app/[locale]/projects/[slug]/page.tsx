@@ -6,7 +6,7 @@
 // Layout-aware dynamic rendering
 // ============================================
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
@@ -38,9 +38,9 @@ import { buttonVariants } from '@/components/ui/Button';
 import { Spinner } from '@/components/ui/Spinner';
 import { cn } from '@/lib/utils';
 import { getProjectBySlug } from '@/lib/firebase/firestore';
-import { usePageLayout } from '@/hooks/usePageLayout';
+import { usePageLayout, getWidthClass, getSpacingStyle } from '@/hooks/usePageLayout';
 import type { Locale } from '@/i18n';
-import type { Project } from '@/types';
+import type { Project, PageElement, ElementSettings } from '@/types';
 
 // YouTube URL'den video ID'sini çıkar
 function getYouTubeVideoId(url: string): string | null {
@@ -48,6 +48,39 @@ function getYouTubeVideoId(url: string): string | null {
   const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
   const match = url.match(regExp);
   return (match && match[2].length === 11) ? match[2] : null;
+}
+
+// Helper fonksiyonlar - Element ayarlarını uygula
+function getShadowClass(shadow?: string): string {
+  const shadowClasses: Record<string, string> = {
+    'none': '',
+    'sm': 'shadow-sm',
+    'md': 'shadow-md',
+    'lg': 'shadow-lg',
+    'xl': 'shadow-xl',
+  };
+  return shadowClasses[shadow || 'none'] || '';
+}
+
+function getPositionClass(position?: string): string {
+  const positionClasses: Record<string, string> = {
+    'left': 'text-left',
+    'center': 'text-center mx-auto',
+    'right': 'text-right ml-auto',
+  };
+  return positionClasses[position || 'center'] || 'text-center mx-auto';
+}
+
+function applyElementStyles(settings: ElementSettings | null | undefined) {
+  if (!settings) return {};
+  
+  return {
+    ...getSpacingStyle(settings.margin, 'margin'),
+    ...getSpacingStyle(settings.padding, 'padding'),
+    borderRadius: settings.borderRadius ? `${settings.borderRadius}px` : undefined,
+    backgroundColor: settings.backgroundColor || undefined,
+    color: settings.textColor || undefined,
+  };
 }
 
 export default function ProjectDetailPage() {
@@ -65,7 +98,12 @@ export default function ProjectDetailPage() {
   const [linkCopied, setLinkCopied] = useState(false);
 
   // Layout hook'u - Firebase'den sayfa düzenini oku
-  const { isElementVisible, getElementSettings } = usePageLayout('project-detail');
+  const { elements, isElementVisible, getElementSettings } = usePageLayout('project-detail');
+  
+  // Element'leri sıraya göre sırala
+  const sortedElements = useMemo(() => {
+    return [...elements].sort((a, b) => a.order - b.order);
+  }, [elements]);
 
   useEffect(() => {
     const loadProject = async () => {
@@ -205,17 +243,23 @@ export default function ProjectDetailPage() {
   const statusKey = project.status as keyof typeof statusColors;
 
   // Element render fonksiyonları
-  const renderHero = () => {
+  const renderHero = (element?: PageElement) => {
     if (!isElementVisible('hero')) return null;
-    const settings = getElementSettings('hero');
+    const settings = element?.settings || getElementSettings('hero');
+    const widthClass = settings ? getWidthClass(settings.width) : 'w-full';
+    const shadowClass = settings ? getShadowClass(settings.shadow) : '';
+    const positionClass = settings ? getPositionClass(settings.position) : '';
+    const elementStyles = applyElementStyles(settings);
     
     return (
       <section 
-        className="relative h-[60vh] min-h-[400px]"
-        style={settings ? { 
-          marginTop: settings.margin.top,
-          marginBottom: settings.margin.bottom 
-        } : undefined}
+        className={cn(
+          'relative h-[60vh] min-h-[400px]',
+          widthClass,
+          shadowClass,
+          positionClass
+        )}
+        style={elementStyles}
       >
         <Image
           src={project.coverImage?.url || 'https://via.placeholder.com/1200x800?text=No+Image'}
@@ -314,14 +358,18 @@ export default function ProjectDetailPage() {
     );
   };
 
-  const renderDescription = () => {
+  const renderDescription = (element?: PageElement) => {
     if (!isElementVisible('description')) return null;
-    const settings = getElementSettings('description');
+    const settings = element?.settings || getElementSettings('description');
     const widthClass = settings?.width === 'two-thirds' ? 'lg:col-span-2' : 
-                       settings?.width === 'full' ? 'lg:col-span-3' : 'lg:col-span-2';
+                       settings?.width === 'full' ? 'lg:col-span-3' : 
+                       settings?.width === 'third' ? 'lg:col-span-1' : 'lg:col-span-2';
+    const shadowClass = settings ? getShadowClass(settings.shadow) : '';
+    const positionClass = settings ? getPositionClass(settings.position) : '';
+    const elementStyles = applyElementStyles(settings);
     
     return (
-      <div className={widthClass}>
+      <div className={cn(widthClass, shadowClass, positionClass)} style={elementStyles}>
         <div className="prose prose-lg dark:prose-invert max-w-none">
           <h2 className="text-2xl font-bold mb-6 text-gray-900 dark:text-white">
             {t('description')}
@@ -334,12 +382,18 @@ export default function ProjectDetailPage() {
     );
   };
 
-  const renderSidebar = () => {
+  const renderSidebar = (element?: PageElement) => {
     if (!isElementVisible('sidebar')) return null;
+    const settings = element?.settings || getElementSettings('sidebar');
+    const widthClass = settings?.width === 'third' ? 'lg:col-span-1' : 
+                       settings?.width === 'full' ? 'lg:col-span-3' : 'lg:col-span-1';
+    const shadowClass = settings ? getShadowClass(settings.shadow) : 'shadow-lg';
+    const positionClass = settings ? getPositionClass(settings.position) : '';
+    const elementStyles = applyElementStyles(settings);
     
     return (
-      <div className="lg:col-span-1">
-        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6 sticky top-24">
+      <div className={cn(widthClass, positionClass)} style={elementStyles}>
+        <div className={cn('bg-white dark:bg-gray-800 rounded-2xl p-6 sticky top-24', shadowClass)}>
           <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-6 pb-4 border-b border-gray-100 dark:border-gray-700">
             {t('projectInfo')}
           </h3>
@@ -466,16 +520,21 @@ export default function ProjectDetailPage() {
     );
   };
 
-  const renderVideo = () => {
+  const renderVideo = (element?: PageElement) => {
     if (!isElementVisible('video') || !youtubeVideoId) return null;
+    const settings = element?.settings || getElementSettings('video');
+    const widthClass = settings ? getWidthClass(settings.width) : 'flex-1';
+    const shadowClass = settings ? getShadowClass(settings.shadow) : 'shadow-xl';
+    const positionClass = settings ? getPositionClass(settings.position) : '';
+    const elementStyles = applyElementStyles(settings);
     
     return (
-      <div className="flex-1">
+      <div className={cn(widthClass, positionClass)} style={elementStyles}>
         <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">
           {t('video')}
         </h2>
         {showVideo ? (
-          <div className="relative aspect-video rounded-2xl overflow-hidden shadow-xl">
+          <div className={cn('relative aspect-video rounded-2xl overflow-hidden', shadowClass)}>
             <iframe
               src={`https://www.youtube.com/embed/${youtubeVideoId}?autoplay=1`}
               title="Project Video"
@@ -487,7 +546,7 @@ export default function ProjectDetailPage() {
         ) : (
           <button
             onClick={() => setShowVideo(true)}
-            className="relative aspect-video w-full rounded-2xl overflow-hidden group shadow-xl"
+            className={cn('relative aspect-video w-full rounded-2xl overflow-hidden group', shadowClass)}
           >
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
@@ -506,15 +565,20 @@ export default function ProjectDetailPage() {
     );
   };
 
-  const renderMap = () => {
+  const renderMap = (element?: PageElement) => {
     if (!isElementVisible('map') || !project.coordinates?.lat || !project.coordinates?.lng) return null;
+    const settings = element?.settings || getElementSettings('map');
+    const widthClass = settings ? getWidthClass(settings.width) : 'flex-1';
+    const shadowClass = settings ? getShadowClass(settings.shadow) : 'shadow-xl';
+    const positionClass = settings ? getPositionClass(settings.position) : '';
+    const elementStyles = applyElementStyles(settings);
     
     return (
-      <div className="flex-1">
+      <div className={cn(widthClass, positionClass)} style={elementStyles}>
         <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">
           {t('map')}
         </h2>
-        <div className="relative aspect-video rounded-2xl overflow-hidden shadow-xl">
+        <div className={cn('relative aspect-video rounded-2xl overflow-hidden', shadowClass)}>
           <iframe
             src={`https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3000!2d${project.coordinates.lng}!3d${project.coordinates.lat}!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zM!5e0!3m2!1str!2str!4v1234567890`}
             width="100%"
@@ -539,15 +603,20 @@ export default function ProjectDetailPage() {
     );
   };
 
-  const renderGallery = () => {
+  const renderGallery = (element?: PageElement) => {
     if (!isElementVisible('gallery') || allImages.length === 0) return null;
+    const settings = element?.settings || getElementSettings('gallery');
+    const widthClass = settings ? getWidthClass(settings.width) : 'w-full';
+    const shadowClass = settings ? getShadowClass(settings.shadow) : '';
+    const positionClass = settings ? getPositionClass(settings.position) : '';
+    const elementStyles = applyElementStyles(settings);
     
     return (
-      <div className="mt-16">
+      <div className={cn(widthClass, positionClass)} style={elementStyles}>
         <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-8">
           {t('gallery')}
         </h2>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div className={cn('grid grid-cols-2 md:grid-cols-4 gap-4', shadowClass)}>
           {allImages.map((image, index) => (
             <motion.button
               key={index}
@@ -572,36 +641,169 @@ export default function ProjectDetailPage() {
     );
   };
 
+  // Element render fonksiyonu - dinamik rendering
+  const renderElement = (element: PageElement) => {
+    if (!element.visible) return null;
+    
+    switch (element.type) {
+      case 'hero':
+        return <div key={element.id}>{renderHero(element)}</div>;
+      
+      case 'description':
+        return (
+          <div key={element.id} className="container mx-auto px-4 py-16 md:py-24">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
+              {renderDescription(element)}
+            </div>
+          </div>
+        );
+      
+      case 'sidebar':
+        // Sidebar genellikle description ile birlikte grid içinde render edilir
+        // Eğer description yoksa tek başına render edilir
+        const hasDescription = sortedElements.some(el => el.type === 'description' && el.visible);
+        if (hasDescription) {
+          // Description ile birlikte render edilecek, burada sadece sidebar'ı ekle
+          return null; // Description render'ında birlikte render edilecek
+        }
+        return (
+          <div key={element.id} className="container mx-auto px-4 py-16 md:py-24">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
+              {renderSidebar(element)}
+            </div>
+          </div>
+        );
+      
+      case 'video':
+        if (!youtubeVideoId) return null;
+        return (
+          <div key={element.id} className="container mx-auto px-4 py-16 md:py-24">
+            <div className="flex flex-col lg:flex-row gap-8">
+              {renderVideo(element)}
+            </div>
+          </div>
+        );
+      
+      case 'map':
+        if (!project.coordinates?.lat || !project.coordinates?.lng) return null;
+        return (
+          <div key={element.id} className="container mx-auto px-4 py-16 md:py-24">
+            <div className="flex flex-col lg:flex-row gap-8">
+              {renderMap(element)}
+            </div>
+          </div>
+        );
+      
+      case 'gallery':
+        if (allImages.length === 0) return null;
+        return (
+          <div key={element.id} className="container mx-auto px-4 py-16 md:py-24">
+            {renderGallery(element)}
+          </div>
+        );
+      
+      case 'cta':
+        return (
+          <div key={element.id} className="container mx-auto px-4 py-16 md:py-24">
+            <div className="bg-gradient-to-br from-primary-500 to-primary-700 rounded-xl p-8 text-white text-center">
+              <h3 className="text-2xl font-bold mb-4">{t('cta.title')}</h3>
+              <p className="text-white/90 mb-6">{t('cta.description')}</p>
+              <Link
+                href={getLocalizedHref('/contact')}
+                className="inline-block bg-white text-primary-600 px-6 py-3 rounded-lg font-semibold hover:bg-primary-50 transition-colors"
+              >
+                {t('cta.button')}
+              </Link>
+            </div>
+          </div>
+        );
+      
+      default:
+        return null;
+    }
+  };
+
+  // Description ve Sidebar'ı birlikte render et (eğer ikisi de varsa)
+  const renderDescriptionAndSidebar = () => {
+    const descriptionElement = sortedElements.find(el => el.type === 'description' && el.visible);
+    const sidebarElement = sortedElements.find(el => el.type === 'sidebar' && el.visible);
+    
+    if (!descriptionElement && !sidebarElement) return null;
+    
+    return (
+      <div className="container mx-auto px-4 py-16 md:py-24">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
+          {descriptionElement && renderDescription(descriptionElement)}
+          {sidebarElement && renderSidebar(sidebarElement)}
+        </div>
+      </div>
+    );
+  };
+
+  // Video ve Map'i birlikte render et (eğer ikisi de varsa)
+  const renderVideoAndMap = () => {
+    const videoElement = sortedElements.find(el => el.type === 'video' && el.visible);
+    const mapElement = sortedElements.find(el => el.type === 'map' && el.visible);
+    
+    const hasVideo = videoElement && youtubeVideoId;
+    const hasMap = mapElement && project.coordinates?.lat && project.coordinates?.lng;
+    
+    if (!hasVideo && !hasMap) return null;
+    
+    return (
+      <div className="container mx-auto px-4 py-16 md:py-24">
+        <div className="flex flex-col lg:flex-row gap-8">
+          {hasVideo && renderVideo(videoElement)}
+          {hasMap && renderMap(mapElement)}
+        </div>
+      </div>
+    );
+  };
+
+  // Render mantığı - özel durumları kontrol et
+  const renderedTypes = new Set<string>();
+  
   return (
     <>
       <article className="min-h-screen">
-        {/* Hero - Layout'a göre */}
-        {renderHero()}
-
-        {/* Content - Layout'a göre dinamik sıralama */}
-        <section className="py-16 md:py-24">
-          <div className="container mx-auto px-4">
-            {/* Açıklama ve Sidebar Grid */}
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
-              {renderDescription()}
-              {renderSidebar()}
-            </div>
-
-            {/* Video ve Harita - Yan Yana */}
-            {(isElementVisible('video') || isElementVisible('map')) && 
-             (youtubeVideoId || (project.coordinates?.lat && project.coordinates?.lng)) && (
-              <div className="mt-16">
-                <div className="flex flex-col lg:flex-row gap-8">
-                  {renderVideo()}
-                  {renderMap()}
-                </div>
-              </div>
-            )}
-
-            {/* Galeri */}
-            {renderGallery()}
-          </div>
-        </section>
+        {/* Dinamik element rendering - sortedElements'a göre */}
+        {sortedElements.map((element) => {
+          if (!element.visible) return null;
+          
+          // Description ve Sidebar birlikte render edilecek
+          if (element.type === 'description') {
+            if (renderedTypes.has('description')) return null;
+            renderedTypes.add('description');
+            return <div key={element.id}>{renderDescriptionAndSidebar()}</div>;
+          }
+          
+          // Sidebar tek başına render edilmeyecek (description ile birlikte)
+          if (element.type === 'sidebar') {
+            const hasDescription = sortedElements.some(el => el.type === 'description' && el.visible);
+            if (hasDescription) {
+              if (renderedTypes.has('description')) return null; // Zaten description ile birlikte render edildi
+            }
+            renderedTypes.add('sidebar');
+          }
+          
+          // Video ve Map birlikte render edilecek
+          if (element.type === 'video') {
+            if (renderedTypes.has('video')) return null;
+            renderedTypes.add('video');
+            return <div key={element.id}>{renderVideoAndMap()}</div>;
+          }
+          
+          if (element.type === 'map') {
+            const hasVideo = sortedElements.some(el => el.type === 'video' && el.visible && youtubeVideoId);
+            if (hasVideo) {
+              if (renderedTypes.has('video')) return null; // Zaten video ile birlikte render edildi
+            }
+            renderedTypes.add('map');
+          }
+          
+          // Diğer elementler normal render
+          return renderElement(element);
+        })}
       </article>
 
       {/* Lightbox */}
