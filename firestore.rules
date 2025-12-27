@@ -20,16 +20,6 @@ service cloud.firestore {
       return request.auth != null;
     }
     
-    // Kendi dokümanı mı? (users koleksiyonu için)
-    function isOwner(userId) {
-      return isAuthenticated() && request.auth.uid == userId;
-    }
-    
-    // Geçerli timestamp mı?
-    function isValidTimestamp(field) {
-      return request.resource.data[field] is timestamp;
-    }
-    
     // ==========================================
     // PROJECTS KOLEKSİYONU
     // ==========================================
@@ -142,6 +132,22 @@ service cloud.firestore {
     
     match /pageLayouts/{layoutId} {
       // Okuma: Herkes (sayfa düzenlerini görmek için)
+      allow read: if true;
+      
+      // Yazma: Sadece authenticated kullanıcılar
+      allow create: if isAuthenticated();
+      allow update: if isAuthenticated();
+      allow delete: if isAuthenticated();
+    }
+    
+    // ==========================================
+    // PAGE CONTENTS KOLEKSİYONU
+    // ==========================================
+    // Sayfa içerik yönetimi için
+    // ==========================================
+    
+    match /pageContents/{contentId} {
+      // Okuma: Herkes (sayfa içeriklerini görmek için)
       allow read: if true;
       
       // Yazma: Sadece authenticated kullanıcılar

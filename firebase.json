@@ -12,13 +12,7 @@
     },
     "storage": {
       "port": 9199
-    },
-    "dataconnect": {
-      "dataDir": "dataconnect/.dataconnect/pgliteData"
     }
-  },
-  "dataconnect": {
-    "source": "dataconnect"
   },
   "hosting": {
     "source": ".",

@@ -48,6 +48,10 @@ import type {
   PageLayoutUpdateInput,
   PageType,
   PageElement,
+  PageContent,
+  PageContentCreateInput,
+  PageContentUpdateInput,
+  ContentSection,
 } from '@/types';
 import { DEFAULT_SITE_SETTINGS, getDefaultElementsForPage } from '@/types';
 
@@ -62,6 +66,7 @@ const COLLECTIONS = {
   users: 'users',
   activityLogs: 'activityLogs',
   pageLayouts: 'pageLayouts',
+  pageContents: 'pageContents',
 } as const;
 
 // ============================================
@@ -839,4 +844,191 @@ export async function setActivePageLayout(pageId: PageType, layoutId: string): P
   batch.update(targetDocRef, { isActive: true, updatedAt: serverTimestamp() });
   
   await batch.commit();
+}
+
+/**
+ * Sayfa düzenini varsayılana sıfırla
+ * Mevcut layout'u siler ve varsayılan elementlerle yeniden oluşturur
+ */
+export async function resetPageLayoutToDefault(pageId: PageType, createdBy: string): Promise<PageLayout> {
+  // Mevcut tüm layout'ları bu sayfa için sil
+  const existingLayouts = await getPageLayoutsByType(pageId);
+  const batch = writeBatch(db);
+  
+  for (const layout of existingLayouts) {
+    const docRef = doc(db, COLLECTIONS.pageLayouts, layout.id);
+    batch.delete(docRef);
+  }
+  
+  await batch.commit();
+  
+  // Varsayılan elementleri al ve yeni layout oluştur
+  const defaultElements = getDefaultElementsForPage(pageId);
+  
+  const layoutId = await createPageLayout({
+    pageId,
+    name: `${pageId} - Varsayılan`,
+    elements: defaultElements,
+    createdBy,
+    isDefault: true,
+    isActive: true,
+  });
+  
+  const resetLayout = await getPageLayoutById(layoutId);
+  if (!resetLayout) throw new Error('Layout oluşturulamadı');
+  
+  return resetLayout;
+}
+
+// ============================================
+// PAGE CONTENT FUNCTIONS
+// ============================================
+
+/**
+ * Document data'yı PageContent'e çevir
+ */
+function docToPageContent(docSnap: DocumentSnapshot): PageContent | null {
+  const data = docSnap.data();
+  if (!data) return null;
+  
+  return {
+    ...data,
+    id: docSnap.id,
+    createdAt: convertTimestamp(data.createdAt),
+    updatedAt: convertTimestamp(data.updatedAt),
+  } as PageContent;
+}
+
+/**
+ * Sayfa içeriği oluştur
+ */
+export async function createPageContent(input: PageContentCreateInput): Promise<string> {
+  const docRef = await addDoc(collection(db, COLLECTIONS.pageContents), {
+    ...input,
+    createdAt: serverTimestamp(),
+    updatedAt: serverTimestamp(),
+  });
+  
+  return docRef.id;
+}
+
+/**
+ * Sayfa içeriği ID ile getir
+ */
+export async function getPageContentById(id: string): Promise<PageContent | null> {
+  const docSnap = await getDoc(doc(db, COLLECTIONS.pageContents, id));
+  return docToPageContent(docSnap);
+}
+
+/**
+ * Belirli bir element için sayfa içeriğini getir
+ */
+export async function getPageContent(
+  pageId: PageType,
+  elementId: string,
+  locale: Locale
+): Promise<PageContent | null> {
+  const q = query(
+    collection(db, COLLECTIONS.pageContents),
+    where('pageId', '==', pageId),
+    where('elementId', '==', elementId),
+    where('locale', '==', locale),
+    limit(1)
+  );
+  
+  const snapshot = await getDocs(q);
+  if (snapshot.empty) return null;
+  
+  return docToPageContent(snapshot.docs[0]);
+}
+
+/**
+ * Sayfa için tüm içerikleri getir
+ */
+export async function getPageContents(pageId: PageType, locale: Locale): Promise<PageContent[]> {
+  const q = query(
+    collection(db, COLLECTIONS.pageContents),
+    where('pageId', '==', pageId),
+    where('locale', '==', locale)
+  );
+  
+  const snapshot = await getDocs(q);
+  return snapshot.docs
+    .map(docItem => docToPageContent(docItem))
+    .filter((content): content is PageContent => content !== null);
+}
+
+/**
+ * Sayfa içeriği güncelle veya oluştur (upsert)
+ */
+export async function upsertPageContent(
+  pageId: PageType,
+  elementId: string,
+  elementType: string,
+  locale: Locale,
+  content: Partial<ContentSection>,
+  createdBy: string
+): Promise<string> {
+  // Mevcut içeriği kontrol et
+  const existing = await getPageContent(pageId, elementId, locale);
+  
+  if (existing) {
+    // Güncelle
+    const docRef = doc(db, COLLECTIONS.pageContents, existing.id);
+    await updateDoc(docRef, {
+      content: { ...existing.content, ...content },
+      updatedAt: serverTimestamp(),
+    });
+    return existing.id;
+  } else {
+    // Yeni oluştur
+    return createPageContent({
+      pageId,
+      elementId,
+      elementType: elementType as PageContent['elementType'],
+      locale,
+      content: content as ContentSection,
+      createdBy,
+    });
+  }
+}
+
+/**
+ * Sayfa içeriği güncelle
+ */
+export async function updatePageContentById(
+  id: string,
+  input: PageContentUpdateInput
+): Promise<void> {
+  const docRef = doc(db, COLLECTIONS.pageContents, id);
+  await updateDoc(docRef, {
+    ...input,
+    updatedAt: serverTimestamp(),
+  });
+}
+
+/**
+ * Sayfa içeriği sil
+ */
+export async function deletePageContent(id: string): Promise<void> {
+  await deleteDoc(doc(db, COLLECTIONS.pageContents, id));
+}
+
+/**
+ * Bir sayfanın tüm içeriklerini sil
+ */
+export async function deletePageContents(pageId: PageType): Promise<void> {
+  const q = query(
+    collection(db, COLLECTIONS.pageContents),
+    where('pageId', '==', pageId)
+  );
+  
+  const snapshot = await getDocs(q);
+  const deleteBatch = writeBatch(db);
+  
+  snapshot.docs.forEach(docSnap => {
+    deleteBatch.delete(docSnap.ref);
+  });
+  
+  await deleteBatch.commit();
 }

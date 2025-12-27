@@ -92,6 +92,26 @@ export {
   getDefaultElementsForPage,
 } from './pageLayout';
 
+// Page Content Types
+export type {
+  TextStyles,
+  ImageSettings,
+  ButtonSettings,
+  ContentSection,
+  PageContent,
+  PageContentCreateInput,
+  PageContentUpdateInput,
+} from './pageContent';
+
+export {
+  DEFAULT_TEXT_STYLES,
+  DEFAULT_CONTENT_SECTION,
+  FONT_OPTIONS,
+  FONT_SIZE_OPTIONS,
+  FONT_WEIGHT_OPTIONS,
+  TEXT_ALIGN_OPTIONS,
+} from './pageContent';
+
 // ============================================
 // Common Types
 // ============================================
