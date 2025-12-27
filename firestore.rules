@@ -135,6 +135,22 @@ service cloud.firestore {
     }
     
     // ==========================================
+    // PAGE LAYOUTS KOLEKSİYONU
+    // ==========================================
+    // Sayfa düzeni yönetimi için
+    // ==========================================
+    
+    match /pageLayouts/{layoutId} {
+      // Okuma: Herkes (sayfa düzenlerini görmek için)
+      allow read: if true;
+      
+      // Yazma: Sadece authenticated kullanıcılar
+      allow create: if isAuthenticated();
+      allow update: if isAuthenticated();
+      allow delete: if isAuthenticated();
+    }
+    
+    // ==========================================
     // VARSAYILAN KURAL
     // ==========================================
     // Yukarıda tanımlanmayan tüm koleksiyonlar için
