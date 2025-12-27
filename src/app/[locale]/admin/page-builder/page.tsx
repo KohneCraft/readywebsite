@@ -5,35 +5,48 @@
 // Düzenlenebilir sayfalar listesi
 // ============================================
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import { useLocale, useTranslations } from 'next-intl';
 import { 
   LayoutDashboard, 
   FileText, 
   Home, 
-  Info, 
   Mail, 
-  Briefcase,
   ChevronRight,
   Plus,
   Layers,
+  X,
 } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/Card';
-import { Spinner } from '@/components/ui/Spinner';
+import { Button } from '@/components/ui/Button';
+import { Input } from '@/components/ui/Input';
 import { cn } from '@/lib/utils';
 import { getPageLayoutsByType } from '@/lib/firebase/firestore';
 import type { Locale } from '@/i18n';
 import type { PageType } from '@/types';
-import { PAGE_TYPE_LABELS } from '@/types';
 
-const PAGE_ICONS: Record<PageType, typeof Home> = {
-  'project-detail': FileText,
-  'home': Home,
-  'about': Info,
-  'contact': Mail,
-  'services': Briefcase,
-};
+// Varsayılan 3 sayfa - her zaman gösterilecek
+const DEFAULT_PAGES: { id: PageType; name: string; description: string; icon: typeof Home }[] = [
+  { 
+    id: 'home', 
+    name: 'Anasayfa', 
+    description: 'Ana sayfa bölümlerini düzenleyin',
+    icon: Home 
+  },
+  { 
+    id: 'contact', 
+    name: 'İletişim', 
+    description: 'İletişim sayfasını düzenleyin',
+    icon: Mail 
+  },
+  { 
+    id: 'project-detail', 
+    name: 'Proje Detay', 
+    description: 'Proje detay sayfasının düzenini özelleştirin',
+    icon: FileText 
+  },
+];
 
 interface PageInfo {
   id: PageType;
@@ -49,61 +62,56 @@ export default function PageBuilderListPage() {
   const locale = useLocale() as Locale;
   const [pages, setPages] = useState<PageInfo[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [showAddModal, setShowAddModal] = useState(false);
+  const [newPageName, setNewPageName] = useState('');
 
-  const getLocalizedHref = (href: string) => {
+  const getLocalizedHref = useCallback((href: string) => {
     if (locale === 'tr') return href;
     return `/${locale}${href}`;
-  };
+  }, [locale]);
 
   useEffect(() => {
     const loadPages = async () => {
+      // Varsayılan sayfaları hemen göster
+      const pagesData: PageInfo[] = DEFAULT_PAGES.map(page => ({
+        ...page,
+        layoutCount: 0,
+        hasActiveLayout: false,
+      }));
+
       try {
-        const pageTypes: PageType[] = ['project-detail', 'home', 'about', 'contact', 'services'];
-        const pagesData: PageInfo[] = [];
-
-        for (const pageType of pageTypes) {
-          const layouts = await getPageLayoutsByType(pageType);
-          const activeLayout = layouts.find(l => l.isActive);
-          
-          pagesData.push({
-            id: pageType,
-            name: PAGE_TYPE_LABELS[pageType],
-            description: getPageDescription(pageType),
-            icon: PAGE_ICONS[pageType],
-            layoutCount: layouts.length,
-            hasActiveLayout: !!activeLayout,
-          });
+        // Firebase'den layout bilgilerini çekmeye çalış
+        for (let i = 0; i < pagesData.length; i++) {
+          try {
+            const layouts = await getPageLayoutsByType(pagesData[i].id);
+            const activeLayout = layouts.find(l => l.isActive);
+            pagesData[i].layoutCount = layouts.length;
+            pagesData[i].hasActiveLayout = !!activeLayout;
+          } catch {
+            // Firebase hatası olursa varsayılan değerler kullan
+            console.log(`Layout bilgisi alınamadı: ${pagesData[i].id}`);
+          }
         }
-
-        setPages(pagesData);
       } catch (error) {
         console.error('Failed to load pages:', error);
-      } finally {
-        setIsLoading(false);
       }
+
+      setPages(pagesData);
+      setIsLoading(false);
     };
 
     loadPages();
   }, []);
 
-  function getPageDescription(pageType: PageType): string {
-    switch (pageType) {
-      case 'project-detail': return 'Proje detay sayfasının düzenini özelleştirin';
-      case 'home': return 'Ana sayfa bölümlerini düzenleyin';
-      case 'about': return 'Hakkımızda sayfasını düzenleyin';
-      case 'contact': return 'İletişim sayfasını düzenleyin';
-      case 'services': return 'Hizmetler sayfasını düzenleyin';
-      default: return '';
-    }
-  }
+  const handleAddPage = () => {
+    // TODO: Özel sayfa ekleme işlemi
+    console.log('Yeni sayfa ekleniyor:', newPageName);
+    setShowAddModal(false);
+    setNewPageName('');
+  };
 
-  if (isLoading) {
-    return (
-      <div className="flex items-center justify-center h-64">
-        <Spinner size="lg" />
-      </div>
-    );
-  }
+  // Varsayılan sayfalar yüklenmeden önce bile göster
+  const displayPages = isLoading ? DEFAULT_PAGES.map(p => ({ ...p, layoutCount: 0, hasActiveLayout: false })) : pages;
 
   return (
     <div className="space-y-6">
@@ -126,7 +134,7 @@ export default function PageBuilderListPage() {
 
       {/* Pages Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {pages.map((page) => {
+        {displayPages.map((page) => {
           const Icon = page.icon;
           return (
             <Link
@@ -174,19 +182,21 @@ export default function PageBuilderListPage() {
         })}
 
         {/* Add New Layout Card */}
-        <Card className="border-2 border-dashed border-gray-200 dark:border-gray-700 hover:border-primary-300 dark:hover:border-primary-600 transition-colors cursor-pointer">
-          <CardContent className="p-6 flex flex-col items-center justify-center h-full min-h-[200px] text-center">
-            <div className="w-12 h-12 bg-gray-100 dark:bg-gray-800 rounded-xl flex items-center justify-center mb-4">
-              <Plus className="w-6 h-6 text-gray-400" />
-            </div>
-            <h3 className="text-lg font-semibold text-gray-600 dark:text-gray-400 mb-2">
-              Yeni Sayfa Ekle
-            </h3>
-            <p className="text-sm text-gray-400 dark:text-gray-500">
-              Özel sayfa düzeni oluşturun
-            </p>
-          </CardContent>
-        </Card>
+        <div onClick={() => setShowAddModal(true)}>
+          <Card className="border-2 border-dashed border-gray-200 dark:border-gray-700 hover:border-primary-300 dark:hover:border-primary-600 transition-colors cursor-pointer h-full">
+            <CardContent className="p-6 flex flex-col items-center justify-center h-full min-h-[200px] text-center">
+              <div className="w-12 h-12 bg-gray-100 dark:bg-gray-800 rounded-xl flex items-center justify-center mb-4">
+                <Plus className="w-6 h-6 text-gray-400" />
+              </div>
+              <h3 className="text-lg font-semibold text-gray-600 dark:text-gray-400 mb-2">
+                Yeni Sayfa Ekle
+              </h3>
+              <p className="text-sm text-gray-400 dark:text-gray-500">
+                Özel sayfa düzeni oluşturun
+              </p>
+            </CardContent>
+          </Card>
+        </div>
       </div>
 
       {/* Info Box */}
@@ -201,6 +211,62 @@ export default function PageBuilderListPage() {
           <li>• Kaydet butonu ile değişiklikleri uygulayın</li>
         </ul>
       </div>
+
+      {/* Add New Page Modal */}
+      {showAddModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div className="bg-white dark:bg-gray-800 rounded-xl p-6 w-full max-w-md mx-4 shadow-2xl">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+                Yeni Sayfa Ekle
+              </h3>
+              <button
+                onClick={() => setShowAddModal(false)}
+                className="p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+              >
+                <X className="w-5 h-5 text-gray-500" />
+              </button>
+            </div>
+            
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  Sayfa Adı
+                </label>
+                <Input
+                  type="text"
+                  placeholder="Örn: Hakkımızda, Hizmetler..."
+                  value={newPageName}
+                  onChange={(e) => setNewPageName(e.target.value)}
+                />
+              </div>
+              
+              <div className="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg p-3">
+                <p className="text-sm text-amber-700 dark:text-amber-300">
+                  ⚠️ Bu özellik şu an geliştirme aşamasındadır. Varsayılan sayfaları (Anasayfa, İletişim, Proje Detay) düzenleyebilirsiniz.
+                </p>
+              </div>
+              
+              <div className="flex gap-3 pt-2">
+                <Button
+                  variant="outline"
+                  onClick={() => setShowAddModal(false)}
+                  className="flex-1"
+                >
+                  İptal
+                </Button>
+                <Button
+                  onClick={handleAddPage}
+                  className="flex-1"
+                  disabled={!newPageName.trim()}
+                >
+                  Ekle
+                </Button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
