@@ -100,8 +100,10 @@ export function CenterCanvas({
             ) : (
               <EmptyCanvas
                 onAddSection={() => {
-                  // Yeni section ekleme işlemi
-                  console.log('Yeni section ekle');
+                  // Window event dispatch et - PageBuilderEditor dinliyor
+                  if (typeof window !== 'undefined') {
+                    window.dispatchEvent(new CustomEvent('add-section'));
+                  }
                 }}
               />
             )}

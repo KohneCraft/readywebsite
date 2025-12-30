@@ -9,6 +9,7 @@ import {
   getDoc,
   getDocs,
   addDoc,
+  setDoc,
   updateDoc,
   deleteDoc,
   query,
@@ -1319,7 +1320,8 @@ export async function deletePage(id: string): Promise<void> {
 export async function createSection(input: SectionCreateInput): Promise<string> {
   const sectionRef = doc(db, COLLECTIONS.sections, generateId());
   
-  await updateDoc(sectionRef, {
+  // setDoc kullan - document yoksa oluşturur
+  await setDoc(sectionRef, {
     id: sectionRef.id,
     pageId: input.pageId,
     name: input.name || 'Yeni Bölüm',
@@ -1329,18 +1331,6 @@ export async function createSection(input: SectionCreateInput): Promise<string> 
     visibility: { desktop: true, tablet: true, mobile: true },
     createdAt: serverTimestamp(),
     updatedAt: serverTimestamp(),
-  }).catch(() => {
-    return addDoc(collection(db, COLLECTIONS.sections), {
-      id: sectionRef.id,
-      pageId: input.pageId,
-      name: input.name || 'Yeni Bölüm',
-      columns: [],
-      settings: input.settings || {},
-      order: input.order || 0,
-      visibility: { desktop: true, tablet: true, mobile: true },
-      createdAt: serverTimestamp(),
-      updatedAt: serverTimestamp(),
-    });
   });
   
   // Page'e section ID'sini ekle
