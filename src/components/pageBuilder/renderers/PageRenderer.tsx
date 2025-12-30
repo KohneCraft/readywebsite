@@ -8,6 +8,7 @@ import type { Page } from '@/types/pageBuilder';
 interface PageRendererProps {
   pageId?: string;
   slug?: string;
+  allowDraft?: boolean; // Preview modunda taslak sayfaları da göster
 }
 
 function updateMetaTag(property: string, content: string) {
@@ -22,7 +23,7 @@ function updateMetaTag(property: string, content: string) {
   tag.setAttribute('content', content);
 }
 
-export function PageRenderer({ pageId, slug }: PageRendererProps) {
+export function PageRenderer({ pageId, slug, allowDraft = false }: PageRendererProps) {
   const [page, setPage] = useState<Page | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -44,8 +45,8 @@ export function PageRenderer({ pageId, slug }: PageRendererProps) {
           return;
         }
         
-        // Yayınlanmış sayfa kontrolü
-        if (pageData.status !== 'published') {
+        // Status kontrolü (preview modunda taslak sayfalar da görüntülenebilir)
+        if (!allowDraft && pageData.status !== 'published') {
           setError('Bu sayfa henüz yayınlanmamış');
           return;
         }

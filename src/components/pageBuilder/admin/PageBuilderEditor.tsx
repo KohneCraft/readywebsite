@@ -79,19 +79,46 @@ export function PageBuilderEditor({ pageId }: PageBuilderEditorProps) {
   const handleDragEnd = useCallback(async (event: DragEndEvent) => {
     const { active, over } = event;
     
-    if (!over || !page) return;
+    if (!over || !page) {
+      setActiveBlock(null);
+      return;
+    }
 
     const activeData = active.data.current;
     const overData = over.data.current;
 
     // Yeni blok ekleme (library'den)
-    if (activeData?.source === 'library' && activeData?.type && overData?.type === 'column') {
+    if (activeData?.source === 'library' && activeData?.type) {
       try {
+        let targetColumnId: string;
+
+        // Eğer column'a bırakıldıysa
+        if (overData?.type === 'column') {
+          targetColumnId = over.id as string;
+        } 
+        // Eğer boş section'a bırakıldıysa, önce column oluştur
+        else if (overData?.type === 'section') {
+          const { createColumn } = await import('@/lib/firebase/firestore');
+          targetColumnId = await createColumn({
+            sectionId: over.id as string,
+            width: 100,
+            order: 0,
+          });
+        } else {
+          setActiveBlock(null);
+          return;
+        }
+
+        // Blok oluştur
         await createBlock({
-          columnId: over.id as string,
+          columnId: targetColumnId,
           type: activeData.type as BlockType,
           props: {},
         });
+        
+        // Kısa bir bekleme - column güncellemesinin tamamlanması için
+        await new Promise(resolve => setTimeout(resolve, 300));
+        
         // Sayfayı yeniden yükle
         const pageData = await getPageById(pageId);
         if (pageData) setPage(pageData);
@@ -123,9 +150,21 @@ export function PageBuilderEditor({ pageId }: PageBuilderEditorProps) {
 
       try {
         setIsSaving(true);
-        await updatePage(pageId, {
-          ...page,
-        });
+        // Sadece güncellenebilir field'ları gönder (undefined field'ları filtrele)
+        const updateData: Partial<Page> = {
+          title: page.title,
+          slug: page.slug,
+          sections: page.sections,
+          settings: page.settings,
+          status: page.status,
+        };
+        
+        // publishedAt sadece published ise ve yoksa ekle
+        if (page.status === 'published' && !page.publishedAt) {
+          // updatePage fonksiyonu zaten bunu handle ediyor
+        }
+        
+        await updatePage(pageId, updateData);
         setHasChanges(false);
       } catch (error) {
         console.error('Kaydetme hatası:', error);

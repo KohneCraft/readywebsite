@@ -129,8 +129,9 @@ export function TopBar({
           variant="outline"
           size="sm"
           onClick={() => {
-            // Önizleme sayfasını yeni sekmede aç
-            window.open(`/preview/${page.slug}`, '_blank');
+            // Önizleme sayfasını yeni sekmede aç (locale ile)
+            const locale = window.location.pathname.split('/')[1] || 'tr';
+            window.open(`/${locale}/preview/${page.slug}`, '_blank');
           }}
         >
           <Eye className="w-4 h-4 mr-2" />

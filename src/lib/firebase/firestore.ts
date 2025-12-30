@@ -1274,8 +1274,18 @@ export async function getAllPages(): Promise<Page[]> {
  */
 export async function updatePage(id: string, input: PageUpdateInput): Promise<void> {
   const docRef = doc(db, COLLECTIONS.pages, id);
+  
+  // Undefined field'ları filtrele
+  const cleanInput: Record<string, unknown> = {};
+  Object.keys(input).forEach(key => {
+    const value = input[key as keyof PageUpdateInput];
+    if (value !== undefined) {
+      cleanInput[key] = value;
+    }
+  });
+  
   const updates: Record<string, unknown> = {
-    ...input,
+    ...cleanInput,
     updatedAt: serverTimestamp(),
   };
   
@@ -1497,7 +1507,8 @@ export async function createBlock(input: BlockCreateInput): Promise<string> {
   const { getDefaultBlockProps } = await import('@/types/pageBuilder');
   const defaultProps = getDefaultBlockProps(input.type);
   
-  await updateDoc(blockRef, {
+  // setDoc kullan - document yoksa oluşturur
+  await setDoc(blockRef, {
     id: blockRef.id,
     columnId: input.columnId,
     type: input.type,
@@ -1505,16 +1516,6 @@ export async function createBlock(input: BlockCreateInput): Promise<string> {
     order: input.order ?? 0,
     createdAt: serverTimestamp(),
     updatedAt: serverTimestamp(),
-  }).catch(() => {
-    return addDoc(collection(db, COLLECTIONS.blocks), {
-      id: blockRef.id,
-      columnId: input.columnId,
-      type: input.type,
-      props: { ...defaultProps, ...input.props },
-      order: input.order ?? 0,
-      createdAt: serverTimestamp(),
-      updatedAt: serverTimestamp(),
-    });
   });
   
   // Column'a block ID'sini ekle

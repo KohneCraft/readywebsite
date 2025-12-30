@@ -5,23 +5,90 @@
 // Ayarlar paneli - seçili elementin özelliklerini düzenler
 // ============================================
 
-import { useState } from 'react';
+import { useState, useCallback, useRef } from 'react';
 import { X, Settings as SettingsIcon } from 'lucide-react';
 import { SectionSettings } from '../settings/SectionSettings';
 import { ColumnSettings } from '../settings/ColumnSettings';
 import { BlockSettings } from '../settings/BlockSettings';
-import { PageSettings } from '../settings/PageSettings';
+import { updateSection, updateColumn, updateBlock } from '@/lib/firebase/firestore';
 import { cn } from '@/lib/utils';
-import type { Page } from '@/types/pageBuilder';
+import type { Page, Section, Column, Block } from '@/types/pageBuilder';
 
 interface RightPanelProps {
   selectedElement: { type: 'section' | 'column' | 'block'; id: string } | null;
-  page: Page;
-  onUpdate: (updates: Partial<Page>) => void;
+  page?: Page;
+  onUpdate?: (updates: Partial<Page>) => void;
 }
 
-export function RightPanel({ selectedElement, page, onUpdate }: RightPanelProps) {
+export function RightPanel({ selectedElement }: RightPanelProps) {
   const [activeTab, setActiveTab] = useState<'style' | 'settings' | 'advanced'>('style');
+  const debounceTimer = useRef<NodeJS.Timeout | null>(null);
+
+  // Debounced update fonksiyonları
+  const handleSectionUpdate = useCallback(async (updates: Partial<Section>) => {
+    if (!selectedElement) return;
+    
+    // Debounce: 500ms bekle
+    if (debounceTimer.current) {
+      clearTimeout(debounceTimer.current);
+    }
+    
+    debounceTimer.current = setTimeout(async () => {
+      try {
+        await updateSection(selectedElement.id, {
+          name: updates.name,
+          settings: updates.settings,
+          order: updates.order,
+          visibility: updates.visibility,
+        });
+        // Section güncelleme event'i gönder
+        window.dispatchEvent(new CustomEvent('section-updated', { detail: { sectionId: selectedElement.id } }));
+      } catch (error) {
+        console.error('Section güncelleme hatası:', error);
+      }
+    }, 500);
+  }, [selectedElement?.id]);
+
+  const handleColumnUpdate = useCallback(async (updates: Partial<Column>) => {
+    if (!selectedElement) return;
+    
+    if (debounceTimer.current) {
+      clearTimeout(debounceTimer.current);
+    }
+    
+    debounceTimer.current = setTimeout(async () => {
+      try {
+        await updateColumn(selectedElement.id, {
+          width: updates.width,
+          settings: updates.settings,
+          order: updates.order,
+        });
+        window.dispatchEvent(new CustomEvent('section-updated', { detail: { sectionId: 'any' } }));
+      } catch (error) {
+        console.error('Column güncelleme hatası:', error);
+      }
+    }, 500);
+  }, [selectedElement?.id]);
+
+  const handleBlockUpdate = useCallback(async (updates: Partial<Block>) => {
+    if (!selectedElement) return;
+    
+    if (debounceTimer.current) {
+      clearTimeout(debounceTimer.current);
+    }
+    
+    debounceTimer.current = setTimeout(async () => {
+      try {
+        await updateBlock(selectedElement.id, {
+          props: updates.props,
+          order: updates.order,
+        });
+        window.dispatchEvent(new CustomEvent('section-updated', { detail: { sectionId: 'any' } }));
+      } catch (error) {
+        console.error('Block güncelleme hatası:', error);
+      }
+    }, 500);
+  }, [selectedElement?.id]);
 
   if (!selectedElement) {
     return (
@@ -75,7 +142,27 @@ export function RightPanel({ selectedElement, page, onUpdate }: RightPanelProps)
 
       {/* Content */}
       <div className="flex-1 overflow-y-auto p-4">
-        {renderSettings(selectedElement, activeTab, page, onUpdate)}
+        {selectedElement.type === 'section' && (
+          <SectionSettings
+            sectionId={selectedElement.id}
+            activeTab={activeTab}
+            onUpdate={handleSectionUpdate}
+          />
+        )}
+        {selectedElement.type === 'column' && (
+          <ColumnSettings
+            columnId={selectedElement.id}
+            activeTab={activeTab}
+            onUpdate={handleColumnUpdate}
+          />
+        )}
+        {selectedElement.type === 'block' && (
+          <BlockSettings
+            blockId={selectedElement.id}
+            activeTab={activeTab}
+            onUpdate={handleBlockUpdate}
+          />
+        )}
       </div>
     </div>
   );
@@ -94,58 +181,4 @@ function getElementTitle(element: { type: 'section' | 'column' | 'block'; id: st
   }
 }
 
-function renderSettings(
-  selectedElement: { type: 'section' | 'column' | 'block'; id: string },
-  activeTab: 'style' | 'settings' | 'advanced',
-  page: Page,
-  onUpdate: (updates: Partial<Page>) => void
-) {
-  if (selectedElement.type === 'section') {
-    return (
-      <SectionSettings
-        sectionId={selectedElement.id}
-        activeTab={activeTab}
-        onUpdate={(updates) => {
-          // Section güncelleme
-          console.log('Section güncelle:', selectedElement.id, updates);
-        }}
-      />
-    );
-  }
-
-  if (selectedElement.type === 'column') {
-    return (
-      <ColumnSettings
-        columnId={selectedElement.id}
-        activeTab={activeTab}
-        onUpdate={(updates) => {
-          // Column güncelleme
-          console.log('Column güncelle:', selectedElement.id, updates);
-        }}
-      />
-    );
-  }
-
-  if (selectedElement.type === 'block') {
-    return (
-      <BlockSettings
-        blockId={selectedElement.id}
-        activeTab={activeTab}
-        onUpdate={(updates) => {
-          // Block güncelleme
-          console.log('Block güncelle:', selectedElement.id, updates);
-        }}
-      />
-    );
-  }
-
-  // Page settings (eğer hiçbir element seçili değilse)
-  return (
-    <PageSettings
-      page={page}
-      activeTab={activeTab}
-      onUpdate={onUpdate}
-    />
-  );
-}
 
