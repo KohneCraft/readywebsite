@@ -157,6 +157,56 @@ service cloud.firestore {
     }
     
     // ==========================================
+    // PAGE BUILDER KOLEKSİYONLARI
+    // ==========================================
+    // Yeni Page Builder sistemi için
+    // ==========================================
+    
+    // Pages - Sayfa yönetimi
+    match /pages/{pageId} {
+      // Okuma: Herkes (yayınlanmış sayfalar için)
+      allow read: if true;
+      
+      // Yazma: Authenticated kullanıcılar
+      allow create: if isAuthenticated();
+      allow update: if isAuthenticated();
+      allow delete: if isAuthenticated();
+    }
+    
+    // Sections - Bölüm yönetimi
+    match /sections/{sectionId} {
+      // Okuma: Herkes
+      allow read: if true;
+      
+      // Yazma: Authenticated kullanıcılar
+      allow create: if isAuthenticated();
+      allow update: if isAuthenticated();
+      allow delete: if isAuthenticated();
+    }
+    
+    // Columns - Kolon yönetimi
+    match /columns/{columnId} {
+      // Okuma: Herkes
+      allow read: if true;
+      
+      // Yazma: Authenticated kullanıcılar
+      allow create: if isAuthenticated();
+      allow update: if isAuthenticated();
+      allow delete: if isAuthenticated();
+    }
+    
+    // Blocks - Blok yönetimi
+    match /blocks/{blockId} {
+      // Okuma: Herkes
+      allow read: if true;
+      
+      // Yazma: Authenticated kullanıcılar
+      allow create: if isAuthenticated();
+      allow update: if isAuthenticated();
+      allow delete: if isAuthenticated();
+    }
+    
+    // ==========================================
     // VARSAYILAN KURAL
     // ==========================================
     // Yukarıda tanımlanmayan tüm koleksiyonlar için
