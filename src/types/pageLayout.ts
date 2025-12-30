@@ -35,20 +35,8 @@ export type ElementWidth = 'full' | 'half' | 'third' | 'quarter' | 'two-thirds' 
  */
 export type ElementPosition = 'left' | 'right' | 'center';
 
-/**
- * Responsive breakpoint
- */
-export type Breakpoint = 'mobile' | 'tablet' | 'desktop';
-
-/**
- * Spacing değerleri (margin/padding için)
- */
-export interface Spacing {
-  top: number;
-  right: number;
-  bottom: number;
-  left: number;
-}
+// Breakpoint ve Spacing artık pageBuilder.ts'den import ediliyor
+import type { Breakpoint, Spacing } from './pageBuilder';
 
 /**
  * Responsive ayarları

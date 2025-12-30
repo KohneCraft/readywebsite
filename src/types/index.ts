@@ -72,15 +72,15 @@ export type {
   ElementType,
   ElementWidth,
   ElementPosition,
-  Breakpoint,
-  Spacing,
-  ResponsiveSettings,
   ElementSettings,
   PageElement,
   PageLayout,
   PageLayoutCreateInput,
   PageLayoutUpdateInput,
 } from './pageLayout';
+
+// ResponsiveSettings'i pageLayout.ts'den export et (pageBuilder.ts'deki ile farklı)
+export type { ResponsiveSettings as PageLayoutResponsiveSettings } from './pageLayout';
 
 export {
   DEFAULT_ELEMENT_SETTINGS,
@@ -111,6 +111,45 @@ export {
   FONT_WEIGHT_OPTIONS,
   TEXT_ALIGN_OPTIONS,
 } from './pageContent';
+
+// Page Builder Types
+export type {
+  BlockType,
+  Breakpoint,
+  Spacing,
+  Border,
+  Overlay,
+  Animation,
+  ImageFilter,
+  HoverEffect,
+  ResponsiveSettings,
+  Block,
+  BlockProps,
+  FormField,
+  Column,
+  ColumnSettings,
+  Section,
+  SectionSettings,
+  Page,
+  PageSettings,
+  PageVersion,
+  PageCreateInput,
+  SectionCreateInput,
+  ColumnCreateInput,
+  BlockCreateInput,
+  PageUpdateInput,
+  SectionUpdateInput,
+  ColumnUpdateInput,
+  BlockUpdateInput,
+} from './pageBuilder';
+
+export {
+  DEFAULT_SPACING,
+  DEFAULT_BORDER,
+  DEFAULT_ANIMATION,
+  BLOCK_TYPE_LABELS,
+  getDefaultBlockProps,
+} from './pageBuilder';
 
 // ============================================
 // Common Types
