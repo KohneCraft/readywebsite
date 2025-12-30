@@ -11,97 +11,28 @@ import { useRouter } from 'next/navigation';
 import { useLocale, useTranslations } from 'next-intl';
 import { 
   LayoutDashboard, 
-  FileText, 
-  Home, 
-  Mail, 
   ChevronRight,
   Plus,
   Layers,
   X,
-  Info,
-  Briefcase,
-  Check,
 } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { cn } from '@/lib/utils';
-import { getPageLayoutsByType } from '@/lib/firebase/firestore';
+import { getAllPages, createPage } from '@/lib/firebase/firestore';
 import type { Locale } from '@/i18n';
-import type { PageType } from '@/types';
+import type { Page } from '@/types/pageBuilder';
 
-// Varsayılan 3 sayfa - her zaman gösterilecek
-const DEFAULT_PAGES: { id: PageType; name: string; description: string; icon: typeof Home }[] = [
-  { 
-    id: 'home', 
-    name: 'Anasayfa', 
-    description: 'Ana sayfa bölümlerini düzenleyin',
-    icon: Home 
-  },
-  { 
-    id: 'contact', 
-    name: 'İletişim', 
-    description: 'İletişim sayfasını düzenleyin',
-    icon: Mail 
-  },
-  { 
-    id: 'project-detail', 
-    name: 'Proje Detay', 
-    description: 'Proje detay sayfasının düzenini özelleştirin',
-    icon: FileText 
-  },
-];
-
-// Sitedeki tüm sayfalar (eklenebilir olanlar dahil)
-const ALL_AVAILABLE_PAGES: { id: PageType; name: string; description: string; icon: typeof Home }[] = [
-  { 
-    id: 'home', 
-    name: 'Anasayfa', 
-    description: 'Ana sayfa bölümlerini düzenleyin',
-    icon: Home 
-  },
-  { 
-    id: 'contact', 
-    name: 'İletişim', 
-    description: 'İletişim sayfasını düzenleyin',
-    icon: Mail 
-  },
-  { 
-    id: 'project-detail', 
-    name: 'Proje Detay', 
-    description: 'Proje detay sayfasının düzenini özelleştirin',
-    icon: FileText 
-  },
-  { 
-    id: 'about', 
-    name: 'Hakkımızda', 
-    description: 'Hakkımızda sayfasını düzenleyin',
-    icon: Info 
-  },
-  { 
-    id: 'services', 
-    name: 'Hizmetler', 
-    description: 'Hizmetler sayfasını düzenleyin',
-    icon: Briefcase 
-  },
-];
-
-interface PageInfo {
-  id: PageType;
-  name: string;
-  description: string;
-  icon: typeof Home;
-  layoutCount: number;
-  hasActiveLayout: boolean;
-}
 
 export default function PageBuilderListPage() {
   const t = useTranslations('admin');
   const locale = useLocale() as Locale;
   const router = useRouter();
-  const [pages, setPages] = useState<PageInfo[]>([]);
+  const [pages, setPages] = useState<Page[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [showAddModal, setShowAddModal] = useState(false);
-  const [selectedPageId, setSelectedPageId] = useState<PageType | null>(null);
+  const [newPageTitle, setNewPageTitle] = useState('');
+  const [newPageSlug, setNewPageSlug] = useState('');
 
   const getLocalizedHref = useCallback((href: string) => {
     if (locale === 'tr') return href;
@@ -110,59 +41,45 @@ export default function PageBuilderListPage() {
 
   useEffect(() => {
     const loadPages = async () => {
-      // Varsayılan sayfaları hemen göster
-      const pagesData: PageInfo[] = DEFAULT_PAGES.map(page => ({
-        ...page,
-        layoutCount: 0,
-        hasActiveLayout: false,
-      }));
-
       try {
-        // Firebase'den layout bilgilerini çekmeye çalış
-        for (let i = 0; i < pagesData.length; i++) {
-          try {
-            const layouts = await getPageLayoutsByType(pagesData[i].id);
-            const activeLayout = layouts.find(l => l.isActive);
-            pagesData[i].layoutCount = layouts.length;
-            pagesData[i].hasActiveLayout = !!activeLayout;
-          } catch {
-            // Firebase hatası olursa varsayılan değerler kullan
-            console.log(`Layout bilgisi alınamadı: ${pagesData[i].id}`);
-          }
-        }
+        setIsLoading(true);
+        const pagesData = await getAllPages();
+        setPages(pagesData);
       } catch (error) {
         console.error('Failed to load pages:', error);
+        setPages([]);
+      } finally {
+        setIsLoading(false);
       }
-
-      setPages(pagesData);
-      setIsLoading(false);
     };
 
     loadPages();
   }, []);
 
-  // Zaten listeye eklenmiş sayfa ID'leri
-  const addedPageIds = pages.map(p => p.id);
+  const handleCreatePage = async () => {
+    if (!newPageTitle.trim() || !newPageSlug.trim()) {
+      alert('Lütfen sayfa başlığı ve slug girin');
+      return;
+    }
 
-  // Henüz eklenmemiş sayfalar
-  const availableToAdd = ALL_AVAILABLE_PAGES.filter(p => !addedPageIds.includes(p.id));
+    try {
+      // TODO: Auth'dan user ID alınacak
+      const pageId = await createPage({
+        title: newPageTitle,
+        slug: newPageSlug,
+        author: 'admin', // TODO: Gerçek user ID
+      });
 
-  const handleAddPage = () => {
-    if (selectedPageId) {
-      // Seçilen sayfayı listeye ekle
-      const pageToAdd = ALL_AVAILABLE_PAGES.find(p => p.id === selectedPageId);
-      if (pageToAdd) {
-        setPages(prev => [...prev, { ...pageToAdd, layoutCount: 0, hasActiveLayout: false }]);
-      }
       // Sayfa düzenleyicisine yönlendir
-      router.push(getLocalizedHref(`/admin/page-builder/${selectedPageId}`));
+      router.push(getLocalizedHref(`/admin/page-builder/${pageId}`));
       setShowAddModal(false);
-      setSelectedPageId(null);
+      setNewPageTitle('');
+      setNewPageSlug('');
+    } catch (error) {
+      console.error('Sayfa oluşturma hatası:', error);
+      alert('Sayfa oluşturulurken bir hata oluştu');
     }
   };
-
-  // Varsayılan sayfalar yüklenmeden önce bile göster
-  const displayPages = isLoading ? DEFAULT_PAGES.map(p => ({ ...p, layoutCount: 0, hasActiveLayout: false })) : pages;
 
   return (
     <div className="space-y-6">
@@ -185,9 +102,13 @@ export default function PageBuilderListPage() {
 
       {/* Pages Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {displayPages.map((page) => {
-          const Icon = page.icon;
-          return (
+        {isLoading ? (
+          <div className="col-span-full text-center py-12">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600 mx-auto mb-2"></div>
+            <p className="text-sm text-gray-500 dark:text-gray-400">Yükleniyor...</p>
+          </div>
+        ) : pages.length > 0 ? (
+          pages.map((page) => (
             <Link
               key={page.id}
               href={getLocalizedHref(`/admin/page-builder/${page.id}`)}
@@ -199,40 +120,45 @@ export default function PageBuilderListPage() {
                       'w-12 h-12 rounded-xl flex items-center justify-center transition-colors',
                       'bg-gray-100 dark:bg-gray-800 group-hover:bg-primary-100 dark:group-hover:bg-primary-900/30'
                     )}>
-                      <Icon className="w-6 h-6 text-gray-600 dark:text-gray-400 group-hover:text-primary-600 dark:group-hover:text-primary-400 transition-colors" />
+                      <Layers className="w-6 h-6 text-gray-600 dark:text-gray-400 group-hover:text-primary-600 dark:group-hover:text-primary-400 transition-colors" />
                     </div>
                     <ChevronRight className="w-5 h-5 text-gray-400 group-hover:text-primary-500 group-hover:translate-x-1 transition-all" />
                   </div>
 
                   <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
-                    {page.name}
+                    {page.title || 'İsimsiz Sayfa'}
                   </h3>
                   <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
-                    {page.description}
+                    /{page.slug || 'slug-yok'}
                   </p>
 
                   <div className="flex items-center gap-4 pt-4 border-t border-gray-100 dark:border-gray-700">
                     <div className="flex items-center gap-1.5 text-xs text-gray-500 dark:text-gray-400">
                       <Layers className="w-4 h-4" />
-                      <span>{page.layoutCount} düzen</span>
+                      <span>{page.sections?.length || 0} section</span>
                     </div>
-                    {page.hasActiveLayout ? (
+                    {page.status === 'published' ? (
                       <span className="px-2 py-1 text-xs bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 rounded-full">
-                        Aktif
+                        Yayında
                       </span>
                     ) : (
                       <span className="px-2 py-1 text-xs bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400 rounded-full">
-                        Varsayılan
+                        Taslak
                       </span>
                     )}
                   </div>
                 </CardContent>
               </Card>
             </Link>
-          );
-        })}
+          ))
+        ) : (
+          <div className="col-span-full text-center py-12 text-gray-500 dark:text-gray-400">
+            <p>Henüz sayfa oluşturulmamış</p>
+            <p className="text-sm mt-1">Yeni sayfa oluşturmak için yukarıdaki butonu kullanın</p>
+          </div>
+        )}
 
-        {/* Add New Layout Card */}
+        {/* Add New Page Card */}
         <div onClick={() => setShowAddModal(true)}>
           <Card className="border-2 border-dashed border-gray-200 dark:border-gray-700 hover:border-primary-300 dark:hover:border-primary-600 transition-colors cursor-pointer h-full">
             <CardContent className="p-6 flex flex-col items-center justify-center h-full min-h-[200px] text-center">
@@ -240,10 +166,10 @@ export default function PageBuilderListPage() {
                 <Plus className="w-6 h-6 text-gray-400" />
               </div>
               <h3 className="text-lg font-semibold text-gray-600 dark:text-gray-400 mb-2">
-                Yeni Sayfa Ekle
+                Yeni Sayfa Oluştur
               </h3>
               <p className="text-sm text-gray-400 dark:text-gray-500">
-                Özel sayfa düzeni oluşturun
+                Sıfırdan yeni sayfa oluşturun
               </p>
             </CardContent>
           </Card>
@@ -269,10 +195,14 @@ export default function PageBuilderListPage() {
           <div className="bg-white dark:bg-gray-800 rounded-xl p-6 w-full max-w-lg mx-4 shadow-2xl">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-                Sayfa Düzeni Ekle
+                Yeni Sayfa Oluştur
               </h3>
               <button
-                onClick={() => { setShowAddModal(false); setSelectedPageId(null); }}
+                onClick={() => { 
+                  setShowAddModal(false); 
+                  setNewPageTitle('');
+                  setNewPageSlug('');
+                }}
                 className="p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
               >
                 <X className="w-5 h-5 text-gray-500" />
@@ -280,74 +210,53 @@ export default function PageBuilderListPage() {
             </div>
             
             <div className="space-y-4">
-              <p className="text-sm text-gray-500 dark:text-gray-400">
-                Düzenlemek istediğiniz sayfayı seçin:
-              </p>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  Sayfa Başlığı
+                </label>
+                <input
+                  type="text"
+                  value={newPageTitle}
+                  onChange={(e) => setNewPageTitle(e.target.value)}
+                  placeholder="Örn: Hakkımızda"
+                  className="w-full px-3 py-2 border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-white"
+                />
+              </div>
 
-              {availableToAdd.length > 0 ? (
-                <div className="space-y-2 max-h-[300px] overflow-y-auto">
-                  {availableToAdd.map((page) => {
-                    const Icon = page.icon;
-                    const isSelected = selectedPageId === page.id;
-                    return (
-                      <div
-                        key={page.id}
-                        onClick={() => setSelectedPageId(page.id)}
-                        className={cn(
-                          'flex items-center gap-4 p-4 rounded-lg cursor-pointer transition-all border-2',
-                          isSelected
-                            ? 'border-primary-500 bg-primary-50 dark:bg-primary-900/20'
-                            : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600'
-                        )}
-                      >
-                        <div className={cn(
-                          'w-10 h-10 rounded-lg flex items-center justify-center',
-                          isSelected
-                            ? 'bg-primary-100 dark:bg-primary-900/30'
-                            : 'bg-gray-100 dark:bg-gray-800'
-                        )}>
-                          <Icon className={cn(
-                            'w-5 h-5',
-                            isSelected
-                              ? 'text-primary-600 dark:text-primary-400'
-                              : 'text-gray-500 dark:text-gray-400'
-                          )} />
-                        </div>
-                        <div className="flex-1">
-                          <h4 className="font-medium text-gray-900 dark:text-white">
-                            {page.name}
-                          </h4>
-                          <p className="text-sm text-gray-500 dark:text-gray-400">
-                            {page.description}
-                          </p>
-                        </div>
-                        {isSelected && (
-                          <Check className="w-5 h-5 text-primary-600 dark:text-primary-400" />
-                        )}
-                      </div>
-                    );
-                  })}
-                </div>
-              ) : (
-                <div className="text-center py-8 text-gray-500 dark:text-gray-400">
-                  <p>Tüm sayfalar zaten eklenmiş.</p>
-                </div>
-              )}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  Slug (URL)
+                </label>
+                <input
+                  type="text"
+                  value={newPageSlug}
+                  onChange={(e) => setNewPageSlug(e.target.value.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, ''))}
+                  placeholder="Örn: hakkimizda"
+                  className="w-full px-3 py-2 border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-white"
+                />
+                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                  URL: /{newPageSlug || 'slug'}
+                </p>
+              </div>
               
               <div className="flex gap-3 pt-2">
                 <Button
                   variant="outline"
-                  onClick={() => { setShowAddModal(false); setSelectedPageId(null); }}
+                  onClick={() => { 
+                    setShowAddModal(false); 
+                    setNewPageTitle('');
+                    setNewPageSlug('');
+                  }}
                   className="flex-1"
                 >
                   İptal
                 </Button>
                 <Button
-                  onClick={handleAddPage}
+                  onClick={handleCreatePage}
                   className="flex-1"
-                  disabled={!selectedPageId}
+                  disabled={!newPageTitle.trim() || !newPageSlug.trim()}
                 >
-                  Düzenle
+                  Oluştur
                 </Button>
               </div>
             </div>
