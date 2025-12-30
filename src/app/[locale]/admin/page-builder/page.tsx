@@ -20,6 +20,7 @@ import { Card, CardContent } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { cn } from '@/lib/utils';
 import { getAllPages, createPage } from '@/lib/firebase/firestore';
+import { getCurrentUser } from '@/lib/firebase/auth';
 import type { Locale } from '@/i18n';
 import type { Page } from '@/types/pageBuilder';
 
@@ -63,11 +64,17 @@ export default function PageBuilderListPage() {
     }
 
     try {
-      // TODO: Auth'dan user ID alınacak
+      // Auth'dan user ID al
+      const user = await getCurrentUser();
+      if (!user) {
+        alert('Giriş yapmanız gerekiyor');
+        return;
+      }
+
       const pageId = await createPage({
         title: newPageTitle,
         slug: newPageSlug,
-        author: 'admin', // TODO: Gerçek user ID
+        author: user.uid,
       });
 
       // Sayfa düzenleyicisine yönlendir

@@ -87,8 +87,8 @@ export function RevenueChart() {
   
   return (
     <ChartCard title={t('charts.monthlyRevenue')}>
-      <div className="h-[300px]">
-        <ResponsiveContainer width="100%" height="100%">
+      <div className="h-[300px] w-full">
+        <ResponsiveContainer width="100%" height="100%" minHeight={300}>
           <AreaChart data={monthlyData}>
             <defs>
               <linearGradient id="colorRevenue" x1="0" y1="0" x2="0" y2="1">
@@ -137,8 +137,8 @@ export function ProjectsChart() {
   
   return (
     <ChartCard title={t('charts.monthlyProjects')}>
-      <div className="h-[300px]">
-        <ResponsiveContainer width="100%" height="100%">
+      <div className="h-[300px] w-full">
+        <ResponsiveContainer width="100%" height="100%" minHeight={300}>
           <BarChart data={monthlyData}>
             <CartesianGrid strokeDasharray="3 3" stroke="#374151" opacity={0.1} />
             <XAxis 
@@ -177,8 +177,8 @@ export function ProjectStatusChart() {
   
   return (
     <ChartCard title={t('charts.projectStatus')}>
-      <div className="h-[300px]">
-        <ResponsiveContainer width="100%" height="100%">
+      <div className="h-[300px] w-full">
+        <ResponsiveContainer width="100%" height="100%" minHeight={300}>
           <PieChart>
             <Pie
               data={projectStatusData}
@@ -220,8 +220,8 @@ export function ContactSourcesChart() {
   
   return (
     <ChartCard title={t('charts.contactSources')}>
-      <div className="h-[300px]">
-        <ResponsiveContainer width="100%" height="100%">
+      <div className="h-[300px] w-full">
+        <ResponsiveContainer width="100%" height="100%" minHeight={300}>
           <BarChart data={contactSourceData} layout="vertical">
             <CartesianGrid strokeDasharray="3 3" stroke="#374151" opacity={0.1} />
             <XAxis 
@@ -263,8 +263,8 @@ export function VisitorsChart() {
   
   return (
     <ChartCard title={t('charts.weeklyVisitors')}>
-      <div className="h-[300px]">
-        <ResponsiveContainer width="100%" height="100%">
+      <div className="h-[300px] w-full">
+        <ResponsiveContainer width="100%" height="100%" minHeight={300}>
           <LineChart data={weeklyVisitorsData}>
             <CartesianGrid strokeDasharray="3 3" stroke="#374151" opacity={0.1} />
             <XAxis 
