@@ -59,6 +59,25 @@ export function CenterCanvas({
     }
 
     loadSections();
+
+    // Section güncelleme event'ini dinle
+    const handleSectionUpdate = async (event: Event) => {
+      const customEvent = event as CustomEvent<{ sectionId: string }>;
+      const { sectionId } = customEvent.detail;
+      try {
+        const updatedSection = await getSectionById(sectionId);
+        if (updatedSection) {
+          setSections(prev => prev.map(s => s.id === sectionId ? updatedSection : s));
+        }
+      } catch (error) {
+        console.error('Section güncelleme hatası:', error);
+      }
+    };
+
+    window.addEventListener('section-updated', handleSectionUpdate);
+    return () => {
+      window.removeEventListener('section-updated', handleSectionUpdate);
+    };
   }, [page.sections]);
 
   return (

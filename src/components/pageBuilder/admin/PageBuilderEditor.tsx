@@ -163,9 +163,23 @@ export function PageBuilderEditor({ pageId }: PageBuilderEditorProps) {
       }
     };
 
+    // Section güncelleme event'ini dinle (kolon eklendiğinde)
+    const handleSectionUpdate = async () => {
+      if (!page) return;
+      try {
+        const pageData = await getPageById(pageId);
+        if (pageData) setPage(pageData);
+        setHasChanges(true);
+      } catch (error) {
+        console.error('Sayfa yenileme hatası:', error);
+      }
+    };
+
     window.addEventListener('add-section', handleAddSection);
+    window.addEventListener('section-updated', handleSectionUpdate);
     return () => {
       window.removeEventListener('add-section', handleAddSection);
+      window.removeEventListener('section-updated', handleSectionUpdate);
     };
   }, [page, pageId]);
 

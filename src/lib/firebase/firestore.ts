@@ -1407,7 +1407,8 @@ export async function deleteSection(id: string): Promise<void> {
 export async function createColumn(input: ColumnCreateInput): Promise<string> {
   const columnRef = doc(db, COLLECTIONS.columns, generateId());
   
-  await updateDoc(columnRef, {
+  // setDoc kullan - document yoksa oluşturur
+  await setDoc(columnRef, {
     id: columnRef.id,
     sectionId: input.sectionId,
     width: input.width || 100,
@@ -1416,17 +1417,6 @@ export async function createColumn(input: ColumnCreateInput): Promise<string> {
     order: input.order || 0,
     createdAt: serverTimestamp(),
     updatedAt: serverTimestamp(),
-  }).catch(() => {
-    return addDoc(collection(db, COLLECTIONS.columns), {
-      id: columnRef.id,
-      sectionId: input.sectionId,
-      width: input.width || 100,
-      blocks: [],
-      settings: input.settings || {},
-      order: input.order || 0,
-      createdAt: serverTimestamp(),
-      updatedAt: serverTimestamp(),
-    });
   });
   
   // Section'a column ID'sini ekle
