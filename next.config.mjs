@@ -64,7 +64,12 @@ const nextConfig = {
     optimizePackageImports: ['lucide-react', 'framer-motion', 'recharts'],
   },
   // Webpack optimizations
-  webpack: (config, { isServer }) => {
+  webpack: (config, { isServer, dev }) => {
+    // Cache sorunlarını önlemek için dev modda cache'i devre dışı bırak
+    if (dev) {
+      config.cache = false;
+    }
+    
     if (!isServer) {
       config.optimization = {
         ...config.optimization,
@@ -72,17 +77,20 @@ const nextConfig = {
         runtimeChunk: 'single',
         splitChunks: {
           chunks: 'all',
+          maxSize: 244000, // Cache sorunlarını önlemek için chunk boyutunu sınırla
           cacheGroups: {
             vendor: {
               test: /[\\/]node_modules[\\/]/,
               name: 'vendors',
               priority: 10,
               reuseExistingChunk: true,
+              maxSize: 244000,
             },
             common: {
               minChunks: 2,
               priority: 5,
               reuseExistingChunk: true,
+              maxSize: 244000,
             },
           },
         },
