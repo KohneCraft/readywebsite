@@ -1,8 +1,8 @@
 {
   "metadata": {
-    "title": "Vav Yapı | Construction & Contracting",
-    "description": "Reliable and quality construction services. Professional solutions for your residential, commercial and industrial projects.",
-    "keywords": "construction, contracting, residential, commercial, industrial, project, building"
+    "title": "Page Builder | Visual Page Editor",
+    "description": "Create professional web pages without coding knowledge. Easy page editing with drag and drop.",
+    "keywords": "page builder, visual editor, drag and drop, web design, page editor"
   },
   "common": {
     "loading": "Loading...",
@@ -38,22 +38,12 @@
   },
   "nav": {
     "home": "Home",
-    "about": "About",
-    "projects": "Projects",
-    "services": "Services",
-    "contact": "Contact",
     "admin": "Admin Panel"
   },
   "footer": {
-    "description": "We build your dream structures with reliable and quality construction services.",
+    "description": "Create professional web pages without coding knowledge.",
     "quickLinks": "Quick Links",
-    "contactInfo": "Contact Info",
-    "followUs": "Follow Us",
-    "newsletter": "Newsletter",
-    "newsletterDesc": "Stay updated with new projects and news.",
-    "emailPlaceholder": "Your email address",
-    "subscribe": "Subscribe",
-    "copyright": "© {year} Vav Yapı. All rights reserved.",
+    "copyright": "© {year} Page Builder. All rights reserved.",
     "privacyPolicy": "Privacy Policy",
     "terms": "Terms of Service"
   },

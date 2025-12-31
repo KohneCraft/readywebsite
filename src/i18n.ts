@@ -1,5 +1,5 @@
 // ============================================
-// Vav Yapı - next-intl Configuration
+// Page Builder - next-intl Configuration
 // Multi-language support (TR, EN, DE, FR)
 // ============================================
 

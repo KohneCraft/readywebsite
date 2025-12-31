@@ -1,5 +1,5 @@
 // ============================================
-// Vav Yapı - Firebase Storage Helper Functions
+// Page Builder - Firebase Storage Helper Functions
 // Image upload, delete, and URL management
 // ============================================
 
@@ -14,18 +14,17 @@ import {
   UploadTaskSnapshot,
 } from 'firebase/storage';
 import { storage } from './config';
-import type { ProjectImage, UploadResult } from '@/types';
+import type { UploadResult } from '@/types';
 
 // ============================================
 // STORAGE PATHS
 // ============================================
 
 export const STORAGE_PATHS = {
-  projectCover: (projectId: string) => `projects/${projectId}/cover`,
-  projectGallery: (projectId: string) => `projects/${projectId}/gallery`,
   logos: 'logos',
   settings: 'settings',
   temp: (userId: string) => `temp/${userId}`,
+  pageBuilder: (pageId: string) => `page-builder/${pageId}`,
 } as const;
 
 // ============================================
@@ -137,85 +136,6 @@ export function uploadFileWithProgress(
   });
 }
 
-// ============================================
-// PROJECT IMAGE FUNCTIONS
-// ============================================
-
-/**
- * Proje kapak görseli yükle
- */
-export async function uploadProjectCover(
-  projectId: string,
-  file: File | Blob,
-  altText: string
-): Promise<ProjectImage> {
-  const result = await uploadFile(
-    file,
-    STORAGE_PATHS.projectCover(projectId),
-    'cover.webp'
-  );
-
-  return {
-    id: `cover-${Date.now()}`,
-    url: result.url,
-    path: result.path,
-    alt: altText,
-    order: 0,
-    createdAt: new Date(),
-  };
-}
-
-/**
- * Proje galeri görseli yükle
- */
-export async function uploadProjectGalleryImage(
-  projectId: string,
-  file: File | Blob,
-  altText: string,
-  order: number
-): Promise<ProjectImage> {
-  const fileName = generateFileName(file instanceof File ? file.name : 'gallery.webp');
-  const result = await uploadFile(
-    file,
-    STORAGE_PATHS.projectGallery(projectId),
-    fileName
-  );
-
-  return {
-    id: `gallery-${Date.now()}-${order}`,
-    url: result.url,
-    path: result.path,
-    alt: altText,
-    order,
-    createdAt: new Date(),
-  };
-}
-
-/**
- * Çoklu galeri görseli yükle
- */
-export async function uploadProjectGalleryImages(
-  projectId: string,
-  files: Array<{ file: File | Blob; alt: string }>,
-  startOrder: number = 0,
-  onProgress?: (current: number, total: number) => void
-): Promise<ProjectImage[]> {
-  const images: ProjectImage[] = [];
-  
-  for (let i = 0; i < files.length; i++) {
-    const { file, alt } = files[i];
-    const image = await uploadProjectGalleryImage(
-      projectId,
-      file,
-      alt,
-      startOrder + i
-    );
-    images.push(image);
-    onProgress?.(i + 1, files.length);
-  }
-  
-  return images;
-}
 
 // ============================================
 // LOGO FUNCTIONS
@@ -247,28 +167,6 @@ export async function deleteFile(path: string): Promise<void> {
   await deleteObject(storageRef);
 }
 
-/**
- * Proje tüm görsellerini sil
- */
-export async function deleteProjectImages(projectId: string): Promise<void> {
-  // Cover
-  try {
-    const coverRef = ref(storage, STORAGE_PATHS.projectCover(projectId));
-    const coverList = await listAll(coverRef);
-    await Promise.all(coverList.items.map(item => deleteObject(item)));
-  } catch {
-    // Cover klasörü yoksa devam et
-  }
-
-  // Gallery
-  try {
-    const galleryRef = ref(storage, STORAGE_PATHS.projectGallery(projectId));
-    const galleryList = await listAll(galleryRef);
-    await Promise.all(galleryList.items.map(item => deleteObject(item)));
-  } catch {
-    // Gallery klasörü yoksa devam et
-  }
-}
 
 /**
  * Temp klasörünü temizle

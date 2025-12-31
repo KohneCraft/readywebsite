@@ -1,9 +1,9 @@
 // ============================================
-// Vav Yapı - Site Settings Types
+// Page Builder - Site Settings Types
 // Firestore Collection: settings (single document: 'site')
 // ============================================
 
-import type { Locale } from './project';
+import type { Locale } from '@/i18n';
 
 /**
  * Logo yapılandırması
@@ -248,22 +248,22 @@ export type SiteSettingsUpdate = Partial<Omit<SiteSettings, 'updatedAt'>>;
  */
 export const DEFAULT_SITE_SETTINGS: Omit<SiteSettings, 'updatedAt' | 'updatedBy'> = {
   siteName: {
-    tr: 'Vav Yapı',
-    en: 'Vav Construction',
-    de: 'Vav Bau',
-    fr: 'Vav Construction',
+    tr: 'Page Builder',
+    en: 'Page Builder',
+    de: 'Page Builder',
+    fr: 'Page Builder',
   },
   siteSlogan: {
-    tr: 'Güvenilir İnşaat Çözümleri',
-    en: 'Reliable Construction Solutions',
-    de: 'Zuverlässige Baulösungen',
-    fr: 'Solutions de Construction Fiables',
+    tr: 'Modern ve Esnek Web Sayfaları Oluşturun',
+    en: 'Create Modern and Flexible Web Pages',
+    de: 'Erstellen Sie moderne und flexible Webseiten',
+    fr: 'Créez des pages Web modernes et flexibles',
   },
   footerText: {
-    tr: '© 2025 Vav Yapı. Tüm hakları saklıdır.',
-    en: '© 2025 Vav Construction. All rights reserved.',
-    de: '© 2025 Vav Bau. Alle Rechte vorbehalten.',
-    fr: '© 2025 Vav Construction. Tous droits réservés.',
+    tr: '© 2025 Page Builder. Tüm hakları saklıdır.',
+    en: '© 2025 Page Builder. All rights reserved.',
+    de: '© 2025 Page Builder. Alle Rechte vorbehalten.',
+    fr: '© 2025 Page Builder. Tous droits réservés.',
   },
   defaultLocale: 'tr',
   logo: {
@@ -291,16 +291,16 @@ export const DEFAULT_SITE_SETTINGS: Omit<SiteSettings, 'updatedAt' | 'updatedBy'
   socialLinks: {},
   seo: {
     titleTemplate: {
-      tr: '%s | Vav Yapı',
-      en: '%s | Vav Construction',
-      de: '%s | Vav Bau',
-      fr: '%s | Vav Construction',
+      tr: '%s | Page Builder',
+      en: '%s | Page Builder',
+      de: '%s | Page Builder',
+      fr: '%s | Page Builder',
     },
     defaultDescription: {
-      tr: 'Vav Yapı - Güvenilir inşaat ve müteahhitlik hizmetleri.',
-      en: 'Vav Construction - Reliable construction and contracting services.',
-      de: 'Vav Bau - Zuverlässige Bau- und Vertragsdienstleistungen.',
-      fr: 'Vav Construction - Services de construction et de sous-traitance fiables.',
+      tr: 'Page Builder - Modern ve esnek web sayfaları oluşturun.',
+      en: 'Page Builder - Create modern and flexible web pages.',
+      de: 'Page Builder - Erstellen Sie moderne und flexible Webseiten.',
+      fr: 'Page Builder - Créez des pages Web modernes et flexibles.',
     },
     keywords: {
       tr: ['inşaat', 'müteahhit', 'yapı', 'konut', 'ticari'],

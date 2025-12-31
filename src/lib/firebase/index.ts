@@ -1,5 +1,5 @@
 // ============================================
-// Vav Yapı - Firebase Exports
+// Page Builder - Firebase Exports
 // Merkezi firebase modül export
 // ============================================
 
@@ -8,23 +8,6 @@ export { default as app, auth, db, storage } from './config';
 
 // Firestore Functions
 export {
-  // Projects
-  getProjects,
-  getProjectById,
-  getProjectBySlug,
-  getFeaturedProjects,
-  getOngoingProjects,
-  getCompletedProjects,
-  createProject,
-  updateProject,
-  deleteProject,
-  deleteProjects,
-  // Contact Forms
-  getContactForms,
-  getContactFormById,
-  createContactForm,
-  updateContactForm,
-  deleteContactForm,
   // Settings
   getSiteSettings,
   updateSiteSettings,
@@ -35,6 +18,33 @@ export {
   updateUser,
   updateLastLogin,
   getUsers,
+  // Page Builder
+  getAllPages,
+  getPageById,
+  getPageBySlug,
+  createPage,
+  updatePage,
+  deletePage,
+  getSectionById,
+  createSection,
+  updateSection,
+  deleteSection,
+  getColumnById,
+  createColumn,
+  updateColumn,
+  deleteColumn,
+  getBlockById,
+  createBlock,
+  updateBlock,
+  deleteBlock,
+  moveBlock,
+  // Themes
+  getAvailableThemes,
+  getThemeMetadata,
+  getThemeData,
+  createTheme,
+  deleteCurrentTheme,
+  installTheme,
 } from './firestore';
 
 // Storage Functions
@@ -42,12 +52,8 @@ export {
   STORAGE_PATHS,
   uploadFile,
   uploadFileWithProgress,
-  uploadProjectCover,
-  uploadProjectGalleryImage,
-  uploadProjectGalleryImages,
   uploadLogo,
   deleteFile,
-  deleteProjectImages,
   clearTempFolder,
   getFileUrl,
   getFolderUrls,

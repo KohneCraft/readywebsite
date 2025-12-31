@@ -1,8 +1,8 @@
 {
   "metadata": {
-    "title": "Vav Yapı | İnşaat ve Müteahhitlik",
-    "description": "Güvenilir ve kaliteli inşaat hizmetleri. Konut, ticari ve endüstriyel projeleriniz için profesyonel çözümler.",
-    "keywords": "inşaat, müteahhitlik, konut, ticari, endüstriyel, proje, yapı"
+    "title": "Page Builder | Visual Page Editor",
+    "description": "Kod bilgisi olmadan profesyonel web sayfaları oluşturun. Sürükle-bırak ile kolay sayfa düzenleme.",
+    "keywords": "page builder, visual editor, drag and drop, web design, page editor"
   },
   "common": {
     "loading": "Yükleniyor...",
@@ -38,31 +38,21 @@
   },
   "nav": {
     "home": "Ana Sayfa",
-    "about": "Hakkımızda",
-    "projects": "Projeler",
-    "services": "Hizmetler",
-    "contact": "İletişim",
     "admin": "Yönetim Paneli"
   },
   "footer": {
-    "description": "Güvenilir ve kaliteli inşaat hizmetleri ile hayallerinizdeki yapıları inşa ediyoruz.",
+    "description": "Kod bilgisi olmadan profesyonel web sayfaları oluşturun.",
     "quickLinks": "Hızlı Bağlantılar",
-    "contactInfo": "İletişim Bilgileri",
-    "followUs": "Bizi Takip Edin",
-    "newsletter": "Bülten",
-    "newsletterDesc": "Yeni projeler ve haberlerden haberdar olun.",
-    "emailPlaceholder": "E-posta adresiniz",
-    "subscribe": "Abone Ol",
-    "copyright": "© {year} Vav Yapı. Tüm hakları saklıdır.",
+    "copyright": "© {year} Page Builder. Tüm hakları saklıdır.",
     "privacyPolicy": "Gizlilik Politikası",
     "terms": "Kullanım Koşulları"
   },
   "home": {
     "hero": {
-      "title": "Geleceği Birlikte İnşa Ediyoruz",
-      "subtitle": "Kalite, güvenilirlik ve yenilikçilik ile hayallerinizdeki yapıları gerçeğe dönüştürüyoruz.",
-      "cta": "Projelerimizi Keşfedin",
-      "ctaSecondary": "Teklif Alın"
+      "title": "Modern ve Esnek Web Sayfaları Oluşturun",
+      "subtitle": "Drag & drop ile kolay sayfa tasarımı. Kod bilgisi gerektirmez. Responsive ve SEO uyumlu sayfalar oluşturun.",
+      "cta": "Hemen Başla",
+      "ctaSecondary": "Örnekleri Gör"
     },
     "about": {
       "title": "Hakkımızda",
@@ -367,7 +357,7 @@
   "admin": {
     "dashboard": {
       "title": "Yönetim Paneli",
-      "subtitle": "Vav Yapı yönetim panelinize hoş geldiniz",
+      "subtitle": "Page Builder yönetim panelinize hoş geldiniz",
       "welcome": "Hoş Geldiniz, {name}",
       "overview": "Genel Bakış",
       "recentActivity": "Son Aktiviteler",
@@ -436,6 +426,10 @@
     "save": "Kaydet",
     "cancel": "İptal",
     "add": "Ekle",
+    "themes": {
+      "title": "Tema Seç",
+      "subtitle": "Hazır temalardan birini seçin"
+    },
     "pageBuilder": {
       "title": "Sayfa Düzeni",
       "subtitle": "Sayfa düzenlerini sürükle-bırak ile özelleştirin",
@@ -638,7 +632,7 @@
     "title": "Gizlilik Politikası",
     "subtitle": "Kişisel verilerinizin korunması bizim için önemlidir",
     "lastUpdated": "Son güncelleme",
-    "intro": "Vav Yapı olarak, kişisel verilerinizin gizliliğine önem veriyoruz. Bu gizlilik politikası, web sitemizi kullandığınızda toplanan bilgilerin nasıl işlendiğini açıklamaktadır.",
+    "intro": "Page Builder olarak, kişisel verilerinizin gizliliğine önem veriyoruz. Bu gizlilik politikası, web sitemizi kullandığınızda toplanan bilgilerin nasıl işlendiğini açıklamaktadır.",
     "sections": {
       "dataCollection": {
         "title": "Veri Toplama",
@@ -662,7 +656,7 @@
       },
       "contact": {
         "title": "İletişim",
-        "content": "Gizlilik politikamız hakkında sorularınız için info@vavyapi.com adresinden veya iletişim formumuz aracılığıyla bize ulaşabilirsiniz."
+        "content": "Gizlilik politikamız hakkında sorularınız için bizimle iletişim formumuz aracılığıyla bize ulaşabilirsiniz."
       }
     }
   },
@@ -670,7 +664,7 @@
     "title": "Kullanım Koşulları",
     "subtitle": "Web sitemizi kullanmadan önce lütfen okuyunuz",
     "lastUpdated": "Son güncelleme",
-    "intro": "Bu kullanım koşulları, Vav Yapı web sitesini kullanımınızı düzenlemektedir. Sitemizi kullanarak bu koşulları kabul etmiş sayılırsınız.",
+    "intro": "Bu kullanım koşulları, Page Builder web sitesini kullanımınızı düzenlemektedir. Sitemizi kullanarak bu koşulları kabul etmiş sayılırsınız.",
     "sections": {
       "acceptance": {
         "title": "Koşulların Kabulü",
@@ -678,7 +672,7 @@
       },
       "services": {
         "title": "Hizmetler",
-        "content": "Vav Yapı, inşaat ve müteahhitlik hizmetleri sunmaktadır. Web sitemiz, hizmetlerimiz hakkında bilgi vermek ve potansiyel müşterilerle iletişim kurmak amacıyla tasarlanmıştır."
+        "content": "Page Builder, modern ve esnek web sayfaları oluşturma hizmeti sunmaktadır. Web sitemiz, hizmetlerimiz hakkında bilgi vermek ve potansiyel müşterilerle iletişim kurmak amacıyla tasarlanmıştır."
       },
       "responsibilities": {
         "title": "Kullanıcı Sorumlulukları",
@@ -686,11 +680,11 @@
       },
       "intellectualProperty": {
         "title": "Fikri Mülkiyet",
-        "content": "Bu web sitesindeki tüm içerik (metin, görseller, logolar, tasarımlar) Vav Yapı'ya aittir ve telif hakkı ile korunmaktadır. İçeriklerin izinsiz kullanımı, kopyalanması veya dağıtılması yasaktır."
+        "content": "Bu web sitesindeki tüm içerik (metin, görseller, logolar, tasarımlar) Page Builder'a aittir ve telif hakkı ile korunmaktadır. İçeriklerin izinsiz kullanımı, kopyalanması veya dağıtılması yasaktır."
       },
       "liability": {
         "title": "Sorumluluk Sınırı",
-        "content": "Vav Yapı, web sitesinin kesintisiz veya hatasız çalışacağını garanti etmez. Sitedeki bilgilerin doğruluğu için azami özen gösterilmekle birlikte, olası hatalardan sorumluluk kabul edilmez."
+        "content": "Page Builder, web sitesinin kesintisiz veya hatasız çalışacağını garanti etmez. Sitedeki bilgilerin doğruluğu için azami özen gösterilmekle birlikte, olası hatalardan sorumluluk kabul edilmez."
       },
       "disputes": {
         "title": "Uyuşmazlıklar",

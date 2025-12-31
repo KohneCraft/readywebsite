@@ -1,5 +1,5 @@
 // ============================================
-// Vav Yapı - Firestore Helper Functions
+// Page Builder - Firestore Helper Functions
 // CRUD operations for all collections
 // ============================================
 
@@ -16,44 +16,28 @@ import {
   where,
   orderBy,
   limit,
-  startAfter,
   DocumentSnapshot,
-  QueryConstraint,
   serverTimestamp,
   Timestamp,
   writeBatch,
 } from 'firebase/firestore';
 import { db } from './config';
 import type {
-  Project,
-  ProjectCreateInput,
-  ProjectUpdateInput,
-  ProjectSummary,
-  ProjectFilters,
-  ProjectSort,
-  PaginatedProjects,
-  ContactForm,
-  ContactFormInput,
-  ContactFormUpdate,
-  ContactFormSummary,
-  ContactFormFilters,
-  PaginatedContactForms,
   SiteSettings,
   SiteSettingsUpdate,
   User,
   UserCreateInput,
   UserUpdateInput,
-  Locale,
   PageLayout,
   PageLayoutCreateInput,
   PageLayoutUpdateInput,
   PageType,
-  PageElement,
   PageContent,
   PageContentCreateInput,
   PageContentUpdateInput,
   ContentSection,
 } from '@/types';
+import type { Locale } from '@/i18n';
 import type {
   Page,
   Section,
@@ -68,6 +52,12 @@ import type {
   ColumnUpdateInput,
   BlockUpdateInput,
 } from '@/types/pageBuilder';
+import type {
+  ThemeMetadata,
+  ThemeData,
+  ThemePreview,
+  ThemePageData,
+} from '@/types/theme';
 import { DEFAULT_SITE_SETTINGS, getDefaultElementsForPage } from '@/types';
 
 // ============================================
@@ -75,8 +65,6 @@ import { DEFAULT_SITE_SETTINGS, getDefaultElementsForPage } from '@/types';
 // ============================================
 
 const COLLECTIONS = {
-  projects: 'projects',
-  contactForms: 'contactForms',
   settings: 'settings',
   users: 'users',
   activityLogs: 'activityLogs',
@@ -87,6 +75,8 @@ const COLLECTIONS = {
   sections: 'sections',
   columns: 'columns',
   blocks: 'blocks',
+  // Theme collections
+  themes: 'themes',
 } as const;
 
 // ============================================
@@ -104,432 +94,6 @@ function convertTimestamp(timestamp: Timestamp | Date | undefined): Date {
   return timestamp;
 }
 
-/**
- * Document data'yı Project'e çevir
- */
-function docToProject(doc: DocumentSnapshot): Project | null {
-  const data = doc.data();
-  if (!data) return null;
-  
-  return {
-    ...data,
-    id: doc.id,
-    startDate: convertTimestamp(data.startDate),
-    endDate: data.endDate ? convertTimestamp(data.endDate) : undefined,
-    createdAt: convertTimestamp(data.createdAt),
-    updatedAt: convertTimestamp(data.updatedAt),
-    coverImage: {
-      ...data.coverImage,
-      createdAt: convertTimestamp(data.coverImage?.createdAt),
-    },
-    gallery: data.gallery?.map((img: Record<string, unknown>) => ({
-      ...img,
-      createdAt: convertTimestamp(img.createdAt as Timestamp),
-    })) || [],
-  } as Project;
-}
-
-/**
- * Project'i ProjectSummary'ye çevir
- */
-function projectToSummary(project: Project, locale: Locale): ProjectSummary {
-  const translation = project.translations[locale] || project.translations.tr;
-  return {
-    id: project.id,
-    slug: project.slug,
-    status: project.status,
-    type: project.type,
-    featured: project.featured,
-    published: project.published,
-    coverImage: project.coverImage,
-    completionPercentage: project.completionPercentage,
-    startDate: project.startDate,
-    createdAt: project.createdAt,
-    updatedAt: project.updatedAt,
-    name: translation.name,
-    shortDescription: translation.shortDescription,
-    location: {
-      city: translation.location.city,
-      district: translation.location.district,
-    },
-  };
-}
-
-// ============================================
-// PROJECTS CRUD
-// ============================================
-
-/**
- * Tüm projeleri getir (sayfalı)
- */
-export async function getProjects(
-  options: {
-    locale?: Locale;
-    filters?: ProjectFilters;
-    sort?: ProjectSort;
-    page?: number;
-    limit?: number;
-    lastDoc?: DocumentSnapshot;
-  } = {}
-): Promise<PaginatedProjects> {
-  const {
-    locale = 'tr',
-    filters = {},
-    sort = { field: 'createdAt', direction: 'desc' },
-    page = 1,
-    limit: pageLimit = 12,
-    lastDoc,
-  } = options;
-
-  // Limit max page size to prevent large queries
-  const maxLimit = 100;
-  const safeLimit = Math.min(pageLimit, maxLimit);
-
-  const constraints: QueryConstraint[] = [];
-
-  // Filters
-  if (filters.status) {
-    constraints.push(where('status', '==', filters.status));
-  }
-  if (filters.type) {
-    constraints.push(where('type', '==', filters.type));
-  }
-  if (filters.featured !== undefined) {
-    constraints.push(where('featured', '==', filters.featured));
-  }
-  if (filters.published !== undefined) {
-    constraints.push(where('published', '==', filters.published));
-  }
-
-  // Sorting
-  constraints.push(orderBy(sort.field, sort.direction));
-
-  // Pagination
-  constraints.push(limit(safeLimit + 1)); // +1 to check hasMore
-  if (lastDoc) {
-    constraints.push(startAfter(lastDoc));
-  }
-
-  const q = query(collection(db, COLLECTIONS.projects), ...constraints);
-  const snapshot = await getDocs(q);
-
-  const projects: ProjectSummary[] = [];
-  let hasMore = false;
-
-  snapshot.docs.forEach((doc, index) => {
-    if (index < safeLimit) {
-      const project = docToProject(doc);
-      if (project) {
-        projects.push(projectToSummary(project, locale));
-      }
-    } else {
-      hasMore = true;
-    }
-  });
-
-  // Total count (ayrı sorgu gerekebilir)
-  // Şimdilik basit tutuyoruz
-  const total = projects.length;
-  const totalPages = Math.ceil(total / safeLimit);
-
-  return {
-    projects,
-    total,
-    page,
-    totalPages,
-    hasMore,
-  };
-}
-
-/**
- * Tek proje getir (ID ile)
- */
-export async function getProjectById(id: string): Promise<Project | null> {
-  const docRef = doc(db, COLLECTIONS.projects, id);
-  const docSnap = await getDoc(docRef);
-  return docToProject(docSnap);
-}
-
-/**
- * Tek proje getir (slug ile)
- */
-export async function getProjectBySlug(slug: string): Promise<Project | null> {
-  const q = query(
-    collection(db, COLLECTIONS.projects),
-    where('slug', '==', slug),
-    limit(1)
-  );
-  const snapshot = await getDocs(q);
-  
-  if (snapshot.empty) return null;
-  return docToProject(snapshot.docs[0]);
-}
-
-/**
- * Featured projeleri getir (anasayfa için)
- */
-export async function getFeaturedProjects(
-  locale: Locale = 'tr',
-  count: number = 6
-): Promise<ProjectSummary[]> {
-  const q = query(
-    collection(db, COLLECTIONS.projects),
-    where('published', '==', true),
-    where('featured', '==', true),
-    orderBy('createdAt', 'desc'),
-    limit(count)
-  );
-  
-  const snapshot = await getDocs(q);
-  return snapshot.docs
-    .map(doc => docToProject(doc))
-    .filter((p): p is Project => p !== null)
-    .map(p => projectToSummary(p, locale));
-}
-
-/**
- * Devam eden projeleri getir
- */
-export async function getOngoingProjects(
-  locale: Locale = 'tr',
-  pageLimit: number = 12
-): Promise<ProjectSummary[]> {
-  const q = query(
-    collection(db, COLLECTIONS.projects),
-    where('published', '==', true),
-    where('status', '==', 'ongoing'),
-    orderBy('completionPercentage', 'desc'),
-    limit(pageLimit)
-  );
-  
-  const snapshot = await getDocs(q);
-  return snapshot.docs
-    .map(doc => docToProject(doc))
-    .filter((p): p is Project => p !== null)
-    .map(p => projectToSummary(p, locale));
-}
-
-/**
- * Tamamlanan projeleri getir
- */
-export async function getCompletedProjects(
-  locale: Locale = 'tr',
-  pageLimit: number = 12
-): Promise<ProjectSummary[]> {
-  const q = query(
-    collection(db, COLLECTIONS.projects),
-    where('published', '==', true),
-    where('status', '==', 'completed'),
-    orderBy('endDate', 'desc'),
-    limit(pageLimit)
-  );
-  
-  const snapshot = await getDocs(q);
-  return snapshot.docs
-    .map(doc => docToProject(doc))
-    .filter((p): p is Project => p !== null)
-    .map(p => projectToSummary(p, locale));
-}
-
-/**
- * Yayınlanmış tüm projeleri getir
- */
-export async function getPublishedProjects(
-  pageLimit: number = 50
-): Promise<Project[]> {
-  try {
-    // Önce tüm projeleri çek, sonra client-side filtrele
-    // Bu yaklaşım index gerektirmez
-    const q = query(
-      collection(db, COLLECTIONS.projects),
-      limit(pageLimit)
-    );
-    
-    const snapshot = await getDocs(q);
-    const allProjects = snapshot.docs
-      .map(doc => docToProject(doc))
-      .filter((p): p is Project => p !== null);
-    
-    // Client-side: sadece published olanları filtrele ve tarihe göre sırala
-    return allProjects
-      .filter(p => p.published === true)
-      .sort((a, b) => {
-        const dateA = a.createdAt?.getTime() || 0;
-        const dateB = b.createdAt?.getTime() || 0;
-        return dateB - dateA;
-      });
-  } catch (error) {
-    console.error('getPublishedProjects error:', error);
-    return [];
-  }
-}
-
-/**
- * Yeni proje oluştur
- */
-export async function createProject(
-  data: ProjectCreateInput
-): Promise<string> {
-  const docRef = await addDoc(collection(db, COLLECTIONS.projects), {
-    ...data,
-    createdAt: serverTimestamp(),
-    updatedAt: serverTimestamp(),
-  });
-  return docRef.id;
-}
-
-/**
- * Proje güncelle
- */
-export async function updateProject(
-  id: string,
-  data: ProjectUpdateInput
-): Promise<void> {
-  const docRef = doc(db, COLLECTIONS.projects, id);
-  await updateDoc(docRef, {
-    ...data,
-    updatedAt: serverTimestamp(),
-  });
-}
-
-/**
- * Proje sil
- */
-export async function deleteProject(id: string): Promise<void> {
-  const docRef = doc(db, COLLECTIONS.projects, id);
-  await deleteDoc(docRef);
-}
-
-/**
- * Toplu proje sil
- */
-export async function deleteProjects(ids: string[]): Promise<void> {
-  const batch = writeBatch(db);
-  ids.forEach(id => {
-    const docRef = doc(db, COLLECTIONS.projects, id);
-    batch.delete(docRef);
-  });
-  await batch.commit();
-}
-
-// ============================================
-// CONTACT FORMS CRUD
-// ============================================
-
-/**
- * İletişim formlarını getir (admin için)
- */
-export async function getContactForms(
-  options: {
-    filters?: ContactFormFilters;
-    page?: number;
-    limit?: number;
-  } = {}
-): Promise<PaginatedContactForms> {
-  const { filters = {}, page = 1, limit: pageLimit = 25 } = options;
-
-  const constraints: QueryConstraint[] = [];
-
-  if (filters.status) {
-    constraints.push(where('status', '==', filters.status));
-  }
-  if (filters.subject) {
-    constraints.push(where('subject', '==', filters.subject));
-  }
-
-  constraints.push(orderBy('createdAt', 'desc'));
-  constraints.push(limit(pageLimit));
-
-  const q = query(collection(db, COLLECTIONS.contactForms), ...constraints);
-  const snapshot = await getDocs(q);
-
-  const forms: ContactFormSummary[] = snapshot.docs.map(doc => {
-    const data = doc.data();
-    return {
-      id: doc.id,
-      name: data.name,
-      email: data.email,
-      phone: data.phone,
-      subject: data.subject,
-      status: data.status,
-      createdAt: convertTimestamp(data.createdAt),
-      locale: data.locale,
-    };
-  });
-
-  // Stats
-  const statsQuery = await getDocs(collection(db, COLLECTIONS.contactForms));
-  const stats = { new: 0, read: 0, replied: 0, archived: 0 };
-  statsQuery.docs.forEach(doc => {
-    const status = doc.data().status as keyof typeof stats;
-    if (stats[status] !== undefined) stats[status]++;
-  });
-
-  return {
-    forms,
-    total: statsQuery.size,
-    page,
-    totalPages: Math.ceil(statsQuery.size / pageLimit),
-    hasMore: forms.length === pageLimit,
-    stats,
-  };
-}
-
-/**
- * Tek iletişim formu getir
- */
-export async function getContactFormById(id: string): Promise<ContactForm | null> {
-  const docRef = doc(db, COLLECTIONS.contactForms, id);
-  const docSnap = await getDoc(docRef);
-  
-  if (!docSnap.exists()) return null;
-  
-  const data = docSnap.data();
-  return {
-    ...data,
-    id: docSnap.id,
-    createdAt: convertTimestamp(data.createdAt),
-    updatedAt: convertTimestamp(data.updatedAt),
-    repliedAt: data.repliedAt ? convertTimestamp(data.repliedAt) : undefined,
-  } as ContactForm;
-}
-
-/**
- * Yeni iletişim formu oluştur (public)
- */
-export async function createContactForm(
-  data: ContactFormInput
-): Promise<string> {
-  const docRef = await addDoc(collection(db, COLLECTIONS.contactForms), {
-    ...data,
-    status: 'new',
-    createdAt: serverTimestamp(),
-    updatedAt: serverTimestamp(),
-  });
-  return docRef.id;
-}
-
-/**
- * İletişim formu güncelle (admin)
- */
-export async function updateContactForm(
-  id: string,
-  data: ContactFormUpdate
-): Promise<void> {
-  const docRef = doc(db, COLLECTIONS.contactForms, id);
-  await updateDoc(docRef, {
-    ...data,
-    updatedAt: serverTimestamp(),
-  });
-}
-
-/**
- * İletişim formu sil
- */
-export async function deleteContactForm(id: string): Promise<void> {
-  const docRef = doc(db, COLLECTIONS.contactForms, id);
-  await deleteDoc(docRef);
-}
 
 // ============================================
 // SETTINGS CRUD
@@ -541,135 +105,100 @@ const SITE_SETTINGS_DOC = 'site';
  * Site ayarlarını getir
  */
 export async function getSiteSettings(): Promise<SiteSettings> {
-  const docRef = doc(db, COLLECTIONS.settings, SITE_SETTINGS_DOC);
-  const docSnap = await getDoc(docRef);
+  const docSnap = await getDoc(doc(db, COLLECTIONS.settings, SITE_SETTINGS_DOC));
   
-  if (!docSnap.exists()) {
-    // Varsayılan ayarları döndür
+  if (docSnap.exists()) {
+    const data = docSnap.data();
     return {
-      ...DEFAULT_SITE_SETTINGS,
-      updatedAt: new Date(),
-      updatedBy: 'system',
-    };
+      ...data,
+      updatedAt: convertTimestamp(data.updatedAt),
+    } as SiteSettings;
   }
   
-  const data = docSnap.data();
-  return {
-    ...data,
-    updatedAt: convertTimestamp(data.updatedAt),
-    maintenance: {
-      ...data.maintenance,
-      scheduledStart: data.maintenance?.scheduledStart 
-        ? convertTimestamp(data.maintenance.scheduledStart) 
-        : undefined,
-      scheduledEnd: data.maintenance?.scheduledEnd 
-        ? convertTimestamp(data.maintenance.scheduledEnd) 
-        : undefined,
-    },
-    redirects: data.redirects?.map((r: Record<string, unknown>) => ({
-      ...r,
-      createdAt: convertTimestamp(r.createdAt as Timestamp),
-    })) || [],
-  } as SiteSettings;
+  // Varsayılan ayarları döndür
+  return DEFAULT_SITE_SETTINGS as SiteSettings;
 }
 
 /**
  * Site ayarlarını güncelle
  */
 export async function updateSiteSettings(
-  data: SiteSettingsUpdate,
+  input: SiteSettingsUpdate,
   userId: string
 ): Promise<void> {
   const docRef = doc(db, COLLECTIONS.settings, SITE_SETTINGS_DOC);
+  
   await updateDoc(docRef, {
-    ...data,
+    ...input,
     updatedAt: serverTimestamp(),
     updatedBy: userId,
   });
 }
 
 /**
- * Site ayarlarını oluştur (ilk kurulum)
+ * Site ayarlarını başlat (ilk kurulum)
  */
 export async function initializeSiteSettings(userId: string): Promise<void> {
   const docRef = doc(db, COLLECTIONS.settings, SITE_SETTINGS_DOC);
   const docSnap = await getDoc(docRef);
   
   if (!docSnap.exists()) {
-    await updateDoc(docRef, {
+    await setDoc(docRef, {
       ...DEFAULT_SITE_SETTINGS,
       updatedAt: serverTimestamp(),
       updatedBy: userId,
-    }).catch(() => {
-      // Document doesn't exist, create it
-      return addDoc(collection(db, COLLECTIONS.settings), {
-        ...DEFAULT_SITE_SETTINGS,
-        updatedAt: serverTimestamp(),
-        updatedBy: userId,
-      });
     });
   }
 }
 
 // ============================================
-// USERS CRUD
+// USER CRUD
 // ============================================
 
 /**
- * Kullanıcı getir (ID ile)
+ * Document data'yı User'a çevir
  */
-export async function getUserById(id: string): Promise<User | null> {
-  const docRef = doc(db, COLLECTIONS.users, id);
-  const docSnap = await getDoc(docRef);
-  
-  if (!docSnap.exists()) return null;
-  
+function docToUser(docSnap: DocumentSnapshot): User | null {
   const data = docSnap.data();
+  if (!data) return null;
+  
   return {
     ...data,
     id: docSnap.id,
     createdAt: convertTimestamp(data.createdAt),
     updatedAt: convertTimestamp(data.updatedAt),
-    lastLoginAt: data.lastLoginAt ? convertTimestamp(data.lastLoginAt) : undefined,
-  } as User;
+    lastLogin: convertTimestamp(data.lastLogin),
+  } as unknown as User;
 }
 
 /**
- * Kullanıcı oluştur
+ * Kullanıcı ID ile getir
  */
-export async function createUser(
-  uid: string,
-  data: Omit<UserCreateInput, 'password'>
-): Promise<void> {
-  const docRef = doc(db, COLLECTIONS.users, uid);
-  await updateDoc(docRef, {
-    ...data,
-    id: uid,
-    active: true,
+export async function getUserById(id: string): Promise<User | null> {
+  const docSnap = await getDoc(doc(db, COLLECTIONS.users, id));
+  return docToUser(docSnap);
+}
+
+/**
+ * Yeni kullanıcı oluştur
+ */
+export async function createUser(input: UserCreateInput): Promise<string> {
+  const docRef = await addDoc(collection(db, COLLECTIONS.users), {
+    ...input,
     createdAt: serverTimestamp(),
     updatedAt: serverTimestamp(),
-  }).catch(() => {
-    // Document doesn't exist, set it
-    return addDoc(collection(db, COLLECTIONS.users), {
-      ...data,
-      id: uid,
-      active: true,
-      createdAt: serverTimestamp(),
-      updatedAt: serverTimestamp(),
-    });
   });
+  
+  return docRef.id;
 }
 
 /**
  * Kullanıcı güncelle
  */
-export async function updateUser(
-  id: string,
-  data: UserUpdateInput
-): Promise<void> {
+export async function updateUser(id: string, input: UserUpdateInput): Promise<void> {
   const docRef = doc(db, COLLECTIONS.users, id);
   await updateDoc(docRef, {
-    ...data,
+    ...input,
     updatedAt: serverTimestamp(),
   });
 }
@@ -680,30 +209,18 @@ export async function updateUser(
 export async function updateLastLogin(id: string): Promise<void> {
   const docRef = doc(db, COLLECTIONS.users, id);
   await updateDoc(docRef, {
-    lastLoginAt: serverTimestamp(),
+    lastLogin: serverTimestamp(),
   });
 }
 
 /**
- * Tüm kullanıcıları getir (admin için)
+ * Tüm kullanıcıları getir
  */
 export async function getUsers(): Promise<User[]> {
-  const q = query(
-    collection(db, COLLECTIONS.users),
-    orderBy('createdAt', 'desc')
-  );
-  
-  const snapshot = await getDocs(q);
-  return snapshot.docs.map(doc => {
-    const data = doc.data();
-    return {
-      ...data,
-      id: doc.id,
-      createdAt: convertTimestamp(data.createdAt),
-      updatedAt: convertTimestamp(data.updatedAt),
-      lastLoginAt: data.lastLoginAt ? convertTimestamp(data.lastLoginAt) : undefined,
-    } as User;
-  });
+  const snapshot = await getDocs(collection(db, COLLECTIONS.users));
+  return snapshot.docs
+    .map(docItem => docToUser(docItem))
+    .filter((user): user is User => user !== null);
 }
 
 // ============================================
@@ -726,28 +243,20 @@ function docToPageLayout(docSnap: DocumentSnapshot): PageLayout | null {
 }
 
 /**
- * Sayfa düzeni oluştur
+ * Sayfa layout'u oluştur
  */
 export async function createPageLayout(input: PageLayoutCreateInput): Promise<string> {
-  const elements: PageElement[] = input.elements.map((el, index) => ({
-    ...el,
-    id: `element-${Date.now()}-${index}`,
-  }));
-  
   const docRef = await addDoc(collection(db, COLLECTIONS.pageLayouts), {
     ...input,
-    elements,
     createdAt: serverTimestamp(),
     updatedAt: serverTimestamp(),
-    isDefault: input.isDefault ?? false,
-    isActive: input.isActive ?? true,
   });
   
   return docRef.id;
 }
 
 /**
- * Sayfa düzeni ID ile getir
+ * Sayfa layout'u ID ile getir
  */
 export async function getPageLayoutById(id: string): Promise<PageLayout | null> {
   const docSnap = await getDoc(doc(db, COLLECTIONS.pageLayouts, id));
@@ -755,7 +264,7 @@ export async function getPageLayoutById(id: string): Promise<PageLayout | null> 
 }
 
 /**
- * Sayfa tipine göre aktif düzeni getir
+ * Aktif sayfa layout'unu getir
  */
 export async function getActivePageLayout(pageId: PageType): Promise<PageLayout | null> {
   const q = query(
@@ -772,72 +281,34 @@ export async function getActivePageLayout(pageId: PageType): Promise<PageLayout 
 }
 
 /**
- * Mevcut layout'un elementlerinin sayfa tipine uygun olup olmadığını kontrol et
- */
-function isValidLayoutForPage(layout: PageLayout, pageId: PageType): boolean {
-  const defaultElements = getDefaultElementsForPage(pageId);
-  
-  // Element sayısı eşleşmeli
-  if (layout.elements.length !== defaultElements.length) {
-    return false;
-  }
-  
-  // Her pozisyondaki element tipi varsayılan elementlerle eşleşmeli
-  // (Sıralama önemli değil, sadece tipler ve sayılar eşleşmeli)
-  const defaultElementTypeCounts = new Map<string, number>();
-  const layoutElementTypeCounts = new Map<string, number>();
-  
-  // Varsayılan element tiplerini say
-  for (const el of defaultElements) {
-    defaultElementTypeCounts.set(el.type, (defaultElementTypeCounts.get(el.type) || 0) + 1);
-  }
-  
-  // Layout element tiplerini say
-  for (const el of layout.elements) {
-    layoutElementTypeCounts.set(el.type, (layoutElementTypeCounts.get(el.type) || 0) + 1);
-  }
-  
-  // Her element tipinin sayısı eşleşmeli
-  if (defaultElementTypeCounts.size !== layoutElementTypeCounts.size) {
-    return false;
-  }
-  
-  for (const [type, count] of defaultElementTypeCounts) {
-    if (layoutElementTypeCounts.get(type) !== count) {
-      return false;
-    }
-  }
-  
-  return true;
-}
-
-/**
- * Sayfa tipine göre varsayılan düzeni getir veya oluştur
+ * Varsayılan layout'u getir veya oluştur
  */
 export async function getOrCreateDefaultLayout(pageId: PageType, createdBy: string): Promise<PageLayout> {
-  // Önce mevcut aktif düzeni kontrol et
-  const existing = await getActivePageLayout(pageId);
-  
-  // Eğer layout varsa ve elementleri doğruysa, onu döndür
-  if (existing && isValidLayoutForPage(existing, pageId)) {
-    return existing;
+  // Önce aktif layout'u kontrol et
+  const activeLayout = await getActivePageLayout(pageId);
+  if (activeLayout) {
+    return activeLayout;
   }
   
-  // Eğer layout yoksa veya elementleri yanlışsa, eski layout'ları temizle ve yeni oluştur
-  if (existing) {
-    // Yanlış elementlerle oluşturulmuş layout'u sil
-    const existingLayouts = await getPageLayoutsByType(pageId);
-    const batch = writeBatch(db);
-    
-    for (const layout of existingLayouts) {
-      const docRef = doc(db, COLLECTIONS.pageLayouts, layout.id);
-      batch.delete(docRef);
+  // Varsayılan layout'u kontrol et
+  const q = query(
+    collection(db, COLLECTIONS.pageLayouts),
+    where('pageId', '==', pageId),
+    where('isDefault', '==', true),
+    limit(1)
+  );
+  
+  const snapshot = await getDocs(q);
+  if (!snapshot.empty) {
+    const layout = docToPageLayout(snapshot.docs[0]);
+    if (layout) {
+      // Varsayılan layout'u aktif yap
+      await updatePageLayout(layout.id, { isActive: true });
+      return layout;
     }
-    
-    await batch.commit();
   }
   
-  // Sayfa tipine göre varsayılan elementleri al
+  // Yeni varsayılan layout oluştur
   const defaultElements = getDefaultElementsForPage(pageId);
   
   const layoutId = await createPageLayout({
@@ -849,14 +320,16 @@ export async function getOrCreateDefaultLayout(pageId: PageType, createdBy: stri
     isActive: true,
   });
   
-  const layout = await getPageLayoutById(layoutId);
-  if (!layout) throw new Error('Layout oluşturulamadı');
+  const newLayout = await getPageLayoutById(layoutId);
+  if (!newLayout) {
+    throw new Error('Layout oluşturulamadı');
+  }
   
-  return layout;
+  return newLayout;
 }
 
 /**
- * Sayfa düzeni güncelle
+ * Sayfa layout'u güncelle
  */
 export async function updatePageLayout(id: string, input: PageLayoutUpdateInput): Promise<void> {
   const docRef = doc(db, COLLECTIONS.pageLayouts, id);
@@ -867,29 +340,24 @@ export async function updatePageLayout(id: string, input: PageLayoutUpdateInput)
 }
 
 /**
- * Sayfa düzeni sil
+ * Sayfa layout'u sil
  */
 export async function deletePageLayout(id: string): Promise<void> {
   await deleteDoc(doc(db, COLLECTIONS.pageLayouts, id));
 }
 
 /**
- * Tüm sayfa düzenlerini getir
+ * Tüm sayfa layout'larını getir
  */
 export async function getAllPageLayouts(): Promise<PageLayout[]> {
-  const q = query(
-    collection(db, COLLECTIONS.pageLayouts),
-    orderBy('createdAt', 'desc')
-  );
-  
-  const snapshot = await getDocs(q);
+  const snapshot = await getDocs(collection(db, COLLECTIONS.pageLayouts));
   return snapshot.docs
-    .map(doc => docToPageLayout(doc))
+    .map(docItem => docToPageLayout(docItem))
     .filter((layout): layout is PageLayout => layout !== null);
 }
 
 /**
- * Sayfa tipine göre düzenleri getir
+ * Sayfa tipine göre layout'ları getir
  */
 export async function getPageLayoutsByType(pageId: PageType): Promise<PageLayout[]> {
   const q = query(
@@ -900,42 +368,46 @@ export async function getPageLayoutsByType(pageId: PageType): Promise<PageLayout
   
   const snapshot = await getDocs(q);
   return snapshot.docs
-    .map(doc => docToPageLayout(doc))
+    .map(docItem => docToPageLayout(docItem))
     .filter((layout): layout is PageLayout => layout !== null);
 }
 
 /**
- * Aktif düzeni değiştir
+ * Aktif layout'u ayarla
  */
 export async function setActivePageLayout(pageId: PageType, layoutId: string): Promise<void> {
-  // Önce aynı sayfa tipindeki tüm düzenleri pasif yap
-  const existingLayouts = await getPageLayoutsByType(pageId);
   const batch = writeBatch(db);
   
-  for (const layout of existingLayouts) {
-    const docRef = doc(db, COLLECTIONS.pageLayouts, layout.id);
-    batch.update(docRef, { isActive: false });
+  // Önce tüm layout'ları pasif yap
+  const layouts = await getPageLayoutsByType(pageId);
+  for (const layout of layouts) {
+    if (layout.isActive) {
+      batch.update(doc(db, COLLECTIONS.pageLayouts, layout.id), {
+        isActive: false,
+        updatedAt: serverTimestamp(),
+      });
+    }
   }
   
-  // Seçilen düzeni aktif yap
-  const targetDocRef = doc(db, COLLECTIONS.pageLayouts, layoutId);
-  batch.update(targetDocRef, { isActive: true, updatedAt: serverTimestamp() });
+  // Yeni layout'u aktif yap
+  batch.update(doc(db, COLLECTIONS.pageLayouts, layoutId), {
+    isActive: true,
+    updatedAt: serverTimestamp(),
+  });
   
   await batch.commit();
 }
 
 /**
- * Sayfa düzenini varsayılana sıfırla
- * Mevcut layout'u siler ve varsayılan elementlerle yeniden oluşturur
+ * Layout'u varsayılana sıfırla
  */
 export async function resetPageLayoutToDefault(pageId: PageType, createdBy: string): Promise<PageLayout> {
-  // Mevcut tüm layout'ları bu sayfa için sil
-  const existingLayouts = await getPageLayoutsByType(pageId);
+  // Mevcut layout'ları sil
+  const layouts = await getPageLayoutsByType(pageId);
   const batch = writeBatch(db);
   
-  for (const layout of existingLayouts) {
-    const docRef = doc(db, COLLECTIONS.pageLayouts, layout.id);
-    batch.delete(docRef);
+  for (const layout of layouts) {
+    batch.delete(doc(db, COLLECTIONS.pageLayouts, layout.id));
   }
   
   await batch.commit();
@@ -965,6 +437,12 @@ export async function resetPageLayoutToDefault(pageId: PageType, createdBy: stri
   }
   
   return resetLayout;
+}
+
+// Layout doğrulama fonksiyonu
+function isValidLayoutForPage(layout: PageLayout, pageId: PageType): boolean {
+  // Basit doğrulama - gerçek uygulamada daha detaylı olabilir
+  return layout.pageId === pageId && Array.isArray(layout.elements);
 }
 
 // ============================================
@@ -1125,13 +603,6 @@ export async function deletePageContents(pageId: PageType): Promise<void> {
 // ============================================
 
 /**
- * Helper: Generate unique ID
- */
-function generateId(): string {
-  return `${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-}
-
-/**
  * Helper: Convert Firestore document to Page
  */
 function docToPage(docSnap: DocumentSnapshot): Page | null {
@@ -1143,7 +614,6 @@ function docToPage(docSnap: DocumentSnapshot): Page | null {
     id: docSnap.id,
     createdAt: convertTimestamp(data.createdAt),
     updatedAt: convertTimestamp(data.updatedAt),
-    publishedAt: data.publishedAt ? convertTimestamp(data.publishedAt) : undefined,
   } as Page;
 }
 
@@ -1192,55 +662,30 @@ function docToBlock(docSnap: DocumentSnapshot): Block | null {
   } as Block;
 }
 
-// ============================================
-// PAGE CRUD
-// ============================================
-
 /**
- * Yeni sayfa oluştur
+ * Sayfa oluştur
  */
 export async function createPage(input: PageCreateInput): Promise<string> {
-  const pageRef = doc(db, COLLECTIONS.pages, generateId());
-  
-  await updateDoc(pageRef, {
-    id: pageRef.id,
-    title: input.title,
-    slug: input.slug,
+  const docRef = await addDoc(collection(db, COLLECTIONS.pages), {
+    ...input,
     sections: [],
-    settings: input.settings || {},
-    status: 'draft',
     createdAt: serverTimestamp(),
     updatedAt: serverTimestamp(),
-    author: input.author,
-  }).catch(() => {
-    // Document doesn't exist, create it
-    return addDoc(collection(db, COLLECTIONS.pages), {
-      id: pageRef.id,
-      title: input.title,
-      slug: input.slug,
-      sections: [],
-      settings: input.settings || {},
-      status: 'draft',
-      createdAt: serverTimestamp(),
-      updatedAt: serverTimestamp(),
-      author: input.author,
-    });
   });
   
-  return pageRef.id;
+  return docRef.id;
 }
 
 /**
- * Sayfa getir (ID ile)
+ * Sayfa ID ile getir
  */
 export async function getPageById(id: string): Promise<Page | null> {
-  const docRef = doc(db, COLLECTIONS.pages, id);
-  const docSnap = await getDoc(docRef);
+  const docSnap = await getDoc(doc(db, COLLECTIONS.pages, id));
   return docToPage(docSnap);
 }
 
 /**
- * Sayfa getir (slug ile)
+ * Sayfa slug ile getir
  */
 export async function getPageBySlug(slug: string): Promise<Page | null> {
   const q = query(
@@ -1248,9 +693,10 @@ export async function getPageBySlug(slug: string): Promise<Page | null> {
     where('slug', '==', slug),
     limit(1)
   );
-  const snapshot = await getDocs(q);
   
+  const snapshot = await getDocs(q);
   if (snapshot.empty) return null;
+  
   return docToPage(snapshot.docs[0]);
 }
 
@@ -1258,14 +704,9 @@ export async function getPageBySlug(slug: string): Promise<Page | null> {
  * Tüm sayfaları getir
  */
 export async function getAllPages(): Promise<Page[]> {
-  const q = query(
-    collection(db, COLLECTIONS.pages),
-    orderBy('createdAt', 'desc')
-  );
-  
-  const snapshot = await getDocs(q);
+  const snapshot = await getDocs(collection(db, COLLECTIONS.pages));
   return snapshot.docs
-    .map(doc => docToPage(doc))
+    .map(docItem => docToPage(docItem))
     .filter((page): page is Page => page !== null);
 }
 
@@ -1274,95 +715,57 @@ export async function getAllPages(): Promise<Page[]> {
  */
 export async function updatePage(id: string, input: PageUpdateInput): Promise<void> {
   const docRef = doc(db, COLLECTIONS.pages, id);
-  
-  // Undefined field'ları filtrele
-  const cleanInput: Record<string, unknown> = {};
-  Object.keys(input).forEach(key => {
-    const value = input[key as keyof PageUpdateInput];
-    if (value !== undefined) {
-      cleanInput[key] = value;
-    }
-  });
-  
-  const updates: Record<string, unknown> = {
-    ...cleanInput,
+  await updateDoc(docRef, {
+    ...input,
     updatedAt: serverTimestamp(),
-  };
-  
-  // publishedAt'i ayrı kontrol et (input'ta olabilir ama tip tanımında yok)
-  if (input.status === 'published') {
-    const pageDoc = await getDoc(docRef);
-    const pageData = pageDoc.data();
-    if (!pageData?.publishedAt) {
-      updates.publishedAt = serverTimestamp();
-    }
-  }
-  
-  await updateDoc(docRef, updates);
+  });
 }
 
 /**
  * Sayfa sil
  */
 export async function deletePage(id: string): Promise<void> {
-  const batch = writeBatch(db);
-  const pageDoc = await getDoc(doc(db, COLLECTIONS.pages, id));
-  const pageData = pageDoc.data();
+  const page = await getPageById(id);
+  if (!page) return;
   
-  if (!pageData) return;
-  
-  // Tüm section'ları sil
-  for (const sectionId of pageData.sections || []) {
+  // Section'ları sil
+  for (const sectionId of page.sections || []) {
     await deleteSection(sectionId);
   }
   
-  batch.delete(doc(db, COLLECTIONS.pages, id));
-  await batch.commit();
+  // Sayfayı sil
+  await deleteDoc(doc(db, COLLECTIONS.pages, id));
 }
 
-// ============================================
-// SECTION CRUD
-// ============================================
-
 /**
- * Yeni section oluştur
+ * Section oluştur
  */
 export async function createSection(input: SectionCreateInput): Promise<string> {
-  const sectionRef = doc(db, COLLECTIONS.sections, generateId());
-  
-  // setDoc kullan - document yoksa oluşturur
-  await setDoc(sectionRef, {
-    id: sectionRef.id,
-    pageId: input.pageId,
-    name: input.name || 'Yeni Bölüm',
+  const docRef = await addDoc(collection(db, COLLECTIONS.sections), {
+    ...input,
     columns: [],
-    settings: input.settings || {},
-    order: input.order || 0,
-    visibility: { desktop: true, tablet: true, mobile: true },
     createdAt: serverTimestamp(),
     updatedAt: serverTimestamp(),
   });
   
   // Page'e section ID'sini ekle
-  const pageRef = doc(db, COLLECTIONS.pages, input.pageId);
-  const pageDoc = await getDoc(pageRef);
-  const pageData = pageDoc.data();
-  const sections = pageData?.sections || [];
+  if (input.pageId) {
+    const page = await getPageById(input.pageId);
+    if (page) {
+      await updatePage(input.pageId, {
+        sections: [...(page.sections || []), docRef.id],
+      });
+    }
+  }
   
-  await updateDoc(pageRef, {
-    sections: [...sections, sectionRef.id],
-    updatedAt: serverTimestamp(),
-  });
-  
-  return sectionRef.id;
+  return docRef.id;
 }
 
 /**
- * Section getir
+ * Section ID ile getir
  */
 export async function getSectionById(id: string): Promise<Section | null> {
-  const docRef = doc(db, COLLECTIONS.sections, id);
-  const docSnap = await getDoc(docRef);
+  const docSnap = await getDoc(doc(db, COLLECTIONS.sections, id));
   return docToSection(docSnap);
 }
 
@@ -1381,74 +784,47 @@ export async function updateSection(id: string, input: SectionUpdateInput): Prom
  * Section sil
  */
 export async function deleteSection(id: string): Promise<void> {
-  const batch = writeBatch(db);
-  const sectionDoc = await getDoc(doc(db, COLLECTIONS.sections, id));
-  const sectionData = sectionDoc.data();
+  const section = await getSectionById(id);
+  if (!section) return;
   
-  if (!sectionData) return;
-  
-  // Tüm column'ları sil
-  for (const columnId of sectionData.columns || []) {
+  // Column'ları sil
+  for (const columnId of section.columns || []) {
     await deleteColumn(columnId);
   }
   
-  // Page'den section ID'sini çıkar
-  const pageRef = doc(db, COLLECTIONS.pages, sectionData.pageId);
-  const pageDoc = await getDoc(pageRef);
-  const pageData = pageDoc.data();
-  const sections = (pageData?.sections || []).filter((sid: string) => sid !== id);
-  
-  batch.update(pageRef, {
-    sections,
-    updatedAt: serverTimestamp(),
-  });
-  
-  batch.delete(doc(db, COLLECTIONS.sections, id));
-  await batch.commit();
+  // Section'ı sil
+  await deleteDoc(doc(db, COLLECTIONS.sections, id));
 }
 
-// ============================================
-// COLUMN CRUD
-// ============================================
-
 /**
- * Yeni column oluştur
+ * Column oluştur
  */
 export async function createColumn(input: ColumnCreateInput): Promise<string> {
-  const columnRef = doc(db, COLLECTIONS.columns, generateId());
-  
-  // setDoc kullan - document yoksa oluşturur
-  await setDoc(columnRef, {
-    id: columnRef.id,
-    sectionId: input.sectionId,
-    width: input.width || 100,
+  const docRef = await addDoc(collection(db, COLLECTIONS.columns), {
+    ...input,
     blocks: [],
-    settings: input.settings || {},
-    order: input.order || 0,
     createdAt: serverTimestamp(),
     updatedAt: serverTimestamp(),
   });
   
   // Section'a column ID'sini ekle
-  const sectionRef = doc(db, COLLECTIONS.sections, input.sectionId);
-  const sectionDoc = await getDoc(sectionRef);
-  const sectionData = sectionDoc.data();
-  const columns = sectionData?.columns || [];
+  if (input.sectionId) {
+    const section = await getSectionById(input.sectionId);
+    if (section) {
+      await updateSection(input.sectionId, {
+        columns: [...(section.columns || []), docRef.id],
+      });
+    }
+  }
   
-  await updateDoc(sectionRef, {
-    columns: [...columns, columnRef.id],
-    updatedAt: serverTimestamp(),
-  });
-  
-  return columnRef.id;
+  return docRef.id;
 }
 
 /**
- * Column getir
+ * Column ID ile getir
  */
 export async function getColumnById(id: string): Promise<Column | null> {
-  const docRef = doc(db, COLLECTIONS.columns, id);
-  const docSnap = await getDoc(docRef);
+  const docSnap = await getDoc(doc(db, COLLECTIONS.columns, id));
   return docToColumn(docSnap);
 }
 
@@ -1467,77 +843,46 @@ export async function updateColumn(id: string, input: ColumnUpdateInput): Promis
  * Column sil
  */
 export async function deleteColumn(id: string): Promise<void> {
-  const batch = writeBatch(db);
-  const columnDoc = await getDoc(doc(db, COLLECTIONS.columns, id));
-  const columnData = columnDoc.data();
+  const column = await getColumnById(id);
+  if (!column) return;
   
-  if (!columnData) return;
-  
-  // Tüm block'ları sil
-  for (const blockId of columnData.blocks || []) {
-    batch.delete(doc(db, COLLECTIONS.blocks, blockId));
+  // Block'ları sil
+  for (const blockId of column.blocks || []) {
+    await deleteBlock(blockId);
   }
   
-  // Section'dan column ID'sini çıkar
-  const sectionRef = doc(db, COLLECTIONS.sections, columnData.sectionId);
-  const sectionDoc = await getDoc(sectionRef);
-  const sectionData = sectionDoc.data();
-  const columns = (sectionData?.columns || []).filter((cid: string) => cid !== id);
-  
-  batch.update(sectionRef, {
-    columns,
-    updatedAt: serverTimestamp(),
-  });
-  
-  batch.delete(doc(db, COLLECTIONS.columns, id));
-  await batch.commit();
+  // Column'u sil
+  await deleteDoc(doc(db, COLLECTIONS.columns, id));
 }
 
-// ============================================
-// BLOCK CRUD
-// ============================================
-
 /**
- * Yeni block oluştur
+ * Block oluştur
  */
 export async function createBlock(input: BlockCreateInput): Promise<string> {
-  const blockRef = doc(db, COLLECTIONS.blocks, generateId());
-  
-  // Varsayılan props'u al
-  const { getDefaultBlockProps } = await import('@/types/pageBuilder');
-  const defaultProps = getDefaultBlockProps(input.type);
-  
-  // setDoc kullan - document yoksa oluşturur
-  await setDoc(blockRef, {
-    id: blockRef.id,
-    columnId: input.columnId,
-    type: input.type,
-    props: { ...defaultProps, ...input.props },
-    order: input.order ?? 0,
+  const docRef = await addDoc(collection(db, COLLECTIONS.blocks), {
+    ...input,
     createdAt: serverTimestamp(),
     updatedAt: serverTimestamp(),
   });
   
   // Column'a block ID'sini ekle
-  const columnRef = doc(db, COLLECTIONS.columns, input.columnId);
-  const columnDoc = await getDoc(columnRef);
-  const columnData = columnDoc.data();
-  const blocks = columnData?.blocks || [];
+  if (input.columnId) {
+    const column = await getColumnById(input.columnId);
+    if (column) {
+      await updateColumn(input.columnId, {
+        blocks: [...(column.blocks || []), docRef.id],
+      });
+    }
+  }
   
-  await updateDoc(columnRef, {
-    blocks: [...blocks, blockRef.id],
-    updatedAt: serverTimestamp(),
-  });
-  
-  return blockRef.id;
+  return docRef.id;
 }
 
 /**
- * Block getir
+ * Block ID ile getir
  */
 export async function getBlockById(id: string): Promise<Block | null> {
-  const docRef = doc(db, COLLECTIONS.blocks, id);
-  const docSnap = await getDoc(docRef);
+  const docSnap = await getDoc(doc(db, COLLECTIONS.blocks, id));
   return docToBlock(docSnap);
 }
 
@@ -1546,12 +891,8 @@ export async function getBlockById(id: string): Promise<Block | null> {
  */
 export async function updateBlock(id: string, input: BlockUpdateInput): Promise<void> {
   const docRef = doc(db, COLLECTIONS.blocks, id);
-  const blockDoc = await getDoc(docRef);
-  const currentProps = blockDoc.data()?.props || {};
-  
   await updateDoc(docRef, {
     ...input,
-    props: input.props ? { ...currentProps, ...input.props } : currentProps,
     updatedAt: serverTimestamp(),
   });
 }
@@ -1560,25 +901,7 @@ export async function updateBlock(id: string, input: BlockUpdateInput): Promise<
  * Block sil
  */
 export async function deleteBlock(id: string): Promise<void> {
-  const batch = writeBatch(db);
-  const blockDoc = await getDoc(doc(db, COLLECTIONS.blocks, id));
-  const blockData = blockDoc.data();
-  
-  if (!blockData) return;
-  
-  // Column'dan block ID'sini çıkar
-  const columnRef = doc(db, COLLECTIONS.columns, blockData.columnId);
-  const columnDoc = await getDoc(columnRef);
-  const columnData = columnDoc.data();
-  const blocks = (columnData?.blocks || []).filter((bid: string) => bid !== id);
-  
-  batch.update(columnRef, {
-    blocks,
-    updatedAt: serverTimestamp(),
-  });
-  
-  batch.delete(doc(db, COLLECTIONS.blocks, id));
-  await batch.commit();
+  await deleteDoc(doc(db, COLLECTIONS.blocks, id));
 }
 
 /**
@@ -1601,15 +924,17 @@ export async function moveBlock(blockId: string, targetColumnId: string, newOrde
   });
   
   // Eski column'dan çıkar
-  const oldColumnRef = doc(db, COLLECTIONS.columns, oldColumnId);
-  const oldColumnDoc = await getDoc(oldColumnRef);
-  const oldColumnData = oldColumnDoc.data();
-  const oldBlocks = (oldColumnData?.blocks || []).filter((bid: string) => bid !== blockId);
-  
-  batch.update(oldColumnRef, {
-    blocks: oldBlocks,
-    updatedAt: serverTimestamp(),
-  });
+  if (oldColumnId) {
+    const oldColumnRef = doc(db, COLLECTIONS.columns, oldColumnId);
+    const oldColumnDoc = await getDoc(oldColumnRef);
+    const oldColumnData = oldColumnDoc.data();
+    const newBlocks = (oldColumnData?.blocks || []).filter((id: string) => id !== blockId);
+    
+    batch.update(oldColumnRef, {
+      blocks: newBlocks,
+      updatedAt: serverTimestamp(),
+    });
+  }
   
   // Yeni column'a ekle
   const newColumnRef = doc(db, COLLECTIONS.columns, targetColumnId);
@@ -1623,4 +948,207 @@ export async function moveBlock(blockId: string, targetColumnId: string, newOrde
   });
   
   await batch.commit();
+}
+
+// ============================================
+// THEME FUNCTIONS
+// ============================================
+
+/**
+ * Mevcut tüm sayfaları, section'ları, column'ları ve block'ları sil
+ * Tema değiştirirken kullanılır
+ */
+export async function deleteCurrentTheme(): Promise<void> {
+  const batch = writeBatch(db);
+  
+  // 1. Tüm page'leri getir
+  const pagesSnapshot = await getDocs(collection(db, COLLECTIONS.pages));
+  
+  for (const pageDoc of pagesSnapshot.docs) {
+    const page = pageDoc.data();
+    
+    // 2. Her page'in section'larını sil
+    for (const sectionId of page.sections || []) {
+      const sectionDoc = await getDoc(doc(db, COLLECTIONS.sections, sectionId));
+      
+      if (sectionDoc.exists()) {
+        const section = sectionDoc.data();
+        
+        // 3. Section'ın column'larını sil
+        for (const columnId of section.columns || []) {
+          const columnDoc = await getDoc(doc(db, COLLECTIONS.columns, columnId));
+          
+          if (columnDoc.exists()) {
+            const column = columnDoc.data();
+            
+            // 4. Column'un block'larını sil
+            for (const blockId of column.blocks || []) {
+              batch.delete(doc(db, COLLECTIONS.blocks, blockId));
+            }
+            
+            batch.delete(doc(db, COLLECTIONS.columns, columnId));
+          }
+        }
+        
+        batch.delete(doc(db, COLLECTIONS.sections, sectionId));
+      }
+    }
+    
+    // 5. Page'i sil
+    batch.delete(doc(db, COLLECTIONS.pages, pageDoc.id));
+  }
+  
+  await batch.commit();
+  console.log('Mevcut tema tamamen silindi');
+}
+
+/**
+ * Tema yükleme - Tema verilerini Firebase'e yükle
+ */
+export async function installTheme(themeData: ThemeData, createdBy: string): Promise<void> {
+  const { metadata, pages } = themeData;
+  
+  if (!metadata || !pages) {
+    throw new Error('Geçersiz tema formatı');
+  }
+  
+  // Her sayfa için işlem yap
+  for (const pageConfig of metadata.pages) {
+    const pageData = pages[pageConfig.slug];
+    
+    if (!pageData) {
+      console.warn(`Sayfa bulunamadı: ${pageConfig.slug}`);
+      continue;
+    }
+    
+    // Yeni sayfa oluştur
+    const pageId = await createPage({
+      title: pageConfig.title,
+      slug: pageConfig.slug,
+      settings: metadata.settings || {},
+      author: createdBy,
+    });
+    
+    // Section'ları oluştur
+    const sectionIds: string[] = [];
+    
+    for (const sectionData of pageData.sections) {
+      const sectionId = await createSection({
+        pageId,
+        name: sectionData.name,
+        order: sectionIds.length,
+        settings: sectionData.settings || {},
+      });
+      
+      sectionIds.push(sectionId);
+      
+      // Column'ları oluştur
+      for (const columnData of sectionData.columns) {
+        const columnId = await createColumn({
+          sectionId,
+          width: columnData.width,
+          order: 0,
+          settings: columnData.settings || {},
+        });
+        
+        // Block'ları oluştur
+        for (let i = 0; i < columnData.blocks.length; i++) {
+          const blockData = columnData.blocks[i];
+          await createBlock({
+            columnId,
+            type: blockData.type as any,
+            order: i,
+            props: blockData.props || {},
+          });
+        }
+      }
+    }
+    
+    // Page'e section ID'lerini ekle
+    await updatePage(pageId, { sections: sectionIds });
+  }
+  
+  console.log('Tema başarıyla yüklendi:', metadata.id);
+}
+
+/**
+ * Mevcut temaları getir (Firestore'dan)
+ */
+export async function getAvailableThemes(): Promise<ThemePreview[]> {
+  try {
+    const themesSnapshot = await getDocs(collection(db, COLLECTIONS.themes));
+    
+    return themesSnapshot.docs.map(doc => {
+      const data = doc.data();
+      return {
+        id: doc.id,
+        name: data.name || '',
+        description: data.description || '',
+        thumbnail: data.thumbnail || '',
+        category: (data.category || 'business') as ThemePreview['category'],
+        version: data.version || '1.0.0',
+      };
+    });
+  } catch (error) {
+    console.error('Firestore\'dan temalar yüklenemedi:', error);
+    // Hata durumunda boş array döndür
+    return [];
+  }
+}
+
+/**
+ * Tema metadata'sını getir
+ */
+export async function getThemeMetadata(themeId: string): Promise<ThemeMetadata | null> {
+  const themeDoc = await getDoc(doc(db, COLLECTIONS.themes, themeId));
+  
+  if (!themeDoc.exists()) {
+    return null;
+  }
+  
+  return themeDoc.data() as ThemeMetadata;
+}
+
+/**
+ * Tema verilerini getir (metadata + pages)
+ */
+export async function getThemeData(themeId: string): Promise<ThemeData | null> {
+  const metadata = await getThemeMetadata(themeId);
+  
+  if (!metadata) {
+    return null;
+  }
+  
+  // Pages'i metadata'dan al (şimdilik metadata içinde tutuyoruz)
+  // İleride ayrı collection'a taşınabilir
+  const pages: Record<string, ThemePageData> = {};
+  
+  // Metadata içindeki pages array'inden sayfa verilerini oluştur
+  // Gerçek uygulamada bu veriler ayrı bir collection'da veya storage'da olabilir
+  for (const pageConfig of metadata.pages) {
+    // Şimdilik boş sayfa oluştur, gerçek veriler tema dosyalarından gelecek
+    pages[pageConfig.slug] = {
+      slug: pageConfig.slug,
+      title: pageConfig.title,
+      sections: [],
+    };
+  }
+  
+  return {
+    metadata,
+    pages,
+  };
+}
+
+/**
+ * Tema oluştur (admin için)
+ */
+export async function createTheme(metadata: ThemeMetadata): Promise<string> {
+  const docRef = await addDoc(collection(db, COLLECTIONS.themes), {
+    ...metadata,
+    createdAt: serverTimestamp(),
+    updatedAt: serverTimestamp(),
+  });
+  
+  return docRef.id;
 }
