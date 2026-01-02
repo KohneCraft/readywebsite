@@ -11,6 +11,7 @@ import { useParams } from 'next/navigation';
 import { useMemo } from 'react';
 
 // Statik route'lar - bunlar dinamik route tarafından yakalanmamalı
+// Not: about ve contact artık dinamik sayfalar olduğu için listeden çıkarıldı
 const STATIC_ROUTES = [
   'admin',
   'preview',
@@ -18,8 +19,6 @@ const STATIC_ROUTES = [
   'terms',
   'projects',
   'services',
-  'about', // Eğer about klasörü varsa bu çalışmaz, ama yine de kontrol edelim
-  'contact', // Eğer contact klasörü varsa bu çalışmaz, ama yine de kontrol edelim
 ];
 
 export default function DynamicPage() {

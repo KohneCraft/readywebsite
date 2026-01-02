@@ -39,7 +39,22 @@ export function ColumnRenderer({ columnId, index }: ColumnRendererProps) {
   
   const deviceType = useMemo(() => getDeviceType(), []);
   
-  if (!column) return null;
+  if (!column) {
+    console.warn(`ColumnRenderer - Column null (${columnId})`);
+    return null;
+  }
+  
+  // Block kontrolü
+  if (!column.blocks || column.blocks.length === 0) {
+    console.warn(`ColumnRenderer - Column'da block yok (${columnId})`);
+    // Boş column'ları da göster (placeholder için)
+  }
+  
+  console.log(`ColumnRenderer - Column render ediliyor (${columnId}):`, {
+    width: column.width,
+    blocksCount: column.blocks?.length || 0,
+    blocks: column.blocks,
+  });
   
   const settings = column.settings || {};
   const responsiveSettings = settings.responsive?.[deviceType] || {};

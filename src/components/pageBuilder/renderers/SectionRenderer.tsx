@@ -61,12 +61,28 @@ export function SectionRenderer({ sectionId }: SectionRendererProps) {
     return () => observer.disconnect();
   }, [section, sectionId]);
   
-  if (!section) return null;
-  
-  // Responsive visibility check
-  if (!section.visibility?.[deviceType]) {
+  if (!section) {
+    console.warn(`SectionRenderer - Section null (${sectionId})`);
     return null;
   }
+  
+  // Responsive visibility check
+  if (section.visibility && !section.visibility[deviceType]) {
+    console.log(`SectionRenderer - Section görünür değil (${sectionId}, device: ${deviceType})`);
+    return null;
+  }
+  
+  // Column kontrolü
+  if (!section.columns || section.columns.length === 0) {
+    console.warn(`SectionRenderer - Section'da column yok (${sectionId})`);
+    return null;
+  }
+  
+  console.log(`SectionRenderer - Section render ediliyor (${sectionId}):`, {
+    name: section.name,
+    columnsCount: section.columns.length,
+    columns: section.columns,
+  });
   
   const settings = section.settings || {};
   const animation = settings.animation;
