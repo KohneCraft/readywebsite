@@ -32,10 +32,14 @@ export function Header() {
 
   // Tema ayarlarından navigation items'ı al
   const navItems: NavItem[] = useMemo(() => {
+    console.log('Header - themeSettings:', themeSettings);
+    console.log('Header - header navItems:', themeSettings?.header?.navItems);
     if (themeSettings?.header?.navItems && themeSettings.header.navItems.length > 0) {
+      console.log('Header - navItems kullanılıyor:', themeSettings.header.navItems);
       return themeSettings.header.navItems;
     }
     // Varsayılan navigation
+    console.log('Header - varsayılan navItems kullanılıyor');
     return [
       { href: '/', label: t('home') },
     ];

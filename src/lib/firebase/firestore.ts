@@ -1034,6 +1034,9 @@ export async function installTheme(themeData: ThemeData, createdBy: string): Pro
     
     if (existingTheme) {
       console.log('Mevcut tema bulundu, metadata orijinal ayarlarla güncelleniyor...');
+      console.log('Metadata settings:', JSON.stringify(metadata.settings, null, 2));
+      console.log('Header navItems:', metadata.settings?.header?.navItems);
+      console.log('Footer quickLinks:', metadata.settings?.footer?.quickLinks);
       // Tema metadata'sını TAMAMEN orijinal tema dosyasındaki ayarlarla değiştir
       // setDoc kullanarak tüm metadata'yı değiştir (updateDoc değil, çünkü tüm alanları değiştirmek istiyoruz)
       const themeRef = doc(db, COLLECTIONS.themes, existingTheme.id);
@@ -1044,6 +1047,10 @@ export async function installTheme(themeData: ThemeData, createdBy: string): Pro
       console.log('✓ Tema metadata orijinal ayarlarla güncellendi (header/footer ayarları sıfırlandı)');
     } else {
       // Tema yoksa yeni oluştur
+      console.log('Yeni tema oluşturuluyor...');
+      console.log('Metadata settings:', JSON.stringify(metadata.settings, null, 2));
+      console.log('Header navItems:', metadata.settings?.header?.navItems);
+      console.log('Footer quickLinks:', metadata.settings?.footer?.quickLinks);
       await createTheme(metadata);
       console.log('✓ Yeni tema oluşturuldu');
     }

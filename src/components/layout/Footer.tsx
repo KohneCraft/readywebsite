@@ -40,10 +40,14 @@ export function Footer() {
 
   // Tema ayarlarından quick links'i al
   const quickLinks = useMemo(() => {
+    console.log('Footer - themeSettings:', themeSettings);
+    console.log('Footer - footer quickLinks:', themeSettings?.footer?.quickLinks);
     if (themeSettings?.footer?.quickLinks && themeSettings.footer.quickLinks.length > 0) {
+      console.log('Footer - quickLinks kullanılıyor:', themeSettings.footer.quickLinks);
       return themeSettings.footer.quickLinks;
     }
     // Varsayılan links
+    console.log('Footer - varsayılan quickLinks kullanılıyor');
     return [
       { href: '/', label: tNav('home') },
     ];

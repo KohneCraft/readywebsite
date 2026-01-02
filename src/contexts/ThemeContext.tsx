@@ -38,6 +38,9 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
           try {
             const firestoreMetadata = await getThemeMetadata(firstTheme.id);
             if (firestoreMetadata && firestoreMetadata.settings) {
+              console.log('Firestore metadata settings:', JSON.stringify(firestoreMetadata.settings, null, 2));
+              console.log('Firestore header navItems:', firestoreMetadata.settings?.header?.navItems);
+              console.log('Firestore footer quickLinks:', firestoreMetadata.settings?.footer?.quickLinks);
               // Firestore'daki güncel ayarları kullan
               matchedTheme = {
                 ...matchedTheme,
@@ -49,6 +52,7 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
                   },
                 },
               };
+              console.log('Birleştirilmiş theme settings:', JSON.stringify(matchedTheme.metadata.settings, null, 2));
             }
           } catch (metaError) {
             console.warn('Tema metadata yüklenirken hata:', metaError);
@@ -89,6 +93,15 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const themeSettings = currentTheme?.metadata.settings || null;
+  
+  // Debug: themeSettings'i logla
+  useEffect(() => {
+    if (themeSettings) {
+      console.log('ThemeContext - themeSettings:', JSON.stringify(themeSettings, null, 2));
+      console.log('ThemeContext - header navItems:', themeSettings.header?.navItems);
+      console.log('ThemeContext - footer quickLinks:', themeSettings.footer?.quickLinks);
+    }
+  }, [themeSettings]);
 
   return (
     <ThemeContext.Provider value={{ currentTheme, themeSettings, setCurrentTheme }}>
