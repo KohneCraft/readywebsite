@@ -8,6 +8,7 @@
 import { useState, useEffect } from 'react';
 import { useTheme } from '@/contexts/ThemeContext';
 import { getCurrentUser } from '@/lib/firebase/auth';
+import { updateActiveThemeSettings } from '@/lib/firebase/firestore';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import type { ThemeSettings } from '@/types/theme';
@@ -51,6 +52,11 @@ export function HeaderSettings({ activeTab, onUpdate }: HeaderSettingsProps) {
         header: headerConfig,
       };
 
+      // Firestore'a kaydet
+      await updateActiveThemeSettings({
+        header: headerConfig,
+      });
+
       // Context'i güncelle
       if (setCurrentTheme) {
         setCurrentTheme({
@@ -62,6 +68,9 @@ export function HeaderSettings({ activeTab, onUpdate }: HeaderSettingsProps) {
         });
       }
 
+      // Tema güncelleme event'i gönder (diğer component'ler için)
+      window.dispatchEvent(new CustomEvent('theme-updated'));
+
       if (onUpdate) {
         if (onUpdate.length === 0) {
           (onUpdate as () => void)();
@@ -69,7 +78,7 @@ export function HeaderSettings({ activeTab, onUpdate }: HeaderSettingsProps) {
           (onUpdate as (updates: any) => void)({});
         }
       }
-      alert('Header ayarları kaydedildi');
+      alert('Header ayarları kaydedildi. Sayfayı yenileyin.');
     } catch (error) {
       console.error('Header ayarları kaydedilirken hata:', error);
       alert('Header ayarları kaydedilemedi');

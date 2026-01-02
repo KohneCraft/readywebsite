@@ -8,6 +8,7 @@
 import { useState, useEffect } from 'react';
 import { useTheme } from '@/contexts/ThemeContext';
 import { getCurrentUser } from '@/lib/firebase/auth';
+import { updateActiveThemeSettings } from '@/lib/firebase/firestore';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import type { ThemeSettings } from '@/types/theme';
@@ -57,6 +58,11 @@ export function FooterSettings({ activeTab, onUpdate }: FooterSettingsProps) {
         footer: footerConfig,
       };
 
+      // Firestore'a kaydet
+      await updateActiveThemeSettings({
+        footer: footerConfig,
+      });
+
       // Context'i güncelle
       if (setCurrentTheme) {
         setCurrentTheme({
@@ -68,6 +74,9 @@ export function FooterSettings({ activeTab, onUpdate }: FooterSettingsProps) {
         });
       }
 
+      // Tema güncelleme event'i gönder (diğer component'ler için)
+      window.dispatchEvent(new CustomEvent('theme-updated'));
+
       if (onUpdate) {
         if (onUpdate.length === 0) {
           (onUpdate as () => void)();
@@ -75,7 +84,7 @@ export function FooterSettings({ activeTab, onUpdate }: FooterSettingsProps) {
           (onUpdate as (updates: any) => void)({});
         }
       }
-      alert('Footer ayarları kaydedildi');
+      alert('Footer ayarları kaydedildi. Sayfayı yenileyin.');
     } catch (error) {
       console.error('Footer ayarları kaydedilirken hata:', error);
       alert('Footer ayarları kaydedilemedi');

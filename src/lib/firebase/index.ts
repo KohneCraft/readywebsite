@@ -43,6 +43,8 @@ export {
   getThemeMetadata,
   getThemeData,
   createTheme,
+  updateTheme,
+  updateActiveThemeSettings,
   deleteCurrentTheme,
   installTheme,
 } from './firestore';

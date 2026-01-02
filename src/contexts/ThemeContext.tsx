@@ -21,40 +21,71 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
   const [currentTheme, setCurrentTheme] = useState<ThemeData | null>(null);
 
   // Firestore'dan aktif temayı yükle
-  useEffect(() => {
-    async function loadCurrentTheme() {
-      try {
-        // Firestore'dan yüklenmiş temaları kontrol et
-        const { getAvailableThemes } = await import('@/lib/firebase/firestore');
-        const firestoreThemes = await getAvailableThemes();
+  const loadCurrentTheme = async () => {
+    try {
+      // Firestore'dan yüklenmiş temaları kontrol et
+      const { getAvailableThemes, getThemeMetadata } = await import('@/lib/firebase/firestore');
+      const firestoreThemes = await getAvailableThemes();
+      
+      if (firestoreThemes.length > 0) {
+        // Firestore'da tema varsa, ilk temayı al ve default temalardan eşleştir
+        const firstTheme = firestoreThemes[0];
+        const defaultThemes = getDefaultThemes();
+        let matchedTheme = defaultThemes.find(t => t.metadata.name === firstTheme.name);
         
-        if (firestoreThemes.length > 0) {
-          // Firestore'da tema varsa, ilk temayı al ve default temalardan eşleştir
-          const firstTheme = firestoreThemes[0];
-          const defaultThemes = getDefaultThemes();
-          const matchedTheme = defaultThemes.find(t => t.metadata.name === firstTheme.name);
-          
-          if (matchedTheme) {
-            setCurrentTheme(matchedTheme);
-            return;
+        if (matchedTheme) {
+          // Firestore'dan güncel metadata'yı al (header/footer ayarları için)
+          try {
+            const firestoreMetadata = await getThemeMetadata(firstTheme.id);
+            if (firestoreMetadata && firestoreMetadata.settings) {
+              // Firestore'daki güncel ayarları kullan
+              matchedTheme = {
+                ...matchedTheme,
+                metadata: {
+                  ...matchedTheme.metadata,
+                  settings: {
+                    ...matchedTheme.metadata.settings,
+                    ...firestoreMetadata.settings,
+                  },
+                },
+              };
+            }
+          } catch (metaError) {
+            console.warn('Tema metadata yüklenirken hata:', metaError);
           }
-        }
-        
-        // Firestore'da tema yoksa varsayılan temalardan ilkini kullan
-        const themes = getDefaultThemes();
-        if (themes.length > 0) {
-          setCurrentTheme(themes[0]);
-        }
-      } catch (error) {
-        console.error('Tema yükleme hatası:', error);
-        // Hata durumunda varsayılan temayı kullan
-        const themes = getDefaultThemes();
-        if (themes.length > 0) {
-          setCurrentTheme(themes[0]);
+          setCurrentTheme(matchedTheme);
+          return;
         }
       }
+      
+      // Firestore'da tema yoksa varsayılan temalardan ilkini kullan
+      const themes = getDefaultThemes();
+      if (themes.length > 0) {
+        setCurrentTheme(themes[0]);
+      }
+    } catch (error) {
+      console.error('Tema yükleme hatası:', error);
+      // Hata durumunda varsayılan temayı kullan
+      const themes = getDefaultThemes();
+      if (themes.length > 0) {
+        setCurrentTheme(themes[0]);
+      }
     }
+  };
+
+  useEffect(() => {
     loadCurrentTheme();
+  }, []);
+
+  // Tema güncellemelerini dinle (custom event ile)
+  useEffect(() => {
+    const handleThemeUpdate = () => {
+      console.log('Tema güncelleme eventi alındı, tema yeniden yükleniyor...');
+      loadCurrentTheme();
+    };
+
+    window.addEventListener('theme-updated', handleThemeUpdate);
+    return () => window.removeEventListener('theme-updated', handleThemeUpdate);
   }, []);
 
   const themeSettings = currentTheme?.metadata.settings || null;

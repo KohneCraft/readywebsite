@@ -1009,6 +1009,9 @@ export async function deleteCurrentTheme(): Promise<void> {
 
 /**
  * Tema yükleme - Tema verilerini Firebase'e yükle
+ * ÖNEMLİ: Tema dosyaları (defaultThemes.ts) hiçbir zaman değişmez.
+ * Yapılan değişiklikler Firestore'da tutulur.
+ * Tema tekrar yüklendiğinde, Firestore'daki değişiklikler silinir ve orijinal tema dosyasındaki ayarlar yüklenir.
  */
 export async function installTheme(themeData: ThemeData, createdBy: string): Promise<void> {
   const { metadata, pages } = themeData;
@@ -1019,6 +1022,34 @@ export async function installTheme(themeData: ThemeData, createdBy: string): Pro
   
   console.log(`Tema yükleniyor: ${metadata.name} (${metadata.pages.length} sayfa)`);
   console.log(`Tema pages keys:`, Object.keys(pages));
+  
+  // Mevcut temayı kontrol et ve varsa metadata'sını orijinal ayarlarla güncelle
+  // Bu sayede header/footer ayarları sıfırlanır
+  try {
+    const existingThemes = await getDocs(collection(db, COLLECTIONS.themes));
+    const existingTheme = existingThemes.docs.find(doc => {
+      const data = doc.data();
+      return data.name === metadata.name || data.id === metadata.id;
+    });
+    
+    if (existingTheme) {
+      console.log('Mevcut tema bulundu, metadata orijinal ayarlarla güncelleniyor...');
+      // Tema metadata'sını tamamen orijinal tema dosyasındaki ayarlarla güncelle
+      // Bu sayede header/footer ayarları sıfırlanır (orijinal tema dosyasındaki ayarlara döner)
+      await updateTheme(existingTheme.id, {
+        ...metadata, // Orijinal tema dosyasındaki tüm metadata (header/footer dahil)
+      });
+      console.log('✓ Tema metadata orijinal ayarlarla güncellendi (header/footer ayarları sıfırlandı)');
+    } else {
+      // Tema yoksa yeni oluştur
+      await createTheme(metadata);
+      console.log('✓ Yeni tema oluşturuldu');
+    }
+  } catch (error) {
+    console.warn('Tema metadata güncellenirken hata (yeni tema oluşturuluyor):', error);
+    // Hata durumunda yeni tema oluştur
+    await createTheme(metadata);
+  }
   
   // Her sayfa için işlem yap
   for (const pageConfig of metadata.pages) {
@@ -1206,4 +1237,51 @@ export async function createTheme(metadata: ThemeMetadata): Promise<string> {
   });
   
   return docRef.id;
+}
+
+/**
+ * Tema metadata'sını güncelle
+ */
+export async function updateTheme(themeId: string, updates: Partial<ThemeMetadata>): Promise<void> {
+  const themeRef = doc(db, COLLECTIONS.themes, themeId);
+  await updateDoc(themeRef, {
+    ...updates,
+    updatedAt: serverTimestamp(),
+  });
+}
+
+/**
+ * Aktif temayı bul ve güncelle
+ */
+export async function updateActiveThemeSettings(settings: Partial<ThemeMetadata['settings']>): Promise<void> {
+  try {
+    // Firestore'da yüklenmiş temaları bul
+    const themesSnapshot = await getDocs(collection(db, COLLECTIONS.themes));
+    
+    if (themesSnapshot.empty) {
+      console.warn('Firestore\'da tema bulunamadı');
+      // Tema yoksa hata fırlat (tema yüklenmeli)
+      throw new Error('Firestore\'da tema bulunamadı. Lütfen önce bir tema yükleyin.');
+    }
+    
+    // İlk temayı al (aktif tema)
+    const firstTheme = themesSnapshot.docs[0];
+    const currentMetadata = firstTheme.data() as ThemeMetadata;
+    
+    // Settings'i güncelle
+    await updateTheme(firstTheme.id, {
+      ...currentMetadata,
+      settings: {
+        ...currentMetadata.settings,
+        ...settings,
+      },
+    });
+    
+    console.log('✓ Aktif tema ayarları güncellendi');
+  } catch (error) {
+    console.error('Tema ayarları güncellenirken hata:', error);
+    // Hata durumunda tekrar dene veya hata fırlat
+    console.error('Tema ayarları güncellenirken hata:', error);
+    throw error;
+  }
 }
