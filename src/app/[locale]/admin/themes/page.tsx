@@ -66,30 +66,46 @@ export default function ThemesPage() {
         const themesPromise = getAvailableThemes();
         const availableThemes = await Promise.race([themesPromise, timeoutPromise]);
         
-        // Eğer Firestore'da tema varsa onları kullan
-        if (availableThemes.length > 0) {
-          setThemes(availableThemes);
-        } else {
-          // Firestore'da tema yoksa varsayılan temaları göster
-          setThemes(defaultThemesPreview);
-          
-          // Arka planda Firestore'a kaydetmeyi dene (hata olursa sessizce geç)
-          Promise.all(
-            defaultThemes.map(themeData => createTheme(themeData.metadata))
-          ).then(async () => {
-            // Tekrar yükle
-            try {
-              const updatedThemes = await getAvailableThemes();
-              if (updatedThemes.length > 0) {
-                setThemes(updatedThemes);
-              }
-            } catch (e) {
-              // Sessizce geç
-            }
-          }).catch(() => {
-            // Firestore hatası olursa varsayılan temaları kullanmaya devam et
-            console.warn('Firestore\'a tema kaydedilemedi, varsayılan temalar kullanılıyor');
+        // Firebase'den gelen temaları varsayılan temalarla birleştir
+        // Eğer bir tema Firebase'de varsa onu kullan, yoksa varsayılan temadan al
+        const mergedThemes: ThemePreview[] = defaultThemesPreview.map(defaultTheme => {
+          // Firebase'de bu tema var mı kontrol et (ID veya name ile eşleştir)
+          const firestoreTheme = availableThemes.find(ft => {
+            // ID ile eşleştir
+            if (ft.id === defaultTheme.id) return true;
+            // Name ile eşleştir (büyük/küçük harf duyarsız)
+            const defaultName = defaultTheme.name.toLowerCase().trim();
+            const firestoreName = ft.name.toLowerCase().trim();
+            if (defaultName === firestoreName) return true;
+            return false;
           });
+          
+          // Firebase'de varsa onu kullan, yoksa varsayılan temayı kullan
+          return firestoreTheme || defaultTheme;
+        });
+        
+        console.log('🔀 Birleştirilmiş temalar:', mergedThemes.map(t => t.name));
+        setThemes(mergedThemes);
+        
+        // Arka planda eksik temaları Firestore'a kaydetmeyi dene
+        if (availableThemes.length < defaultThemesPreview.length) {
+          // Firebase'de olmayan temaları bul ve kaydet
+          const missingThemes = defaultThemes.filter(defaultTheme => {
+            return !availableThemes.some(ft => {
+              const defaultName = defaultTheme.metadata.name.toLowerCase().trim();
+              const firestoreName = ft.name.toLowerCase().trim();
+              return defaultName === firestoreName || ft.id === defaultTheme.metadata.id;
+            });
+          });
+          
+          if (missingThemes.length > 0) {
+            console.log('📝 Eksik temalar Firestore\'a kaydediliyor:', missingThemes.map(t => t.metadata.name));
+            Promise.all(
+              missingThemes.map(themeData => createTheme(themeData.metadata))
+            ).catch(() => {
+              console.warn('Bazı temalar Firestore\'a kaydedilemedi');
+            });
+          }
         }
       } catch (firestoreError: any) {
         // Firebase bağlantısı yoksa veya timeout olursa varsayılan temaları göster
