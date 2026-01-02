@@ -20,8 +20,18 @@ export default function HomePage() {
       try {
         // 'home' slug'ına sahip sayfayı kontrol et
         const page = await getPageBySlug('home');
-        if (page && page.status === 'published') {
-          setHomePage(page);
+        console.log('Ana sayfa yüklendi:', page);
+        if (page) {
+          console.log('Sayfa durumu:', page.status);
+          console.log('Section sayısı:', page.sections?.length || 0);
+          console.log('Section ID\'leri:', page.sections);
+          if (page.status === 'published') {
+            setHomePage(page);
+          } else {
+            console.warn('Ana sayfa yayınlanmamış:', page.status);
+          }
+        } else {
+          console.warn('Ana sayfa bulunamadı (slug: home)');
         }
       } catch (error) {
         console.error('Ana sayfa yüklenirken hata:', error);

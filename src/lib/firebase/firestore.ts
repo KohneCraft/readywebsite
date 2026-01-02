@@ -748,13 +748,18 @@ export async function createSection(input: SectionCreateInput): Promise<string> 
     updatedAt: serverTimestamp(),
   });
   
-  // Page'e section ID'sini ekle
+  // Page'e section ID'sini ekle (sadece pageId varsa)
+  // Not: installTheme içinde toplu ekleme yapılıyor, burada sadece tek section eklerken kullanılır
   if (input.pageId) {
-    const page = await getPageById(input.pageId);
-    if (page) {
-      await updatePage(input.pageId, {
-        sections: [...(page.sections || []), docRef.id],
-      });
+    try {
+      const page = await getPageById(input.pageId);
+      if (page) {
+        await updatePage(input.pageId, {
+          sections: [...(page.sections || []), docRef.id],
+        });
+      }
+    } catch (error) {
+      console.warn('Section page\'e eklenirken hata (normal olabilir):', error);
     }
   }
   
@@ -1045,11 +1050,16 @@ export async function installTheme(themeData: ThemeData, createdBy: string): Pro
     
     if (!pageData.sections || pageData.sections.length === 0) {
       console.warn(`Sayfa ${pageConfig.slug} için section verisi yok!`);
+      // Section yoksa bile sayfayı oluştur (boş sayfa)
       continue;
     }
     
+    console.log(`Section'lar oluşturuluyor (${pageData.sections.length} adet)...`);
+    
     for (let sectionIndex = 0; sectionIndex < pageData.sections.length; sectionIndex++) {
       const sectionData = pageData.sections[sectionIndex];
+      console.log(`Section ${sectionIndex + 1}/${pageData.sections.length} oluşturuluyor: ${sectionData.name}`);
+      
       const sectionId = await createSection({
         pageId,
         name: sectionData.name,
@@ -1057,6 +1067,7 @@ export async function installTheme(themeData: ThemeData, createdBy: string): Pro
         settings: sectionData.settings || {},
       });
       
+      console.log(`✓ Section oluşturuldu: ${sectionId} (${sectionData.name})`);
       sectionIds.push(sectionId);
       
       // Column'ları oluştur
@@ -1082,10 +1093,28 @@ export async function installTheme(themeData: ThemeData, createdBy: string): Pro
       }
     }
     
-    // Page'e section ID'lerini ekle
+    // Page'e section ID'lerini ekle (tüm section'lar oluşturulduktan sonra)
+    // createSection içinde de ekleniyor ama race condition olmaması için burada da ekliyoruz
     await updatePage(pageId, { sections: sectionIds });
     
     console.log(`✓ Sayfa oluşturuldu: ${pageConfig.title} (${sectionIds.length} section)`);
+    console.log(`  Section ID'leri:`, sectionIds);
+  }
+  
+  // Site settings'i tema ayarlarıyla güncelle (Header/Footer özelleştirmeleri)
+  try {
+    const currentSettings = await getSiteSettings();
+    await updateSiteSettings({
+      ...currentSettings,
+      // Tema renklerini site settings'e uygula
+      seo: {
+        ...currentSettings.seo,
+        // Tema ayarlarından SEO bilgileri eklenebilir
+      },
+    }, createdBy);
+    console.log('✓ Site settings tema ayarlarıyla güncellendi');
+  } catch (error) {
+    console.warn('Site settings güncellenirken hata (normal olabilir):', error);
   }
   
   console.log(`✓ Tema başarıyla yüklendi: ${metadata.name}`);

@@ -41,6 +41,24 @@ export interface ThemeSettings {
   primaryColor: string;
   secondaryColor: string;
   fontFamily: string;
+  // Header/Footer özelleştirmeleri
+  header?: {
+    logo?: string;
+    logoText?: string;
+    navItems?: Array<{ href: string; label: string }>;
+    backgroundColor?: string;
+    textColor?: string;
+  };
+  footer?: {
+    logo?: string;
+    logoText?: string;
+    description?: string;
+    quickLinks?: Array<{ href: string; label: string }>;
+    socialLinks?: Array<{ platform: string; url: string; icon?: string }>;
+    copyright?: string;
+    backgroundColor?: string;
+    textColor?: string;
+  };
   [key: string]: any;
 }
 

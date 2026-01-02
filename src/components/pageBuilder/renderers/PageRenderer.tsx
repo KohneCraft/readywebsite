@@ -45,6 +45,15 @@ export function PageRenderer({ pageId, slug, allowDraft = false }: PageRendererP
           return;
         }
         
+        console.log('PageRenderer - Sayfa yüklendi:', {
+          id: pageData.id,
+          title: pageData.title,
+          slug: pageData.slug,
+          status: pageData.status,
+          sectionsCount: pageData.sections?.length || 0,
+          sections: pageData.sections,
+        });
+        
         // Status kontrolü (preview modunda taslak sayfalar da görüntülenebilir)
         if (!allowDraft && pageData.status !== 'published') {
           setError('Bu sayfa henüz yayınlanmamış');
@@ -136,12 +145,19 @@ export function PageRenderer({ pageId, slug, allowDraft = false }: PageRendererP
       )}
       
       {/* Sections */}
-      {page.sections?.map((sectionId) => (
-        <SectionRenderer 
-          key={sectionId} 
-          sectionId={sectionId}
-        />
-      ))}
+      {page.sections && page.sections.length > 0 ? (
+        page.sections.map((sectionId) => (
+          <SectionRenderer 
+            key={sectionId} 
+            sectionId={sectionId}
+          />
+        ))
+      ) : (
+        <div className="p-8 text-center text-gray-500">
+          <p>Bu sayfada henüz içerik yok.</p>
+          <p className="text-sm mt-2">Section sayısı: {page.sections?.length || 0}</p>
+        </div>
+      )}
       
       {/* Custom footer code */}
       {page.settings?.footerCode && (

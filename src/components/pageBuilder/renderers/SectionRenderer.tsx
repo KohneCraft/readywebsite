@@ -35,8 +35,16 @@ export function SectionRenderer({ sectionId }: SectionRendererProps) {
   
   useEffect(() => {
     async function loadSection() {
-      const sectionData = await getSectionById(sectionId);
-      setSection(sectionData);
+      try {
+        const sectionData = await getSectionById(sectionId);
+        console.log(`SectionRenderer - Section yüklendi (${sectionId}):`, sectionData);
+        if (!sectionData) {
+          console.warn(`Section bulunamadı: ${sectionId}`);
+        }
+        setSection(sectionData);
+      } catch (error) {
+        console.error(`Section yükleme hatası (${sectionId}):`, error);
+      }
     }
     loadSection();
   }, [sectionId]);
