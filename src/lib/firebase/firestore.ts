@@ -1164,6 +1164,12 @@ export async function installTheme(themeData: ThemeData, createdBy: string): Pro
   }
   
   console.log(`✓ Tema başarıyla yüklendi: ${metadata.name}`);
+  
+  // ThemeContext'e tema güncellemesi bildir
+  if (typeof window !== 'undefined') {
+    window.dispatchEvent(new CustomEvent('theme-updated'));
+    console.log('✓ theme-updated eventi dispatch edildi');
+  }
 }
 
 /**
