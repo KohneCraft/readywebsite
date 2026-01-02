@@ -112,8 +112,9 @@ export default function ThemesPage() {
     }
   };
 
-  const handleThemeInstall = async (themeId: string) => {
-    setShowWarning(themeId);
+  const handleThemeInstall = async (themeIdOrName: string) => {
+    // Tema ID veya name'i sakla (eşleştirme için)
+    setShowWarning(themeIdOrName);
   };
 
   const confirmThemeInstall = async (themeId: string) => {
@@ -149,11 +150,64 @@ export default function ThemesPage() {
       // 2. Yeni tema verilerini getir (her zaman varsayılan temalardan)
       // Firestore'da sadece metadata var, pages verileri yok
       const defaultThemes = getDefaultThemes();
-      const defaultTheme = defaultThemes.find(t => t.metadata.id === themeId);
-      if (!defaultTheme) {
-        throw new Error('Tema verileri bulunamadı');
+      
+      // Önce ID ile eşleştirmeyi dene
+      let themeToInstall = defaultThemes.find(t => t.metadata.id === themeId);
+      
+      // Eğer ID ile bulunamazsa, Firestore'dan tema bilgisini al ve name ile eşleştir
+      if (!themeToInstall) {
+        try {
+          const firestoreThemes = await getAvailableThemes();
+          const foundFirestoreTheme = firestoreThemes.find(t => t.id === themeId);
+          
+          if (foundFirestoreTheme) {
+            console.log('Firestore tema bulundu:', foundFirestoreTheme);
+            // Name ile eşleştir (tam eşleşme veya kısmi eşleşme)
+            themeToInstall = defaultThemes.find(t => {
+              const defaultName = t.metadata.name.toLowerCase().trim();
+              const firestoreName = foundFirestoreTheme.name.toLowerCase().trim();
+              
+              // Tam eşleşme
+              if (defaultName === firestoreName) return true;
+              
+              // Kısmi eşleşme (örneğin "Modern Business" vs "Modern Business")
+              if (defaultName.includes(firestoreName) || firestoreName.includes(defaultName)) {
+                return true;
+              }
+              
+              // ID'den name çıkar (theme-modern -> Modern Business)
+              const idBasedName = themeId.toLowerCase().replace('theme-', '').replace(/-/g, ' ');
+              if (defaultName.includes(idBasedName) || idBasedName.includes(defaultName.split(' ')[0])) {
+                return true;
+              }
+              
+              return false;
+            });
+            
+            if (themeToInstall) {
+              console.log('Tema eşleştirildi:', themeToInstall.metadata.name, '->', foundFirestoreTheme.name);
+            }
+          }
+        } catch (error) {
+          console.warn('Firestore\'dan tema bilgisi alınamadı:', error);
+          // Firestore hatası olsa bile varsayılan temalardan name ile eşleştirmeyi dene
+          const themeNameFromId = themeId.toLowerCase().replace(/^[a-z0-9-]+-/, '').replace(/-/g, ' ');
+          themeToInstall = defaultThemes.find(t => {
+            const defaultName = t.metadata.name.toLowerCase();
+            return defaultName.includes(themeNameFromId) || themeNameFromId.includes(defaultName.split(' ')[0]);
+          });
+        }
       }
-      const themeData = defaultTheme;
+      
+      // Hala bulunamazsa, tüm temaları listele ve hata ver
+      if (!themeToInstall) {
+        console.error('Tema bulunamadı. Aranan ID:', themeId);
+        console.error('Mevcut varsayılan temalar:', defaultThemes.map(t => ({ id: t.metadata.id, name: t.metadata.name })));
+        throw new Error(`Tema verileri bulunamadı. Tema ID: ${themeId}. Lütfen sayfayı yenileyin ve tekrar deneyin.`);
+      }
+      
+      const themeData = themeToInstall;
+      console.log('✓ Yüklenecek tema bulundu:', themeData.metadata.name, `(ID: ${themeData.metadata.id})`);
 
       // 3. Tema yükle - Tüm sayfaları oluştur
       await installTheme(themeData, userId);
@@ -318,6 +372,7 @@ export default function ThemesPage() {
                       onClick={() => handleThemeInstall(theme.id)}
                       disabled={installingTheme !== null || showWarning !== null}
                       className="flex-1"
+                      title={`Tema ID: ${theme.id}, Name: ${theme.name}`}
                     >
                       <Download className="w-4 h-4 mr-2" />
                       Yükle
