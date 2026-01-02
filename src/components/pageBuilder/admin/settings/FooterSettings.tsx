@@ -58,8 +58,8 @@ export function FooterSettings({ activeTab, onUpdate }: FooterSettingsProps) {
         footer: footerConfig,
       };
 
-      // Firestore'a kaydet
-      await updateActiveThemeSettings({
+      // Firestore'a kaydet (aktif tema adına göre)
+      await updateActiveThemeSettings(currentTheme.metadata.name, {
         footer: footerConfig,
       });
 

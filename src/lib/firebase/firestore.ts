@@ -1034,11 +1034,13 @@ export async function installTheme(themeData: ThemeData, createdBy: string): Pro
     
     if (existingTheme) {
       console.log('Mevcut tema bulundu, metadata orijinal ayarlarla güncelleniyor...');
-      // Tema metadata'sını tamamen orijinal tema dosyasındaki ayarlarla güncelle
-      // Bu sayede header/footer ayarları sıfırlanır (orijinal tema dosyasındaki ayarlara döner)
-      await updateTheme(existingTheme.id, {
+      // Tema metadata'sını TAMAMEN orijinal tema dosyasındaki ayarlarla değiştir
+      // setDoc kullanarak tüm metadata'yı değiştir (updateDoc değil, çünkü tüm alanları değiştirmek istiyoruz)
+      const themeRef = doc(db, COLLECTIONS.themes, existingTheme.id);
+      await setDoc(themeRef, {
         ...metadata, // Orijinal tema dosyasındaki tüm metadata (header/footer dahil)
-      });
+        updatedAt: serverTimestamp(),
+      }, { merge: false }); // merge: false = tüm dokümanı değiştir
       console.log('✓ Tema metadata orijinal ayarlarla güncellendi (header/footer ayarları sıfırlandı)');
     } else {
       // Tema yoksa yeni oluştur
@@ -1251,36 +1253,56 @@ export async function updateTheme(themeId: string, updates: Partial<ThemeMetadat
 }
 
 /**
- * Aktif temayı bul ve güncelle
+ * Aktif temayı bul ve güncelle (tema adına göre)
+ * Her temanın kendi header/footer ayarları olmalı
  */
-export async function updateActiveThemeSettings(settings: Partial<ThemeMetadata['settings']>): Promise<void> {
+export async function updateActiveThemeSettings(
+  themeName: string, 
+  settings: Partial<ThemeMetadata['settings']>
+): Promise<void> {
   try {
     // Firestore'da yüklenmiş temaları bul
     const themesSnapshot = await getDocs(collection(db, COLLECTIONS.themes));
     
     if (themesSnapshot.empty) {
       console.warn('Firestore\'da tema bulunamadı');
-      // Tema yoksa hata fırlat (tema yüklenmeli)
       throw new Error('Firestore\'da tema bulunamadı. Lütfen önce bir tema yükleyin.');
     }
     
-    // İlk temayı al (aktif tema)
-    const firstTheme = themesSnapshot.docs[0];
-    const currentMetadata = firstTheme.data() as ThemeMetadata;
+    // Tema adına göre aktif temayı bul
+    const activeTheme = themesSnapshot.docs.find(doc => {
+      const data = doc.data();
+      return data.name === themeName || data.id === themeName;
+    });
     
-    // Settings'i güncelle
-    await updateTheme(firstTheme.id, {
-      ...currentMetadata,
+    if (!activeTheme) {
+      console.warn(`Tema bulunamadı: ${themeName}, ilk temayı kullanıyoruz`);
+      // Tema bulunamazsa ilk temayı kullan (fallback)
+      const firstTheme = themesSnapshot.docs[0];
+      const currentMetadata = firstTheme.data() as ThemeMetadata;
+      
+      await updateTheme(firstTheme.id, {
+        settings: {
+          ...currentMetadata.settings,
+          ...settings,
+        },
+      });
+      console.log('✓ Tema ayarları güncellendi (fallback: ilk tema)');
+      return;
+    }
+    
+    const currentMetadata = activeTheme.data() as ThemeMetadata;
+    
+    // Settings'i güncelle (sadece settings kısmını güncelle, diğer metadata'yı koru)
+    await updateTheme(activeTheme.id, {
       settings: {
         ...currentMetadata.settings,
         ...settings,
       },
     });
     
-    console.log('✓ Aktif tema ayarları güncellendi');
+    console.log(`✓ Tema ayarları güncellendi: ${themeName}`);
   } catch (error) {
-    console.error('Tema ayarları güncellenirken hata:', error);
-    // Hata durumunda tekrar dene veya hata fırlat
     console.error('Tema ayarları güncellenirken hata:', error);
     throw error;
   }

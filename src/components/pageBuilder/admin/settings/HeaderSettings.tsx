@@ -52,8 +52,8 @@ export function HeaderSettings({ activeTab, onUpdate }: HeaderSettingsProps) {
         header: headerConfig,
       };
 
-      // Firestore'a kaydet
-      await updateActiveThemeSettings({
+      // Firestore'a kaydet (aktif tema adına göre)
+      await updateActiveThemeSettings(currentTheme.metadata.name, {
         header: headerConfig,
       });
 
