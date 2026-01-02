@@ -67,7 +67,7 @@ export default function AdminLoginPage() {
         }
         
         // Firebase kullanıcı kontrolü
-        const user = await getCurrentUser();
+        const user = getCurrentUser();
         if (user) {
           router.push(getLocalizedHref('/admin'));
         }

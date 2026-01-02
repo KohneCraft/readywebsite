@@ -62,8 +62,8 @@ function ChartCard({ title, children }: ChartCardProps) {
 export function ViewsChart() {
   return (
     <ChartCard title="Aylık Görüntülenme">
-      <div className="h-[300px] w-full">
-        <ResponsiveContainer width="100%" height="100%" minHeight={300}>
+      <div className="h-[300px] w-full min-w-0">
+        <ResponsiveContainer width="100%" height={300}>
           <AreaChart data={monthlyData}>
             <defs>
               <linearGradient id="colorViews" x1="0" y1="0" x2="0" y2="1">
@@ -110,8 +110,8 @@ export function ViewsChart() {
 export function PagesChart() {
   return (
     <ChartCard title="Aylık Sayfa Oluşturma">
-      <div className="h-[300px] w-full">
-        <ResponsiveContainer width="100%" height="100%" minHeight={300}>
+      <div className="h-[300px] w-full min-w-0">
+        <ResponsiveContainer width="100%" height={300}>
           <BarChart data={monthlyData}>
             <CartesianGrid strokeDasharray="3 3" stroke="#374151" opacity={0.1} />
             <XAxis 
@@ -148,8 +148,8 @@ export function PagesChart() {
 export function PageStatusChart() {
   return (
     <ChartCard title="Sayfa Durumu">
-      <div className="h-[300px] w-full">
-        <ResponsiveContainer width="100%" height="100%" minHeight={300}>
+      <div className="h-[300px] w-full min-w-0">
+        <ResponsiveContainer width="100%" height={300}>
           <PieChart>
             <Pie
               data={pageStatusData}

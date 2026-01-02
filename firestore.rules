@@ -207,6 +207,22 @@ service cloud.firestore {
     }
     
     // ==========================================
+    // THEMES KOLEKSİYONU
+    // ==========================================
+    // Tema yönetimi için
+    // ==========================================
+    
+    match /themes/{themeId} {
+      // Okuma: Herkes (tema listesini görmek için)
+      allow read: if true;
+      
+      // Yazma: Authenticated kullanıcılar
+      allow create: if isAuthenticated();
+      allow update: if isAuthenticated();
+      allow delete: if isAuthenticated();
+    }
+    
+    // ==========================================
     // VARSAYILAN KURAL
     // ==========================================
     // Yukarıda tanımlanmayan tüm koleksiyonlar için
