@@ -1,0 +1,512 @@
+{
+  "metadata": {
+    "title": "Vav Yapı | Bau und Auftragnehmer",
+    "description": "Zuverlässige und qualitativ hochwertige Bauleistungen. Professionelle Lösungen für Ihre Wohn-, Gewerbe- und Industrieprojekte.",
+    "keywords": "Bau, Auftragnehmer, Wohngebäude, Gewerbe, Industrie, Projekt, Gebäude"
+  },
+  "common": {
+    "loading": "Wird geladen...",
+    "error": "Ein Fehler ist aufgetreten",
+    "retry": "Erneut versuchen",
+    "save": "Speichern",
+    "cancel": "Abbrechen",
+    "delete": "Löschen",
+    "edit": "Bearbeiten",
+    "create": "Erstellen",
+    "update": "Aktualisieren",
+    "close": "Schließen",
+    "back": "Zurück",
+    "next": "Weiter",
+    "previous": "Vorherige",
+    "search": "Suchen",
+    "filter": "Filtern",
+    "all": "Alle",
+    "none": "Keine",
+    "yes": "Ja",
+    "no": "Nein",
+    "or": "oder",
+    "and": "und",
+    "viewMore": "Mehr anzeigen",
+    "viewAll": "Alle anzeigen",
+    "readMore": "Weiterlesen",
+    "learnMore": "Mehr erfahren",
+    "seeDetails": "Details anzeigen",
+    "contactUs": "Kontaktieren Sie uns",
+    "getInTouch": "Kontakt aufnehmen",
+    "required": "Pflichtfeld",
+    "optional": "Optional"
+  },
+  "nav": {
+    "home": "Startseite",
+    "about": "Über uns",
+    "projects": "Projekte",
+    "services": "Dienstleistungen",
+    "contact": "Kontakt",
+    "admin": "Admin-Panel"
+  },
+  "footer": {
+    "description": "Wir bauen Ihre Traumgebäude mit zuverlässigen und qualitativ hochwertigen Bauleistungen.",
+    "quickLinks": "Schnelllinks",
+    "contactInfo": "Kontaktinformationen",
+    "followUs": "Folgen Sie uns",
+    "newsletter": "Newsletter",
+    "newsletterDesc": "Bleiben Sie über neue Projekte und Neuigkeiten informiert.",
+    "emailPlaceholder": "Ihre E-Mail-Adresse",
+    "subscribe": "Abonnieren",
+    "copyright": "© {year} Vav Yapı. Alle Rechte vorbehalten.",
+    "privacyPolicy": "Datenschutzrichtlinie",
+    "terms": "Nutzungsbedingungen"
+  },
+  "home": {
+    "hero": {
+      "title": "Gemeinsam die Zukunft bauen",
+      "subtitle": "Wir verwandeln Ihre Träume mit Qualität, Zuverlässigkeit und Innovation in Realität.",
+      "cta": "Unsere Projekte entdecken",
+      "ctaSecondary": "Angebot einholen"
+    },
+    "about": {
+      "title": "Über uns",
+      "subtitle": "Erfahrung und Vertrauen",
+      "description": "Mit über 30 Jahren Erfahrung bieten wir qualitativ hochwertige und zuverlässige Lösungen in Wohn-, Gewerbe- und Industrieprojekten.",
+      "cta": "Mehr erfahren",
+      "experience": "Jahre Erfahrung",
+      "projects": "Abgeschlossene Projekte",
+      "clients": "Zufriedene Kunden",
+      "employees": "Fachleute"
+    },
+    "featured": {
+      "title": "Ausgewählte Projekte",
+      "subtitle": "Unsere kürzlich abgeschlossenen und laufenden Projekte",
+      "viewAll": "Alle Projekte anzeigen"
+    },
+    "services": {
+      "title": "Unsere Dienstleistungen",
+      "subtitle": "Umfassende Baulösungen",
+      "residential": {
+        "title": "Wohnprojekte",
+        "description": "Wir entwerfen und bauen moderne und komfortable Wohnräume."
+      },
+      "commercial": {
+        "title": "Gewerbeprojekte",
+        "description": "Bau von Geschäftszentren, Einkaufszentren und Bürogebäuden."
+      },
+      "industrial": {
+        "title": "Industrieprojekte",
+        "description": "Bau von Fabriken, Lagerhallen und Produktionsanlagen."
+      },
+      "renovation": {
+        "title": "Renovierung",
+        "description": "Renovierungsarbeiten an historischen und modernen Gebäuden."
+      }
+    },
+    "cta": {
+      "title": "Lassen Sie uns über Ihr Projekt sprechen",
+      "description": "Planen Sie ein neues Projekt? Unser Expertenteam ist bereit, Ihnen zu helfen.",
+      "button": "Kostenlose Beratung"
+    }
+  },
+  "about": {
+    "hero": {
+      "title": "Exzellenz im Bauwesen seit 1993",
+      "subtitle": "Unsere Geschichte",
+      "description": "Erfahren Sie, wie Vav Yapı durch Hingabe, Innovation und ein unerschütterliches Engagement für Qualität zu einem der führenden Bauunternehmen der Türkei geworden ist."
+    },
+    "stats": {
+      "experience": "Jahre Erfahrung",
+      "projects": "Abgeschlossene Projekte",
+      "clients": "Zufriedene Kunden",
+      "employees": "Fachleute"
+    },
+    "story": {
+      "title": "Unsere Geschichte",
+      "subtitle": "Von bescheidenen Anfängen",
+      "paragraph1": "Gegründet 1993 mit der Vision, die türkische Baulandschaft zu transformieren, begann Vav Yapı als kleines Familienunternehmen mit nur einer Handvoll engagierter Handwerker.",
+      "paragraph2": "In über drei Jahrzehnten sind wir zu einem der vertrauenswürdigsten Namen im Bauwesen gewachsen und haben über 500 erfolgreiche Projekte von Luxusresidenzen bis hin zu großen Industriekomplexen realisiert.",
+      "paragraph3": "Unser Erfolg basiert auf einer einfachen Philosophie: Niemals Kompromisse bei der Qualität eingehen, immer pünktlich liefern und jedes Projekt behandeln, als wäre es unser eigenes."
+    },
+    "values": {
+      "title": "Unsere Kernwerte",
+      "subtitle": "Wofür wir stehen",
+      "description": "Diese Prinzipien leiten jede Entscheidung, die wir treffen, und jedes Projekt, das wir übernehmen.",
+      "items": {
+        "quality": {
+          "title": "Qualität zuerst",
+          "description": "Wir wenden bei jedem Projekt die höchsten Qualitätsstandards mit Premium-Materialien und bewährten Techniken an."
+        },
+        "trust": {
+          "title": "Vertrauen & Transparenz",
+          "description": "Wir bauen transparente und vertrauensbasierte Beziehungen zu unseren Kunden, Partnern und der Gemeinschaft auf."
+        },
+        "innovation": {
+          "title": "Kontinuierliche Innovation",
+          "description": "Wir nutzen die neuesten Technologien und Methoden, um bessere Ergebnisse effizient zu liefern."
+        },
+        "customer": {
+          "title": "Kundenorientierung",
+          "description": "Ihre Zufriedenheit ist unsere Priorität. Wir hören zu, passen uns an und übertreffen Erwartungen."
+        }
+      }
+    },
+    "timeline": {
+      "title": "Unsere Reise",
+      "subtitle": "Meilensteine",
+      "items": {
+        "founding": {
+          "title": "Unternehmensgründung",
+          "description": "Vav Yapı wurde in Istanbul mit der Vision gegründet, qualitativ hochwertige Bauarbeiten zu liefern."
+        },
+        "expansion": {
+          "title": "Regionale Expansion",
+          "description": "Ausweitung der Aktivitäten auf mehrere Städte in der Türkei und Abschluss unseres 100. Projekts."
+        },
+        "international": {
+          "title": "Internationale Projekte",
+          "description": "Beginn der Annahme internationaler Projekte, Eintritt in Märkte in Europa und dem Nahen Osten."
+        },
+        "modernization": {
+          "title": "Digitale Transformation",
+          "description": "Investition in modernste Technologie und BIM-Systeme für verbessertes Projektmanagement."
+        },
+        "today": {
+          "title": "Branchenführer",
+          "description": "Als eines der Top-Bauunternehmen der Türkei mit über 500 abgeschlossenen Projekten anerkannt."
+        }
+      }
+    },
+    "team": {
+      "title": "Treffen Sie unsere Führung",
+      "subtitle": "Unser Team",
+      "description": "Unser erfahrenes Management-Team bringt jahrzehntelange kombinierte Expertise in jedes Projekt ein.",
+      "roles": {
+        "ceo": "CEO & Gründer",
+        "cto": "Technischer Direktor",
+        "architect": "Chefarchitekt",
+        "finance": "Finanzdirektor"
+      }
+    },
+    "mission": {
+      "title": "Unsere Mission",
+      "description": "Außergewöhnliche Baulösungen zu liefern, die Erwartungen übertreffen, dauerhaften Wert für unsere Kunden zu schaffen und einen positiven Beitrag zu den Gemeinschaften zu leisten, denen wir dienen."
+    },
+    "vision": {
+      "title": "Unsere Vision",
+      "description": "Das vertrauenswürdigste und innovativste Bauunternehmen der Region zu sein und neue Standards für Qualität, Nachhaltigkeit und Kundenzufriedenheit zu setzen."
+    }
+  },
+  "projects": {
+    "title": "Unsere Projekte",
+    "subtitle": "Entdecken Sie unser Portfolio an abgeschlossenen und laufenden Bauprojekten",
+    "search": {
+      "placeholder": "Projekte suchen..."
+    },
+    "results": "{count, plural, =0 {Keine Projekte gefunden} =1 {1 Projekt gefunden} other {# Projekte gefunden}}",
+    "filters": {
+      "all": "Alle",
+      "ongoing": "Laufend",
+      "completed": "Abgeschlossen",
+      "planned": "Geplant"
+    },
+    "types": {
+      "residential": "Wohnen",
+      "commercial": "Gewerbe",
+      "industrial": "Industrie",
+      "mixed": "Gemischte Nutzung",
+      "infrastructure": "Infrastruktur",
+      "renovation": "Renovierung"
+    },
+    "status": {
+      "all": "Alle Status",
+      "planned": "Geplant",
+      "planning": "Planung",
+      "ongoing": "Laufend",
+      "in_progress": "In Bearbeitung",
+      "completed": "Abgeschlossen",
+      "on_hold": "Auf Halten",
+      "onHold": "Auf Halten"
+    },
+    "year": "Jahr",
+    "location": "Standort",
+    "area": "Fläche",
+    "type": "Typ",
+    "backToProjects": "Zurück zu Projekten",
+    "details": {
+      "location": "Standort",
+      "area": "Fläche",
+      "startDate": "Startdatum",
+      "endDate": "Enddatum",
+      "completion": "Fertigstellung",
+      "client": "Kunde",
+      "architect": "Architekt",
+      "contractor": "Auftragnehmer",
+      "specifications": "Spezifikationen",
+      "gallery": "Galerie",
+      "relatedProjects": "Verwandte Projekte"
+    },
+    "empty": {
+      "title": "Keine Projekte gefunden",
+      "description": "Es wurden keine Projekte gefunden, die Ihren Suchkriterien entsprechen. Versuchen Sie, Ihre Filter anzupassen."
+    },
+    "cta": {
+      "title": "Haben Sie ein Projekt im Sinn?",
+      "description": "Lassen Sie uns besprechen, wie wir Ihre Vision verwirklichen können.",
+      "button": "Gespräch starten"
+    }
+  },
+  "contact": {
+    "title": "Kontakt",
+    "subtitle": "Wir freuen uns von Ihnen zu hören",
+    "form": {
+      "title": "Nachricht senden",
+      "name": "Vollständiger Name",
+      "namePlaceholder": "Geben Sie Ihren Namen ein",
+      "email": "E-Mail",
+      "emailPlaceholder": "beispiel@email.com",
+      "phone": "Telefon",
+      "phonePlaceholder": "+90 (5XX) XXX XX XX",
+      "subject": "Betreff",
+      "subjectPlaceholder": "Betreff Ihrer Nachricht",
+      "message": "Nachricht",
+      "messagePlaceholder": "Schreiben Sie Ihre Nachricht...",
+      "privacy": "Ich akzeptiere die Verarbeitung meiner persönlichen Daten",
+      "submit": "Senden",
+      "submitting": "Wird gesendet...",
+      "success": "Ihre Nachricht wurde erfolgreich gesendet!",
+      "successDesc": "Wir werden uns so schnell wie möglich bei Ihnen melden.",
+      "sendAnother": "Weitere Nachricht senden",
+      "error": "Nachricht konnte nicht gesendet werden",
+      "errorDesc": "Bitte versuchen Sie es später erneut."
+    },
+    "subjects": {
+      "general": "Allgemeine Informationen",
+      "quote": "Angebotsanfrage",
+      "partnership": "Partnerschaft",
+      "career": "Karriere",
+      "support": "Support",
+      "other": "Sonstiges"
+    },
+    "info": {
+      "title": "Kontaktinformationen",
+      "social": "Folgen Sie uns",
+      "address": {
+        "title": "Adresse",
+        "value": "Levent, Istanbul, Türkei"
+      },
+      "phone": {
+        "title": "Telefon",
+        "value": "+90 (212) 555 0123"
+      },
+      "email": {
+        "title": "E-Mail",
+        "value": "info@vavyapi.com"
+      },
+      "hours": {
+        "title": "Öffnungszeiten",
+        "value": "Montag - Freitag: 09:00 - 18:00"
+      }
+    },
+    "map": {
+      "title": "Unser Standort",
+      "description": "Besuchen Sie unseren Hauptsitz in Istanbul",
+      "placeholder": "Interaktive Karte wird hier angezeigt"
+    }
+  },
+  "admin": {
+    "dashboard": {
+      "title": "Dashboard",
+      "subtitle": "Willkommen im Vav Yapı Admin-Panel",
+      "welcome": "Willkommen, {name}",
+      "overview": "Übersicht",
+      "recentActivity": "Letzte Aktivität",
+      "recentProjects": "Letzte Projekte",
+      "recentContacts": "Letzte Nachrichten",
+      "quickActions": "Schnellaktionen",
+      "newProject": "Neues Projekt hinzufügen",
+      "stats": {
+        "totalProjects": "Gesamtprojekte",
+        "activeProjects": "Aktive Projekte",
+        "totalContacts": "Gesamtnachrichten",
+        "unreadContacts": "Ungelesene Nachrichten",
+        "monthlyViews": "Monatliche Aufrufe"
+      },
+      "empty": {
+        "noProjects": "Noch keine Projekte hinzugefügt",
+        "noContacts": "Noch keine Nachrichten erhalten"
+      }
+    },
+    "projects": {
+      "title": "Projekte",
+      "subtitle": "Alle Projekte verwalten",
+      "new": "Neues Projekt",
+      "edit": "Projekt bearbeiten",
+      "list": "Projektliste",
+      "publish": "Veröffentlichen",
+      "unpublish": "Veröffentlichung aufheben",
+      "feature": "Hervorheben",
+      "unfeature": "Hervorhebung entfernen",
+      "confirmDelete": "Sind Sie sicher, dass Sie dieses Projekt löschen möchten?",
+      "deleteSuccess": "Projekt erfolgreich gelöscht",
+      "saveSuccess": "Projekt erfolgreich gespeichert",
+      "noProjects": "Noch keine Projekte",
+      "addFirst": "Fügen Sie Ihr erstes Projekt hinzu",
+      "searchPlaceholder": "Projekte suchen...",
+      "status": {
+        "planning": "Planung",
+        "in_progress": "In Bearbeitung",
+        "completed": "Abgeschlossen",
+        "on_hold": "Auf Halten"
+      },
+      "type": {
+        "residential": "Wohnen",
+        "commercial": "Gewerbe",
+        "industrial": "Industrie",
+        "infrastructure": "Infrastruktur",
+        "renovation": "Renovierung"
+      },
+      "form": {
+        "title": "Projekttitel",
+        "slug": "URL-Slug",
+        "description": "Beschreibung",
+        "content": "Inhalt",
+        "type": "Projekttyp",
+        "status": "Status",
+        "client": "Kunde",
+        "location": "Standort",
+        "year": "Jahr",
+        "area": "Fläche (m²)",
+        "coverImage": "Titelbild",
+        "gallery": "Galerie",
+        "isFeatured": "Hervorgehoben",
+        "isPublished": "Veröffentlicht",
+        "seoTitle": "SEO-Titel",
+        "seoDescription": "SEO-Beschreibung"
+      },
+      "table": {
+        "image": "Bild",
+        "title": "Titel",
+        "type": "Typ",
+        "status": "Status",
+        "year": "Jahr",
+        "featured": "Hervorgehoben",
+        "published": "Veröffentlicht",
+        "actions": "Aktionen"
+      }
+    },
+    "contacts": {
+      "title": "Nachrichten",
+      "subtitle": "Eingehende Nachrichten verwalten",
+      "markAsRead": "Als gelesen markieren",
+      "markAsUnread": "Als ungelesen markieren",
+      "markAsReplied": "Als beantwortet markieren",
+      "archive": "Archivieren",
+      "reply": "Antworten",
+      "delete": "Löschen",
+      "confirmDelete": "Sind Sie sicher, dass Sie diese Nachricht löschen möchten?",
+      "deleteSuccess": "Nachricht erfolgreich gelöscht",
+      "noMessages": "Noch keine Nachrichten",
+      "searchPlaceholder": "Nachrichten suchen...",
+      "filters": {
+        "all": "Alle",
+        "unread": "Ungelesen",
+        "read": "Gelesen",
+        "replied": "Beantwortet",
+        "archived": "Archiviert"
+      },
+      "table": {
+        "sender": "Absender",
+        "subject": "Betreff",
+        "date": "Datum",
+        "status": "Status",
+        "actions": "Aktionen"
+      },
+      "detail": {
+        "from": "Von",
+        "email": "E-Mail",
+        "phone": "Telefon",
+        "subject": "Betreff",
+        "message": "Nachricht",
+        "receivedAt": "Empfangen am"
+      }
+    },
+    "settings": {
+      "title": "Einstellungen",
+      "subtitle": "Site-Einstellungen verwalten",
+      "general": "Allgemeine Einstellungen",
+      "seo": "SEO-Einstellungen",
+      "appearance": "Aussehen",
+      "maintenance": "Wartungsmodus",
+      "saved": "Einstellungen gespeichert",
+      "sections": {
+        "company": "Firmeninformationen",
+        "contact": "Kontaktinformationen",
+        "social": "Soziale Medien",
+        "seo": "SEO"
+      },
+      "form": {
+        "companyName": "Firmenname",
+        "slogan": "Slogan",
+        "logo": "Logo",
+        "email": "E-Mail",
+        "phone": "Telefon",
+        "address": "Adresse",
+        "facebook": "Facebook",
+        "twitter": "Twitter",
+        "instagram": "Instagram",
+        "linkedin": "LinkedIn",
+        "youtube": "YouTube",
+        "metaTitle": "Meta-Titel",
+        "metaDescription": "Meta-Beschreibung",
+        "metaKeywords": "Schlüsselwörter",
+        "googleAnalytics": "Google Analytics ID"
+      }
+    },
+    "users": {
+      "title": "Benutzer",
+      "subtitle": "Benutzer verwalten",
+      "new": "Neuer Benutzer",
+      "edit": "Benutzer bearbeiten",
+      "roles": {
+        "superadmin": "Super-Admin",
+        "admin": "Admin",
+        "editor": "Editor"
+      }
+    },
+    "auth": {
+      "login": "Anmelden",
+      "loginTitle": "Admin-Panel Anmeldung",
+      "loginSubtitle": "Melden Sie sich an, um fortzufahren",
+      "logout": "Abmelden",
+      "email": "E-Mail",
+      "password": "Passwort",
+      "forgotPassword": "Passwort vergessen",
+      "loginError": "Anmeldung fehlgeschlagen. Ungültige E-Mail oder Passwort.",
+      "loginSuccess": "Anmeldung erfolgreich",
+      "logoutSuccess": "Abgemeldet"
+    },
+    "logout": "Abmelden"
+  },
+  "errors": {
+    "notFound": {
+      "title": "Seite nicht gefunden",
+      "description": "Die gesuchte Seite existiert nicht oder wurde möglicherweise verschoben.",
+      "backHome": "Zurück zur Startseite"
+    },
+    "unauthorized": {
+      "title": "Unbefugter Zugriff",
+      "description": "Sie haben keine Berechtigung, diese Seite anzuzeigen."
+    },
+    "serverError": {
+      "title": "Serverfehler",
+      "description": "Etwas ist schief gelaufen. Bitte versuchen Sie es später erneut."
+    }
+  },
+  "validation": {
+    "required": "Dieses Feld ist erforderlich",
+    "email": "Geben Sie eine gültige E-Mail-Adresse ein",
+    "phone": "Geben Sie eine gültige Telefonnummer ein",
+    "minLength": "Muss mindestens {min} Zeichen haben",
+    "maxLength": "Darf höchstens {max} Zeichen haben",
+    "url": "Geben Sie eine gültige URL ein",
+    "number": "Geben Sie eine gültige Nummer ein",
+    "date": "Geben Sie ein gültiges Datum ein"
+  }
+}
