@@ -7,12 +7,13 @@ import type { ThemeData } from '@/types/theme';
 import { modernBusinessTheme } from '../ModernBusiness/modernBusinessTheme';
 import { minimalTheme } from '../Minimal/minimalTheme';
 import { corporateTheme } from '../Corporate/corporateTheme';
+import { constructionTheme } from '../Construction/constructionTheme';
 
 /**
  * Tüm varsayılan temaları getir
  */
 export function getDefaultThemes(): ThemeData[] {
-  return [modernBusinessTheme, minimalTheme, corporateTheme];
+  return [modernBusinessTheme, minimalTheme, corporateTheme, constructionTheme];
 }
 
 /**
@@ -29,4 +30,5 @@ export function getThemeById(themeId: string): ThemeData | undefined {
 export { modernBusinessTheme } from '../ModernBusiness/modernBusinessTheme';
 export { minimalTheme } from '../Minimal/minimalTheme';
 export { corporateTheme } from '../Corporate/corporateTheme';
+export { constructionTheme } from '../Construction/constructionTheme';
 
