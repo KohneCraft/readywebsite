@@ -29,8 +29,16 @@ export function BlockRenderer({ blockId, index }: BlockRendererProps) {
   
   useEffect(() => {
     async function loadBlock() {
-      const blockData = await getBlockById(blockId);
-      setBlock(blockData);
+      try {
+        const blockData = await getBlockById(blockId);
+        console.log(`BlockRenderer - Block yüklendi (${blockId}):`, blockData);
+        if (!blockData) {
+          console.warn(`Block bulunamadı: ${blockId}`);
+        }
+        setBlock(blockData);
+      } catch (error) {
+        console.error(`Block yükleme hatası (${blockId}):`, error);
+      }
     }
     loadBlock();
   }, [blockId]);

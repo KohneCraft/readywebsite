@@ -17,18 +17,6 @@ function getDeviceType(): Breakpoint {
   return 'desktop';
 }
 
-function getGridTemplate(columns: string[], columnWidths?: Record<string, number>): string {
-  if (!columns || columns.length === 0) return '1fr';
-  
-  // Eğer column genişlikleri varsa kullan
-  if (columnWidths) {
-    return columns.map(colId => `${columnWidths[colId] || 100 / columns.length}fr`).join(' ');
-  }
-  
-  // Eşit dağılım varsayılan
-  return columns.map(() => '1fr').join(' ');
-}
-
 export function SectionRenderer({ sectionId }: SectionRendererProps) {
   const [section, setSection] = useState<Section | null>(null);
   const [isVisible, setIsVisible] = useState(false);
@@ -147,19 +135,24 @@ export function SectionRenderer({ sectionId }: SectionRendererProps) {
         }}
       >
         <div 
-          className="columns-wrapper grid"
+          className="columns-wrapper grid grid-cols-12"
           style={{
-            gridTemplateColumns: getGridTemplate(section.columns || []),
             gap: `${settings.columnGap || 30}px`
           }}
         >
-          {section.columns?.map((columnId, colIndex) => (
-            <ColumnRenderer 
-              key={columnId} 
-              columnId={columnId}
-              index={colIndex}
-            />
-          ))}
+          {section.columns && section.columns.length > 0 ? (
+            section.columns.map((columnId, colIndex) => (
+              <ColumnRenderer 
+                key={columnId} 
+                columnId={columnId}
+                index={colIndex}
+              />
+            ))
+          ) : (
+            <div className="text-center text-gray-500 p-8">
+              <p>Bu section'da henüz içerik yok.</p>
+            </div>
+          )}
         </div>
       </div>
     </section>

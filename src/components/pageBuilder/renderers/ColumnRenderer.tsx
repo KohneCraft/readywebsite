@@ -23,8 +23,16 @@ export function ColumnRenderer({ columnId, index }: ColumnRendererProps) {
   
   useEffect(() => {
     async function loadColumn() {
-      const columnData = await getColumnById(columnId);
-      setColumn(columnData);
+      try {
+        const columnData = await getColumnById(columnId);
+        console.log(`ColumnRenderer - Column yüklendi (${columnId}):`, columnData);
+        if (!columnData) {
+          console.warn(`Column bulunamadı: ${columnId}`);
+        }
+        setColumn(columnData);
+      } catch (error) {
+        console.error(`Column yükleme hatası (${columnId}):`, error);
+      }
     }
     loadColumn();
   }, [columnId]);
@@ -35,8 +43,11 @@ export function ColumnRenderer({ columnId, index }: ColumnRendererProps) {
   
   const settings = column.settings || {};
   const responsiveSettings = settings.responsive?.[deviceType] || {};
-  const width = responsiveSettings.width || column.width || 100;
+  const columnWidth = responsiveSettings.width || column.width || 100;
   const padding = responsiveSettings.padding || settings.padding || { top: 0, right: 0, bottom: 0, left: 0 };
+  
+  // Grid column span hesapla (width yüzde olarak geliyor, grid'de fr olarak kullanılacak)
+  const gridColumnSpan = columnWidth ? `span ${Math.round((columnWidth / 100) * 12)}` : 'span 12';
   
   const columnStyle: React.CSSProperties = {
     backgroundColor: settings.backgroundColor,
@@ -55,7 +66,7 @@ export function ColumnRenderer({ columnId, index }: ColumnRendererProps) {
     flexDirection: 'column',
     justifyContent: settings.verticalAlign || 'flex-start',
     alignItems: settings.horizontalAlign || 'flex-start',
-    width: `${width}%`,
+    gridColumn: gridColumnSpan, // Grid column span kullan
   };
   
   return (
