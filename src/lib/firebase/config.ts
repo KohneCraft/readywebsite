@@ -34,14 +34,17 @@ const firebaseConfig = {
 };
 
 // Initialize Firebase app (singleton pattern)
-// Only initialize on client-side to avoid SSR issues
 let app: FirebaseApp | undefined;
 let authInstance: Auth | undefined;
 let dbInstance: Firestore | undefined;
 let storageInstance: FirebaseStorage | undefined;
 
-if (typeof window !== 'undefined') {
-  // Client-side only
+function initializeFirebase() {
+  if (app) {
+    // Already initialized
+    return;
+  }
+  
   try {
     app = getApps().length === 0
       ? initializeApp(firebaseConfig)
@@ -56,10 +59,26 @@ if (typeof window !== 'undefined') {
   }
 }
 
-// Export Firebase services
-// Use non-null assertion as these are only used in client components
-export const auth: Auth = authInstance as Auth;
-export const db: Firestore = dbInstance as Firestore;
-export const storage: FirebaseStorage = storageInstance as FirebaseStorage;
+// Initialize Firebase (works for both client and server)
+initializeFirebase();
 
-export default app;
+// Export Firebase services with lazy initialization
+export const auth: Auth = (() => {
+  if (!authInstance) initializeFirebase();
+  return authInstance as Auth;
+})();
+
+export const db: Firestore = (() => {
+  if (!dbInstance) initializeFirebase();
+  return dbInstance as Firestore;
+})();
+
+export const storage: FirebaseStorage = (() => {
+  if (!storageInstance) initializeFirebase();
+  return storageInstance as FirebaseStorage;
+})();
+
+export default (() => {
+  if (!app) initializeFirebase();
+  return app;
+})();

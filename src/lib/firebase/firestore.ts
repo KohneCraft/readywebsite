@@ -1012,6 +1012,8 @@ export async function installTheme(themeData: ThemeData, createdBy: string): Pro
     throw new Error('Geçersiz tema formatı');
   }
   
+  console.log(`Tema yükleniyor: ${metadata.name} (${metadata.pages.length} sayfa)`);
+  
   // Her sayfa için işlem yap
   for (const pageConfig of metadata.pages) {
     const pageData = pages[pageConfig.slug];
@@ -1021,6 +1023,8 @@ export async function installTheme(themeData: ThemeData, createdBy: string): Pro
       continue;
     }
     
+    console.log(`Sayfa oluşturuluyor: ${pageConfig.title} (${pageConfig.slug})`);
+    
     // Yeni sayfa oluştur
     const pageId = await createPage({
       title: pageConfig.title,
@@ -1029,35 +1033,40 @@ export async function installTheme(themeData: ThemeData, createdBy: string): Pro
       author: createdBy,
     });
     
+    // Sayfayı published olarak işaretle (tema sayfaları otomatik yayınlanır)
+    await updatePage(pageId, { status: 'published' });
+    
     // Section'ları oluştur
     const sectionIds: string[] = [];
     
-    for (const sectionData of pageData.sections) {
+    for (let sectionIndex = 0; sectionIndex < pageData.sections.length; sectionIndex++) {
+      const sectionData = pageData.sections[sectionIndex];
       const sectionId = await createSection({
         pageId,
         name: sectionData.name,
-        order: sectionIds.length,
+        order: sectionIndex,
         settings: sectionData.settings || {},
       });
       
       sectionIds.push(sectionId);
       
       // Column'ları oluştur
-      for (const columnData of sectionData.columns) {
+      for (let columnIndex = 0; columnIndex < sectionData.columns.length; columnIndex++) {
+        const columnData = sectionData.columns[columnIndex];
         const columnId = await createColumn({
           sectionId,
           width: columnData.width,
-          order: 0,
+          order: columnIndex, // Column order'ı düzelt
           settings: columnData.settings || {},
         });
         
         // Block'ları oluştur
-        for (let i = 0; i < columnData.blocks.length; i++) {
-          const blockData = columnData.blocks[i];
+        for (let blockIndex = 0; blockIndex < columnData.blocks.length; blockIndex++) {
+          const blockData = columnData.blocks[blockIndex];
           await createBlock({
             columnId,
             type: blockData.type as any,
-            order: i,
+            order: blockIndex,
             props: blockData.props || {},
           });
         }
@@ -1066,9 +1075,11 @@ export async function installTheme(themeData: ThemeData, createdBy: string): Pro
     
     // Page'e section ID'lerini ekle
     await updatePage(pageId, { sections: sectionIds });
+    
+    console.log(`✓ Sayfa oluşturuldu: ${pageConfig.title} (${sectionIds.length} section)`);
   }
   
-  console.log('Tema başarıyla yüklendi:', metadata.id);
+  console.log(`✓ Tema başarıyla yüklendi: ${metadata.name}`);
 }
 
 /**

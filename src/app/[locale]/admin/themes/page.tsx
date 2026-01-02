@@ -123,13 +123,27 @@ export default function ThemesPage() {
       setSuccess(null);
       setShowWarning(null);
 
-      // Kullanıcı bilgisini al
-      const user = await getCurrentUser();
-      if (!user) {
-        throw new Error('Kullanıcı bulunamadı');
+      // Kullanıcı bilgisini al (geçici session veya Firebase auth)
+      let userId: string | null = null;
+      
+      // Önce geçici session kontrolü
+      const tempSession = localStorage.getItem('temp_admin_session');
+      if (tempSession) {
+        const session = JSON.parse(tempSession);
+        userId = session.id || 'temp-admin-001';
+      } else {
+        // Firebase auth kontrolü
+        const user = getCurrentUser();
+        if (user) {
+          userId = user.uid;
+        }
+      }
+      
+      if (!userId) {
+        throw new Error('Kullanıcı bulunamadı. Lütfen giriş yapın.');
       }
 
-      // 1. Mevcut temayı sil
+      // 1. Mevcut temayı sil (tüm sayfalar, section'lar, column'lar, block'lar)
       await deleteCurrentTheme();
 
       // 2. Yeni tema verilerini getir
@@ -145,10 +159,10 @@ export default function ThemesPage() {
         themeData = defaultTheme;
       }
 
-      // 3. Tema yükle
-      await installTheme(themeData, user.uid);
+      // 3. Tema yükle - Tüm sayfaları oluştur
+      await installTheme(themeData, userId);
 
-      setSuccess('Tema başarıyla yüklendi!');
+      setSuccess('Tema başarıyla yüklendi! Sayfalar oluşturuluyor...');
       
       // 4. Sayfayı yenile
       setTimeout(() => {
