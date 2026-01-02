@@ -1013,17 +1013,21 @@ export async function installTheme(themeData: ThemeData, createdBy: string): Pro
   }
   
   console.log(`Tema yükleniyor: ${metadata.name} (${metadata.pages.length} sayfa)`);
+  console.log(`Tema pages keys:`, Object.keys(pages));
   
   // Her sayfa için işlem yap
   for (const pageConfig of metadata.pages) {
     const pageData = pages[pageConfig.slug];
     
     if (!pageData) {
-      console.warn(`Sayfa bulunamadı: ${pageConfig.slug}`);
+      console.warn(`Sayfa bulunamadı: ${pageConfig.slug}`, 'Mevcut sayfalar:', Object.keys(pages));
       continue;
     }
     
     console.log(`Sayfa oluşturuluyor: ${pageConfig.title} (${pageConfig.slug})`);
+    console.log(`Sayfa verileri:`, JSON.stringify(pageData, null, 2));
+    console.log(`Section sayısı:`, pageData.sections?.length || 0);
+    console.log(`Section'lar:`, pageData.sections);
     
     // Yeni sayfa oluştur
     const pageId = await createPage({
@@ -1038,6 +1042,11 @@ export async function installTheme(themeData: ThemeData, createdBy: string): Pro
     
     // Section'ları oluştur
     const sectionIds: string[] = [];
+    
+    if (!pageData.sections || pageData.sections.length === 0) {
+      console.warn(`Sayfa ${pageConfig.slug} için section verisi yok!`);
+      continue;
+    }
     
     for (let sectionIndex = 0; sectionIndex < pageData.sections.length; sectionIndex++) {
       const sectionData = pageData.sections[sectionIndex];

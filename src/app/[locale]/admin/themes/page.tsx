@@ -19,7 +19,7 @@ import {
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Spinner } from '@/components/ui/Spinner';
-import { getAvailableThemes, getThemeData, deleteCurrentTheme, installTheme, createTheme } from '@/lib/firebase/firestore';
+import { getAvailableThemes, deleteCurrentTheme, installTheme, createTheme } from '@/lib/firebase/firestore';
 import { getCurrentUser } from '@/lib/firebase/auth';
 import { getDefaultThemes } from '@/lib/themes/defaultThemes';
 import type { Locale } from '@/i18n';
@@ -146,18 +146,14 @@ export default function ThemesPage() {
       // 1. Mevcut temayı sil (tüm sayfalar, section'lar, column'lar, block'lar)
       await deleteCurrentTheme();
 
-      // 2. Yeni tema verilerini getir
-      let themeData = await getThemeData(themeId);
-      
-      // Eğer Firestore'da yoksa varsayılan temalardan getir
-      if (!themeData) {
-        const defaultThemes = getDefaultThemes();
-        const defaultTheme = defaultThemes.find(t => t.metadata.id === themeId);
-        if (!defaultTheme) {
-          throw new Error('Tema verileri bulunamadı');
-        }
-        themeData = defaultTheme;
+      // 2. Yeni tema verilerini getir (her zaman varsayılan temalardan)
+      // Firestore'da sadece metadata var, pages verileri yok
+      const defaultThemes = getDefaultThemes();
+      const defaultTheme = defaultThemes.find(t => t.metadata.id === themeId);
+      if (!defaultTheme) {
+        throw new Error('Tema verileri bulunamadı');
       }
+      const themeData = defaultTheme;
 
       // 3. Tema yükle - Tüm sayfaları oluştur
       await installTheme(themeData, userId);

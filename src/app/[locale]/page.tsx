@@ -42,9 +42,13 @@ export default function HomePage() {
     );
   }
 
-  // Tema yüklendiyse home sayfasını göster
+  // Tema yüklendiyse home sayfasını göster (Header/Footer ile)
   if (homePage) {
-    return <PageRenderer pageId={homePage.id} allowDraft={false} />;
+    return (
+      <>
+        <PageRenderer pageId={homePage.id} allowDraft={false} />
+      </>
+    );
   }
 
   // Tema yüklenmediyse landing page göster

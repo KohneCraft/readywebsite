@@ -1,7 +1,7 @@
 'use client';
 
 // ============================================
-// Vav Yapı - Page Builder Preview
+// Page Builder - Preview Page
 // Page Builder ile oluşturulan sayfaların önizlemesi
 // ============================================
 
@@ -27,6 +27,7 @@ export default function PreviewPage() {
     );
   }
 
-  return <PageRenderer slug={slug} allowDraft={true} />;
+  // Preview sayfaları için Header/Footer gösterilir (PublicLayout zaten gösteriyor)
+  return <PageRenderer slug={slug} allowDraft={false} />;
 }
 
