@@ -1071,24 +1071,30 @@ export async function installTheme(themeData: ThemeData, createdBy: string): Pro
       sectionIds.push(sectionId);
       
       // Column'ları oluştur
+      console.log(`  Column'lar oluşturuluyor (${sectionData.columns.length} adet)...`);
       for (let columnIndex = 0; columnIndex < sectionData.columns.length; columnIndex++) {
         const columnData = sectionData.columns[columnIndex];
+        console.log(`    Column ${columnIndex + 1}/${sectionData.columns.length} oluşturuluyor: Genişlik ${columnData.width}%`);
         const columnId = await createColumn({
           sectionId,
           width: columnData.width,
-          order: columnIndex, // Column order'ı düzelt
+          order: columnIndex,
           settings: columnData.settings || {},
         });
+        console.log(`    ✓ Column oluşturuldu: ${columnId} (Genişlik: ${columnData.width}%)`);
         
         // Block'ları oluştur
+        console.log(`      Block'lar oluşturuluyor (${columnData.blocks.length} adet)...`);
         for (let blockIndex = 0; blockIndex < columnData.blocks.length; blockIndex++) {
           const blockData = columnData.blocks[blockIndex];
+          console.log(`        Block ${blockIndex + 1}/${columnData.blocks.length} oluşturuluyor: ${blockData.type}`);
           await createBlock({
             columnId,
             type: blockData.type as any,
             order: blockIndex,
             props: blockData.props || {},
           });
+          console.log(`        ✓ Block oluşturuldu: ${blockData.type}`);
         }
       }
     }

@@ -31,12 +31,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     
     const pageEntries: MetadataRoute.Sitemap = publishedPages.flatMap((page) =>
       LOCALES.map((locale) => ({
-        url: `${BASE_URL}/${locale}/preview/${page.slug}`,
+        url: `${BASE_URL}/${locale}/${page.slug}`,
         lastModified: page.updatedAt instanceof Date 
           ? page.updatedAt 
           : (page.updatedAt as any)?.toDate?.() || new Date(),
         changeFrequency: 'weekly' as ChangeFrequency,
-        priority: 0.8,
+        priority: page.slug === 'home' ? 1.0 : 0.8,
       }))
     );
 
