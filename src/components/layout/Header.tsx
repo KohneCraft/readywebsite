@@ -66,12 +66,37 @@ export function Header() {
 
   // Check if link is active
   const isActive = useCallback((href: string) => {
-    const localizedHref = getLocalizedHref(href);
+    // Ana sayfa kontrolü
     if (href === '/') {
-      return pathname === '/' || pathname === `/${locale}`;
+      return pathname === '/' || pathname === `/${locale}` || pathname === `/${locale}/`;
     }
-    return pathname.startsWith(localizedHref);
-  }, [pathname, locale, getLocalizedHref]);
+    
+    // Diğer sayfalar için slug karşılaştırması
+    // href'den başlangıç "/" işaretini kaldır
+    const hrefSlug = href.startsWith('/') ? href.slice(1) : href;
+    
+    // pathname'den locale prefix'ini çıkar
+    // Örnek: "/tr/about" -> "about", "/en/about" -> "about"
+    let pathnameSlug = pathname;
+    if (pathname.startsWith(`/${locale}/`)) {
+      pathnameSlug = pathname.slice(`/${locale}/`.length);
+    } else if (pathname.startsWith(`/${locale}`)) {
+      pathnameSlug = pathname.slice(`/${locale}`.length);
+      if (pathnameSlug.startsWith('/')) {
+        pathnameSlug = pathnameSlug.slice(1);
+      }
+    } else if (pathname.startsWith('/')) {
+      pathnameSlug = pathname.slice(1);
+    }
+    
+    // Trailing slash'i kaldır
+    if (pathnameSlug.endsWith('/')) {
+      pathnameSlug = pathnameSlug.slice(0, -1);
+    }
+    
+    // Slug'lar eşleşiyorsa aktif
+    return pathnameSlug === hrefSlug;
+  }, [pathname, locale]);
 
   // Handle scroll
   useEffect(() => {
