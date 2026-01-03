@@ -1025,12 +1025,13 @@ export async function installTheme(themeData: ThemeData, createdBy: string): Pro
   
   // Mevcut temayı kontrol et ve varsa metadata'sını orijinal ayarlarla güncelle
   // Bu sayede header/footer ayarları sıfırlanır
+  let existingTheme: { id: string } | null = null;
   try {
     const existingThemes = await getDocs(collection(db, COLLECTIONS.themes));
-    const existingTheme = existingThemes.docs.find(doc => {
+    existingTheme = existingThemes.docs.find(doc => {
       const data = doc.data();
       return data.name === metadata.name || data.id === metadata.id;
-    });
+    }) || null;
     
     if (existingTheme) {
       console.log('Mevcut tema bulundu, metadata orijinal ayarlarla güncelleniyor...');
@@ -1148,17 +1149,22 @@ export async function installTheme(themeData: ThemeData, createdBy: string): Pro
   }
   
   // Site settings'i tema ayarlarıyla güncelle (Header/Footer özelleştirmeleri)
+  // Aktif tema bilgisini kaydet
   try {
     const currentSettings = await getSiteSettings();
+    const existingThemeId = existingTheme ? existingTheme.id : null;
     await updateSiteSettings({
       ...currentSettings,
+      // Aktif tema bilgisini kaydet
+      activeThemeId: existingThemeId || metadata.id,
+      activeThemeName: metadata.name,
       // Tema renklerini site settings'e uygula
       seo: {
         ...currentSettings.seo,
         // Tema ayarlarından SEO bilgileri eklenebilir
       },
     }, createdBy);
-    console.log('✓ Site settings tema ayarlarıyla güncellendi');
+    console.log('✓ Site settings tema ayarlarıyla güncellendi (aktif tema:', metadata.name, ')');
   } catch (error) {
     console.warn('Site settings güncellenirken hata (normal olabilir):', error);
   }

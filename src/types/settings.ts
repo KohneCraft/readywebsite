@@ -233,6 +233,10 @@ export interface SiteSettings {
   // Yönlendirmeler
   redirects: Redirect[];
   
+  // Aktif tema
+  activeThemeId?: string;
+  activeThemeName?: string;
+  
   // Metadata
   updatedAt: Date;
   updatedBy: string;
@@ -362,4 +366,6 @@ export const DEFAULT_SITE_SETTINGS: Omit<SiteSettings, 'updatedAt' | 'updatedBy'
     },
   },
   redirects: [],
+  activeThemeId: undefined,
+  activeThemeName: undefined,
 };

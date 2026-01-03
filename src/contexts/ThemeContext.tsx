@@ -24,30 +24,49 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
   const loadCurrentTheme = async () => {
     try {
       console.log('ThemeContext - loadCurrentTheme başlatıldı');
+      // Önce siteSettings'ten aktif tema bilgisini al
+      const { getSiteSettings, getAvailableThemes, getThemeMetadata } = await import('@/lib/firebase/firestore');
+      
+      let activeThemeName: string | null = null;
+      let activeThemeId: string | null = null;
+      
+      try {
+        const siteSettings = await getSiteSettings();
+        activeThemeName = siteSettings.activeThemeName || null;
+        activeThemeId = siteSettings.activeThemeId || null;
+        console.log('ThemeContext - SiteSettings\'ten aktif tema:', activeThemeName, '(ID:', activeThemeId, ')');
+      } catch (error) {
+        console.warn('ThemeContext - SiteSettings yüklenirken hata:', error);
+      }
+      
       // Firestore'dan yüklenmiş temaları kontrol et
-      const { getAvailableThemes, getThemeMetadata } = await import('@/lib/firebase/firestore');
       const firestoreThemes = await getAvailableThemes();
       console.log('ThemeContext - Firestore temaları:', firestoreThemes.map(t => ({ id: t.id, name: t.name })));
       
-      if (firestoreThemes.length > 0) {
-        // Firestore'da tema varsa, tüm temaları kontrol et ve en son güncellenmiş olanı bul
-        // Veya tüm temaları kontrol edip default temalardan eşleştir
-        const defaultThemes = getDefaultThemes();
-        console.log('ThemeContext - Varsayılan temalar:', defaultThemes.map(t => t.metadata.name));
+      const defaultThemes = getDefaultThemes();
+      console.log('ThemeContext - Varsayılan temalar:', defaultThemes.map(t => t.metadata.name));
+      
+      // Aktif tema bilgisi varsa, o temayı bul
+      if (activeThemeName || activeThemeId) {
+        const targetTheme = firestoreThemes.find(t => 
+          t.name === activeThemeName || 
+          t.id === activeThemeId ||
+          (activeThemeId && t.id.includes(activeThemeId.replace('theme-', '')))
+        );
         
-        // Her Firestore teması için eşleştirme yap
-        for (const firestoreTheme of firestoreThemes) {
+        if (targetTheme) {
+          console.log(`ThemeContext - Aktif tema bulundu: ${targetTheme.name} (ID: ${targetTheme.id})`);
+          // Default temalardan eşleştir
           let matchedTheme = defaultThemes.find(t => 
-            t.metadata.name === firestoreTheme.name || 
-            t.metadata.id === firestoreTheme.id ||
-            firestoreTheme.id.includes(t.metadata.id.replace('theme-', ''))
+            t.metadata.name === targetTheme.name || 
+            t.metadata.id === targetTheme.id ||
+            targetTheme.id.includes(t.metadata.id.replace('theme-', ''))
           );
           
           if (matchedTheme) {
-            console.log(`ThemeContext - Tema eşleştirildi: ${firestoreTheme.name} (ID: ${firestoreTheme.id})`);
             // Firestore'dan güncel metadata'yı al (header/footer ayarları için)
             try {
-              const firestoreMetadata = await getThemeMetadata(firestoreTheme.id);
+              const firestoreMetadata = await getThemeMetadata(targetTheme.id);
               if (firestoreMetadata && firestoreMetadata.settings) {
                 console.log('ThemeContext - Firestore metadata settings:', JSON.stringify(firestoreMetadata.settings, null, 2));
                 console.log('ThemeContext - Firestore header navItems:', firestoreMetadata.settings?.header?.navItems);
@@ -72,12 +91,13 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
             return;
           }
         }
-        
-        // Eşleşme bulunamazsa ilk Firestore temasını kullan
-        console.warn('ThemeContext - Tema eşleştirilemedi, ilk Firestore teması kullanılıyor');
+      }
+      
+      // Aktif tema bilgisi yoksa veya bulunamadıysa, ilk Firestore temasını kullan
+      if (firestoreThemes.length > 0) {
+        console.warn('ThemeContext - Aktif tema bulunamadı, ilk Firestore teması kullanılıyor');
         const firstTheme = firestoreThemes[0];
-        const defaultThemes2 = getDefaultThemes();
-        const matchedTheme = defaultThemes2.find(t => t.metadata.name === firstTheme.name);
+        const matchedTheme = defaultThemes.find(t => t.metadata.name === firstTheme.name);
         if (matchedTheme) {
           setCurrentTheme(matchedTheme);
           return;
@@ -86,9 +106,8 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
       
       // Firestore'da tema yoksa varsayılan temalardan ilkini kullan
       console.log('ThemeContext - Firestore\'da tema yok, varsayılan temalar kullanılıyor');
-      const themes = getDefaultThemes();
-      if (themes.length > 0) {
-        setCurrentTheme(themes[0]);
+      if (defaultThemes.length > 0) {
+        setCurrentTheme(defaultThemes[0]);
       }
     } catch (error) {
       console.error('ThemeContext - Tema yükleme hatası:', error);
