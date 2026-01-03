@@ -127,12 +127,23 @@ export async function updateSiteSettings(
   userId: string
 ): Promise<void> {
   const docRef = doc(db, COLLECTIONS.settings, SITE_SETTINGS_DOC);
+  const docSnap = await getDoc(docRef);
   
-  await updateDoc(docRef, {
-    ...input,
-    updatedAt: serverTimestamp(),
-    updatedBy: userId,
-  });
+  // Doküman yoksa varsayılan ayarlarla oluştur, varsa güncelle
+  if (!docSnap.exists()) {
+    await setDoc(docRef, {
+      ...DEFAULT_SITE_SETTINGS,
+      ...input,
+      updatedAt: serverTimestamp(),
+      updatedBy: userId,
+    });
+  } else {
+    await updateDoc(docRef, {
+      ...input,
+      updatedAt: serverTimestamp(),
+      updatedBy: userId,
+    });
+  }
 }
 
 /**
