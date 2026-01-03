@@ -3,14 +3,22 @@
     "origin": [
       "http://localhost:3000",
       "http://localhost:9002",
-      "https://vavyapi-66.web.app",
-      "https://vavyapi-66.firebaseapp.com",
+      "https://readywebsite-0.web.app",
+      "https://readywebsite-0.firebaseapp.com",
       "https://*.cloud.google.com",
       "https://*.run.app"
     ],
-    "method": ["GET", "POST", "PUT", "DELETE", "HEAD"],
+    "method": ["GET", "POST", "PUT", "DELETE", "HEAD", "OPTIONS"],
     "maxAgeSeconds": 3600,
-    "responseHeader": ["Content-Type", "Authorization", "Content-Length", "X-Requested-With"]
+    "responseHeader": [
+      "Content-Type",
+      "Authorization",
+      "Content-Length",
+      "X-Requested-With",
+      "Access-Control-Allow-Origin",
+      "Access-Control-Allow-Methods",
+      "Access-Control-Allow-Headers"
+    ]
   }
 ]
 
