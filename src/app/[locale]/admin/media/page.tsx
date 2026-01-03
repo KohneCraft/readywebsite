@@ -8,7 +8,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Image as ImageIcon, Video, Trash2 } from 'lucide-react';
 import { uploadMedia, getMediaList, deleteMedia, deleteMultipleMedia } from '@/lib/firebase/media';
-import { getCurrentUser } from '@/lib/firebase/auth';
+import { getCurrentUser, onAuthStateChanged } from '@/lib/firebase/auth';
 import { MediaUploader, MediaFilters, MediaGrid, MediaPreview } from '@/components/media';
 import type { Media, MediaType, MediaSortBy, MediaViewMode } from '@/types/media';
 import { cn } from '@/lib/utils';
@@ -25,43 +25,53 @@ export default function MediaManagerPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [previewItem, setPreviewItem] = useState<Media | null>(null);
   const [userId, setUserId] = useState<string | null>(null);
+  const [authError, setAuthError] = useState<string | null>(null);
 
-  // Kullanıcı ID'sini al
+  // Kullanıcı ID'sini al - Firebase Auth'dan
   useEffect(() => {
-    const loadUserId = async () => {
-      try {
-        const user = getCurrentUser();
-        if (user) {
-          setUserId(user.uid);
+    const unsubscribe = onAuthStateChanged((user) => {
+      if (user) {
+        setUserId(user.uid);
+        setAuthError(null);
+      } else {
+        // Firebase Auth'da kullanıcı yok
+        // Geçici session kontrolü
+        const tempSession = localStorage.getItem('temp_admin_session');
+        if (tempSession) {
+          const session = JSON.parse(tempSession);
+          setUserId(session.id || 'temp-admin-001');
+          setAuthError('Firebase Auth girişi gerekli. Lütfen admin paneline giriş yapın.');
         } else {
-          // Geçici session kontrolü
-          const tempSession = localStorage.getItem('temp_admin_session');
-          if (tempSession) {
-            const session = JSON.parse(tempSession);
-            setUserId(session.id || 'temp-admin-001');
-          }
+          setUserId(null);
+          setAuthError('Kullanıcı bulunamadı. Lütfen giriş yapın.');
         }
-      } catch (error) {
-        console.error('User ID yüklenirken hata:', error);
       }
-    };
-    loadUserId();
+    });
+
+    return () => unsubscribe();
   }, []);
 
   // Medya listesini yükle
   const loadMedia = useCallback(async () => {
-    if (!userId) return;
+    // Firebase Auth kontrolü
+    const currentUser = getCurrentUser();
+    if (!currentUser) {
+      setLoading(false);
+      return;
+    }
+
+    const authUserId = currentUser.uid;
 
     setLoading(true);
     try {
-      const items = await getMediaList(userId, activeTab, sortBy, sortOrder);
+      const items = await getMediaList(authUserId, activeTab, sortBy, sortOrder);
       setMediaItems(items);
     } catch (error) {
       console.error('Medya yüklenirken hata:', error);
     } finally {
       setLoading(false);
     }
-  }, [userId, activeTab, sortBy, sortOrder]);
+  }, [activeTab, sortBy, sortOrder]);
 
   useEffect(() => {
     loadMedia();
@@ -69,10 +79,20 @@ export default function MediaManagerPage() {
 
   // Dosya yükleme
   const handleUpload = async (files: File[]) => {
+    // Firebase Auth kontrolü
+    const currentUser = getCurrentUser();
+    if (!currentUser) {
+      alert('Firebase Auth girişi gerekli. Lütfen sayfayı yenileyin veya admin paneline giriş yapın.');
+      return;
+    }
+
     if (!userId) {
       alert('Kullanıcı bulunamadı. Lütfen giriş yapın.');
       return;
     }
+
+    // Firebase Auth UID'yi kullan (temp session değil)
+    const authUserId = currentUser.uid;
 
     setUploading(true);
     const errors: string[] = [];
@@ -90,7 +110,7 @@ export default function MediaManagerPage() {
           continue;
         }
 
-        await uploadMedia(file, fileType, userId);
+        await uploadMedia(file, fileType, authUserId);
       } catch (error) {
         console.error('Yükleme hatası:', error);
         errors.push(`${file.name}: ${error instanceof Error ? error.message : 'Yükleme başarısız'}`);
@@ -182,6 +202,13 @@ export default function MediaManagerPage() {
         <p className="text-gray-600 dark:text-gray-400">
           Fotoğraf ve video dosyalarınızı yönetin
         </p>
+        {authError && (
+          <div className="mt-4 p-4 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg">
+            <p className="text-sm text-yellow-800 dark:text-yellow-200">
+              ⚠️ {authError}
+            </p>
+          </div>
+        )}
       </div>
 
       {/* Tabs */}
