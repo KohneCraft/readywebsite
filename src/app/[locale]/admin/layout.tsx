@@ -20,6 +20,7 @@ import {
   Bell,
   Layers,
   Palette,
+  Image as ImageIcon,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Spinner } from '@/components/ui/Spinner';
@@ -163,6 +164,7 @@ export default function AdminLayout({
     { href: '/admin', icon: LayoutDashboard, label: t('dashboard.title') },
     { href: '/admin/page-builder', icon: Layers, label: t('pageBuilder.title') },
     { href: '/admin/themes', icon: Palette, label: t('themes.title') },
+    { href: '/admin/media', icon: ImageIcon, label: 'Medya Yönetimi' },
     { href: '/admin/settings', icon: Settings, label: t('settings.title') },
   ];
 

@@ -131,6 +131,18 @@ export type {
   ThemeCategory,
 } from './theme';
 
+// Media Types
+export type {
+  MediaType,
+  MediaDimensions,
+  Media,
+  MediaCreateInput,
+  MediaUpdateInput,
+  MediaSortBy,
+  MediaSortOrder,
+  MediaViewMode,
+} from './media';
+
 // ============================================
 // Common Types
 // ============================================
