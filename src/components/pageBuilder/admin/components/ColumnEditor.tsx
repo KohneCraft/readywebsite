@@ -9,7 +9,7 @@ import { useState, useEffect } from 'react';
 import { useDroppable } from '@dnd-kit/core';
 import { BlockEditor } from './BlockEditor';
 import { getBlockById, getColumnById } from '@/lib/firebase/firestore';
-import { GripVertical, Image as ImageIcon, Columns } from 'lucide-react';
+import { GripVertical, Image as ImageIcon, Columns, Plus } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import type { Column, Block, BlockType } from '@/types/pageBuilder';
 
@@ -20,6 +20,7 @@ interface ColumnEditorProps {
   onSelect: () => void;
   selectedElement?: { type: 'section' | 'column' | 'block'; id: string } | null;
   onSelectElement?: (element: { type: 'section' | 'column' | 'block'; id: string } | null) => void;
+  onAddColumn?: (afterColumnId: string) => Promise<void>; // Yan yana kolon eklemek için
 }
 
 export function ColumnEditor({
@@ -29,6 +30,7 @@ export function ColumnEditor({
   onSelect,
   selectedElement,
   onSelectElement,
+  onAddColumn,
 }: ColumnEditorProps) {
   const [blocks, setBlocks] = useState<Block[]>([]);
   const [nestedColumns, setNestedColumns] = useState<Column[]>([]);
@@ -121,6 +123,10 @@ export function ColumnEditor({
         margin: settings.margin
           ? `${settings.margin.top || 0}px ${settings.margin.right || 0}px ${settings.margin.bottom || 0}px ${settings.margin.left || 0}px`
           : '0',
+        height: settings.height 
+          ? (typeof settings.height === 'number' ? `${settings.height}px` : settings.height)
+          : 'auto',
+        minHeight: settings.height === '100%' ? '100%' : undefined,
       }}
     >
       {/* Column Header */}
@@ -135,6 +141,23 @@ export function ColumnEditor({
           </div>
           <div className="flex items-center gap-2">
             <span className="text-gray-400">{Math.round(column.width || 0)}%</span>
+            {onAddColumn && (
+              <button
+                onClick={async (e) => {
+                  e.stopPropagation();
+                  try {
+                    await onAddColumn(column.id);
+                  } catch (error) {
+                    console.error('Yeni kolon ekleme hatası:', error);
+                    alert('Yeni kolon eklenirken bir hata oluştu.');
+                  }
+                }}
+                className="p-1 hover:bg-gray-700 rounded transition-colors"
+                title="Yanına Kolon Ekle"
+              >
+                <Plus className="w-3 h-3" />
+              </button>
+            )}
             <button
               onClick={async (e) => {
                 e.stopPropagation();
@@ -200,6 +223,42 @@ export function ColumnEditor({
                 }}
                 selectedElement={selectedElement}
                 onSelectElement={onSelectElement}
+                onAddColumn={async (afterColumnId) => {
+                  try {
+                    const { createColumn, getColumnById, updateColumn } = await import('@/lib/firebase/firestore');
+                    const parentColumn = await getColumnById(column.id);
+                    if (!parentColumn) return;
+                    
+                    // Mevcut nested kolon sayısını al
+                    const currentNestedColumns = parentColumn.columns || [];
+                    const afterIndex = currentNestedColumns.indexOf(afterColumnId);
+                    
+                    // Yeni nested kolon genişliğini hesapla (mevcut nested kolonların genişliklerini eşit dağıt)
+                    const numColumns = currentNestedColumns.length + 1;
+                    const equalWidth = 100 / numColumns;
+                    
+                    // Yeni nested kolon oluştur
+                    await createColumn({
+                      sectionId: column.sectionId,
+                      parentColumnId: column.id,
+                      width: equalWidth,
+                      order: afterIndex + 1,
+                    });
+                    
+                    // Mevcut nested kolonların genişliklerini güncelle
+                    for (const nestedColId of currentNestedColumns) {
+                      const nestedCol = await getColumnById(nestedColId);
+                      if (nestedCol) {
+                        await updateColumn(nestedColId, { width: equalWidth });
+                      }
+                    }
+                    
+                    window.dispatchEvent(new CustomEvent('section-updated', { detail: { sectionId: 'any' } }));
+                  } catch (error) {
+                    console.error('Nested kolon ekleme hatası:', error);
+                    alert('Nested kolon eklenirken bir hata oluştu.');
+                  }
+                }}
               />
             ))}
           </div>

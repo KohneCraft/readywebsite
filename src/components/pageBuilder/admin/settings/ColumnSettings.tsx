@@ -66,14 +66,93 @@ export function ColumnSettings({ columnId, activeTab, onUpdate }: ColumnSettings
             type="number"
             min="0"
             max="100"
+            step="0.1"
             value={column.width || 100}
-            onChange={(e) => {
-              const updated = { ...column, width: parseFloat(e.target.value) || 100 };
+            onChange={async (e) => {
+              const newWidth = parseFloat(e.target.value) || 100;
+              const updated = { ...column, width: newWidth };
               setColumn(updated);
               onUpdate(updated);
+              
+              // Firestore'da güncelle
+              try {
+                const { updateColumn } = await import('@/lib/firebase/firestore');
+                await updateColumn(column.id, { width: newWidth });
+                window.dispatchEvent(new CustomEvent('section-updated', { detail: { sectionId: 'any' } }));
+              } catch (error) {
+                console.error('Kolon genişliği güncelleme hatası:', error);
+              }
             }}
             className="w-full px-3 py-2 text-sm border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-white"
           />
+        </div>
+
+        <div>
+          <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
+            Yükseklik
+          </label>
+          <div className="flex gap-2">
+            <select
+              value={typeof settings.height === 'string' ? settings.height : 'custom'}
+              onChange={(e) => {
+                const heightValue = e.target.value === 'auto' ? 'auto' : e.target.value === '100%' ? '100%' : undefined;
+                const updated = {
+                  ...column,
+                  settings: { ...settings, height: heightValue },
+                };
+                setColumn(updated);
+                onUpdate(updated);
+                
+                // Firestore'da güncelle
+                (async () => {
+                  try {
+                    const { updateColumn } = await import('@/lib/firebase/firestore');
+                    await updateColumn(column.id, { 
+                      settings: { ...settings, height: heightValue },
+                    });
+                    window.dispatchEvent(new CustomEvent('section-updated', { detail: { sectionId: 'any' } }));
+                  } catch (error) {
+                    console.error('Kolon yüksekliği güncelleme hatası:', error);
+                  }
+                })();
+              }}
+              className="flex-1 px-3 py-2 text-sm border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-white"
+            >
+              <option value="auto">Otomatik</option>
+              <option value="100%">Tam Yükseklik</option>
+              <option value="custom">Özel (px)</option>
+            </select>
+            {(!settings.height || (typeof settings.height === 'number')) && (
+              <input
+                type="number"
+                min="0"
+                step="1"
+                value={typeof settings.height === 'number' ? settings.height : ''}
+                placeholder="px"
+                onChange={async (e) => {
+                  const heightValue = e.target.value ? parseInt(e.target.value) : undefined;
+                  const updated = {
+                    ...column,
+                    settings: { ...settings, height: heightValue },
+                  };
+                  setColumn(updated);
+                  onUpdate(updated);
+                  
+                  // Firestore'da güncelle
+                  try {
+                    const { updateColumn } = await import('@/lib/firebase/firestore');
+                    await updateColumn(column.id, { 
+                      settings: { ...settings, height: heightValue },
+                    });
+                    window.dispatchEvent(new CustomEvent('section-updated', { detail: { sectionId: 'any' } }));
+                  } catch (error) {
+                    console.error('Kolon yüksekliği güncelleme hatası:', error);
+                  }
+                }}
+                className="w-24 px-3 py-2 text-sm border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-white"
+              />
+            )}
+          </div>
         </div>
 
         <div>

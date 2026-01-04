@@ -270,6 +270,42 @@ export function SectionEditor({
                 }}
                 selectedElement={selectedElement}
                 onSelectElement={onSelectElement}
+                onAddColumn={async (afterColumnId) => {
+                  try {
+                    const { createColumn, getSectionById } = await import('@/lib/firebase/firestore');
+                    const currentSection = await getSectionById(section.id);
+                    if (!currentSection) return;
+                    
+                    // Mevcut kolon sayısını al
+                    const currentColumns = currentSection.columns || [];
+                    const afterIndex = currentColumns.indexOf(afterColumnId);
+                    
+                    // Yeni kolon genişliğini hesapla (mevcut kolonların genişliklerini eşit dağıt)
+                    const numColumns = currentColumns.length + 1;
+                    const equalWidth = 100 / numColumns;
+                    
+                    // Yeni kolon oluştur
+                    await createColumn({
+                      sectionId: section.id,
+                      width: equalWidth,
+                      order: afterIndex + 1,
+                    });
+                    
+                    // Mevcut kolonların genişliklerini güncelle
+                    const { updateColumn, getColumnById } = await import('@/lib/firebase/firestore');
+                    for (const colId of currentColumns) {
+                      const col = await getColumnById(colId);
+                      if (col) {
+                        await updateColumn(colId, { width: equalWidth });
+                      }
+                    }
+                    
+                    window.dispatchEvent(new CustomEvent('section-updated', { detail: { sectionId: section.id } }));
+                  } catch (error) {
+                    console.error('Yeni kolon ekleme hatası:', error);
+                    alert('Yeni kolon eklenirken bir hata oluştu.');
+                  }
+                }}
               />
             ))
           ) : (

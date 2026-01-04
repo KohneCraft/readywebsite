@@ -86,6 +86,9 @@ export function ColumnRenderer({ columnId, index }: ColumnRendererProps) {
       : 'none',
     boxShadow: settings.boxShadow || 'none',
     minHeight: settings.minHeight ? `${settings.minHeight}px` : 'auto',
+    height: settings.height 
+      ? (typeof settings.height === 'number' ? `${settings.height}px` : settings.height)
+      : 'auto',
     display: 'flex',
     flexDirection: 'column',
     justifyContent: settings.verticalAlign || 'flex-start',
