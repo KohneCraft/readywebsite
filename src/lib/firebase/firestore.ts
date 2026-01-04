@@ -136,13 +136,18 @@ export async function updateSiteSettings(
       ...input,
       updatedAt: serverTimestamp(),
       updatedBy: userId,
-    });
+    }, { merge: true }); // merge: true ile doküman yoksa oluştur, varsa güncelle
   } else {
     await updateDoc(docRef, {
       ...input,
       updatedAt: serverTimestamp(),
       updatedBy: userId,
     });
+  }
+  
+  // Site settings güncelleme eventi gönder (Header ve Footer için)
+  if (typeof window !== 'undefined') {
+    window.dispatchEvent(new CustomEvent('site-settings-updated'));
   }
 }
 
@@ -1410,8 +1415,20 @@ export async function installTheme(themeData: ThemeData, createdBy: string): Pro
             ...currentSettings.logo,
             light: { ...currentSettings.logo.light, url: themeCompanyInfo.logo },
             dark: { ...currentSettings.logo.dark, url: themeCompanyInfo.logo },
+            // Favicon'u sıfırla (tema değiştiğinde favicon da sıfırlanır)
+            favicon: {
+              url: '',
+              path: '',
+            },
           }
-        : currentSettings.logo,
+        : {
+            ...currentSettings.logo,
+            // Favicon'u sıfırla (tema değiştiğinde favicon da sıfırlanır)
+            favicon: {
+              url: '',
+              path: '',
+            },
+          },
       // İletişim bilgileri
       contact: {
         ...currentSettings.contact,
