@@ -12,6 +12,11 @@ import { HeadingBlockSettings } from './blocks/HeadingBlockSettings';
 import { ImageBlockSettings } from './blocks/ImageBlockSettings';
 import { VideoBlockSettings } from './blocks/VideoBlockSettings';
 import { ButtonBlockSettings } from './blocks/ButtonBlockSettings';
+import { SpacerBlockSettings } from './blocks/SpacerBlockSettings';
+import { DividerBlockSettings } from './blocks/DividerBlockSettings';
+import { FormBlockSettings } from './blocks/FormBlockSettings';
+import { MapBlockSettings } from './blocks/MapBlockSettings';
+import { HTMLBlockSettings } from './blocks/HTMLBlockSettings';
 import { Spinner } from '@/components/ui/Spinner';
 import type { Block } from '@/types/pageBuilder';
 
@@ -110,6 +115,66 @@ export function BlockSettings({ blockId, activeTab, onUpdate }: BlockSettingsPro
       case 'button':
         return (
           <ButtonBlockSettings
+            block={block}
+            activeTab={activeTab}
+            onUpdate={(updates) => {
+              const updated = { ...block, props: { ...block.props, ...updates } };
+              setBlock(updated);
+              onUpdate(updated);
+            }}
+          />
+        );
+      case 'spacer':
+        return (
+          <SpacerBlockSettings
+            block={block}
+            activeTab={activeTab}
+            onUpdate={(updates) => {
+              const updated = { ...block, props: { ...block.props, ...updates } };
+              setBlock(updated);
+              onUpdate(updated);
+            }}
+          />
+        );
+      case 'divider':
+        return (
+          <DividerBlockSettings
+            block={block}
+            activeTab={activeTab}
+            onUpdate={(updates) => {
+              const updated = { ...block, props: { ...block.props, ...updates } };
+              setBlock(updated);
+              onUpdate(updated);
+            }}
+          />
+        );
+      case 'form':
+        return (
+          <FormBlockSettings
+            block={block}
+            activeTab={activeTab}
+            onUpdate={(updates) => {
+              const updated = { ...block, props: { ...block.props, ...updates } };
+              setBlock(updated);
+              onUpdate(updated);
+            }}
+          />
+        );
+      case 'map':
+        return (
+          <MapBlockSettings
+            block={block}
+            activeTab={activeTab}
+            onUpdate={(updates) => {
+              const updated = { ...block, props: { ...block.props, ...updates } };
+              setBlock(updated);
+              onUpdate(updated);
+            }}
+          />
+        );
+      case 'html':
+        return (
+          <HTMLBlockSettings
             block={block}
             activeTab={activeTab}
             onUpdate={(updates) => {

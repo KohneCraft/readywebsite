@@ -18,6 +18,9 @@ interface CenterCanvasProps {
   zoom: number;
   selectedElement: { type: 'section' | 'column' | 'block'; id: string } | null;
   onSelectElement: (element: { type: 'section' | 'column' | 'block'; id: string } | null) => void;
+  onMoveSection?: (sectionId: string, direction: 'up' | 'down') => Promise<void>;
+  onDuplicateSection?: (sectionId: string) => Promise<void>;
+  onDeleteSection?: (sectionId: string) => Promise<void>;
 }
 
 const deviceWidths = {
@@ -32,6 +35,9 @@ export function CenterCanvas({
   zoom,
   selectedElement,
   onSelectElement,
+  onMoveSection,
+  onDuplicateSection,
+  onDeleteSection,
 }: CenterCanvasProps) {
   const [sections, setSections] = useState<Section[]>([]);
   const [loading, setLoading] = useState(true);
@@ -116,6 +122,9 @@ export function CenterCanvas({
                   onSelect={() => onSelectElement({ type: 'section', id: section.id })}
                   selectedElement={selectedElement}
                   onSelectElement={onSelectElement}
+                  onMove={onMoveSection}
+                  onDuplicate={onDuplicateSection}
+                  onDelete={onDeleteSection}
                 />
               ))
             ) : (

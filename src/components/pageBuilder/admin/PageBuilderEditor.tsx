@@ -48,20 +48,22 @@ export function PageBuilderEditor({ pageId }: PageBuilderEditorProps) {
   );
 
   // Sayfa yükleme
-  useEffect(() => {
-    async function loadPage() {
-      try {
-        setLoading(true);
-        const pageData = await getPageById(pageId);
-        setPage(pageData);
-      } catch (error) {
-        console.error('Sayfa yüklenirken hata:', error);
-      } finally {
-        setLoading(false);
-      }
+  const loadPage = useCallback(async () => {
+    try {
+      setLoading(true);
+      const pageData = await getPageById(pageId);
+      setPage(pageData);
+      setHasChanges(false);
+    } catch (error) {
+      console.error('Sayfa yüklenirken hata:', error);
+    } finally {
+      setLoading(false);
     }
-    loadPage();
   }, [pageId]);
+
+  useEffect(() => {
+    loadPage();
+  }, [loadPage]);
 
   // Drag start
   const handleDragStart = useCallback((event: DragStartEvent) => {
@@ -274,6 +276,24 @@ export function PageBuilderEditor({ pageId }: PageBuilderEditorProps) {
             zoom={zoom}
             selectedElement={selectedElement}
             onSelectElement={setSelectedElement}
+            onMoveSection={async (sectionId, direction) => {
+              const { moveSection } = await import('@/lib/firebase/firestore');
+              await moveSection(sectionId, direction);
+              await loadPage();
+            }}
+            onDuplicateSection={async (sectionId) => {
+              const { duplicateSection } = await import('@/lib/firebase/firestore');
+              await duplicateSection(sectionId);
+              await loadPage();
+            }}
+            onDeleteSection={async (sectionId) => {
+              const { deleteSection } = await import('@/lib/firebase/firestore');
+              await deleteSection(sectionId);
+              // Page'den section ID'sini çıkar
+              const updatedSections = page.sections?.filter(id => id !== sectionId) || [];
+              await updatePage(page.id, { sections: updatedSections });
+              await loadPage();
+            }}
           />
 
           {/* Right Panel - Ayarlar */}

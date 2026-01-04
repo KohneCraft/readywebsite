@@ -1,7 +1,18 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { TextBlock, HeadingBlock, ImageBlock, ButtonBlock } from '../blocks';
+import { 
+  TextBlock, 
+  HeadingBlock, 
+  ImageBlock, 
+  VideoBlock, 
+  ButtonBlock,
+  SpacerBlock,
+  DividerBlock,
+  FormBlock,
+  MapBlock,
+  HTMLBlock
+} from '../blocks';
 import { getBlockById } from '@/lib/firebase/firestore';
 import type { Block, BlockType } from '@/types/pageBuilder';
 
@@ -14,13 +25,13 @@ const blockComponents: Record<BlockType, React.ComponentType<{ props: Block['pro
   text: TextBlock,
   heading: HeadingBlock,
   image: ImageBlock,
-  video: () => <div>Video Block - Coming Soon</div>,
+  video: VideoBlock,
   button: ButtonBlock,
-  spacer: () => <div>Spacer Block - Coming Soon</div>,
-  divider: () => <div>Divider Block - Coming Soon</div>,
-  form: () => <div>Form Block - Coming Soon</div>,
-  map: () => <div>Map Block - Coming Soon</div>,
-  html: () => <div>HTML Block - Coming Soon</div>,
+  spacer: SpacerBlock,
+  divider: DividerBlock,
+  form: FormBlock,
+  map: MapBlock,
+  html: HTMLBlock,
 };
 
 export function BlockRenderer({ blockId, index }: BlockRendererProps) {

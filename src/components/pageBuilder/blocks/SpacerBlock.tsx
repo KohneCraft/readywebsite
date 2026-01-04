@@ -1,0 +1,36 @@
+'use client';
+
+import type { BlockProps } from '@/types/pageBuilder';
+
+interface SpacerBlockProps {
+  props: BlockProps;
+}
+
+export function SpacerBlock({ props }: SpacerBlockProps) {
+  const height = props.spacerHeight || 50;
+  
+  const containerStyle = {
+    width: '100%',
+    height: `${height}px`,
+    margin: props.margin
+      ? `${props.margin.top || 0}px ${props.margin.right || 0}px ${props.margin.bottom || 0}px ${props.margin.left || 0}px`
+      : '0',
+    padding: props.padding
+      ? `${props.padding.top || 0}px ${props.padding.right || 0}px ${props.padding.bottom || 0}px ${props.padding.left || 0}px`
+      : '0',
+  };
+  
+  return (
+    <div 
+      className={`spacer-block ${props.className || ''}`}
+      style={containerStyle}
+      id={props.id}
+      {...(props.dataAttributes || {})}
+    >
+      {props.customCSS && (
+        <style dangerouslySetInnerHTML={{ __html: props.customCSS }} />
+      )}
+    </div>
+  );
+}
+

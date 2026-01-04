@@ -20,6 +20,9 @@ interface SectionEditorProps {
   onSelect: () => void;
   selectedElement?: { type: 'section' | 'column' | 'block'; id: string } | null;
   onSelectElement?: (element: { type: 'section' | 'column' | 'block'; id: string } | null) => void;
+  onMove?: (sectionId: string, direction: 'up' | 'down') => Promise<void>;
+  onDuplicate?: (sectionId: string) => Promise<void>;
+  onDelete?: (sectionId: string) => Promise<void>;
 }
 
 export function SectionEditor({
@@ -29,7 +32,13 @@ export function SectionEditor({
   onSelect,
   selectedElement,
   onSelectElement,
+  onMove,
+  onDuplicate,
+  onDelete,
 }: SectionEditorProps) {
+  const [isMoving, setIsMoving] = useState(false);
+  const [isDuplicating, setIsDuplicating] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
   const [columns, setColumns] = useState<Column[]>([]);
   const [isHovered, setIsHovered] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -103,32 +112,77 @@ export function SectionEditor({
           <span className="font-medium">{section.name || `Section ${index + 1}`}</span>
           <div className="flex items-center gap-1">
             <button
-              className="p-1 hover:bg-primary-700 rounded transition-colors"
+              className={cn(
+                'p-1 hover:bg-primary-700 rounded transition-colors',
+                (isMoving || index === 0) && 'opacity-50 cursor-not-allowed'
+              )}
               title="Yukarı Taşı"
-              onClick={(e) => {
+              onClick={async (e) => {
                 e.stopPropagation();
-                // Sıra değiştirme işlemi
+                if (onMove && !isMoving && index > 0) {
+                  setIsMoving(true);
+                  try {
+                    await onMove(section.id, 'up');
+                    window.dispatchEvent(new CustomEvent('section-updated', { detail: { sectionId: 'any' } }));
+                  } catch (error) {
+                    console.error('Section taşıma hatası:', error);
+                    alert('Section taşınırken bir hata oluştu.');
+                  } finally {
+                    setIsMoving(false);
+                  }
+                }
               }}
+              disabled={isMoving || index === 0}
             >
               <ArrowUp className="w-3 h-3" />
             </button>
             <button
-              className="p-1 hover:bg-primary-700 rounded transition-colors"
+              className={cn(
+                'p-1 hover:bg-primary-700 rounded transition-colors',
+                isMoving && 'opacity-50 cursor-not-allowed'
+              )}
               title="Aşağı Taşı"
-              onClick={(e) => {
+              onClick={async (e) => {
                 e.stopPropagation();
-                // Sıra değiştirme işlemi
+                if (onMove && !isMoving) {
+                  setIsMoving(true);
+                  try {
+                    await onMove(section.id, 'down');
+                    window.dispatchEvent(new CustomEvent('section-updated', { detail: { sectionId: 'any' } }));
+                  } catch (error) {
+                    console.error('Section taşıma hatası:', error);
+                    alert('Section taşınırken bir hata oluştu.');
+                  } finally {
+                    setIsMoving(false);
+                  }
+                }
               }}
+              disabled={isMoving}
             >
               <ArrowDown className="w-3 h-3" />
             </button>
             <button
-              className="p-1 hover:bg-primary-700 rounded transition-colors"
+              className={cn(
+                'p-1 hover:bg-primary-700 rounded transition-colors',
+                isDuplicating && 'opacity-50 cursor-not-allowed'
+              )}
               title="Kopyala"
-              onClick={(e) => {
+              onClick={async (e) => {
                 e.stopPropagation();
-                // Kopyalama işlemi
+                if (onDuplicate && !isDuplicating) {
+                  setIsDuplicating(true);
+                  try {
+                    await onDuplicate(section.id);
+                    window.dispatchEvent(new CustomEvent('section-updated', { detail: { sectionId: 'any' } }));
+                  } catch (error) {
+                    console.error('Section kopyalama hatası:', error);
+                    alert('Section kopyalanırken bir hata oluştu.');
+                  } finally {
+                    setIsDuplicating(false);
+                  }
+                }
               }}
+              disabled={isDuplicating || !onDuplicate}
             >
               <Copy className="w-3 h-3" />
             </button>
@@ -143,14 +197,27 @@ export function SectionEditor({
               <Settings className="w-3 h-3" />
             </button>
             <button
-              className="p-1 hover:bg-red-600 rounded transition-colors"
+              className={cn(
+                'p-1 hover:bg-red-600 rounded transition-colors',
+                isDeleting && 'opacity-50 cursor-not-allowed'
+              )}
               title="Sil"
-              onClick={(e) => {
+              onClick={async (e) => {
                 e.stopPropagation();
-                if (confirm('Bu section\'ı silmek istediğinizden emin misiniz?')) {
-                  // Silme işlemi
+                if (onDelete && !isDeleting && confirm('Bu section\'ı silmek istediğinizden emin misiniz?')) {
+                  setIsDeleting(true);
+                  try {
+                    await onDelete(section.id);
+                    window.dispatchEvent(new CustomEvent('section-updated', { detail: { sectionId: 'any' } }));
+                  } catch (error) {
+                    console.error('Section silme hatası:', error);
+                    alert('Section silinirken bir hata oluştu.');
+                  } finally {
+                    setIsDeleting(false);
+                  }
                 }
               }}
+              disabled={isDeleting || !onDelete}
             >
               <Trash2 className="w-3 h-3" />
             </button>
