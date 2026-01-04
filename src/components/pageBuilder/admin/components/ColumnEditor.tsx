@@ -9,15 +9,17 @@ import { useState, useEffect } from 'react';
 import { useDroppable } from '@dnd-kit/core';
 import { BlockEditor } from './BlockEditor';
 import { getBlockById } from '@/lib/firebase/firestore';
-import { Plus, GripVertical } from 'lucide-react';
+import { GripVertical, Image as ImageIcon } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import type { Column, Block } from '@/types/pageBuilder';
+import type { Column, Block, BlockType } from '@/types/pageBuilder';
 
 interface ColumnEditorProps {
   column: Column;
   index: number;
   isSelected: boolean;
   onSelect: () => void;
+  selectedElement?: { type: 'section' | 'column' | 'block'; id: string } | null;
+  onSelectElement?: (element: { type: 'section' | 'column' | 'block'; id: string } | null) => void;
 }
 
 export function ColumnEditor({
@@ -25,6 +27,8 @@ export function ColumnEditor({
   index,
   isSelected,
   onSelect,
+  selectedElement,
+  onSelectElement,
 }: ColumnEditorProps) {
   const [blocks, setBlocks] = useState<Block[]>([]);
   const [isHovered, setIsHovered] = useState(false);
@@ -110,29 +114,99 @@ export function ColumnEditor({
               key={block.id}
               block={block}
               index={blockIndex}
-              isSelected={false} // TODO: selectedElement kontrolü
+              isSelected={selectedElement?.type === 'block' && selectedElement.id === block.id}
               onSelect={() => {
-                // Block seçme
+                if (onSelectElement) {
+                  onSelectElement({ type: 'block', id: block.id });
+                }
+              }}
+              onDelete={async () => {
+                // Block silindiğinde listeyi yenile
+                const blockPromises = column.blocks
+                  ?.filter((id) => id !== block.id)
+                  .map((blockId) => getBlockById(blockId)) || [];
+                const loadedBlocks = await Promise.all(blockPromises);
+                setBlocks(loadedBlocks.filter(Boolean) as Block[]);
+              }}
+              onDuplicate={async (blockId: string) => {
+                try {
+                  const { duplicateBlock } = await import('@/lib/firebase/firestore');
+                  await duplicateBlock(blockId);
+                  // Sayfayı yeniden yükle
+                  window.dispatchEvent(new CustomEvent('section-updated', { detail: { sectionId: 'any' } }));
+                  // Block listesini yenile
+                  const blockPromises = column.blocks?.map((id) => getBlockById(id)) || [];
+                  const loadedBlocks = await Promise.all(blockPromises);
+                  setBlocks(loadedBlocks.filter(Boolean) as Block[]);
+                } catch (error) {
+                  console.error('Block kopyalama hatası:', error);
+                  throw error;
+                }
               }}
             />
           ))
         ) : (
-          <EmptyColumn />
+          <EmptyColumn 
+            onAddBlock={async (blockType) => {
+              try {
+                const { createBlock } = await import('@/lib/firebase/firestore');
+                await createBlock({
+                  columnId: column.id,
+                  type: blockType,
+                  props: {},
+                });
+                // Sayfayı yeniden yükle
+                window.dispatchEvent(new CustomEvent('section-updated', { detail: { sectionId: 'any' } }));
+              } catch (error) {
+                console.error('Block ekleme hatası:', error);
+              }
+            }}
+          />
         )}
       </div>
     </div>
   );
 }
 
-function EmptyColumn() {
+interface EmptyColumnProps {
+  onAddBlock: (blockType: BlockType) => Promise<void>;
+}
+
+function EmptyColumn({ onAddBlock }: EmptyColumnProps) {
+  const [isAdding, setIsAdding] = useState(false);
+
+  const handleAddImage = async (e: React.MouseEvent) => {
+    e.stopPropagation(); // Column seçimini engelle
+    setIsAdding(true);
+    try {
+      await onAddBlock('image');
+    } catch (error) {
+      console.error('Görsel ekleme hatası:', error);
+    } finally {
+      setIsAdding(false);
+    }
+  };
+
   return (
     <div className="text-center py-8 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg">
-      <p className="text-xs text-gray-400 dark:text-gray-500 mb-2">
-        Buraya blok sürükleyin
+      <p className="text-xs text-gray-400 dark:text-gray-500 mb-4">
+        Buraya blok sürükleyin veya hızlı ekleme butonunu kullanın
       </p>
-      <div className="flex items-center justify-center gap-1 text-gray-300 dark:text-gray-600">
-        <Plus className="w-3 h-3" />
-        <span className="text-xs">Blok ekle</span>
+      <div className="flex flex-col items-center gap-2">
+        <button
+          onClick={handleAddImage}
+          disabled={isAdding}
+          className={cn(
+            'flex items-center justify-center gap-2 px-4 py-2 bg-primary-500 hover:bg-primary-600 text-white rounded-lg transition-colors text-sm font-medium',
+            isAdding && 'opacity-50 cursor-not-allowed'
+          )}
+        >
+          <ImageIcon className="w-4 h-4" />
+          {isAdding ? 'Ekleniyor...' : 'Görsel Ekle'}
+        </button>
+        <p className="text-xs text-gray-400 dark:text-gray-500 mt-2">
+          Veya sol panelden blok sürükleyip bırakın
+        </p>
       </div>
     </div>
   );

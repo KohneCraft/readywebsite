@@ -114,6 +114,8 @@ export function CenterCanvas({
                   index={index}
                   isSelected={selectedElement?.type === 'section' && selectedElement.id === section.id}
                   onSelect={() => onSelectElement({ type: 'section', id: section.id })}
+                  selectedElement={selectedElement}
+                  onSelectElement={onSelectElement}
                 />
               ))
             ) : (

@@ -623,8 +623,10 @@ function docToPage(docSnap: DocumentSnapshot): Page | null {
   return {
     ...data,
     id: docSnap.id,
+    status: data.status || 'published', // Varsayılan status (geriye dönük uyumluluk)
     createdAt: convertTimestamp(data.createdAt),
     updatedAt: convertTimestamp(data.updatedAt),
+    publishedAt: data.publishedAt ? convertTimestamp(data.publishedAt) : undefined,
   } as Page;
 }
 
@@ -680,8 +682,10 @@ export async function createPage(input: PageCreateInput): Promise<string> {
   const docRef = await addDoc(collection(db, COLLECTIONS.pages), {
     ...input,
     sections: [],
+    status: 'published', // Varsayılan olarak published (sayfa oluşturulur oluşturulmaz görünür)
     createdAt: serverTimestamp(),
     updatedAt: serverTimestamp(),
+    publishedAt: serverTimestamp(), // Yayınlanma tarihi
   });
   
   return docRef.id;
@@ -944,9 +948,56 @@ export async function updateBlock(id: string, input: BlockUpdateInput): Promise<
 }
 
 /**
+ * Block kopyala (duplicate)
+ * Block'u kopyalar ve aynı column'a ekler
+ */
+export async function duplicateBlock(blockId: string): Promise<string> {
+  // Orijinal block'u getir
+  const originalBlock = await getBlockById(blockId);
+  if (!originalBlock) {
+    throw new Error('Block bulunamadı');
+  }
+
+  // Yeni block oluştur (aynı column'a)
+  const newBlockId = await createBlock({
+    columnId: originalBlock.columnId,
+    type: originalBlock.type,
+    props: { ...originalBlock.props }, // Props'ları kopyala
+    order: (originalBlock.order || 0) + 1, // Orijinal block'un hemen altına ekle
+  });
+
+  return newBlockId;
+}
+
+/**
  * Block sil
+ * Block'u silerken column'dan da çıkarır
  */
 export async function deleteBlock(id: string): Promise<void> {
+  // Block'u getir
+  const blockDoc = await getDoc(doc(db, COLLECTIONS.blocks, id));
+  const blockData = blockDoc.data();
+  
+  if (!blockData) return;
+  
+  const columnId = blockData.columnId;
+  
+  // Column'dan block'u çıkar
+  if (columnId) {
+    const columnRef = doc(db, COLLECTIONS.columns, columnId);
+    const columnDoc = await getDoc(columnRef);
+    const columnData = columnDoc.data();
+    
+    if (columnData) {
+      const newBlocks = (columnData.blocks || []).filter((blockId: string) => blockId !== id);
+      await updateDoc(columnRef, {
+        blocks: newBlocks,
+        updatedAt: serverTimestamp(),
+      });
+    }
+  }
+  
+  // Block'u sil
   await deleteDoc(doc(db, COLLECTIONS.blocks, id));
 }
 

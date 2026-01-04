@@ -18,6 +18,8 @@ interface SectionEditorProps {
   index: number;
   isSelected: boolean;
   onSelect: () => void;
+  selectedElement?: { type: 'section' | 'column' | 'block'; id: string } | null;
+  onSelectElement?: (element: { type: 'section' | 'column' | 'block'; id: string } | null) => void;
 }
 
 export function SectionEditor({
@@ -25,6 +27,8 @@ export function SectionEditor({
   index,
   isSelected,
   onSelect,
+  selectedElement,
+  onSelectElement,
 }: SectionEditorProps) {
   const [columns, setColumns] = useState<Column[]>([]);
   const [isHovered, setIsHovered] = useState(false);
@@ -191,10 +195,14 @@ export function SectionEditor({
                 key={column.id}
                 column={column}
                 index={colIndex}
-                isSelected={false} // TODO: selectedElement kontrolü
+                isSelected={selectedElement?.type === 'column' && selectedElement.id === column.id}
                 onSelect={() => {
-                  // Column seçme
+                  if (onSelectElement) {
+                    onSelectElement({ type: 'column', id: column.id });
+                  }
                 }}
+                selectedElement={selectedElement}
+                onSelectElement={onSelectElement}
               />
             ))
           ) : (

@@ -55,7 +55,9 @@ export function PageRenderer({ pageId, slug, allowDraft = false }: PageRendererP
         });
         
         // Status kontrolü (preview modunda taslak sayfalar da görüntülenebilir)
-        if (!allowDraft && pageData.status !== 'published') {
+        // Eğer status yoksa veya undefined ise, published olarak kabul et (geriye dönük uyumluluk)
+        const pageStatus = pageData.status || 'published';
+        if (!allowDraft && pageStatus !== 'published') {
           setError('Bu sayfa henüz yayınlanmamış');
           return;
         }
