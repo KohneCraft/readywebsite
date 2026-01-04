@@ -26,24 +26,27 @@ export default function MediaManagerPage() {
   const [previewItem, setPreviewItem] = useState<Media | null>(null);
   const [userId, setUserId] = useState<string | null>(null);
   const [authError, setAuthError] = useState<string | null>(null);
+  const [isFirebaseAuth, setIsFirebaseAuth] = useState(false);
 
   // Kullanıcı ID'sini al - Firebase Auth'dan
   useEffect(() => {
     const unsubscribe = onAuthStateChanged((user) => {
       if (user) {
         setUserId(user.uid);
+        setIsFirebaseAuth(true);
         setAuthError(null);
       } else {
         // Firebase Auth'da kullanıcı yok
+        setIsFirebaseAuth(false);
         // Geçici session kontrolü
         const tempSession = localStorage.getItem('temp_admin_session');
         if (tempSession) {
           const session = JSON.parse(tempSession);
           setUserId(session.id || 'temp-admin-001');
-          setAuthError('Firebase Auth girişi gerekli. Lütfen admin paneline giriş yapın.');
+          setAuthError('⚠️ Medya yüklemek için Firebase Auth ile giriş yapmanız gerekiyor. Geçici oturum medya yükleme için yeterli değil.');
         } else {
           setUserId(null);
-          setAuthError('Kullanıcı bulunamadı. Lütfen giriş yapın.');
+          setAuthError('❌ Kullanıcı bulunamadı. Lütfen admin paneline giriş yapın.');
         }
       }
     });
@@ -79,15 +82,15 @@ export default function MediaManagerPage() {
 
   // Dosya yükleme
   const handleUpload = async (files: File[]) => {
-    // Firebase Auth kontrolü
+    // Firebase Auth kontrolü - ZORUNLU
     const currentUser = getCurrentUser();
     if (!currentUser) {
-      alert('Firebase Auth girişi gerekli. Lütfen sayfayı yenileyin veya admin paneline giriş yapın.');
+      alert('❌ Medya yüklemek için Firebase Auth ile giriş yapmanız gerekiyor.\n\nGeçici oturum medya yükleme için yeterli değil.\n\nLütfen admin paneline Firebase Auth ile giriş yapın.');
       return;
     }
 
-    if (!userId) {
-      alert('Kullanıcı bulunamadı. Lütfen giriş yapın.');
+    if (!userId || !isFirebaseAuth) {
+      alert('❌ Kullanıcı doğrulaması başarısız. Lütfen sayfayı yenileyin ve Firebase Auth ile giriş yapın.');
       return;
     }
 
@@ -205,8 +208,16 @@ export default function MediaManagerPage() {
         {authError && (
           <div className="mt-4 p-4 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg">
             <p className="text-sm text-yellow-800 dark:text-yellow-200">
-              ⚠️ {authError}
+              {authError}
             </p>
+            {!isFirebaseAuth && (
+              <a
+                href="/admin/login"
+                className="mt-2 inline-block text-sm text-yellow-900 dark:text-yellow-100 underline hover:text-yellow-700 dark:hover:text-yellow-300"
+              >
+                → Firebase Auth ile giriş yapmak için tıklayın
+              </a>
+            )}
           </div>
         )}
       </div>
@@ -251,7 +262,7 @@ export default function MediaManagerPage() {
         <MediaUploader
           accept={activeTab === 'image' ? 'image/*' : 'video/*'}
           onUpload={handleUpload}
-          disabled={uploading || !userId}
+          disabled={uploading || !isFirebaseAuth}
         />
 
         {/* Filters */}
