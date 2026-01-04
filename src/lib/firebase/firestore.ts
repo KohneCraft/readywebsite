@@ -1311,7 +1311,7 @@ export async function installTheme(themeData: ThemeData, createdBy: string): Pro
     const pageId = await createPage({
       title: pageConfig.title,
       slug: pageConfig.slug,
-      settings: metadata.settings || {},
+      settings: {}, // PageSettings boş olarak başlatılır, tema ayarları siteSettings'te tutulur
       author: createdBy,
     });
     
@@ -1380,23 +1380,93 @@ export async function installTheme(themeData: ThemeData, createdBy: string): Pro
     console.log(`  Section ID'leri:`, sectionIds);
   }
   
-  // Site settings'i tema ayarlarıyla güncelle (Header/Footer özelleştirmeleri)
-  // Aktif tema bilgisini kaydet
+  // Site settings'i tema ayarlarıyla güncelle (Header/Footer özelleştirmeleri + Company/Contact/Social/SEO)
+  // Aktif tema bilgisini kaydet ve tema bilgilerini siteSettings'e uygula
   try {
     const currentSettings = await getSiteSettings();
     const existingThemeId = existingTheme ? existingTheme.id : null;
+    const themeSettings = metadata.settings || {};
+    
+    // Tema bilgilerini siteSettings formatına çevir
+    const themeCompanyInfo = themeSettings.company || {};
+    const themeContactInfo = themeSettings.contact || {};
+    const themeSocialInfo = themeSettings.social || {};
+    const themeSeoInfo = themeSettings.seo || {};
+    
     await updateSiteSettings({
       ...currentSettings,
       // Aktif tema bilgisini kaydet
       activeThemeId: existingThemeId || metadata.id,
       activeThemeName: metadata.name,
-      // Tema renklerini site settings'e uygula
+      // Company bilgileri (tema'dan gelen bilgilerle güncelle, yoksa mevcut değerleri koru)
+      siteName: themeCompanyInfo.name 
+        ? { tr: themeCompanyInfo.name, en: themeCompanyInfo.name, de: themeCompanyInfo.name, fr: themeCompanyInfo.name }
+        : currentSettings.siteName,
+      siteSlogan: themeCompanyInfo.slogan
+        ? { tr: themeCompanyInfo.slogan, en: themeCompanyInfo.slogan, de: themeCompanyInfo.slogan, fr: themeCompanyInfo.slogan }
+        : currentSettings.siteSlogan,
+      logo: themeCompanyInfo.logo
+        ? {
+            ...currentSettings.logo,
+            light: { ...currentSettings.logo.light, url: themeCompanyInfo.logo },
+            dark: { ...currentSettings.logo.dark, url: themeCompanyInfo.logo },
+          }
+        : currentSettings.logo,
+      // İletişim bilgileri
+      contact: {
+        ...currentSettings.contact,
+        email: themeContactInfo.email || currentSettings.contact.email,
+        phones: themeContactInfo.phone ? [themeContactInfo.phone] : currentSettings.contact.phones,
+        address: themeContactInfo.address 
+          ? {
+              tr: themeContactInfo.address,
+              en: themeContactInfo.address,
+              de: themeContactInfo.address,
+              fr: themeContactInfo.address,
+            }
+          : currentSettings.contact.address,
+      },
+      // Sosyal medya linkleri
+      socialLinks: {
+        ...currentSettings.socialLinks,
+        facebook: themeSocialInfo.facebook || currentSettings.socialLinks.facebook,
+        instagram: themeSocialInfo.instagram || currentSettings.socialLinks.instagram,
+        twitter: themeSocialInfo.twitter || currentSettings.socialLinks.twitter,
+        linkedin: themeSocialInfo.linkedin || currentSettings.socialLinks.linkedin,
+        youtube: themeSocialInfo.youtube || currentSettings.socialLinks.youtube,
+      },
+      // SEO bilgileri
       seo: {
         ...currentSettings.seo,
-        // Tema ayarlarından SEO bilgileri eklenebilir
+        titleTemplate: themeSeoInfo.metaTitle
+          ? {
+              tr: themeSeoInfo.metaTitle,
+              en: themeSeoInfo.metaTitle,
+              de: themeSeoInfo.metaTitle,
+              fr: themeSeoInfo.metaTitle,
+            }
+          : currentSettings.seo.titleTemplate,
+        defaultDescription: themeSeoInfo.metaDescription
+          ? {
+              tr: themeSeoInfo.metaDescription,
+              en: themeSeoInfo.metaDescription,
+              de: themeSeoInfo.metaDescription,
+              fr: themeSeoInfo.metaDescription,
+            }
+          : currentSettings.seo.defaultDescription,
+        keywords: themeSeoInfo.metaKeywords
+          ? {
+              tr: themeSeoInfo.metaKeywords.split(',').map(k => k.trim()),
+              en: themeSeoInfo.metaKeywords.split(',').map(k => k.trim()),
+              de: themeSeoInfo.metaKeywords.split(',').map(k => k.trim()),
+              fr: themeSeoInfo.metaKeywords.split(',').map(k => k.trim()),
+            }
+          : currentSettings.seo.keywords,
+        googleAnalyticsId: themeSeoInfo.googleAnalyticsId || currentSettings.seo.googleAnalyticsId,
       },
     }, createdBy);
     console.log('✓ Site settings tema ayarlarıyla güncellendi (aktif tema:', metadata.name, ')');
+    console.log('✓ Company, Contact, Social, SEO bilgileri tema\'dan yüklendi');
   } catch (error) {
     console.warn('Site settings güncellenirken hata (normal olabilir):', error);
   }

@@ -25,6 +25,8 @@ import {
 import { cn } from '@/lib/utils';
 import { Spinner } from '@/components/ui/Spinner';
 import { onAuthStateChanged, signOut as firebaseSignOut, getUserProfile } from '@/lib/firebase/auth';
+import { getSiteSettings } from '@/lib/firebase/firestore';
+import Image from 'next/image';
 import type { Locale } from '@/i18n';
 import type { User as UserType } from '@/types';
 
@@ -66,6 +68,8 @@ export default function AdminLayout({
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
+  const [adminTitle, setAdminTitle] = useState<string>('Page Builder');
+  const [adminIcon, setAdminIcon] = useState<string>('');
 
   // Check if on login page
   const isLoginPage = pathname?.includes('/admin/login');
@@ -136,6 +140,34 @@ export default function AdminLayout({
 
     return () => unsubscribe();
   }, [locale, router, isLoginPage]);
+
+  // Admin panel başlık ve icon'u yükle
+  useEffect(() => {
+    async function loadAdminSettings() {
+      try {
+        const settings = await getSiteSettings();
+        if (settings?.adminTitle) {
+          setAdminTitle(settings.adminTitle);
+        }
+        if (settings?.adminIcon) {
+          setAdminIcon(settings.adminIcon);
+        }
+      } catch (error) {
+        console.error('Admin ayarları yükleme hatası:', error);
+      }
+    }
+    loadAdminSettings();
+    
+    // Theme güncellemelerini dinle
+    const handleThemeUpdate = () => {
+      loadAdminSettings();
+    };
+    window.addEventListener('theme-updated', handleThemeUpdate);
+    
+    return () => {
+      window.removeEventListener('theme-updated', handleThemeUpdate);
+    };
+  }, []);
 
   const logout = async () => {
     try {
@@ -221,10 +253,23 @@ export default function AdminLayout({
           <div className="h-16 flex items-center justify-between px-4 border-b border-gray-200 dark:border-gray-700">
             {isSidebarOpen && (
               <Link href={getLocalizedHref('/admin')} className="flex items-center gap-2">
-                <div className="w-8 h-8 bg-primary-600 rounded-lg flex items-center justify-center">
-                  <span className="text-white font-bold text-lg">V</span>
-                </div>
-                <span className="font-bold text-gray-900 dark:text-white">Admin</span>
+                {adminIcon ? (
+                  <div className="w-8 h-8 rounded-lg overflow-hidden flex items-center justify-center">
+                    <Image
+                      src={adminIcon}
+                      alt={adminTitle}
+                      width={32}
+                      height={32}
+                      className="w-full h-full object-contain"
+                      unoptimized
+                    />
+                  </div>
+                ) : (
+                  <div className="w-8 h-8 bg-primary-600 rounded-lg flex items-center justify-center">
+                    <span className="text-white font-bold text-lg">V</span>
+                  </div>
+                )}
+                <span className="font-bold text-gray-900 dark:text-white">{adminTitle}</span>
               </Link>
             )}
             <button

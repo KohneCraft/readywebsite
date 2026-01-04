@@ -296,6 +296,7 @@ export interface SectionSettings {
   maxWidth?: number;
   columnGap?: number;
   columnDistribution?: 'equal' | 'custom';
+  columnLayout?: 'row' | 'column'; // 'row' = yan yana, 'column' = alt alta
   
   // Background
   backgroundColor?: string;

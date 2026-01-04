@@ -54,6 +54,34 @@ export const constructionTheme: ThemeData = {
       fontFamily: 'Inter',
       header: constructionHeader,
       footer: constructionFooter,
+      // Company bilgileri
+      company: {
+        name: 'Vav İnşaat',
+        slogan: 'Güvenilir İnşaat Çözümleri',
+        logo: '/themes/construction/logo.svg',
+      },
+      // İletişim bilgileri
+      contact: {
+        email: 'info@vavinsaat.com',
+        phone: '+90 212 123 4567',
+        address: 'Levent, İstanbul, Türkiye',
+        mapUrl: '',
+      },
+      // Sosyal medya
+      social: {
+        facebook: 'https://facebook.com/vavinsaat',
+        instagram: 'https://instagram.com/vavinsaat',
+        twitter: '',
+        linkedin: 'https://linkedin.com/company/vavinsaat',
+        youtube: 'https://youtube.com/@vavinsaat',
+      },
+      // SEO
+      seo: {
+        metaTitle: 'Vav İnşaat | İnşaat ve Müteahhitlik',
+        metaDescription: 'Güvenilir ve kaliteli inşaat hizmetleri. Konut, ticari ve endüstriyel projeleriniz için profesyonel çözümler.',
+        metaKeywords: 'inşaat, müteahhitlik, konut, ticari, endüstriyel',
+        googleAnalyticsId: '',
+      },
     },
   },
   pages: {

@@ -237,6 +237,10 @@ export interface SiteSettings {
   activeThemeId?: string;
   activeThemeName?: string;
   
+  // Admin panel ayarları
+  adminTitle?: string;
+  adminIcon?: string;
+  
   // Metadata
   updatedAt: Date;
   updatedBy: string;

@@ -34,6 +34,10 @@ import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Spinner } from '@/components/ui/Spinner';
 import { cn } from '@/lib/utils';
+import { getSiteSettings, updateSiteSettings } from '@/lib/firebase/firestore';
+import { getCurrentUser } from '@/lib/firebase/auth';
+import { MediaSelector } from '@/components/pageBuilder/admin/media/MediaSelector';
+import { uploadMedia } from '@/lib/firebase/media';
 
 // Form schema
 const settingsSchema = z.object({
@@ -112,11 +116,13 @@ export default function AdminSettingsPage() {
   const [saved, setSaved] = useState(false);
   const [activeTab, setActiveTab] = useState<TabKey>('company');
   const [logoPreview, setLogoPreview] = useState<string | null>(null);
+  const [isMediaSelectorOpen, setIsMediaSelectorOpen] = useState(false);
 
   const {
     register,
     handleSubmit,
     reset,
+    getValues,
     formState: { errors, isDirty },
   } = useForm<SettingsFormData>({
     resolver: zodResolver(settingsSchema),
@@ -124,33 +130,219 @@ export default function AdminSettingsPage() {
   });
 
   useEffect(() => {
-    // In production, fetch settings from Firestore
+    // Firestore'dan ayarları yükle
     const loadSettings = async () => {
-      await new Promise(resolve => setTimeout(resolve, 500));
-      reset(defaultSettings);
-      setIsLoading(false);
+      try {
+        setIsLoading(true);
+        const settings = await getSiteSettings();
+        
+        // SiteSettings'i SettingsFormData formatına çevir
+        const formData: SettingsFormData = {
+          company: {
+            name: settings.siteName?.tr || defaultSettings.company.name,
+            slogan: settings.siteSlogan?.tr || defaultSettings.company.slogan,
+            logo: settings.logo?.light?.url || defaultSettings.company.logo,
+          },
+          contact: {
+            email: settings.contact?.email || defaultSettings.contact.email,
+            phone: settings.contact?.phones?.[0] || defaultSettings.contact.phone,
+            address: settings.contact?.address?.tr || defaultSettings.contact.address,
+            mapUrl: defaultSettings.contact.mapUrl,
+          },
+          social: {
+            facebook: settings.socialLinks?.facebook || defaultSettings.social.facebook,
+            instagram: settings.socialLinks?.instagram || defaultSettings.social.instagram,
+            twitter: settings.socialLinks?.twitter || defaultSettings.social.twitter,
+            linkedin: settings.socialLinks?.linkedin || defaultSettings.social.linkedin,
+            youtube: settings.socialLinks?.youtube || defaultSettings.social.youtube,
+          },
+          seo: {
+            metaTitle: settings.seo?.titleTemplate?.tr || defaultSettings.seo.metaTitle,
+            metaDescription: settings.seo?.defaultDescription?.tr || defaultSettings.seo.metaDescription,
+            metaKeywords: settings.seo?.keywords?.tr?.join(', ') || defaultSettings.seo.metaKeywords,
+            googleAnalyticsId: settings.seo?.googleAnalyticsId || defaultSettings.seo.googleAnalyticsId,
+          },
+          maintenance: {
+            enabled: settings.maintenance?.enabled || defaultSettings.maintenance.enabled,
+            message: settings.maintenance?.message?.tr || defaultSettings.maintenance.message,
+            allowedIPs: settings.maintenance?.allowedIPs?.join(', ') || defaultSettings.maintenance.allowedIPs,
+          },
+        };
+        
+        reset(formData);
+        setLogoPreview(formData.company.logo || null);
+      } catch (error) {
+        console.error('Ayarlar yüklenirken hata:', error);
+        reset(defaultSettings);
+      } finally {
+        setIsLoading(false);
+      }
     };
+    
     loadSettings();
+    
+    // Tema güncellemelerini dinle
+    const handleThemeUpdate = () => {
+      loadSettings();
+    };
+    window.addEventListener('theme-updated', handleThemeUpdate);
+    
+    return () => {
+      window.removeEventListener('theme-updated', handleThemeUpdate);
+    };
   }, [reset]);
 
   const onSubmit = async (data: SettingsFormData) => {
     setIsSaving(true);
     try {
-      // In production, save to Firestore
-      console.log('Saving settings:', data);
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      const user = await getCurrentUser();
+      if (!user) {
+        alert('Lütfen giriş yapın');
+        return;
+      }
+      
+      // SettingsFormData'yı SiteSettings formatına çevir
+      const currentSettings = await getSiteSettings();
+      
+      await updateSiteSettings({
+        ...currentSettings,
+        // Company bilgileri
+        siteName: {
+          tr: data.company.name,
+          en: data.company.name,
+          de: data.company.name,
+          fr: data.company.name,
+        },
+        siteSlogan: {
+          tr: data.company.slogan || '',
+          en: data.company.slogan || '',
+          de: data.company.slogan || '',
+          fr: data.company.slogan || '',
+        },
+        logo: {
+          ...currentSettings.logo,
+          light: {
+            ...currentSettings.logo.light,
+            url: data.company.logo || '',
+          },
+          dark: {
+            ...currentSettings.logo.dark,
+            url: data.company.logo || '',
+          },
+        },
+        // İletişim bilgileri
+        contact: {
+          ...currentSettings.contact,
+          email: data.contact.email,
+          phones: data.contact.phone ? [data.contact.phone] : [],
+          address: {
+            tr: data.contact.address || '',
+            en: data.contact.address || '',
+            de: data.contact.address || '',
+            fr: data.contact.address || '',
+          },
+        },
+        // Sosyal medya
+        socialLinks: {
+          facebook: data.social.facebook || '',
+          instagram: data.social.instagram || '',
+          twitter: data.social.twitter || '',
+          linkedin: data.social.linkedin || '',
+          youtube: data.social.youtube || '',
+        },
+        // SEO
+        seo: {
+          ...currentSettings.seo,
+          titleTemplate: {
+            tr: data.seo.metaTitle || '',
+            en: data.seo.metaTitle || '',
+            de: data.seo.metaTitle || '',
+            fr: data.seo.metaTitle || '',
+          },
+          defaultDescription: {
+            tr: data.seo.metaDescription || '',
+            en: data.seo.metaDescription || '',
+            de: data.seo.metaDescription || '',
+            fr: data.seo.metaDescription || '',
+          },
+          keywords: {
+            tr: data.seo.metaKeywords ? data.seo.metaKeywords.split(',').map(k => k.trim()) : [],
+            en: data.seo.metaKeywords ? data.seo.metaKeywords.split(',').map(k => k.trim()) : [],
+            de: data.seo.metaKeywords ? data.seo.metaKeywords.split(',').map(k => k.trim()) : [],
+            fr: data.seo.metaKeywords ? data.seo.metaKeywords.split(',').map(k => k.trim()) : [],
+          },
+          googleAnalyticsId: data.seo.googleAnalyticsId || '',
+        },
+        // Bakım modu
+        maintenance: {
+          enabled: data.maintenance.enabled,
+          message: {
+            tr: data.maintenance.message || '',
+            en: data.maintenance.message || '',
+            de: data.maintenance.message || '',
+            fr: data.maintenance.message || '',
+          },
+          allowedIPs: data.maintenance.allowedIPs ? data.maintenance.allowedIPs.split(',').map(ip => ip.trim()) : [],
+        },
+      }, user.uid);
+      
       setSaved(true);
       setTimeout(() => setSaved(false), 3000);
+      
+      // Theme güncellemesi bildir (header/footer güncellenebilir)
+      window.dispatchEvent(new CustomEvent('theme-updated'));
     } catch (error) {
-      console.error('Failed to save settings:', error);
+      console.error('Ayarlar kaydedilirken hata:', error);
+      alert('Ayarlar kaydedilirken bir hata oluştu');
     } finally {
       setIsSaving(false);
     }
   };
 
-  const handleLogoUpload = () => {
-    // In production, open file picker and upload to Firebase Storage
-    setLogoPreview('/logo.png');
+  const handleLogoUpload = async () => {
+    setIsMediaSelectorOpen(true);
+  };
+
+  const handleLogoSelect = async (mediaUrl: string) => {
+    setLogoPreview(mediaUrl);
+    // Form'u güncelle - mevcut form değerlerini al
+    const formValues = getValues();
+    reset({
+      ...formValues,
+      company: {
+        ...formValues.company,
+        logo: mediaUrl,
+      },
+    });
+    setIsMediaSelectorOpen(false);
+  };
+
+  const handleLogoFileUpload = async (file: File) => {
+    try {
+      setIsSaving(true);
+      const user = await getCurrentUser();
+      if (!user) {
+        alert('Lütfen giriş yapın');
+        return;
+      }
+
+      const uploadedMedia = await uploadMedia(file, 'image', user.uid);
+      setLogoPreview(uploadedMedia.url);
+      // Form'u güncelle
+      const formValues = getValues();
+      reset({
+        ...formValues,
+        company: {
+          ...formValues.company,
+          logo: uploadedMedia.url,
+        },
+      });
+    } catch (error) {
+      console.error('Logo yükleme hatası:', error);
+      alert('Logo yüklenirken bir hata oluştu');
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   const tabs: { key: TabKey; label: string; icon: React.ElementType }[] = [
@@ -256,14 +448,32 @@ export default function AdminSettingsPage() {
                             <Building2 className="w-8 h-8 text-gray-400" />
                           </div>
                         )}
-                        <Button
-                          type="button"
-                          variant="outline"
-                          onClick={handleLogoUpload}
-                        >
-                          <Upload className="w-4 h-4 mr-2" />
-                          Logo Yükle
-                        </Button>
+                        <div className="flex gap-2">
+                          <Button
+                            type="button"
+                            variant="outline"
+                            onClick={handleLogoUpload}
+                          >
+                            <Upload className="w-4 h-4 mr-2" />
+                            Medyadan Seç
+                          </Button>
+                          <label className="cursor-pointer">
+                            <input
+                              type="file"
+                              accept="image/*"
+                              onChange={(e) => {
+                                const file = e.target.files?.[0];
+                                if (file) {
+                                  handleLogoFileUpload(file);
+                                }
+                              }}
+                              className="hidden"
+                            />
+                            <div className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors text-sm font-medium text-gray-700 dark:text-gray-300">
+                              Dosya Yükle
+                            </div>
+                          </label>
+                        </div>
                       </div>
                     </div>
 
@@ -588,6 +798,16 @@ export default function AdminSettingsPage() {
           </div>
         </div>
       </form>
+
+      {/* Media Selector Modal */}
+      {isMediaSelectorOpen && (
+        <MediaSelector
+          isOpen={isMediaSelectorOpen}
+          onClose={() => setIsMediaSelectorOpen(false)}
+          onSelect={(media) => handleLogoSelect(media.url)}
+          type="image"
+        />
+      )}
     </div>
   );
 }

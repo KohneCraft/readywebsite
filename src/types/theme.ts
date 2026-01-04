@@ -61,6 +61,34 @@ export interface ThemeSettings {
     backgroundColor?: string;
     textColor?: string;
   };
+  // Company bilgileri (Admin Settings için)
+  company?: {
+    name?: string;
+    slogan?: string;
+    logo?: string;
+  };
+  // İletişim bilgileri
+  contact?: {
+    email?: string;
+    phone?: string;
+    address?: string;
+    mapUrl?: string;
+  };
+  // Sosyal medya linkleri
+  social?: {
+    facebook?: string;
+    instagram?: string;
+    twitter?: string;
+    linkedin?: string;
+    youtube?: string;
+  };
+  // SEO bilgileri
+  seo?: {
+    metaTitle?: string;
+    metaDescription?: string;
+    metaKeywords?: string;
+    googleAnalyticsId?: string;
+  };
   [key: string]: any;
 }
 

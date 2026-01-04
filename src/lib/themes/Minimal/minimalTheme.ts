@@ -30,6 +30,34 @@ export const minimalTheme: ThemeData = {
       fontFamily: 'Helvetica',
       header: headerConfig,
       footer: footerConfig,
+      // Company bilgileri
+      company: {
+        name: 'Minimal',
+        slogan: 'Sade ve Şık',
+        logo: headerConfig.logo || '',
+      },
+      // İletişim bilgileri
+      contact: {
+        email: 'info@minimal.com',
+        phone: '+90 212 123 4567',
+        address: 'İstanbul, Türkiye',
+        mapUrl: '',
+      },
+      // Sosyal medya
+      social: {
+        facebook: '',
+        instagram: 'https://instagram.com/minimal',
+        twitter: '',
+        linkedin: '',
+        youtube: '',
+      },
+      // SEO
+      seo: {
+        metaTitle: 'Minimal | Sade ve Şık Tasarım',
+        metaDescription: 'Sade ve şık tasarım çözümleri. Minimalist yaklaşım ile modern web siteleri.',
+        metaKeywords: 'minimal, tasarım, sade, şık',
+        googleAnalyticsId: '',
+      },
     },
   },
   pages: {
