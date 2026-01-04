@@ -20,7 +20,9 @@ function getDeviceType(): Breakpoint {
 
 export function ColumnRenderer({ columnId, index }: ColumnRendererProps) {
   const [column, setColumn] = useState<Column | null>(null);
+  const [nestedColumns, setNestedColumns] = useState<Column[]>([]);
   const [loading, setLoading] = useState(true);
+  const [nestedColumnsLoading, setNestedColumnsLoading] = useState(false);
   
   useEffect(() => {
     async function loadColumn() {
@@ -40,6 +42,33 @@ export function ColumnRenderer({ columnId, index }: ColumnRendererProps) {
     }
     loadColumn();
   }, [columnId]);
+
+  // Nested columns'ları yükle
+  useEffect(() => {
+    async function loadNestedColumns() {
+      if (!column?.columns || column.columns.length === 0) {
+        setNestedColumns([]);
+        setNestedColumnsLoading(false);
+        return;
+      }
+
+      try {
+        setNestedColumnsLoading(true);
+        const columnPromises = column.columns.map(nestedColumnId => getColumnById(nestedColumnId));
+        const loadedColumns = await Promise.all(columnPromises);
+        setNestedColumns(loadedColumns.filter(Boolean) as Column[]);
+      } catch (error) {
+        console.error(`Nested column yükleme hatası (${columnId}):`, error);
+        setNestedColumns([]);
+      } finally {
+        setNestedColumnsLoading(false);
+      }
+    }
+
+    if (column) {
+      loadNestedColumns();
+    }
+  }, [column]);
   
   const deviceType = useMemo(() => getDeviceType(), []);
   
@@ -71,7 +100,17 @@ export function ColumnRenderer({ columnId, index }: ColumnRendererProps) {
   const padding = responsiveSettings.padding || settings.padding || { top: 0, right: 0, bottom: 0, left: 0 };
   
   // Grid column span hesapla (width yüzde olarak geliyor, grid'de fr olarak kullanılacak)
+  // NOT: SectionRenderer'da artık gridTemplateColumns kullanılıyor, bu yüzden gridColumnSpan kullanılmıyor
+  // Ancak geriye dönük uyumluluk için bırakıyoruz
   const gridColumnSpan = columnWidth ? `span ${Math.round((columnWidth / 100) * 12)}` : 'span 12';
+  
+  // Nested columns için grid template
+  const nestedGridTemplate = nestedColumns.length > 0
+    ? nestedColumns.map(col => {
+        const width = col.width || (100 / nestedColumns.length);
+        return `${width}fr`;
+      }).join(' ')
+    : '1fr';
   
   const columnStyle: React.CSSProperties = {
     backgroundColor: settings.backgroundColor,
@@ -102,18 +141,45 @@ export function ColumnRenderer({ columnId, index }: ColumnRendererProps) {
       style={columnStyle}
       data-column-index={index ?? 0}
     >
-      {column.blocks?.map((blockId, blockIndex) => (
-        <BlockRenderer 
-          key={blockId} 
-          blockId={blockId}
-          index={blockIndex}
-        />
-      ))}
-      
-      {column.blocks?.length === 0 && (
-        <div className="empty-column-placeholder">
-          {/* Boş kolon - sadece admin görür */}
+      {/* Nested columns varsa, onları göster */}
+      {nestedColumnsLoading ? (
+        <div className="text-center py-4 text-gray-500 dark:text-gray-400 text-sm">
+          İç kolonlar yükleniyor...
         </div>
+      ) : nestedColumns.length > 0 ? (
+        <div
+          className="nested-columns-wrapper grid gap-2"
+          style={{
+            gridTemplateColumns: nestedGridTemplate,
+          }}
+        >
+          {nestedColumns.map((nestedCol, nestedIndex) => (
+            <ColumnRenderer
+              key={nestedCol.id}
+              columnId={nestedCol.id}
+              index={nestedIndex}
+            />
+          ))}
+        </div>
+      ) : null}
+      
+      {/* Blocks render et (nested column'ların altında veya yanında) */}
+      {!nestedColumnsLoading && (
+        <>
+          {column.blocks?.map((blockId, blockIndex) => (
+            <BlockRenderer 
+              key={blockId} 
+              blockId={blockId}
+              index={blockIndex}
+            />
+          ))}
+          
+          {column.blocks?.length === 0 && nestedColumns.length === 0 && (
+            <div className="empty-column-placeholder">
+              {/* Boş kolon - sadece admin görür */}
+            </div>
+          )}
+        </>
       )}
     </div>
   );

@@ -2,8 +2,8 @@
 
 import { useState, useEffect, useMemo } from 'react';
 import { ColumnRenderer } from './ColumnRenderer';
-import { getSectionById } from '@/lib/firebase/firestore';
-import type { Section, Breakpoint } from '@/types/pageBuilder';
+import { getSectionById, getColumnById } from '@/lib/firebase/firestore';
+import type { Section, Breakpoint, Column } from '@/types/pageBuilder';
 
 interface SectionRendererProps {
   sectionId: string;
@@ -19,6 +19,7 @@ function getDeviceType(): Breakpoint {
 
 export function SectionRenderer({ sectionId }: SectionRendererProps) {
   const [section, setSection] = useState<Section | null>(null);
+  const [columns, setColumns] = useState<Column[]>([]);
   const [isVisible, setIsVisible] = useState(false);
   const [loading, setLoading] = useState(true);
   
@@ -40,6 +41,29 @@ export function SectionRenderer({ sectionId }: SectionRendererProps) {
     }
     loadSection();
   }, [sectionId]);
+
+  // Column'ları yükle (width bilgileri için)
+  useEffect(() => {
+    async function loadColumns() {
+      if (!section?.columns || section.columns.length === 0) {
+        setColumns([]);
+        return;
+      }
+
+      try {
+        const columnPromises = section.columns.map(columnId => getColumnById(columnId));
+        const loadedColumns = await Promise.all(columnPromises);
+        setColumns(loadedColumns.filter(Boolean) as Column[]);
+      } catch (error) {
+        console.error('Column yükleme hatası:', error);
+        setColumns([]);
+      }
+    }
+
+    if (section) {
+      loadColumns();
+    }
+  }, [section?.columns]);
   
   const deviceType = useMemo(() => getDeviceType(), []);
   
@@ -160,8 +184,14 @@ export function SectionRenderer({ sectionId }: SectionRendererProps) {
         }}
       >
         <div 
-          className="columns-wrapper grid grid-cols-12"
+          className="columns-wrapper grid"
           style={{
+            gridTemplateColumns: columns.length > 0
+              ? columns.map(col => {
+                  const width = col.width || (100 / columns.length);
+                  return `${width}fr`;
+                }).join(' ')
+              : '1fr',
             gap: `${settings.columnGap || 30}px`
           }}
         >

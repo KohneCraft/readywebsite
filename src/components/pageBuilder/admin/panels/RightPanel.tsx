@@ -6,13 +6,14 @@
 // ============================================
 
 import { useState, useCallback, useRef } from 'react';
-import { X, Settings as SettingsIcon, Navigation, Layout } from 'lucide-react';
+import { X, Settings as SettingsIcon, Navigation, Layout, Image as ImageIcon } from 'lucide-react';
 import { SectionSettings } from '../settings/SectionSettings';
 import { ColumnSettings } from '../settings/ColumnSettings';
 import { BlockSettings } from '../settings/BlockSettings';
 import { PageSettings } from '../settings/PageSettings';
 import { HeaderSettings } from '../settings/HeaderSettings';
 import { FooterSettings } from '../settings/FooterSettings';
+import { IconSettings } from '../settings/IconSettings';
 import { updateSection, updateColumn, updateBlock } from '@/lib/firebase/firestore';
 import { cn } from '@/lib/utils';
 import type { Page, Section, Column, Block } from '@/types/pageBuilder';
@@ -25,7 +26,7 @@ interface RightPanelProps {
 
 export function RightPanel({ selectedElement, page, onUpdate }: RightPanelProps) {
   const [activeTab, setActiveTab] = useState<'style' | 'settings' | 'advanced'>('style');
-  const [viewMode, setViewMode] = useState<'element' | 'header' | 'footer' | 'page'>('element');
+  const [viewMode, setViewMode] = useState<'element' | 'header' | 'footer' | 'page' | 'icon'>('element');
   const debounceTimer = useRef<NodeJS.Timeout | null>(null);
 
   // Debounced update fonksiyonları
@@ -130,9 +131,21 @@ export function RightPanel({ selectedElement, page, onUpdate }: RightPanelProps)
               Footer
             </button>
             <button
+              onClick={() => setViewMode('icon')}
+              className={cn(
+                'p-3 rounded-lg border transition-colors text-sm font-medium',
+                viewMode === 'icon'
+                  ? 'border-primary-500 bg-primary-50 dark:bg-primary-900/20 text-primary-700 dark:text-primary-400'
+                  : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600 text-gray-700 dark:text-gray-300'
+              )}
+            >
+              <ImageIcon className="w-4 h-4 mx-auto mb-1" />
+              Icon
+            </button>
+            <button
               onClick={() => setViewMode('page')}
               className={cn(
-                'p-3 rounded-lg border transition-colors text-sm font-medium col-span-2',
+                'p-3 rounded-lg border transition-colors text-sm font-medium',
                 viewMode === 'page'
                   ? 'border-primary-500 bg-primary-50 dark:bg-primary-900/20 text-primary-700 dark:text-primary-400'
                   : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600 text-gray-700 dark:text-gray-300'
@@ -187,6 +200,12 @@ export function RightPanel({ selectedElement, page, onUpdate }: RightPanelProps)
                 ))}
               </div>
               <FooterSettings activeTab={activeTab} onUpdate={onUpdate} />
+            </div>
+          )}
+
+          {viewMode === 'icon' && (
+            <div className="p-4">
+              <IconSettings onUpdate={() => {}} />
             </div>
           )}
 
