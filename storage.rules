@@ -1,192 +1,194 @@
-rules_version = '2';
+  rules_version = '2';
 
-// ============================================
-// Vav Yapı - Firebase Storage Security Rules
-// Development Mode (Esnek Kurallar)
-// ============================================
-// ⚠️ DİKKAT: Bu kurallar development içindir!
-// Production'a geçmeden önce sıkılaştırılmalıdır.
-// ============================================
-// Storage Yapısı:
-// - projects/{projectId}/cover/   (kapak görseli)
-// - projects/{projectId}/gallery/ (galeri görselleri)
-// - logos/                        (site logoları)
-// - settings/                     (diğer site görselleri)
-// ============================================
+  // ============================================
+  // Vav Yapı - Firebase Storage Security Rules
+  // Development Mode (Esnek Kurallar)
+  // ============================================
+  // ⚠️ DİKKAT: Bu kurallar development içindir!
+  // Production'a geçmeden önce sıkılaştırılmalıdır.
+  // ============================================
+  // Storage Yapısı:
+  // - projects/{projectId}/cover/   (kapak görseli)
+  // - projects/{projectId}/gallery/ (galeri görselleri)
+  // - logos/                        (site logoları)
+  // - settings/                     (diğer site görselleri)
+  // ============================================
 
-service firebase.storage {
-  match /b/{bucket}/o {
-    
-    // ==========================================
-    // YARDIMCI FONKSİYONLAR
-    // ==========================================
-    
-    // Kullanıcı giriş yapmış mı?
-    function isAuthenticated() {
-      return request.auth != null;
-    }
-    
-    // Dosya boyutu limiti (5MB)
-    function isValidSize() {
-      return request.resource.size < 5 * 1024 * 1024;
-    }
-    
-    // İzin verilen görsel formatları
-    function isValidImageType() {
-      return request.resource.contentType.matches('image/(jpeg|jpg|png|webp|gif|svg\\+xml)');
-    }
-    
-    // İzin verilen favicon formatları
-    function isValidFaviconType() {
-      return request.resource.contentType.matches('image/(x-icon|png|ico)');
-    }
-    
-    // Genel görsel validasyonu
-    function isValidImage() {
-      return isValidSize() && isValidImageType();
-    }
-    
-    // ==========================================
-    // PROJECTS KLASÖRÜ
-    // ==========================================
-    // Development: Authenticated kullanıcılar tam erişim
-    // ==========================================
-    
-    match /projects/{projectId}/{folder}/{fileName} {
-      // Okuma: Herkes
-      allow read: if true;
+  service firebase.storage {
+    match /b/{bucket}/o {
       
-      // Yazma: Authenticated (development için esnek)
-      allow write: if isAuthenticated();
+      // ==========================================
+      // YARDIMCI FONKSİYONLAR
+      // ==========================================
       
-      // Silme: Authenticated
-      allow delete: if isAuthenticated();
-    }
-    
-    // Nested paths için (gallery içindeki alt klasörler)
-    match /projects/{projectId}/{allPaths=**} {
-      allow read: if true;
-      allow write: if isAuthenticated();
-      allow delete: if isAuthenticated();
-    }
-    
-    // ==========================================
-    // LOGOS KLASÖRÜ
-    // ==========================================
-    // Site logoları (light, dark, mobile)
-    // ==========================================
-    
-    match /logos/{fileName} {
-      // Okuma: Herkes
-      allow read: if true;
+      // Kullanıcı giriş yapmış mı?
+      function isAuthenticated() {
+        return request.auth != null;
+      }
       
-      // Yazma: Authenticated + valid image (SVG dahil)
-      allow write: if isAuthenticated() && isValidImage();
+      // Dosya boyutu limiti (5MB)
+      function isValidSize() {
+        return request.resource.size < 5 * 1024 * 1024;
+      }
       
-      // Silme: Authenticated
-      allow delete: if isAuthenticated();
-    }
-    
-    // ==========================================
-    // SETTINGS KLASÖRÜ
-    // ==========================================
-    // Favicon ve diğer site görselleri
-    // ==========================================
-    
-    match /settings/{fileName} {
-      // Okuma: Herkes
-      allow read: if true;
+      // İzin verilen görsel formatları
+      function isValidImageType() {
+        return request.resource.contentType.matches('image/(jpeg|jpg|png|webp|gif|svg\\+xml)');
+      }
       
-      // Yazma: Authenticated
-      // Favicon için farklı content type kontrolü
-      allow write: if isAuthenticated() 
-        && (isValidImage() || isValidFaviconType());
+      // İzin verilen favicon formatları
+      function isValidFaviconType() {
+        return request.resource.contentType.matches('image/(x-icon|png|ico)');
+      }
       
-      // Silme: Authenticated
-      allow delete: if isAuthenticated();
-    }
-    
-    match /settings/{folder}/{fileName} {
-      allow read: if true;
-      allow write: if isAuthenticated() 
-        && (isValidImage() || isValidFaviconType());
-      allow delete: if isAuthenticated();
-    }
-    
-    // ==========================================
-    // TEMP KLASÖRÜ (Geçici yüklemeler)
-    // ==========================================
-    // Admin panelde yükleme sırasında kullanılır
-    // Cropping/editing sonrası asıl konuma taşınır
-    // ==========================================
-    
-    match /temp/{userId}/{fileName} {
-      // Sadece kendi temp klasörüne
-      allow read: if request.auth != null && request.auth.uid == userId;
-      allow write: if request.auth != null 
-        && request.auth.uid == userId 
-        && isValidImage();
-      allow delete: if request.auth != null && request.auth.uid == userId;
-    }
-    
-    // ==========================================
-    // MEDIA KLASÖRÜ
-    // ==========================================
-    // Medya yönetimi için (fotoğraf ve video)
-    // Yapı: media/{type}s/{userId}/{fileName}
-    // Örnek: media/images/user123/file.jpg
-    // ==========================================
-    
-    // Video formatları için validasyon
-    function isValidVideoType() {
-      return request.resource.contentType.matches('video/(mp4|webm|quicktime|mov)');
-    }
-    
-    // Medya validasyonu (hem görsel hem video)
-    function isValidMedia() {
-      return isValidSize() && (isValidImageType() || isValidVideoType());
-    }
-    
-    // Medya klasörü - images veya videos
-    match /media/{type}/{userId}/{fileName} {
-      // Okuma: Herkes (medya herkese açık olabilir)
-      allow read: if true;
+      // Genel görsel validasyonu
+      function isValidImage() {
+        return isValidSize() && isValidImageType();
+      }
       
-      // Yazma: Authenticated kullanıcılar (development için esnek)
-      // Production'da userId kontrolü eklenebilir
-      allow write: if isAuthenticated() && isValidMedia();
+      // ==========================================
+      // PROJECTS KLASÖRÜ
+      // ==========================================
+      // Development: Authenticated kullanıcılar tam erişim
+      // ==========================================
       
-      // Silme: Authenticated kullanıcılar
-      allow delete: if isAuthenticated();
-    }
-    
-    // Nested paths için (alt klasörler - gelecekte kullanılabilir)
-    match /media/{allPaths=**} {
-      allow read: if true;
-      allow write: if isAuthenticated() && isValidMedia();
-      allow delete: if isAuthenticated();
-    }
-    
-    // ==========================================
-    // VARSAYILAN KURAL (Development)
-    // ==========================================
-    // ⚠️ Development için tüm authenticated kullanıcılara izin ver
-    // Production'da bu kuralı kaldırın!
-    // ==========================================
-    
-    match /{allPaths=**} {
-      allow read: if true;
-      allow write: if request.auth != null;
+      match /projects/{projectId}/{folder}/{fileName} {
+        // Okuma: Herkes
+        allow read: if true;
+        
+        // Yazma: Authenticated (development için esnek)
+        allow write: if isAuthenticated();
+        
+        // Silme: Authenticated
+        allow delete: if isAuthenticated();
+      }
+      
+      // Nested paths için (gallery içindeki alt klasörler)
+      match /projects/{projectId}/{allPaths=**} {
+        allow read: if true;
+        allow write: if isAuthenticated();
+        allow delete: if isAuthenticated();
+      }
+      
+      // ==========================================
+      // LOGOS KLASÖRÜ
+      // ==========================================
+      // Site logoları (light, dark, mobile)
+      // ==========================================
+      
+      match /logos/{fileName} {
+        // Okuma: Herkes
+        allow read: if true;
+        
+        // Yazma: Authenticated + valid image (SVG dahil)
+        allow write: if isAuthenticated() && isValidImage();
+        
+        // Silme: Authenticated
+        allow delete: if isAuthenticated();
+      }
+      
+      // ==========================================
+      // SETTINGS KLASÖRÜ
+      // ==========================================
+      // Favicon ve diğer site görselleri
+      // ==========================================
+      
+      match /settings/{fileName} {
+        // Okuma: Herkes
+        allow read: if true;
+        
+        // Yazma: Authenticated
+        // Favicon için farklı content type kontrolü
+        allow write: if isAuthenticated() 
+          && (isValidImage() || isValidFaviconType());
+        
+        // Silme: Authenticated
+        allow delete: if isAuthenticated();
+      }
+      
+      match /settings/{folder}/{fileName} {
+        allow read: if true;
+        allow write: if isAuthenticated() 
+          && (isValidImage() || isValidFaviconType());
+        allow delete: if isAuthenticated();
+      }
+      
+      // ==========================================
+      // TEMP KLASÖRÜ (Geçici yüklemeler)
+      // ==========================================
+      // Admin panelde yükleme sırasında kullanılır
+      // Cropping/editing sonrası asıl konuma taşınır
+      // ==========================================
+      
+      match /temp/{userId}/{fileName} {
+        // Sadece kendi temp klasörüne
+        allow read: if request.auth != null && request.auth.uid == userId;
+        allow write: if request.auth != null 
+          && request.auth.uid == userId 
+          && isValidImage();
+        allow delete: if request.auth != null && request.auth.uid == userId;
+      }
+      
+      // ==========================================
+      // MEDIA KLASÖRÜ
+      // ==========================================
+      // Medya yönetimi için (fotoğraf ve video)
+      // Yapı: media/{type}s/{userId}/{fileName}
+      // Örnek: media/images/user123/file.jpg
+      // ==========================================
+      
+      // Video formatları için validasyon
+      function isValidVideoType() {
+        return request.resource.contentType.matches('video/(mp4|webm|quicktime|mov)');
+      }
+      
+      // Medya validasyonu (hem görsel hem video)
+      function isValidMedia() {
+        return isValidSize() && (isValidImageType() || isValidVideoType());
+      }
+      
+      // Medya klasörü - images veya videos
+      match /media/{type}/{userId}/{fileName} {
+        // Okuma: Herkes (medya herkese açık olabilir)
+        allow read: if true;
+        
+        // Yazma: Authenticated kullanıcılar ve sadece kendi klasörlerine
+        // userId path'teki userId ile request.auth.uid eşleşmeli
+        allow write: if isAuthenticated() 
+          && request.auth.uid == userId 
+          && isValidMedia();
+        
+        // Silme: Authenticated kullanıcılar ve sadece kendi klasörlerinden
+        allow delete: if isAuthenticated() && request.auth.uid == userId;
+      }
+      
+      // Nested paths için (alt klasörler - gelecekte kullanılabilir)
+      match /media/{allPaths=**} {
+        allow read: if true;
+        allow write: if isAuthenticated() && isValidMedia();
+        allow delete: if isAuthenticated();
+      }
+      
+      // ==========================================
+      // VARSAYILAN KURAL (Development)
+      // ==========================================
+      // ⚠️ Development için tüm authenticated kullanıcılara izin ver
+      // Production'da bu kuralı kaldırın!
+      // ==========================================
+      
+      match /{allPaths=**} {
+        allow read: if true;
+        allow write: if request.auth != null;
+      }
     }
   }
-}
 
-// ============================================
-// PRODUCTION NOTLARI
-// ============================================
-// 1. Dosya boyutu production'da artırılabilir (10MB)
-// 2. Role-based access için Firestore lookup eklenebilir
-// 3. Rate limiting için Cloud Functions kullanılabilir
-// 4. Thumbnail oluşturma için Firebase Extension:
-//    - firebase ext:install storage-resize-images
-// ============================================
+  // ============================================
+  // PRODUCTION NOTLARI
+  // ============================================
+  // 1. Dosya boyutu production'da artırılabilir (10MB)
+  // 2. Role-based access için Firestore lookup eklenebilir
+  // 3. Rate limiting için Cloud Functions kullanılabilir
+  // 4. Thumbnail oluşturma için Firebase Extension:
+  //    - firebase ext:install storage-resize-images
+  // ============================================
