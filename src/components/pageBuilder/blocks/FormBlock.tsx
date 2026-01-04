@@ -1,13 +1,13 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, memo } from 'react';
 import type { BlockProps, FormField } from '@/types/pageBuilder';
 
 interface FormBlockProps {
   props: BlockProps;
 }
 
-export function FormBlock({ props }: FormBlockProps) {
+function FormBlockComponent({ props }: FormBlockProps) {
   const [formData, setFormData] = useState<Record<string, string>>({});
   const [submitted, setSubmitted] = useState(false);
   
@@ -175,4 +175,7 @@ export function FormBlock({ props }: FormBlockProps) {
     </div>
   );
 }
+
+const FormBlock = memo(FormBlockComponent);
+export { FormBlock };
 

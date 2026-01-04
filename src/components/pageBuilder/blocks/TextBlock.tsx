@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo } from 'react';
+import { useMemo, memo } from 'react';
 import type { BlockProps, Breakpoint } from '@/types/pageBuilder';
 
 interface TextBlockProps {
@@ -15,7 +15,7 @@ function getDeviceType(): Breakpoint {
   return 'desktop';
 }
 
-export function TextBlock({ props }: TextBlockProps) {
+function TextBlockComponent({ props }: TextBlockProps) {
   const deviceType = useMemo(() => getDeviceType(), []);
   const responsiveProps = props.responsive?.[deviceType] || {};
   
@@ -53,3 +53,5 @@ export function TextBlock({ props }: TextBlockProps) {
   );
 }
 
+const TextBlock = memo(TextBlockComponent);
+export { TextBlock };

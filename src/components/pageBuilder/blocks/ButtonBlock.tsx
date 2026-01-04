@@ -1,5 +1,6 @@
 'use client';
 
+import { memo } from 'react';
 import Link from 'next/link';
 import type { BlockProps } from '@/types/pageBuilder';
 
@@ -7,7 +8,7 @@ interface ButtonBlockProps {
   props: BlockProps;
 }
 
-export function ButtonBlock({ props }: ButtonBlockProps) {
+function ButtonBlockComponent({ props }: ButtonBlockProps) {
   const buttonStyle = {
     backgroundColor: props.backgroundColor || '#007bff',
     color: props.textColor || '#ffffff',
@@ -77,4 +78,7 @@ export function ButtonBlock({ props }: ButtonBlockProps) {
     </div>
   );
 }
+
+const ButtonBlock = memo(ButtonBlockComponent);
+export { ButtonBlock };
 

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { 
   TextBlock, 
   HeadingBlock, 
@@ -44,13 +44,19 @@ export function BlockRenderer({ blockId, index }: BlockRendererProps) {
       try {
         setLoading(true);
         const blockData = await getBlockById(blockId);
-        console.log(`BlockRenderer - Block yüklendi (${blockId}):`, blockData);
+        if (process.env.NODE_ENV === 'development') {
+          console.log(`BlockRenderer - Block yüklendi (${blockId}):`, blockData);
+        }
         if (!blockData) {
-          console.warn(`Block bulunamadı: ${blockId}`);
+          if (process.env.NODE_ENV === 'development') {
+            console.warn(`Block bulunamadı: ${blockId}`);
+          }
         }
         setBlock(blockData);
       } catch (error) {
-        console.error(`Block yükleme hatası (${blockId}):`, error);
+        if (process.env.NODE_ENV === 'development') {
+          console.error(`Block yükleme hatası (${blockId}):`, error);
+        }
       } finally {
         setLoading(false);
       }
@@ -58,9 +64,22 @@ export function BlockRenderer({ blockId, index }: BlockRendererProps) {
     loadBlock();
   }, [blockId]);
   
+  // Animation hesaplamaları - early return'lerden önce
+  const animation = block?.props?.animation;
+  const animationClass = useMemo(() => 
+    animation?.enabled && isVisible 
+      ? `animate-${animation.type || 'fadeIn'}` 
+      : ''
+  , [animation, isVisible]);
+  
+  const animationStyle = useMemo(() => animation?.enabled ? {
+    '--animation-duration': `${animation.duration || 0.5}s`,
+    '--animation-delay': `${animation.delay || 0}s`
+  } : {}, [animation]);
+  
   // Intersection Observer for animations
   useEffect(() => {
-    if (!block?.props?.animation?.enabled) return;
+    if (!animation || !animation.enabled) return;
     
     const observer = new IntersectionObserver(
       ([entry]) => {
@@ -77,34 +96,42 @@ export function BlockRenderer({ blockId, index }: BlockRendererProps) {
     }
     
     return () => observer.disconnect();
-  }, [block, blockId]);
+  }, [animation, blockId]);
   
-  // Loading durumunda hiçbir şey render etme (null uyarısını önlemek için)
+  // Loading state - skeleton placeholder
   if (loading) {
-    return null;
+    return (
+      <div className="block-renderer-skeleton animate-pulse">
+        <div className="h-24 bg-gray-200 dark:bg-gray-700 rounded-lg" />
+      </div>
+    );
   }
   
+  // Error state - block not found
   if (!block) {
-    console.warn(`BlockRenderer - Block bulunamadı (${blockId})`);
-    return null;
+    if (process.env.NODE_ENV === 'development') {
+      console.warn(`BlockRenderer - Block bulunamadı (${blockId})`);
+    }
+    return (
+      <div className="block-renderer-error text-center py-4 text-gray-500 dark:text-gray-400 text-sm">
+        Block yüklenemedi
+      </div>
+    );
   }
   
   const BlockComponent = blockComponents[block.type];
   
+  // Error state - unknown block type
   if (!BlockComponent) {
-    console.warn(`Unknown block type: ${block.type}`);
-    return null;
+    if (process.env.NODE_ENV === 'development') {
+      console.warn(`Unknown block type: ${block.type}`);
+    }
+    return (
+      <div className="block-renderer-error text-center py-4 text-red-500 dark:text-red-400 text-sm">
+        Bilinmeyen block tipi: {block.type}
+      </div>
+    );
   }
-  
-  const animation = block.props?.animation;
-  const animationClass = animation?.enabled && isVisible 
-    ? `animate-${animation.type || 'fadeIn'}` 
-    : '';
-  
-  const animationStyle = animation?.enabled ? {
-    '--animation-duration': `${animation.duration || 0.5}s`,
-    '--animation-delay': `${animation.delay || 0}s`
-  } : {};
   
   return (
     <div 

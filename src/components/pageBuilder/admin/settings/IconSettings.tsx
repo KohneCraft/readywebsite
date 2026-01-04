@@ -6,7 +6,7 @@
 // ============================================
 
 import { useState, useEffect } from 'react';
-import { Image as ImageIcon, Upload, X, Info } from 'lucide-react';
+import { Image as ImageIcon, Upload, X, Info, Edit2 } from 'lucide-react';
 import Image from 'next/image';
 import { MediaSelector } from '../media/MediaSelector';
 import { uploadMedia } from '@/lib/firebase/media';
@@ -27,6 +27,11 @@ export function IconSettings({ onUpdate }: IconSettingsProps) {
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [manualUrl, setManualUrl] = useState('');
+  
+  // Admin panel başlık ve icon ayarları
+  const [adminTitle, setAdminTitle] = useState<string>('Page Builder');
+  const [adminIconUrl, setAdminIconUrl] = useState<string>('');
+  const [isAdminIconSelectorOpen, setIsAdminIconSelectorOpen] = useState(false);
 
   useEffect(() => {
     loadIcon();
@@ -39,6 +44,12 @@ export function IconSettings({ onUpdate }: IconSettingsProps) {
       const favicon = settings?.logo?.favicon?.url || '';
       setIconUrl(favicon);
       setManualUrl(favicon);
+      
+      // Admin panel ayarlarını yükle
+      const adminTitle = settings?.adminTitle || 'Page Builder';
+      const adminIcon = settings?.adminIcon || '';
+      setAdminTitle(adminTitle);
+      setAdminIconUrl(adminIcon);
     } catch (error) {
       console.error('Icon yükleme hatası:', error);
     } finally {
@@ -261,12 +272,199 @@ export function IconSettings({ onUpdate }: IconSettingsProps) {
 
       {/* Media Selector Modal */}
       {isMediaSelectorOpen && (
-      <MediaSelector
-        isOpen={isMediaSelectorOpen}
-        onClose={() => setIsMediaSelectorOpen(false)}
-        onSelect={(media) => handleMediaSelect(media.url)}
-        type="image"
-      />
+        <MediaSelector
+          isOpen={isMediaSelectorOpen}
+          onClose={() => setIsMediaSelectorOpen(false)}
+          onSelect={(media) => handleMediaSelect(media.url)}
+          type="image"
+        />
+      )}
+
+      {/* Admin Panel Ayarları */}
+      <div className="border-t border-gray-200 dark:border-gray-700 pt-6 mt-6">
+        <h3 className="text-sm font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
+          <Edit2 className="w-4 h-4" />
+          Admin Panel Ayarları
+        </h3>
+        
+        {/* Admin Panel Başlık */}
+        <div className="space-y-2 mb-4">
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+            Admin Panel Başlığı
+          </label>
+          <div className="flex gap-2">
+            <Input
+              type="text"
+              value={adminTitle}
+              onChange={(e) => setAdminTitle(e.target.value)}
+              placeholder="Page Builder"
+              className="flex-1"
+            />
+            <Button
+              type="button"
+              variant="primary"
+              onClick={async () => {
+                try {
+                  setIsSaving(true);
+                  const user = await getCurrentUser();
+                  if (!user) {
+                    alert('Lütfen giriş yapın');
+                    return;
+                  }
+                  await updateSiteSettings({ adminTitle }, user.uid);
+                  // Sayfayı yenile
+                  window.location.reload();
+                } catch (error) {
+                  console.error('Admin başlık kaydetme hatası:', error);
+                  alert('Başlık kaydedilirken bir hata oluştu');
+                } finally {
+                  setIsSaving(false);
+                }
+              }}
+              disabled={!adminTitle.trim() || isSaving}
+            >
+              {isSaving ? <Spinner size="sm" /> : 'Kaydet'}
+            </Button>
+          </div>
+        </div>
+
+        {/* Admin Panel Icon */}
+        <div className="space-y-2">
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+            Admin Panel Icon
+          </label>
+          
+          {adminIconUrl && (
+            <div className="flex items-center gap-4 mb-2">
+              <div className="w-16 h-16 rounded-lg border-2 border-gray-200 dark:border-gray-700 overflow-hidden bg-white dark:bg-gray-900 flex items-center justify-center">
+                <Image
+                  src={adminIconUrl}
+                  alt="Admin Icon"
+                  width={64}
+                  height={64}
+                  className="w-full h-full object-contain"
+                  unoptimized
+                />
+              </div>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={async () => {
+                  if (confirm('Admin icon\'u kaldırmak istediğinize emin misiniz?')) {
+                    try {
+                      setIsSaving(true);
+                      const user = await getCurrentUser();
+                      if (!user) {
+                        alert('Lütfen giriş yapın');
+                        return;
+                      }
+                      setAdminIconUrl('');
+                      await updateSiteSettings({ adminIcon: '' }, user.uid);
+                      window.location.reload();
+                    } catch (error) {
+                      console.error('Admin icon kaldırma hatası:', error);
+                      alert('Icon kaldırılırken bir hata oluştu');
+                    } finally {
+                      setIsSaving(false);
+                    }
+                  }
+                }}
+                className="text-red-600 hover:text-red-700 hover:border-red-300"
+              >
+                <X className="w-4 h-4 mr-2" />
+                Kaldır
+              </Button>
+            </div>
+          )}
+          
+          <div className="grid grid-cols-2 gap-3">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setIsAdminIconSelectorOpen(true)}
+              className="w-full"
+            >
+              <ImageIcon className="w-4 h-4 mr-2" />
+              Medyadan Seç
+            </Button>
+
+            <label className="cursor-pointer">
+              <input
+                type="file"
+                accept=".ico,.png,.svg,image/x-icon,image/png,image/svg+xml"
+                onChange={async (e) => {
+                  const file = e.target.files?.[0];
+                  if (file) {
+                    if (file.size > 100 * 1024) {
+                      alert('Dosya boyutu 100KB\'dan büyük olamaz');
+                      return;
+                    }
+                    try {
+                      setIsSaving(true);
+                      const user = await getCurrentUser();
+                      if (!user) {
+                        alert('Lütfen giriş yapın');
+                        return;
+                      }
+                      const uploadedMedia = await uploadMedia(file, 'image', user.uid);
+                      setAdminIconUrl(uploadedMedia.url);
+                      await updateSiteSettings({ adminIcon: uploadedMedia.url }, user.uid);
+                      window.location.reload();
+                    } catch (error) {
+                      console.error('Admin icon yükleme hatası:', error);
+                      alert('Icon yüklenirken bir hata oluştu');
+                    } finally {
+                      setIsSaving(false);
+                    }
+                  }
+                }}
+                className="hidden"
+              />
+              <div className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors flex items-center justify-center text-sm font-medium text-gray-700 dark:text-gray-300">
+                {isSaving ? (
+                  <>
+                    <Spinner size="sm" className="mr-2" />
+                    Yükleniyor...
+                  </>
+                ) : (
+                  <>
+                    <Upload className="w-4 h-4 mr-2" />
+                    Dosya Yükle
+                  </>
+                )}
+              </div>
+            </label>
+          </div>
+        </div>
+      </div>
+
+      {/* Admin Icon Media Selector Modal */}
+      {isAdminIconSelectorOpen && (
+        <MediaSelector
+          isOpen={isAdminIconSelectorOpen}
+          onClose={() => setIsAdminIconSelectorOpen(false)}
+          onSelect={async (media) => {
+            try {
+              setIsSaving(true);
+              const user = await getCurrentUser();
+              if (!user) {
+                alert('Lütfen giriş yapın');
+                return;
+              }
+              setAdminIconUrl(media.url);
+              await updateSiteSettings({ adminIcon: media.url }, user.uid);
+              setIsAdminIconSelectorOpen(false);
+              window.location.reload();
+            } catch (error) {
+              console.error('Admin icon kaydetme hatası:', error);
+              alert('Icon kaydedilirken bir hata oluştu');
+            } finally {
+              setIsSaving(false);
+            }
+          }}
+          type="image"
+        />
       )}
     </div>
   );

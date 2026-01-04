@@ -1,13 +1,13 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, memo } from 'react';
 import type { BlockProps } from '@/types/pageBuilder';
 
 interface MapBlockProps {
   props: BlockProps;
 }
 
-export function MapBlock({ props }: MapBlockProps) {
+function MapBlockComponent({ props }: MapBlockProps) {
   const mapRef = useRef<HTMLDivElement>(null);
   
   const containerStyle = {
@@ -96,4 +96,7 @@ export function MapBlock({ props }: MapBlockProps) {
     </div>
   );
 }
+
+const MapBlock = memo(MapBlockComponent);
+export { MapBlock };
 

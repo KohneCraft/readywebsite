@@ -45,14 +45,15 @@ export function PageRenderer({ pageId, slug, allowDraft = false }: PageRendererP
           return;
         }
         
-        console.log('PageRenderer - Sayfa yüklendi:', {
-          id: pageData.id,
-          title: pageData.title,
-          slug: pageData.slug,
-          status: pageData.status,
-          sectionsCount: pageData.sections?.length || 0,
-          sections: pageData.sections,
-        });
+        if (process.env.NODE_ENV === 'development') {
+          console.log('PageRenderer - Sayfa yüklendi:', {
+            id: pageData.id,
+            title: pageData.title,
+            slug: pageData.slug,
+            status: pageData.status,
+            sectionsCount: pageData.sections?.length || 0,
+          });
+        }
         
         // Status kontrolü (preview modunda taslak sayfalar da görüntülenebilir)
         // Eğer status yoksa veya undefined ise, published olarak kabul et (geriye dönük uyumluluk)

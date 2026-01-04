@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, memo } from 'react';
 import Image from 'next/image';
 import type { BlockProps } from '@/types/pageBuilder';
 
@@ -8,7 +8,7 @@ interface ImageBlockProps {
   props: BlockProps;
 }
 
-export function ImageBlock({ props }: ImageBlockProps) {
+function ImageBlockComponent({ props }: ImageBlockProps) {
   const [loaded, setLoaded] = useState(false);
   
   const containerStyle = {
@@ -68,4 +68,7 @@ export function ImageBlock({ props }: ImageBlockProps) {
     </div>
   );
 }
+
+const ImageBlock = memo(ImageBlockComponent);
+export { ImageBlock };
 

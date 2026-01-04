@@ -1,13 +1,13 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, memo } from 'react';
 import type { BlockProps } from '@/types/pageBuilder';
 
 interface VideoBlockProps {
   props: BlockProps;
 }
 
-export function VideoBlock({ props }: VideoBlockProps) {
+function VideoBlockComponent({ props }: VideoBlockProps) {
   const [loaded, setLoaded] = useState(false);
   const [error, setError] = useState(false);
   
@@ -78,4 +78,7 @@ export function VideoBlock({ props }: VideoBlockProps) {
     </div>
   );
 }
+
+const VideoBlock = memo(VideoBlockComponent);
+export { VideoBlock };
 

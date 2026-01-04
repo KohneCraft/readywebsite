@@ -29,13 +29,19 @@ export function ColumnRenderer({ columnId, index }: ColumnRendererProps) {
       try {
         setLoading(true);
         const columnData = await getColumnById(columnId);
-        console.log(`ColumnRenderer - Column yüklendi (${columnId}):`, columnData);
+        if (process.env.NODE_ENV === 'development') {
+          console.log(`ColumnRenderer - Column yüklendi (${columnId}):`, columnData);
+        }
         if (!columnData) {
-          console.warn(`Column bulunamadı: ${columnId}`);
+          if (process.env.NODE_ENV === 'development') {
+            console.warn(`Column bulunamadı: ${columnId}`);
+          }
         }
         setColumn(columnData);
       } catch (error) {
-        console.error(`Column yükleme hatası (${columnId}):`, error);
+        if (process.env.NODE_ENV === 'development') {
+          console.error(`Column yükleme hatası (${columnId}):`, error);
+        }
       } finally {
         setLoading(false);
       }
@@ -58,7 +64,9 @@ export function ColumnRenderer({ columnId, index }: ColumnRendererProps) {
         const loadedColumns = await Promise.all(columnPromises);
         setNestedColumns(loadedColumns.filter(Boolean) as Column[]);
       } catch (error) {
-        console.error(`Nested column yükleme hatası (${columnId}):`, error);
+        if (process.env.NODE_ENV === 'development') {
+          console.error(`Nested column yükleme hatası (${columnId}):`, error);
+        }
         setNestedColumns([]);
       } finally {
         setNestedColumnsLoading(false);
@@ -68,51 +76,28 @@ export function ColumnRenderer({ columnId, index }: ColumnRendererProps) {
     if (column) {
       loadNestedColumns();
     }
-  }, [column]);
+  }, [column, columnId]);
   
   const deviceType = useMemo(() => getDeviceType(), []);
   
-  // Loading durumunda hiçbir şey render etme (null uyarısını önlemek için)
-  if (loading) {
-    return null;
-  }
+  // Settings ve hesaplamalar - TÜM hook'lar en üstte olmalı (early return'lerden önce)
+  const settings = useMemo(() => column?.settings || {}, [column?.settings]);
+  const responsiveSettings = useMemo(() => settings.responsive?.[deviceType] || {}, [settings.responsive, deviceType]);
+  const columnWidth = useMemo(() => responsiveSettings.width || column?.width || 100, [responsiveSettings.width, column?.width]);
+  const padding = useMemo(() => responsiveSettings.padding || settings.padding || { top: 0, right: 0, bottom: 0, left: 0 }, [responsiveSettings.padding, settings.padding]);
+  const gridColumnSpan = useMemo(() => columnWidth ? `span ${Math.round((columnWidth / 100) * 12)}` : 'span 12', [columnWidth]);
   
-  if (!column) {
-    console.warn(`ColumnRenderer - Column bulunamadı (${columnId})`);
-    return null;
-  }
+  // Nested columns için grid template - useMemo ile optimize et
+  const nestedGridTemplate = useMemo(() => {
+    if (nestedColumns.length === 0) return '1fr';
+    return nestedColumns.map(col => {
+      const width = col.width || (100 / nestedColumns.length);
+      return `${width}fr`;
+    }).join(' ');
+  }, [nestedColumns]);
   
-  // Block kontrolü
-  if (!column.blocks || column.blocks.length === 0) {
-    console.warn(`ColumnRenderer - Column'da block yok (${columnId})`);
-    // Boş column'ları da göster (placeholder için)
-  }
-  
-  console.log(`ColumnRenderer - Column render ediliyor (${columnId}):`, {
-    width: column.width,
-    blocksCount: column.blocks?.length || 0,
-    blocks: column.blocks,
-  });
-  
-  const settings = column.settings || {};
-  const responsiveSettings = settings.responsive?.[deviceType] || {};
-  const columnWidth = responsiveSettings.width || column.width || 100;
-  const padding = responsiveSettings.padding || settings.padding || { top: 0, right: 0, bottom: 0, left: 0 };
-  
-  // Grid column span hesapla (width yüzde olarak geliyor, grid'de fr olarak kullanılacak)
-  // NOT: SectionRenderer'da artık gridTemplateColumns kullanılıyor, bu yüzden gridColumnSpan kullanılmıyor
-  // Ancak geriye dönük uyumluluk için bırakıyoruz
-  const gridColumnSpan = columnWidth ? `span ${Math.round((columnWidth / 100) * 12)}` : 'span 12';
-  
-  // Nested columns için grid template
-  const nestedGridTemplate = nestedColumns.length > 0
-    ? nestedColumns.map(col => {
-        const width = col.width || (100 / nestedColumns.length);
-        return `${width}fr`;
-      }).join(' ')
-    : '1fr';
-  
-  const columnStyle: React.CSSProperties = {
+  // Column style - useMemo ile optimize et
+  const columnStyle: React.CSSProperties = useMemo(() => ({
     backgroundColor: settings.backgroundColor,
     backgroundImage: settings.backgroundImage ? `url(${settings.backgroundImage})` : 'none',
     padding: `${padding.top}px ${padding.right}px ${padding.bottom}px ${padding.left}px`,
@@ -133,7 +118,35 @@ export function ColumnRenderer({ columnId, index }: ColumnRendererProps) {
     justifyContent: settings.verticalAlign || 'flex-start',
     alignItems: settings.horizontalAlign || 'flex-start',
     gridColumn: gridColumnSpan, // Grid column span kullan
-  };
+  }), [settings, padding, gridColumnSpan]);
+  
+  // Loading state - skeleton placeholder
+  if (loading) {
+    return (
+      <div className="column-renderer-skeleton animate-pulse">
+        <div className="h-32 bg-gray-200 dark:bg-gray-700 rounded-lg" />
+      </div>
+    );
+  }
+  
+  // Error state - column not found
+  if (!column) {
+    if (process.env.NODE_ENV === 'development') {
+      console.warn(`ColumnRenderer - Column bulunamadı (${columnId})`);
+    }
+    return (
+      <div className="column-renderer-error text-center py-4 text-gray-500 dark:text-gray-400 text-sm">
+        Kolon yüklenemedi
+      </div>
+    );
+  }
+  
+  if (process.env.NODE_ENV === 'development') {
+    console.log(`ColumnRenderer - Column render ediliyor (${columnId}):`, {
+      width: column.width,
+      blocksCount: column.blocks?.length || 0,
+    });
+  }
   
   return (
     <div 

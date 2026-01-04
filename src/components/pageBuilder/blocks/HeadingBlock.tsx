@@ -1,12 +1,13 @@
 'use client';
 
+import { memo } from 'react';
 import type { BlockProps } from '@/types/pageBuilder';
 
 interface HeadingBlockProps {
   props: BlockProps;
 }
 
-export function HeadingBlock({ props }: HeadingBlockProps) {
+function HeadingBlockComponent({ props }: HeadingBlockProps) {
   const Tag = (props.level || 'h2') as keyof JSX.IntrinsicElements;
   
   const style = {
@@ -31,4 +32,7 @@ export function HeadingBlock({ props }: HeadingBlockProps) {
     </Tag>
   );
 }
+
+const HeadingBlock = memo(HeadingBlockComponent);
+export { HeadingBlock };
 

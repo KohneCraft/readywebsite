@@ -1,13 +1,13 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, memo } from 'react';
 import type { BlockProps } from '@/types/pageBuilder';
 
 interface HTMLBlockProps {
   props: BlockProps;
 }
 
-export function HTMLBlock({ props }: HTMLBlockProps) {
+function HTMLBlockComponent({ props }: HTMLBlockProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   
   const containerStyle = {
@@ -87,4 +87,7 @@ export function HTMLBlock({ props }: HTMLBlockProps) {
     </div>
   );
 }
+
+const HTMLBlock = memo(HTMLBlockComponent);
+export { HTMLBlock };
 

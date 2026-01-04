@@ -28,13 +28,19 @@ export function SectionRenderer({ sectionId }: SectionRendererProps) {
       try {
         setLoading(true);
         const sectionData = await getSectionById(sectionId);
-        console.log(`SectionRenderer - Section yüklendi (${sectionId}):`, sectionData);
+        if (process.env.NODE_ENV === 'development') {
+          console.log(`SectionRenderer - Section yüklendi (${sectionId}):`, sectionData);
+        }
         if (!sectionData) {
-          console.warn(`Section bulunamadı: ${sectionId}`);
+          if (process.env.NODE_ENV === 'development') {
+            console.warn(`Section bulunamadı: ${sectionId}`);
+          }
         }
         setSection(sectionData);
       } catch (error) {
-        console.error(`Section yükleme hatası (${sectionId}):`, error);
+        if (process.env.NODE_ENV === 'development') {
+          console.error(`Section yükleme hatası (${sectionId}):`, error);
+        }
       } finally {
         setLoading(false);
       }
@@ -55,7 +61,9 @@ export function SectionRenderer({ sectionId }: SectionRendererProps) {
         const loadedColumns = await Promise.all(columnPromises);
         setColumns(loadedColumns.filter(Boolean) as Column[]);
       } catch (error) {
-        console.error('Column yükleme hatası:', error);
+        if (process.env.NODE_ENV === 'development') {
+          console.error('Column yükleme hatası:', error);
+        }
         setColumns([]);
       }
     }
@@ -63,64 +71,17 @@ export function SectionRenderer({ sectionId }: SectionRendererProps) {
     if (section) {
       loadColumns();
     }
-  }, [section?.columns]);
+  }, [section?.columns, section]);
   
+  // TÜM hook'lar en üstte olmalı - early return'lerden ÖNCE
   const deviceType = useMemo(() => getDeviceType(), []);
   
-  // Intersection Observer for animations
-  useEffect(() => {
-    const animation = section?.settings?.animation;
-    if (!animation || !animation.enabled) return;
-    
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting) {
-          setIsVisible(true);
-        }
-      },
-      { threshold: 0.1 }
-    );
-    
-    const element = document.getElementById(`section-${sectionId}`);
-    if (element) {
-      observer.observe(element);
-    }
-    
-    return () => observer.disconnect();
-  }, [section, sectionId]);
+  // Settings ve hesaplamalar - useMemo ile optimize et
+  const settings = useMemo(() => section?.settings || {}, [section?.settings]);
+  const animation = useMemo(() => settings.animation, [settings]);
   
-  // Loading durumunda hiçbir şey render etme (null uyarısını önlemek için)
-  if (loading) {
-    return null;
-  }
-  
-  if (!section) {
-    console.warn(`SectionRenderer - Section bulunamadı (${sectionId})`);
-    return null;
-  }
-  
-  // Responsive visibility check
-  if (section.visibility && !section.visibility[deviceType]) {
-    console.log(`SectionRenderer - Section görünür değil (${sectionId}, device: ${deviceType})`);
-    return null;
-  }
-  
-  // Column kontrolü
-  if (!section.columns || section.columns.length === 0) {
-    console.warn(`SectionRenderer - Section'da column yok (${sectionId})`);
-    return null;
-  }
-  
-  console.log(`SectionRenderer - Section render ediliyor (${sectionId}):`, {
-    name: section.name,
-    columnsCount: section.columns.length,
-    columns: section.columns,
-  });
-  
-  const settings = section.settings || {};
-  const animation = settings.animation;
-  
-  const sectionStyle: React.CSSProperties = {
+  // Section style - useMemo ile optimize et
+  const sectionStyle: React.CSSProperties = useMemo(() => ({
     backgroundColor: settings.backgroundColor,
     backgroundImage: settings.backgroundImage ? `url(${settings.backgroundImage})` : 'none',
     backgroundSize: settings.backgroundSize || 'cover',
@@ -144,16 +105,100 @@ export function SectionRenderer({ sectionId }: SectionRendererProps) {
     boxShadow: settings.boxShadow || 'none',
     position: 'relative',
     overflow: 'hidden',
-  };
+  }), [settings]);
   
-  const animationClass = animation?.enabled && isVisible 
-    ? `animate-${animation.type || 'fadeIn'}` 
-    : '';
+  // Animation class ve style - useMemo ile optimize et
+  const animationClass = useMemo(() => 
+    animation?.enabled && isVisible 
+      ? `animate-${animation.type || 'fadeIn'}` 
+      : ''
+  , [animation, isVisible]);
   
-  const animationStyle = animation?.enabled ? {
+  const animationStyle = useMemo(() => animation?.enabled ? {
     '--animation-duration': `${animation.duration || 0.8}s`,
     '--animation-delay': `${animation.delay || 0}s`
-  } : {};
+  } : {}, [animation]);
+  
+  // Grid template columns - useMemo ile optimize et
+  const gridTemplateColumns = useMemo(() => {
+    if (settings.columnLayout === 'column') return undefined;
+    if (columns.length === 0) return '1fr';
+    return columns.map(col => {
+      const width = col.width || (100 / columns.length);
+      return `${width}fr`;
+    }).join(' ');
+  }, [settings.columnLayout, columns]);
+  
+  // Intersection Observer for animations - TÜM hook'lar en üstte
+  useEffect(() => {
+    if (!animation || !animation.enabled) return;
+    
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setIsVisible(true);
+        }
+      },
+      { threshold: 0.1 }
+    );
+    
+    const element = document.getElementById(`section-${sectionId}`);
+    if (element) {
+      observer.observe(element);
+    }
+    
+    return () => observer.disconnect();
+  }, [animation, sectionId]);
+  
+  // Loading state - skeleton placeholder
+  if (loading) {
+    return (
+      <section className="section-renderer-skeleton animate-pulse py-12">
+        <div className="container mx-auto">
+          <div className="h-64 bg-gray-200 dark:bg-gray-700 rounded-lg" />
+        </div>
+      </section>
+    );
+  }
+  
+  // Error state - section not found
+  if (!section) {
+    if (process.env.NODE_ENV === 'development') {
+      console.warn(`SectionRenderer - Section bulunamadı (${sectionId})`);
+    }
+    return (
+      <section className="section-renderer-error text-center py-12 text-gray-500 dark:text-gray-400">
+        <p>Section yüklenemedi</p>
+      </section>
+    );
+  }
+  
+  // Responsive visibility check
+  if (section.visibility && !section.visibility[deviceType]) {
+    if (process.env.NODE_ENV === 'development') {
+      console.log(`SectionRenderer - Section görünür değil (${sectionId}, device: ${deviceType})`);
+    }
+    return null;
+  }
+  
+  // Column kontrolü - empty state
+  if (!section.columns || section.columns.length === 0) {
+    if (process.env.NODE_ENV === 'development') {
+      console.warn(`SectionRenderer - Section'da column yok (${sectionId})`);
+    }
+    return (
+      <section className="section-renderer-empty text-center py-12 text-gray-500 dark:text-gray-400">
+        <p>Bu section'da henüz içerik yok.</p>
+      </section>
+    );
+  }
+  
+  if (process.env.NODE_ENV === 'development') {
+    console.log(`SectionRenderer - Section render ediliyor (${sectionId}):`, {
+      name: section.name,
+      columnsCount: section.columns.length,
+    });
+  }
   
   return (
     <section 
@@ -184,14 +229,11 @@ export function SectionRenderer({ sectionId }: SectionRendererProps) {
         }}
       >
         <div 
-          className="columns-wrapper grid"
+          className="columns-wrapper"
           style={{
-            gridTemplateColumns: columns.length > 0
-              ? columns.map(col => {
-                  const width = col.width || (100 / columns.length);
-                  return `${width}fr`;
-                }).join(' ')
-              : '1fr',
+            display: settings.columnLayout === 'column' ? 'flex' : 'grid',
+            flexDirection: settings.columnLayout === 'column' ? 'column' : undefined,
+            gridTemplateColumns: gridTemplateColumns,
             gap: `${settings.columnGap || 30}px`
           }}
         >
@@ -213,4 +255,3 @@ export function SectionRenderer({ sectionId }: SectionRendererProps) {
     </section>
   );
 }
-

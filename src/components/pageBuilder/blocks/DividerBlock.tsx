@@ -1,12 +1,13 @@
 'use client';
 
+import { memo } from 'react';
 import type { BlockProps } from '@/types/pageBuilder';
 
 interface DividerBlockProps {
   props: BlockProps;
 }
 
-export function DividerBlock({ props }: DividerBlockProps) {
+function DividerBlockComponent({ props }: DividerBlockProps) {
   const height = props.dividerHeight || 1;
   const color = props.dividerColor || '#e5e7eb';
   const style = props.dividerStyle || 'solid';
@@ -47,4 +48,7 @@ export function DividerBlock({ props }: DividerBlockProps) {
     </div>
   );
 }
+
+const DividerBlock = memo(DividerBlockComponent);
+export { DividerBlock };
 

@@ -40,7 +40,7 @@ export function SectionSettings({ sectionId, activeTab, onUpdate }: SectionSetti
     loadSection();
   }, [sectionId]);
 
-  // Column'ları yükle
+  // Column'ları yükle - section.columns değiştiğinde yeniden yükle
   useEffect(() => {
     async function loadColumns() {
       if (!section?.columns || section.columns.length === 0) {
@@ -61,7 +61,8 @@ export function SectionSettings({ sectionId, activeTab, onUpdate }: SectionSetti
     if (section) {
       loadColumns();
     }
-  }, [section]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [section?.columns]);
 
   if (loading) {
     return (
@@ -198,6 +199,27 @@ export function SectionSettings({ sectionId, activeTab, onUpdate }: SectionSetti
             }}
             className="w-full px-3 py-2 text-sm border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-white"
           />
+        </div>
+
+        <div>
+          <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-2">
+            Kolon Düzeni
+          </label>
+          <select
+            value={settings.columnLayout || 'row'}
+            onChange={(e) => {
+              const updated = {
+                ...section,
+                settings: { ...settings, columnLayout: e.target.value as 'row' | 'column' },
+              };
+              setSection(updated);
+              onUpdate(updated);
+            }}
+            className="w-full px-3 py-2 text-sm border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-white"
+          >
+            <option value="row">Yan Yana</option>
+            <option value="column">Alt Alta</option>
+          </select>
         </div>
 
         <div>

@@ -1,12 +1,13 @@
 'use client';
 
+import { memo } from 'react';
 import type { BlockProps } from '@/types/pageBuilder';
 
 interface SpacerBlockProps {
   props: BlockProps;
 }
 
-export function SpacerBlock({ props }: SpacerBlockProps) {
+function SpacerBlockComponent({ props }: SpacerBlockProps) {
   const height = props.spacerHeight || 50;
   
   const containerStyle = {
@@ -33,4 +34,7 @@ export function SpacerBlock({ props }: SpacerBlockProps) {
     </div>
   );
 }
+
+const SpacerBlock = memo(SpacerBlockComponent);
+export { SpacerBlock };
 
