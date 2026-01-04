@@ -954,12 +954,21 @@ export async function createColumn(input: ColumnCreateInput): Promise<string> {
   const docRef = await addDoc(collection(db, COLLECTIONS.columns), {
     ...input,
     blocks: [],
+    columns: [], // İç içe kolonlar için
     createdAt: serverTimestamp(),
     updatedAt: serverTimestamp(),
   });
   
-  // Section'a column ID'sini ekle
-  if (input.sectionId) {
+  // Eğer parent column varsa, parent column'a ekle
+  if (input.parentColumnId) {
+    const parentColumn = await getColumnById(input.parentColumnId);
+    if (parentColumn) {
+      await updateColumn(input.parentColumnId, {
+        columns: [...(parentColumn.columns || []), docRef.id],
+      });
+    }
+  } else if (input.sectionId) {
+    // Parent column yoksa, section'a ekle
     const section = await getSectionById(input.sectionId);
     if (section) {
       await updateSection(input.sectionId, {
@@ -997,9 +1006,33 @@ export async function deleteColumn(id: string): Promise<void> {
   const column = await getColumnById(id);
   if (!column) return;
   
+  // Nested column'ları sil (recursive)
+  for (const nestedColumnId of column.columns || []) {
+    await deleteColumn(nestedColumnId);
+  }
+  
   // Block'ları sil
   for (const blockId of column.blocks || []) {
     await deleteBlock(blockId);
+  }
+  
+  // Parent column'dan veya section'dan column ID'sini çıkar
+  if (column.parentColumnId) {
+      const parentColumn = await getColumnById(column.parentColumnId);
+      if (parentColumn) {
+        const updatedColumns = (parentColumn.columns || []).filter(colId => colId !== id);
+        await updateColumn(column.parentColumnId, {
+          columns: updatedColumns,
+        });
+      }
+  } else if (column.sectionId) {
+      const section = await getSectionById(column.sectionId);
+      if (section) {
+        const updatedColumns = (section.columns || []).filter(colId => colId !== id);
+        await updateSection(column.sectionId, {
+          columns: updatedColumns,
+        });
+      }
   }
   
   // Column'u sil

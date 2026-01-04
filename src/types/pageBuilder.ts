@@ -240,8 +240,10 @@ export interface FormField {
 export interface Column {
   id: string;
   sectionId: string;
+  parentColumnId?: string; // İç içe kolonlar için parent column ID
   width: number; // Yüzde olarak (50 = 50%)
   blocks: string[]; // Block ID'leri
+  columns?: string[]; // İç içe kolon ID'leri (nested columns)
   settings: ColumnSettings;
   order: number;
   createdAt: Date | Timestamp;
@@ -407,6 +409,7 @@ export interface SectionCreateInput {
 
 export interface ColumnCreateInput {
   sectionId: string;
+  parentColumnId?: string; // İç içe kolonlar için
   width?: number;
   settings?: Partial<ColumnSettings>;
   order?: number;
@@ -444,6 +447,7 @@ export interface SectionUpdateInput {
 
 export interface ColumnUpdateInput {
   width?: number;
+  columns?: string[]; // Nested columns için
   settings?: Partial<ColumnSettings>;
   order?: number;
   blocks?: string[];
