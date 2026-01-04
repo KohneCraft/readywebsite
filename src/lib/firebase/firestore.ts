@@ -847,6 +847,107 @@ export async function deleteSection(id: string): Promise<void> {
 }
 
 /**
+ * Section sırasını değiştir (yukarı/aşağı taşı)
+ */
+export async function moveSection(sectionId: string, direction: 'up' | 'down'): Promise<void> {
+  const section = await getSectionById(sectionId);
+  if (!section) return;
+  
+  const page = await getPageById(section.pageId);
+  if (!page || !page.sections || page.sections.length < 2) return;
+  
+  const currentIndex = page.sections.indexOf(sectionId);
+  if (currentIndex === -1) return;
+  
+  let newIndex: number;
+  if (direction === 'up') {
+    if (currentIndex === 0) return; // Zaten en üstte
+    newIndex = currentIndex - 1;
+  } else {
+    if (currentIndex === page.sections.length - 1) return; // Zaten en altta
+    newIndex = currentIndex + 1;
+  }
+  
+  // Section'ları yeniden sırala
+  const newSections = [...page.sections];
+  [newSections[currentIndex], newSections[newIndex]] = [newSections[newIndex], newSections[currentIndex]];
+  
+  // Her iki section'ın order'ını güncelle
+  const batch = writeBatch(db);
+  batch.update(doc(db, COLLECTIONS.sections, sectionId), {
+    order: newIndex,
+    updatedAt: serverTimestamp(),
+  });
+  
+  const swappedSection = await getSectionById(newSections[currentIndex]);
+  if (swappedSection) {
+    batch.update(doc(db, COLLECTIONS.sections, newSections[currentIndex]), {
+      order: currentIndex,
+      updatedAt: serverTimestamp(),
+    });
+  }
+  
+  // Page'in sections array'ini güncelle
+  batch.update(doc(db, COLLECTIONS.pages, section.pageId), {
+    sections: newSections,
+    updatedAt: serverTimestamp(),
+  });
+  
+  await batch.commit();
+}
+
+/**
+ * Section kopyala (duplicate)
+ */
+export async function duplicateSection(sectionId: string): Promise<string> {
+  const originalSection = await getSectionById(sectionId);
+  if (!originalSection) {
+    throw new Error('Section bulunamadı');
+  }
+  
+  const page = await getPageById(originalSection.pageId);
+  if (!page) {
+    throw new Error('Page bulunamadı');
+  }
+  
+  // Yeni section oluştur
+  const newSectionId = await createSection({
+    pageId: originalSection.pageId,
+    name: `${originalSection.name} (Kopya)`,
+    order: originalSection.order + 1,
+    settings: { ...originalSection.settings },
+  });
+  
+  // Column'ları kopyala
+  for (const columnId of originalSection.columns || []) {
+    const originalColumn = await getColumnById(columnId);
+    if (!originalColumn) continue;
+    
+    const newColumnId = await createColumn({
+      sectionId: newSectionId,
+      width: originalColumn.width,
+      order: originalColumn.order,
+      settings: { ...originalColumn.settings },
+    });
+    
+    // Block'ları kopyala
+    for (const blockId of originalColumn.blocks || []) {
+      const originalBlock = await getBlockById(blockId);
+      if (!originalBlock) continue;
+      
+      await createBlock({
+        columnId: newColumnId,
+        type: originalBlock.type,
+        props: { ...originalBlock.props },
+        order: originalBlock.order,
+      });
+    }
+  }
+  
+  return newSectionId;
+}
+
+/**
  * Column oluştur
  */
 export async function createColumn(input: ColumnCreateInput): Promise<string> {

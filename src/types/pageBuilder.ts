@@ -166,6 +166,7 @@ export interface BlockProps {
   muted?: boolean;
   controls?: boolean;
   aspectRatio?: '16:9' | '4:3' | '1:1' | '21:9';
+  playsInline?: boolean;
   
   // Button Block
   text?: string;
