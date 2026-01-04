@@ -10,6 +10,7 @@ import { getBlockById } from '@/lib/firebase/firestore';
 import { TextBlockSettings } from './blocks/TextBlockSettings';
 import { HeadingBlockSettings } from './blocks/HeadingBlockSettings';
 import { ImageBlockSettings } from './blocks/ImageBlockSettings';
+import { VideoBlockSettings } from './blocks/VideoBlockSettings';
 import { ButtonBlockSettings } from './blocks/ButtonBlockSettings';
 import { Spinner } from '@/components/ui/Spinner';
 import type { Block } from '@/types/pageBuilder';
@@ -85,6 +86,18 @@ export function BlockSettings({ blockId, activeTab, onUpdate }: BlockSettingsPro
       case 'image':
         return (
           <ImageBlockSettings
+            block={block}
+            activeTab={activeTab}
+            onUpdate={(updates) => {
+              const updated = { ...block, props: { ...block.props, ...updates } };
+              setBlock(updated);
+              onUpdate(updated);
+            }}
+          />
+        );
+      case 'video':
+        return (
+          <VideoBlockSettings
             block={block}
             activeTab={activeTab}
             onUpdate={(updates) => {

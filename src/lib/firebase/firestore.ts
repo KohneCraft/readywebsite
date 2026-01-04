@@ -722,12 +722,42 @@ export async function getAllPages(): Promise<Page[]> {
 }
 
 /**
+ * Undefined değerleri temizle (Firestore undefined kabul etmez)
+ */
+function removeUndefined<T extends Record<string, any>>(obj: T): Partial<T> {
+  const cleaned: Partial<T> = {};
+  for (const key in obj) {
+    const value = obj[key];
+    if (value !== undefined) {
+      // Nested object kontrolü (Date, Array, null hariç)
+      if (
+        typeof value === 'object' &&
+        value !== null &&
+        !Array.isArray(value) &&
+        Object.prototype.toString.call(value) !== '[object Date]'
+      ) {
+        // Nested object - recursive temizle
+        const cleanedNested = removeUndefined(value as Record<string, any>);
+        if (Object.keys(cleanedNested).length > 0) {
+          cleaned[key] = cleanedNested as T[Extract<keyof T, string>];
+        }
+      } else {
+        cleaned[key] = value;
+      }
+    }
+  }
+  return cleaned;
+}
+
+/**
  * Sayfa güncelle
  */
 export async function updatePage(id: string, input: PageUpdateInput): Promise<void> {
   const docRef = doc(db, COLLECTIONS.pages, id);
+  // Undefined değerleri temizle
+  const cleanedInput = removeUndefined(input);
   await updateDoc(docRef, {
-    ...input,
+    ...cleanedInput,
     updatedAt: serverTimestamp(),
   });
 }
