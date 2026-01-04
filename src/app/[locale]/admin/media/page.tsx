@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 // ============================================
 // Page Builder - Media Manager Page
 // Medya yönetimi ana sayfası
@@ -211,12 +212,12 @@ export default function MediaManagerPage() {
               {authError}
             </p>
             {!isFirebaseAuth && (
-              <a
+              <Link
                 href="/admin/login"
                 className="mt-2 inline-block text-sm text-yellow-900 dark:text-yellow-100 underline hover:text-yellow-700 dark:hover:text-yellow-300"
               >
                 → Firebase Auth ile giriş yapmak için tıklayın
-              </a>
+              </Link>
             )}
           </div>
         )}

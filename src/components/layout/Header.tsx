@@ -7,6 +7,7 @@
 
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import { useLocale, useTranslations } from 'next-intl';
 import { Menu, X } from 'lucide-react';
@@ -157,9 +158,11 @@ export function Header() {
             {/* Logo */}
             <Link href={getLocalizedHref('/')} className="flex items-center gap-2">
               {themeSettings?.header?.logo ? (
-                <img 
+                <Image
                   src={themeSettings.header.logo} 
                   alt={logoText}
+                  width={160}
+                  height={40}
                   className="h-10 w-auto"
                 />
               ) : (

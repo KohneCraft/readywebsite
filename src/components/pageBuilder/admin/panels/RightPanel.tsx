@@ -51,7 +51,7 @@ export function RightPanel({ selectedElement, page, onUpdate }: RightPanelProps)
         console.error('Section güncelleme hatası:', error);
       }
     }, 500);
-  }, [selectedElement?.id]);
+  }, [selectedElement]);
 
   const handleColumnUpdate = useCallback(async (updates: Partial<Column>) => {
     if (!selectedElement) return;
@@ -72,7 +72,7 @@ export function RightPanel({ selectedElement, page, onUpdate }: RightPanelProps)
         console.error('Column güncelleme hatası:', error);
       }
     }, 500);
-  }, [selectedElement?.id]);
+  }, [selectedElement]);
 
   const handleBlockUpdate = useCallback(async (updates: Partial<Block>) => {
     if (!selectedElement) return;
@@ -92,7 +92,7 @@ export function RightPanel({ selectedElement, page, onUpdate }: RightPanelProps)
         console.error('Block güncelleme hatası:', error);
       }
     }, 500);
-  }, [selectedElement?.id]);
+  }, [selectedElement]);
 
   // View mode seçimi (Header, Footer, Page Settings veya Element)
   if (!selectedElement) {
@@ -304,5 +304,3 @@ function getElementTitle(element: { type: 'section' | 'column' | 'block' | 'page
       return 'Ayarlar';
   }
 }
-
-

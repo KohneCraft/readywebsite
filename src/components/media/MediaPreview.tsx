@@ -4,7 +4,7 @@
 // Page Builder - Media Preview Component
 // Lightbox önizleme
 // ============================================
-
+import Image from 'next/image';
 import { X } from 'lucide-react';
 import type { Media } from '@/types/media';
 
@@ -28,10 +28,16 @@ export function MediaPreview({ item, onClose }: MediaPreviewProps) {
 
       <div className="max-w-7xl max-h-full" onClick={(e) => e.stopPropagation()}>
         {item.type === 'image' ? (
-          <img
+          <Image
             src={item.url}
             alt={item.alt || item.name}
+            width={item.dimensions?.width || 1200}
+            height={item.dimensions?.height || 800}
             className="max-w-full max-h-[90vh] object-contain"
+            style={{
+              width: 'auto',
+              height: 'auto',
+            }}
           />
         ) : (
           <video
@@ -52,4 +58,3 @@ export function MediaPreview({ item, onClose }: MediaPreviewProps) {
     </div>
   );
 }
-

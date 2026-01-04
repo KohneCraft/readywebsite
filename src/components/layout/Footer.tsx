@@ -7,6 +7,7 @@
 
 import { useMemo, useCallback } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { useLocale, useTranslations } from 'next-intl';
 import { 
   Facebook,
@@ -110,9 +111,11 @@ export function Footer() {
           <div className="lg:col-span-1">
             <Link href={getLocalizedHref('/')} className="flex items-center gap-2 mb-4">
               {themeSettings?.footer?.logo ? (
-                <img 
+                <Image
                   src={themeSettings.footer.logo} 
                   alt={footerLogoText}
+                  width={160}
+                  height={40}
                   className="h-10 w-auto"
                 />
               ) : (

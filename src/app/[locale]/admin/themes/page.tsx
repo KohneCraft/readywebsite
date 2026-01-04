@@ -6,6 +6,7 @@
 // ============================================
 
 import { useState, useEffect } from 'react';
+import Image from 'next/image';
 import { useLocale } from 'next-intl';
 import { motion } from 'framer-motion';
 import { 
@@ -354,15 +355,16 @@ export default function ThemesPage() {
               transition={{ delay: index * 0.1 }}
             >
               <Card className="h-full hover:shadow-lg transition-shadow">
-                <div className="relative">
+                <div className="relative h-48">
                   {theme.thumbnail ? (
-                    <img
+                    <Image
                       src={theme.thumbnail}
                       alt={theme.name}
-                      className="w-full h-48 object-cover rounded-t-lg"
+                      fill
+                      className="object-cover rounded-t-lg"
                     />
                   ) : (
-                    <div className="w-full h-48 bg-gradient-to-br from-primary-100 to-primary-200 dark:from-primary-900/30 dark:to-primary-800/30 rounded-t-lg flex items-center justify-center">
+                    <div className="w-full h-full bg-gradient-to-br from-primary-100 to-primary-200 dark:from-primary-900/30 dark:to-primary-800/30 rounded-t-lg flex items-center justify-center">
                       <Palette className="w-16 h-16 text-primary-400" />
                     </div>
                   )}

@@ -70,7 +70,7 @@ export function PageRenderer({ pageId, slug, allowDraft = false }: PageRendererP
     }
     
     loadPage();
-  }, [pageId, slug]);
+  }, [pageId, slug, allowDraft]);
   
   // SEO Meta Tags
   useEffect(() => {

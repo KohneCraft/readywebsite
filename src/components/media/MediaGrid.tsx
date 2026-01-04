@@ -6,6 +6,7 @@
 // ============================================
 
 import { useState } from 'react';
+import Image from 'next/image';
 import { Copy, Download, Trash2, Eye } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import type { Media, MediaViewMode } from '@/types/media';
@@ -100,10 +101,11 @@ export function MediaGrid({
                 onClick={() => onPreview?.(item)}
               >
                 {item.type === 'image' ? (
-                  <img
+                  <Image
                     src={item.thumbnail || item.url}
                     alt={item.alt || item.name}
-                    className="w-full h-full object-cover"
+                    fill
+                    className="object-cover"
                   />
                 ) : (
                   <video
@@ -219,12 +221,13 @@ export function MediaGrid({
                 />
               </td>
               <td className="p-3">
-                <div className="list-preview w-16 h-16 rounded overflow-hidden bg-gray-100 dark:bg-gray-800">
+              <div className="list-preview w-16 h-16 rounded overflow-hidden bg-gray-100 dark:bg-gray-800 relative">
                   {item.type === 'image' ? (
-                    <img
+                    <Image
                       src={item.thumbnail || item.url}
                       alt={item.alt || item.name}
-                      className="w-full h-full object-cover cursor-pointer"
+                      fill
+                      className="object-cover cursor-pointer"
                       onClick={() => onPreview?.(item)}
                     />
                   ) : (
