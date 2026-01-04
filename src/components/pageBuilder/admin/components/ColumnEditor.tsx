@@ -260,6 +260,34 @@ export function ColumnEditor({
                 console.error('Block ekleme hatası:', error);
               }
             }}
+            onAddNestedColumn={async () => {
+              try {
+                const { createColumn } = await import('@/lib/firebase/firestore');
+                const numColumns = nestedColumns.length || 0;
+                const defaultWidth = numColumns > 0 ? 100 / (numColumns + 1) : 100;
+                
+                // Yeni nested column oluştur
+                await createColumn({
+                  sectionId: column.sectionId,
+                  parentColumnId: column.id,
+                  width: defaultWidth,
+                  order: nestedColumns.length,
+                });
+                
+                // Mevcut nested column'ların width'lerini güncelle
+                if (nestedColumns.length > 0) {
+                  const { updateColumn } = await import('@/lib/firebase/firestore');
+                  for (const nestedCol of nestedColumns) {
+                    await updateColumn(nestedCol.id, { width: defaultWidth });
+                  }
+                }
+                
+                window.dispatchEvent(new CustomEvent('section-updated', { detail: { sectionId: 'any' } }));
+              } catch (error) {
+                console.error('İç kolon ekleme hatası:', error);
+                alert('İç kolon eklenirken bir hata oluştu.');
+              }
+            }}
           />
         )}
       </div>
@@ -269,10 +297,12 @@ export function ColumnEditor({
 
 interface EmptyColumnProps {
   onAddBlock: (blockType: BlockType) => Promise<void>;
+  onAddNestedColumn?: () => Promise<void>;
 }
 
-function EmptyColumn({ onAddBlock }: EmptyColumnProps) {
+function EmptyColumn({ onAddBlock, onAddNestedColumn }: EmptyColumnProps) {
   const [isAdding, setIsAdding] = useState(false);
+  const [isAddingColumn, setIsAddingColumn] = useState(false);
 
   const handleAddImage = async (e: React.MouseEvent) => {
     e.stopPropagation(); // Column seçimini engelle
@@ -286,12 +316,38 @@ function EmptyColumn({ onAddBlock }: EmptyColumnProps) {
     }
   };
 
+  const handleAddNestedColumn = async (e: React.MouseEvent) => {
+    e.stopPropagation(); // Column seçimini engelle
+    if (!onAddNestedColumn) return;
+    setIsAddingColumn(true);
+    try {
+      await onAddNestedColumn();
+    } catch (error) {
+      console.error('İç kolon ekleme hatası:', error);
+    } finally {
+      setIsAddingColumn(false);
+    }
+  };
+
   return (
     <div className="text-center py-8 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg">
       <p className="text-xs text-gray-400 dark:text-gray-500 mb-4">
-        Buraya blok sürükleyin veya hızlı ekleme butonunu kullanın
+        Buraya blok sürükleyin, iç kolon ekleyin veya hızlı ekleme butonunu kullanın
       </p>
       <div className="flex flex-col items-center gap-2">
+        {onAddNestedColumn && (
+          <button
+            onClick={handleAddNestedColumn}
+            disabled={isAddingColumn}
+            className={cn(
+              'flex items-center justify-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors text-sm font-medium',
+              isAddingColumn && 'opacity-50 cursor-not-allowed'
+            )}
+          >
+            <Columns className="w-4 h-4" />
+            {isAddingColumn ? 'Ekleniyor...' : 'İç Kolon Ekle'}
+          </button>
+        )}
         <button
           onClick={handleAddImage}
           disabled={isAdding}
