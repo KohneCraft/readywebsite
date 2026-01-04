@@ -6,11 +6,13 @@
 // ============================================
 
 import { useState, useEffect } from 'react';
-import { getSectionById } from '@/lib/firebase/firestore';
+import { getSectionById, getColumnById } from '@/lib/firebase/firestore';
 import { SpacingControl } from '../controls/SpacingControl';
 import { ColorPicker } from '../controls/ColorPicker';
 import { Spinner } from '@/components/ui/Spinner';
-import type { Section } from '@/types/pageBuilder';
+import { Input } from '@/components/ui/Input';
+import { cn } from '@/lib/utils';
+import type { Section, Column } from '@/types/pageBuilder';
 
 interface SectionSettingsProps {
   sectionId: string;
@@ -20,6 +22,7 @@ interface SectionSettingsProps {
 
 export function SectionSettings({ sectionId, activeTab, onUpdate }: SectionSettingsProps) {
   const [section, setSection] = useState<Section | null>(null);
+  const [columns, setColumns] = useState<Column[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -36,6 +39,29 @@ export function SectionSettings({ sectionId, activeTab, onUpdate }: SectionSetti
     }
     loadSection();
   }, [sectionId]);
+
+  // Column'ları yükle
+  useEffect(() => {
+    async function loadColumns() {
+      if (!section?.columns || section.columns.length === 0) {
+        setColumns([]);
+        return;
+      }
+
+      try {
+        const columnPromises = section.columns.map(columnId => getColumnById(columnId));
+        const loadedColumns = await Promise.all(columnPromises);
+        setColumns(loadedColumns.filter(Boolean) as Column[]);
+      } catch (error) {
+        console.error('Column yükleme hatası:', error);
+        setColumns([]);
+      }
+    }
+
+    if (section) {
+      loadColumns();
+    }
+  }, [section]);
 
   if (loading) {
     return (
@@ -192,6 +218,85 @@ export function SectionSettings({ sectionId, activeTab, onUpdate }: SectionSetti
             className="w-full px-3 py-2 text-sm border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-white"
           />
         </div>
+
+        {/* Kolon Genişlikleri */}
+        {columns.length > 0 && (
+          <div className="border-t border-gray-200 dark:border-gray-700 pt-4 mt-4">
+            <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-2">
+              Kolon Genişlikleri (%)
+            </label>
+            <div className="space-y-2">
+              {columns.map((col, index) => (
+                <div key={col.id} className="flex items-center gap-2">
+                  <span className="text-xs text-gray-600 dark:text-gray-400 w-16">
+                    Kolon {index + 1}:
+                  </span>
+                  <Input
+                    type="number"
+                    min="0"
+                    max="100"
+                    step="0.1"
+                    value={col.width || 0}
+                    onChange={async (e) => {
+                      const newWidth = parseFloat(e.target.value) || 0;
+                      const updatedColumns = columns.map(c => 
+                        c.id === col.id ? { ...c, width: newWidth } : c
+                      );
+                      setColumns(updatedColumns);
+                      
+                      // Firestore'da güncelle
+                      try {
+                        const { updateColumn } = await import('@/lib/firebase/firestore');
+                        await updateColumn(col.id, { width: newWidth });
+                        window.dispatchEvent(new CustomEvent('section-updated', { detail: { sectionId: 'any' } }));
+                      } catch (error) {
+                        console.error('Kolon genişliği güncelleme hatası:', error);
+                      }
+                    }}
+                    className="flex-1"
+                  />
+                  <span className="text-xs text-gray-500 dark:text-gray-500">%</span>
+                </div>
+              ))}
+              <div className="mt-2 pt-2 border-t border-gray-200 dark:border-gray-700">
+                <div className="flex items-center justify-between text-xs">
+                  <span className="text-gray-600 dark:text-gray-400">Toplam:</span>
+                  <span className={cn(
+                    'font-medium',
+                    columns.reduce((sum, col) => sum + (col.width || 0), 0) === 100
+                      ? 'text-green-600 dark:text-green-400'
+                      : 'text-red-600 dark:text-red-400'
+                  )}>
+                    {columns.reduce((sum, col) => sum + (col.width || 0), 0).toFixed(1)}%
+                  </span>
+                </div>
+                {columns.reduce((sum, col) => sum + (col.width || 0), 0) !== 100 && (
+                  <button
+                    onClick={async () => {
+                      // Eşit dağıt
+                      const equalWidth = 100 / columns.length;
+                      const updatedColumns = columns.map(c => ({ ...c, width: equalWidth }));
+                      setColumns(updatedColumns);
+                      
+                      try {
+                        const { updateColumn } = await import('@/lib/firebase/firestore');
+                        await Promise.all(
+                          updatedColumns.map(col => updateColumn(col.id, { width: col.width }))
+                        );
+                        window.dispatchEvent(new CustomEvent('section-updated', { detail: { sectionId: 'any' } }));
+                      } catch (error) {
+                        console.error('Kolon genişlikleri güncelleme hatası:', error);
+                      }
+                    }}
+                    className="mt-2 text-xs text-primary-600 dark:text-primary-400 hover:underline"
+                  >
+                    Eşit Dağıt ({columns.length > 0 ? (100 / columns.length).toFixed(1) : 0}%)
+                  </button>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     );
   }

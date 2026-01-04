@@ -8,8 +8,8 @@
 import { useState, useEffect } from 'react';
 import { useDroppable } from '@dnd-kit/core';
 import { BlockEditor } from './BlockEditor';
-import { getBlockById } from '@/lib/firebase/firestore';
-import { GripVertical, Image as ImageIcon } from 'lucide-react';
+import { getBlockById, getColumnById } from '@/lib/firebase/firestore';
+import { GripVertical, Image as ImageIcon, Columns } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import type { Column, Block, BlockType } from '@/types/pageBuilder';
 
@@ -31,8 +31,10 @@ export function ColumnEditor({
   onSelectElement,
 }: ColumnEditorProps) {
   const [blocks, setBlocks] = useState<Block[]>([]);
+  const [nestedColumns, setNestedColumns] = useState<Column[]>([]);
   const [isHovered, setIsHovered] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [nestedColumnsLoading, setNestedColumnsLoading] = useState(false);
 
   const { setNodeRef, isOver } = useDroppable({
     id: column.id,
@@ -64,7 +66,37 @@ export function ColumnEditor({
     loadBlocks();
   }, [column.blocks]);
 
+  // Nested columns'ları yükle
+  useEffect(() => {
+    async function loadNestedColumns() {
+      if (!column.columns || column.columns.length === 0) {
+        setNestedColumns([]);
+        setNestedColumnsLoading(false);
+        return;
+      }
+
+      try {
+        setNestedColumnsLoading(true);
+        const columnPromises = column.columns.map(columnId => getColumnById(columnId));
+        const loadedColumns = await Promise.all(columnPromises);
+        setNestedColumns(loadedColumns.filter(Boolean) as Column[]);
+      } catch (error) {
+        console.error('Nested column yükleme hatası:', error);
+        setNestedColumns([]);
+      } finally {
+        setNestedColumnsLoading(false);
+      }
+    }
+
+    loadNestedColumns();
+  }, [column.columns]);
+
   const settings = column.settings || {};
+  
+  // Nested columns için grid template
+  const nestedGridTemplate = nestedColumns.length > 0
+    ? nestedColumns.map(col => `${col.width || 100 / nestedColumns.length}fr`).join(' ')
+    : '1fr';
 
   return (
     <div
@@ -97,14 +129,81 @@ export function ColumnEditor({
           <div className="flex items-center gap-1">
             <GripVertical className="w-3 h-3" />
             <span>Kolon {index + 1}</span>
+            {column.columns && column.columns.length > 0 && (
+              <span className="text-gray-400">({column.columns.length} iç kolon)</span>
+            )}
           </div>
-          <span className="text-gray-400">{Math.round(column.width || 0)}%</span>
+          <div className="flex items-center gap-2">
+            <span className="text-gray-400">{Math.round(column.width || 0)}%</span>
+            <button
+              onClick={async (e) => {
+                e.stopPropagation();
+                try {
+                  const { createColumn } = await import('@/lib/firebase/firestore');
+                  const numColumns = nestedColumns.length || 1;
+                  const defaultWidth = 100 / (numColumns + 1);
+                  
+                  // Yeni nested column oluştur
+                  await createColumn({
+                    sectionId: column.sectionId,
+                    parentColumnId: column.id,
+                    width: defaultWidth,
+                    order: nestedColumns.length,
+                  });
+                  
+                  // Mevcut nested column'ların width'lerini güncelle
+                  for (const nestedCol of nestedColumns) {
+                    await import('@/lib/firebase/firestore').then(({ updateColumn }) => 
+                      updateColumn(nestedCol.id, { width: defaultWidth })
+                    );
+                  }
+                  
+                  window.dispatchEvent(new CustomEvent('section-updated', { detail: { sectionId: 'any' } }));
+                } catch (error) {
+                  console.error('İç kolon ekleme hatası:', error);
+                  alert('İç kolon eklenirken bir hata oluştu.');
+                }
+              }}
+              className="p-1 hover:bg-gray-700 rounded transition-colors"
+              title="İç Kolon Ekle"
+            >
+              <Columns className="w-3 h-3" />
+            </button>
+          </div>
         </div>
       )}
 
-      {/* Blocks */}
+      {/* Content: Nested Columns veya Blocks */}
       <div className="space-y-2 pt-8">
-        {loading ? (
+        {nestedColumnsLoading ? (
+          <div className="text-center py-4 text-gray-500 dark:text-gray-400 text-sm">
+            İç kolonlar yükleniyor...
+          </div>
+        ) : nestedColumns.length > 0 ? (
+          // Nested columns varsa, onları göster
+          <div
+            className="grid gap-2"
+            style={{
+              gridTemplateColumns: nestedGridTemplate,
+            }}
+          >
+            {nestedColumns.map((nestedCol, nestedIndex) => (
+              <ColumnEditor
+                key={nestedCol.id}
+                column={nestedCol}
+                index={nestedIndex}
+                isSelected={selectedElement?.type === 'column' && selectedElement.id === nestedCol.id}
+                onSelect={() => {
+                  if (onSelectElement) {
+                    onSelectElement({ type: 'column', id: nestedCol.id });
+                  }
+                }}
+                selectedElement={selectedElement}
+                onSelectElement={onSelectElement}
+              />
+            ))}
+          </div>
+        ) : loading ? (
           <div className="text-center py-4 text-gray-500 dark:text-gray-400 text-sm">
             Yükleniyor...
           </div>
