@@ -941,8 +941,9 @@ export async function getBlockById(id: string): Promise<Block | null> {
  */
 export async function updateBlock(id: string, input: BlockUpdateInput): Promise<void> {
   const docRef = doc(db, COLLECTIONS.blocks, id);
+  const cleanedInput = removeUndefined(input); // undefined değerleri temizle
   await updateDoc(docRef, {
-    ...input,
+    ...cleanedInput,
     updatedAt: serverTimestamp(),
   });
 }
@@ -1014,11 +1015,16 @@ export async function moveBlock(blockId: string, targetColumnId: string, newOrde
   const oldColumnId = blockData.columnId;
   
   // Block'u güncelle
-  batch.update(doc(db, COLLECTIONS.blocks, blockId), {
+  const updateData: any = {
     columnId: targetColumnId,
-    order: newOrder ?? blockData.order,
     updatedAt: serverTimestamp(),
-  });
+  };
+  if (newOrder !== undefined) {
+    updateData.order = newOrder;
+  } else if (blockData.order !== undefined) {
+    updateData.order = blockData.order;
+  }
+  batch.update(doc(db, COLLECTIONS.blocks, blockId), updateData);
   
   // Eski column'dan çıkar
   if (oldColumnId) {

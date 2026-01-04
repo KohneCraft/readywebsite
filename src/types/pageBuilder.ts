@@ -123,6 +123,11 @@ export interface BlockProps {
   boxShadow?: string;
   animation?: Animation;
   responsive?: Record<Breakpoint, ResponsiveSettings>;
+  // HTML özellikleri
+  className?: string;
+  id?: string;
+  customCSS?: string;
+  dataAttributes?: Record<string, string>;
   
   // Text Block
   content?: string;
@@ -152,6 +157,7 @@ export interface BlockProps {
   linkTarget?: '_self' | '_blank';
   filter?: ImageFilter;
   hover?: HoverEffect;
+  loading?: 'lazy' | 'eager';
   
   // Video Block
   videoProvider?: 'youtube' | 'vimeo' | 'custom';

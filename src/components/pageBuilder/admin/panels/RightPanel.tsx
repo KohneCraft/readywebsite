@@ -83,10 +83,14 @@ export function RightPanel({ selectedElement, page, onUpdate }: RightPanelProps)
     
     debounceTimer.current = setTimeout(async () => {
       try {
-        await updateBlock(selectedElement.id, {
-          props: updates.props,
-          order: updates.order,
-        });
+        const updateData: any = {};
+        if (updates.props !== undefined) {
+          updateData.props = updates.props;
+        }
+        if (updates.order !== undefined) {
+          updateData.order = updates.order;
+        }
+        await updateBlock(selectedElement.id, updateData);
         window.dispatchEvent(new CustomEvent('section-updated', { detail: { sectionId: 'any' } }));
       } catch (error) {
         console.error('Block güncelleme hatası:', error);
