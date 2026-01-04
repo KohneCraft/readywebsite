@@ -8,8 +8,8 @@
 import { useState, useEffect } from 'react';
 import { useDroppable } from '@dnd-kit/core';
 import { BlockEditor } from './BlockEditor';
-import { getBlockById, getColumnById } from '@/lib/firebase/firestore';
-import { GripVertical, Image as ImageIcon, Columns, Plus } from 'lucide-react';
+import { getBlockById, getColumnById, deleteColumn } from '@/lib/firebase/firestore';
+import { GripVertical, Image as ImageIcon, Columns, Plus, Trash2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import type { Column, Block, BlockType } from '@/types/pageBuilder';
 
@@ -21,6 +21,7 @@ interface ColumnEditorProps {
   selectedElement?: { type: 'section' | 'column' | 'block'; id: string } | null;
   onSelectElement?: (element: { type: 'section' | 'column' | 'block'; id: string } | null) => void;
   onAddColumn?: (afterColumnId: string) => Promise<void>; // Yan yana kolon eklemek için
+  onDeleteColumn?: (columnId: string) => Promise<void>; // Kolon silmek için
 }
 
 export function ColumnEditor({
@@ -31,6 +32,7 @@ export function ColumnEditor({
   selectedElement,
   onSelectElement,
   onAddColumn,
+  onDeleteColumn,
 }: ColumnEditorProps) {
   const [blocks, setBlocks] = useState<Block[]>([]);
   const [nestedColumns, setNestedColumns] = useState<Column[]>([]);
@@ -192,6 +194,31 @@ export function ColumnEditor({
             >
               <Columns className="w-3 h-3" />
             </button>
+            {(onDeleteColumn || column.parentColumnId) && (
+              <button
+                onClick={async (e) => {
+                  e.stopPropagation();
+                  if (!confirm('Bu kolonu silmek istediğinize emin misiniz? İçindeki tüm içerik de silinecektir.')) {
+                    return;
+                  }
+                  try {
+                    if (onDeleteColumn) {
+                      await onDeleteColumn(column.id);
+                    } else {
+                      await deleteColumn(column.id);
+                      window.dispatchEvent(new CustomEvent('section-updated', { detail: { sectionId: 'any' } }));
+                    }
+                  } catch (error) {
+                    console.error('Kolon silme hatası:', error);
+                    alert('Kolon silinirken bir hata oluştu.');
+                  }
+                }}
+                className="p-1 hover:bg-red-600 rounded transition-colors"
+                title="Kolonu Sil"
+              >
+                <Trash2 className="w-3 h-3" />
+              </button>
+            )}
           </div>
         </div>
       )}
@@ -257,6 +284,15 @@ export function ColumnEditor({
                   } catch (error) {
                     console.error('Nested kolon ekleme hatası:', error);
                     alert('Nested kolon eklenirken bir hata oluştu.');
+                  }
+                }}
+                onDeleteColumn={async (nestedColumnId) => {
+                  try {
+                    await deleteColumn(nestedColumnId);
+                    window.dispatchEvent(new CustomEvent('section-updated', { detail: { sectionId: 'any' } }));
+                  } catch (error) {
+                    console.error('Nested kolon silme hatası:', error);
+                    throw error;
                   }
                 }}
               />

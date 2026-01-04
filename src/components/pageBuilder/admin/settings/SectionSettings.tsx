@@ -23,6 +23,7 @@ interface SectionSettingsProps {
 export function SectionSettings({ sectionId, activeTab, onUpdate }: SectionSettingsProps) {
   const [section, setSection] = useState<Section | null>(null);
   const [columns, setColumns] = useState<Column[]>([]);
+  const [nestedColumnsMap, setNestedColumnsMap] = useState<Record<string, Column[]>>({});
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -45,16 +46,30 @@ export function SectionSettings({ sectionId, activeTab, onUpdate }: SectionSetti
     async function loadColumns() {
       if (!section?.columns || section.columns.length === 0) {
         setColumns([]);
+        setNestedColumnsMap({});
         return;
       }
 
       try {
         const columnPromises = section.columns.map(columnId => getColumnById(columnId));
         const loadedColumns = await Promise.all(columnPromises);
-        setColumns(loadedColumns.filter(Boolean) as Column[]);
+        const validColumns = loadedColumns.filter(Boolean) as Column[];
+        setColumns(validColumns);
+        
+        // Her kolonun iç kolonlarını yükle
+        const nestedMap: Record<string, Column[]> = {};
+        for (const col of validColumns) {
+          if (col.columns && col.columns.length > 0) {
+            const nestedPromises = col.columns.map(nestedId => getColumnById(nestedId));
+            const nestedLoaded = await Promise.all(nestedPromises);
+            nestedMap[col.id] = nestedLoaded.filter(Boolean) as Column[];
+          }
+        }
+        setNestedColumnsMap(nestedMap);
       } catch (error) {
         console.error('Column yükleme hatası:', error);
         setColumns([]);
+        setNestedColumnsMap({});
       }
     }
 
@@ -248,38 +263,91 @@ export function SectionSettings({ sectionId, activeTab, onUpdate }: SectionSetti
               Kolon Genişlikleri (%)
             </label>
             <div className="space-y-2">
-              {columns.map((col, index) => (
-                <div key={col.id} className="flex items-center gap-2">
-                  <span className="text-xs text-gray-600 dark:text-gray-400 w-16">
-                    Kolon {index + 1}:
-                  </span>
-                  <Input
-                    type="number"
-                    min="0"
-                    max="100"
-                    step="0.1"
-                    value={col.width || 0}
-                    onChange={async (e) => {
-                      const newWidth = parseFloat(e.target.value) || 0;
-                      const updatedColumns = columns.map(c => 
-                        c.id === col.id ? { ...c, width: newWidth } : c
-                      );
-                      setColumns(updatedColumns);
-                      
-                      // Firestore'da güncelle
-                      try {
-                        const { updateColumn } = await import('@/lib/firebase/firestore');
-                        await updateColumn(col.id, { width: newWidth });
-                        window.dispatchEvent(new CustomEvent('section-updated', { detail: { sectionId: 'any' } }));
-                      } catch (error) {
-                        console.error('Kolon genişliği güncelleme hatası:', error);
-                      }
-                    }}
-                    className="flex-1"
-                  />
-                  <span className="text-xs text-gray-500 dark:text-gray-500">%</span>
-                </div>
-              ))}
+              {columns.map((col, index) => {
+                // Bu kolonun iç kolonlarını kontrol et
+                const nestedColumns = nestedColumnsMap[col.id] || [];
+                const hasNestedColumns = nestedColumns.length > 0;
+                return (
+                  <div key={col.id} className="space-y-2">
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs text-gray-600 dark:text-gray-400 w-16">
+                        Kolon {index + 1}:
+                      </span>
+                      <Input
+                        type="number"
+                        min="0"
+                        max="100"
+                        step="0.1"
+                        value={col.width || 0}
+                        onChange={async (e) => {
+                          const newWidth = parseFloat(e.target.value) || 0;
+                          const updatedColumns = columns.map(c => 
+                            c.id === col.id ? { ...c, width: newWidth } : c
+                          );
+                          setColumns(updatedColumns);
+                          
+                          // Firestore'da güncelle
+                          try {
+                            const { updateColumn } = await import('@/lib/firebase/firestore');
+                            await updateColumn(col.id, { width: newWidth });
+                            window.dispatchEvent(new CustomEvent('section-updated', { detail: { sectionId: 'any' } }));
+                          } catch (error) {
+                            console.error('Kolon genişliği güncelleme hatası:', error);
+                          }
+                        }}
+                        className="flex-1"
+                      />
+                      <span className="text-xs text-gray-500 dark:text-gray-500">%</span>
+                      {hasNestedColumns && (
+                        <span className="text-xs text-gray-400 dark:text-gray-500">
+                          ({nestedColumns.length} iç kolon)
+                        </span>
+                      )}
+                    </div>
+                    {/* İç kolon genişlikleri */}
+                    {hasNestedColumns && (
+                      <div className="ml-4 pl-4 border-l-2 border-gray-200 dark:border-gray-700 space-y-1">
+                        {nestedColumns.map((nestedCol, nestedIndex) => (
+                          <div key={nestedCol.id} className="flex items-center gap-2">
+                            <span className="text-xs text-gray-500 dark:text-gray-500 w-12">
+                              → {nestedIndex + 1}:
+                            </span>
+                            <Input
+                              type="number"
+                              min="0"
+                              max="100"
+                              step="0.1"
+                              value={nestedCol.width || 0}
+                              onChange={async (e) => {
+                                const newWidth = parseFloat(e.target.value) || 0;
+                                try {
+                                  const { updateColumn } = await import('@/lib/firebase/firestore');
+                                  await updateColumn(nestedCol.id, { width: newWidth });
+                                  window.dispatchEvent(new CustomEvent('section-updated', { detail: { sectionId: 'any' } }));
+                                  // Nested columns map'ini güncelle
+                                  const updatedNested = await getColumnById(nestedCol.id);
+                                  if (updatedNested) {
+                                    setNestedColumnsMap(prev => ({
+                                      ...prev,
+                                      [col.id]: nestedColumns.map(nc => 
+                                        nc.id === nestedCol.id ? updatedNested : nc
+                                      ),
+                                    }));
+                                  }
+                                } catch (error) {
+                                  console.error('İç kolon genişliği güncelleme hatası:', error);
+                                }
+                              }}
+                              className="flex-1"
+                            />
+                            <span className="text-xs text-gray-500 dark:text-gray-500">%</span>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
               <div className="mt-2 pt-2 border-t border-gray-200 dark:border-gray-700">
                 <div className="flex items-center justify-between text-xs">
                   <span className="text-gray-600 dark:text-gray-400">Toplam:</span>

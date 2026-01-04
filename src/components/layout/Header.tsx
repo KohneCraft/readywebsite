@@ -16,7 +16,9 @@ import { cn } from '@/lib/utils';
 import { ThemeToggle } from '@/components/ui/ThemeToggle';
 import { LanguageSwitcher } from '@/components/ui/LanguageSwitcher';
 import { useTheme } from '@/contexts/ThemeContext';
+import { getSiteSettings } from '@/lib/firebase/firestore';
 import type { Locale } from '@/i18n';
+import type { SiteSettings } from '@/types/settings';
 
 interface NavItem {
   href: string;
@@ -30,6 +32,29 @@ export function Header() {
   const { themeSettings } = useTheme();
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [siteSettings, setSiteSettings] = useState<SiteSettings | null>(null);
+
+  // Site settings'i yükle
+  useEffect(() => {
+    async function loadSiteSettings() {
+      try {
+        const settings = await getSiteSettings();
+        setSiteSettings(settings);
+      } catch (error) {
+        console.error('Site settings yükleme hatası:', error);
+      }
+    }
+    loadSiteSettings();
+
+    // Site settings güncellendiğinde yeniden yükle
+    const handleSettingsUpdate = () => {
+      loadSiteSettings();
+    };
+    window.addEventListener('site-settings-updated', handleSettingsUpdate);
+    return () => {
+      window.removeEventListener('site-settings-updated', handleSettingsUpdate);
+    };
+  }, []);
 
   // Tema ayarlarından navigation items'ı al
   const navItems: NavItem[] = useMemo(() => {
@@ -46,10 +71,20 @@ export function Header() {
     ];
   }, [themeSettings, t]);
 
-  // Tema ayarlarından logo ve renkleri al
+  // Site settings'ten logo ve firma adını al, yoksa tema ayarlarından
   const logoText = useMemo(() => {
+    if (siteSettings?.siteName?.[locale as keyof typeof siteSettings.siteName]) {
+      return siteSettings.siteName[locale as keyof typeof siteSettings.siteName];
+    }
     return themeSettings?.header?.logoText || 'Page Builder';
-  }, [themeSettings]);
+  }, [siteSettings, themeSettings, locale]);
+
+  const logoUrl = useMemo(() => {
+    if (siteSettings?.logo?.light?.url) {
+      return siteSettings.logo.light.url;
+    }
+    return themeSettings?.header?.logo || '';
+  }, [siteSettings, themeSettings]);
 
   const headerBgColor = useMemo(() => {
     return themeSettings?.header?.backgroundColor || undefined;
@@ -157,13 +192,14 @@ export function Header() {
           <div className="flex items-center justify-between h-16 lg:h-20">
             {/* Logo */}
             <Link href={getLocalizedHref('/')} className="flex items-center gap-2">
-              {themeSettings?.header?.logo ? (
+              {logoUrl ? (
                 <Image
-                  src={themeSettings.header.logo} 
+                  src={logoUrl} 
                   alt={logoText}
                   width={160}
                   height={40}
                   className="h-10 w-auto"
+                  unoptimized
                 />
               ) : (
                 <div className="w-10 h-10 bg-primary-600 rounded-lg flex items-center justify-center">
@@ -172,8 +208,10 @@ export function Header() {
               )}
               <div className="flex flex-col">
                 <span className="font-bold text-lg leading-tight">{logoText}</span>
-                {!themeSettings?.header?.logoText && (
-                  <span className="text-xs text-muted-foreground hidden sm:block">Visual Page Editor</span>
+                {siteSettings?.siteSlogan?.[locale as keyof typeof siteSettings.siteSlogan] && (
+                  <span className="text-xs text-muted-foreground hidden sm:block">
+                    {siteSettings.siteSlogan[locale as keyof typeof siteSettings.siteSlogan]}
+                  </span>
                 )}
               </div>
             </Link>

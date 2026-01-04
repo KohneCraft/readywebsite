@@ -89,6 +89,90 @@ export function PageBuilderEditor({ pageId }: PageBuilderEditorProps) {
     const activeData = active.data.current;
     const overData = over.data.current;
 
+    // Yeni kolon ekleme (library'den)
+    if (activeData?.source === 'library' && activeData?.type === 'column') {
+      try {
+        const { createColumn, getSectionById, getColumnById, updateColumn } = await import('@/lib/firebase/firestore');
+        
+        // Eğer section'a bırakıldıysa
+        if (overData?.type === 'section') {
+          const sectionId = over.id as string;
+          const section = await getSectionById(sectionId);
+          if (!section) {
+            setActiveBlock(null);
+            return;
+          }
+          
+          // Mevcut kolon sayısını al
+          const currentColumns = section.columns || [];
+          const numColumns = currentColumns.length + 1;
+          const equalWidth = 100 / numColumns;
+          
+          // Yeni kolon oluştur
+          await createColumn({
+            sectionId: sectionId,
+            width: equalWidth,
+            order: currentColumns.length,
+          });
+          
+          // Mevcut kolonların genişliklerini güncelle
+          for (const colId of currentColumns) {
+            const col = await getColumnById(colId);
+            if (col) {
+              await updateColumn(colId, { width: equalWidth });
+            }
+          }
+          
+          // Sayfayı yeniden yükle
+          const pageData = await getPageById(pageId);
+          if (pageData) setPage(pageData);
+          setHasChanges(true);
+        }
+        // Eğer column'a bırakıldıysa, iç kolon oluştur
+        else if (overData?.type === 'column') {
+          const parentColumnId = over.id as string;
+          const parentColumn = await getColumnById(parentColumnId);
+          if (!parentColumn) {
+            setActiveBlock(null);
+            return;
+          }
+          
+          // Mevcut iç kolon sayısını al
+          const currentNestedColumns = parentColumn.columns || [];
+          const numColumns = currentNestedColumns.length + 1;
+          const equalWidth = 100 / numColumns;
+          
+          // Yeni iç kolon oluştur
+          await createColumn({
+            sectionId: parentColumn.sectionId,
+            parentColumnId: parentColumnId,
+            width: equalWidth,
+            order: currentNestedColumns.length,
+          });
+          
+          // Mevcut iç kolonların genişliklerini güncelle
+          for (const nestedColId of currentNestedColumns) {
+            const nestedCol = await getColumnById(nestedColId);
+            if (nestedCol) {
+              await updateColumn(nestedColId, { width: equalWidth });
+            }
+          }
+          
+          // Sayfayı yeniden yükle
+          const pageData = await getPageById(pageId);
+          if (pageData) setPage(pageData);
+          setHasChanges(true);
+        } else {
+          setActiveBlock(null);
+          return;
+        }
+      } catch (error) {
+        console.error('Kolon ekleme hatası:', error);
+      }
+      setActiveBlock(null);
+      return;
+    }
+
     // Yeni blok ekleme (library'den)
     if (activeData?.source === 'library' && activeData?.type) {
       try {

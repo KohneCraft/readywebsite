@@ -306,6 +306,16 @@ export function SectionEditor({
                     alert('Yeni kolon eklenirken bir hata oluştu.');
                   }
                 }}
+                onDeleteColumn={async (columnId) => {
+                  try {
+                    const { deleteColumn } = await import('@/lib/firebase/firestore');
+                    await deleteColumn(columnId);
+                    window.dispatchEvent(new CustomEvent('section-updated', { detail: { sectionId: section.id } }));
+                  } catch (error) {
+                    console.error('Kolon silme hatası:', error);
+                    throw error;
+                  }
+                }}
               />
             ))
           ) : (

@@ -20,12 +20,13 @@ import {
   Code,
   Search,
   Plus,
+  Columns,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import type { BlockType } from '@/types/pageBuilder';
 
 interface BlockLibraryItem {
-  type: BlockType;
+  type: BlockType | 'column';
   icon: typeof Type;
   label: string;
   description: string;
@@ -39,6 +40,7 @@ const blockLibrary: BlockLibraryItem[] = [
   { type: 'button', icon: MousePointer, label: 'Buton', description: 'Tıklanabilir buton', category: 'basic' },
   { type: 'spacer', icon: Minus, label: 'Boşluk', description: 'Dikey boşluk ekle', category: 'basic' },
   { type: 'divider', icon: Divide, label: 'Ayırıcı', description: 'Yatay çizgi', category: 'basic' },
+  { type: 'column', icon: Columns, label: 'Kolon', description: 'Yeni kolon ekle', category: 'basic' },
   
   // Medya Blokları
   { type: 'image', icon: Image, label: 'Görsel', description: 'Resim ekle', category: 'media' },
