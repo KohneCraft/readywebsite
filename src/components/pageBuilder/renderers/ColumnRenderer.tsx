@@ -154,35 +154,58 @@ export function ColumnRenderer({ columnId, index, isNested: _isNested = false, i
   }, [nestedColumns, isFlexLayout]);
   
   // Column style - useMemo ile optimize et
-  const columnStyle: React.CSSProperties = useMemo(() => ({
-    backgroundColor: settings.backgroundColor,
-    backgroundImage: settings.backgroundImage ? `url(${settings.backgroundImage})` : 'none',
-    padding: `${padding.top}px ${padding.right}px ${padding.bottom}px ${padding.left}px`,
-    margin: settings.margin
-      ? `${settings.margin.top || 0}px ${settings.margin.right || 0}px ${settings.margin.bottom || 0}px ${settings.margin.left || 0}px`
-      : '0',
-    borderRadius: settings.borderRadius ? `${settings.borderRadius}px` : '0',
-    border: settings.border?.width 
-      ? `${settings.border.width}px ${settings.border.style} ${settings.border.color}` 
-      : 'none',
-    boxShadow: settings.boxShadow || 'none',
-    minHeight: settings.minHeight ? `${settings.minHeight}px` : 'auto',
-    maxHeight: settings.maxHeight ? `${settings.maxHeight}px` : 'none',
-    maxWidth: settings.maxWidth ? `${settings.maxWidth}px` : 'none',
-    width: isWidthPercent ? undefined : `${columnWidth}px`, // px ise width kullan
-    height: settings.height 
-      ? (typeof settings.height === 'number' ? `${settings.height}px` : settings.height)
-      : 'auto',
-    display: 'flex',
-    flexDirection: 'column',
-    justifyContent: settings.verticalAlign || 'flex-start',
-    alignItems: settings.horizontalAlign || 'flex-start',
-    // gridColumn kaldırıldı - SectionRenderer'daki gridTemplateColumns zaten genişliği kontrol ediyor
-    // Eğer px kullanılıyorsa ve grid içindeyse, flex-shrink: 0 ekle ki genişlik korunsun
-    flexShrink: isWidthPercent ? undefined : 0,
-    // Eğer px kullanılıyorsa, min-width de ekle ki küçülmesin
-    minWidth: isWidthPercent ? undefined : `${columnWidth}px`,
-  }), [settings, padding, isWidthPercent, columnWidth]);
+  const columnStyle: React.CSSProperties = useMemo(() => {
+    // Hizalama değerlerini CSS değerlerine dönüştür
+    const getVerticalAlign = (align?: string): string => {
+      if (!align) return 'flex-start';
+      const mapping: Record<string, string> = {
+        'top': 'flex-start',
+        'center': 'center',
+        'bottom': 'flex-end',
+      };
+      return mapping[align] || 'flex-start';
+    };
+
+    const getHorizontalAlign = (align?: string): string => {
+      if (!align) return 'flex-start';
+      const mapping: Record<string, string> = {
+        'left': 'flex-start',
+        'center': 'center',
+        'right': 'flex-end',
+      };
+      return mapping[align] || 'flex-start';
+    };
+
+    return {
+      backgroundColor: settings.backgroundColor,
+      backgroundImage: settings.backgroundImage ? `url(${settings.backgroundImage})` : 'none',
+      padding: `${padding.top}px ${padding.right}px ${padding.bottom}px ${padding.left}px`,
+      margin: settings.margin
+        ? `${settings.margin.top || 0}px ${settings.margin.right || 0}px ${settings.margin.bottom || 0}px ${settings.margin.left || 0}px`
+        : '0',
+      borderRadius: settings.borderRadius ? `${settings.borderRadius}px` : '0',
+      border: settings.border?.width 
+        ? `${settings.border.width}px ${settings.border.style} ${settings.border.color}` 
+        : 'none',
+      boxShadow: settings.boxShadow || 'none',
+      minHeight: settings.minHeight ? `${settings.minHeight}px` : 'auto',
+      maxHeight: settings.maxHeight ? `${settings.maxHeight}px` : 'none',
+      maxWidth: settings.maxWidth ? `${settings.maxWidth}px` : 'none',
+      width: isWidthPercent ? undefined : `${columnWidth}px`, // px ise width kullan
+      height: settings.height 
+        ? (typeof settings.height === 'number' ? `${settings.height}px` : settings.height)
+        : 'auto',
+      display: 'flex',
+      flexDirection: 'column',
+      justifyContent: getVerticalAlign(settings.verticalAlign),
+      alignItems: getHorizontalAlign(settings.horizontalAlign),
+      // gridColumn kaldırıldı - SectionRenderer'daki gridTemplateColumns zaten genişliği kontrol ediyor
+      // Eğer px kullanılıyorsa ve grid içindeyse, flex-shrink: 0 ekle ki genişlik korunsun
+      flexShrink: isWidthPercent ? undefined : 0,
+      // Eğer px kullanılıyorsa, min-width de ekle ki küçülmesin
+      minWidth: isWidthPercent ? undefined : `${columnWidth}px`,
+    };
+  }, [settings, padding, isWidthPercent, columnWidth]);
   
   // Güvenlik kilidi: Maksimum iç içe kolon derinliği (hook'lardan sonra kontrol et)
   if (depth > 5) {

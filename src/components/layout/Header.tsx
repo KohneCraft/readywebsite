@@ -94,6 +94,14 @@ export function Header() {
     return themeSettings?.header?.textColor || undefined;
   }, [themeSettings]);
 
+  const isSticky = useMemo(() => {
+    return themeSettings?.header?.sticky !== false; // Default true
+  }, [themeSettings]);
+
+  const isTransparent = useMemo(() => {
+    return themeSettings?.header?.transparent === true;
+  }, [themeSettings]);
+
   // Generate localized href
   const getLocalizedHref = useCallback((href: string) => {
     if (locale === 'tr') return href;
@@ -176,15 +184,18 @@ export function Header() {
       {/* Main header */}
       <header
         className={cn(
-          'sticky top-0 z-50 w-full transition-all duration-300',
-          isScrolled
+          'z-50 w-full transition-all duration-300',
+          isSticky && 'sticky top-0',
+          isScrolled && !isTransparent
             ? 'backdrop-blur-md shadow-md'
             : ''
         )}
         style={{
-          backgroundColor: headerBgColor 
-            ? (isScrolled ? `${headerBgColor}95` : headerBgColor)
-            : undefined,
+          backgroundColor: isTransparent 
+            ? 'transparent'
+            : headerBgColor 
+              ? (isScrolled ? `${headerBgColor}95` : headerBgColor)
+              : undefined,
           color: headerTextColor || undefined,
         }}
       >
@@ -207,9 +218,23 @@ export function Header() {
                 </div>
               )}
               <div className="flex flex-col">
-                <span className="font-bold text-lg leading-tight">{logoText}</span>
+                <span 
+                  className="font-bold leading-tight"
+                  style={{ 
+                    color: siteSettings?.companyNameStyle?.color || headerTextColor || undefined,
+                    fontSize: siteSettings?.companyNameStyle?.fontSize ? `${siteSettings.companyNameStyle.fontSize}px` : undefined,
+                  }}
+                >
+                  {logoText}
+                </span>
                 {siteSettings?.siteSlogan?.[locale as keyof typeof siteSettings.siteSlogan] && (
-                  <span className="text-xs text-muted-foreground hidden sm:block">
+                  <span 
+                    className="hidden sm:block"
+                    style={{ 
+                      color: siteSettings?.sloganStyle?.color || (headerTextColor ? `${headerTextColor}CC` : undefined),
+                      fontSize: siteSettings?.sloganStyle?.fontSize ? `${siteSettings.sloganStyle.fontSize}px` : undefined,
+                    }}
+                  >
                     {siteSettings.siteSlogan[locale as keyof typeof siteSettings.siteSlogan]}
                   </span>
                 )}
@@ -225,15 +250,27 @@ export function Header() {
                   className={cn(
                     'relative font-medium transition-colors py-2',
                     isActive(item.href)
-                      ? 'text-primary-600 dark:text-primary-400'
-                      : 'text-gray-700 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400'
+                      ? headerTextColor 
+                        ? ''
+                        : 'text-primary-600 dark:text-primary-400'
+                      : headerTextColor
+                        ? ''
+                        : 'text-gray-700 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400'
                   )}
+                  style={{
+                    color: headerTextColor 
+                      ? (isActive(item.href) ? headerTextColor : `${headerTextColor}DD`)
+                      : undefined,
+                  }}
                 >
                   {item.label}
                   {isActive(item.href) && (
                     <motion.div
                       layoutId="activeNav"
-                      className="absolute -bottom-1 left-0 right-0 h-0.5 bg-primary-600 dark:bg-primary-400"
+                      className="absolute -bottom-1 left-0 right-0 h-0.5"
+                      style={{
+                        backgroundColor: headerTextColor || undefined,
+                      }}
                     />
                   )}
                 </Link>

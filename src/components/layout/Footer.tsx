@@ -184,15 +184,31 @@ export function Footer() {
                 </div>
               )}
               <div className="flex flex-col">
-                <span className="font-bold text-lg text-white leading-tight">{footerLogoText}</span>
+                <span 
+                  className="font-bold leading-tight"
+                  style={{ 
+                    color: siteSettings?.companyNameStyle?.color || footerTextColor || '#ffffff',
+                    fontSize: siteSettings?.companyNameStyle?.fontSize ? `${siteSettings.companyNameStyle.fontSize}px` : undefined,
+                  }}
+                >
+                  {footerLogoText}
+                </span>
                 {siteSettings?.siteSlogan?.[locale as keyof typeof siteSettings.siteSlogan] && (
-                  <span className="text-xs text-gray-400">
+                  <span 
+                    style={{ 
+                      color: siteSettings?.sloganStyle?.color || (footerTextColor ? `${footerTextColor}CC` : '#9ca3af'),
+                      fontSize: siteSettings?.sloganStyle?.fontSize ? `${siteSettings.sloganStyle.fontSize}px` : undefined,
+                    }}
+                  >
                     {siteSettings.siteSlogan[locale as keyof typeof siteSettings.siteSlogan]}
                   </span>
                 )}
               </div>
             </Link>
-            <p className="text-gray-400 text-sm mb-6">
+            <p 
+              className="text-sm mb-6"
+              style={{ color: footerTextColor ? `${footerTextColor}DD` : '#9ca3af' }}
+            >
               {footerDescription}
             </p>
             {/* Social links */}
@@ -217,15 +233,36 @@ export function Footer() {
 
           {/* Quick links */}
           <div>
-            <h3 className="text-white font-semibold mb-4">{t('quickLinks')}</h3>
+            <h3 
+              className="font-semibold mb-4"
+              style={{ color: footerTextColor || '#ffffff' }}
+            >
+              {t('quickLinks')}
+            </h3>
             <ul className="space-y-3">
               {quickLinks.map((link) => (
                 <li key={link.href}>
                   <Link
                     href={getLocalizedHref(link.href)}
-                    className="flex items-center gap-2 text-gray-400 hover:text-white transition-colors group"
+                    className="flex items-center gap-2 transition-colors group"
+                    style={{ 
+                      color: footerTextColor ? `${footerTextColor}DD` : '#9ca3af',
+                    }}
+                    onMouseEnter={(e) => {
+                      if (footerTextColor) {
+                        e.currentTarget.style.color = footerTextColor;
+                      }
+                    }}
+                    onMouseLeave={(e) => {
+                      if (footerTextColor) {
+                        e.currentTarget.style.color = `${footerTextColor}DD`;
+                      }
+                    }}
                   >
-                    <ChevronRight className="w-4 h-4 text-primary-500 group-hover:translate-x-1 transition-transform" />
+                    <ChevronRight 
+                      className="w-4 h-4 group-hover:translate-x-1 transition-transform" 
+                      style={{ color: footerTextColor ? `${footerTextColor}AA` : undefined }}
+                    />
                     {link.label}
                   </Link>
                 </li>
@@ -237,22 +274,54 @@ export function Footer() {
       </div>
 
       {/* Bottom bar */}
-      <div className="border-t border-gray-800">
+      <div 
+        className="border-t"
+        style={{ borderColor: footerTextColor ? `${footerTextColor}33` : '#1f2937' }}
+      >
         <div className="container py-6">
           <div className="flex flex-col md:flex-row items-center justify-between gap-4">
-            <p className="text-gray-400 text-sm">
+            <p 
+              className="text-sm"
+              style={{ color: footerTextColor ? `${footerTextColor}DD` : '#9ca3af' }}
+            >
               {footerCopyright}
             </p>
             <div className="flex items-center gap-6 text-sm">
               <Link
                 href={getLocalizedHref('/privacy')}
-                className="text-gray-400 hover:text-white transition-colors"
+                className="transition-colors"
+                style={{ 
+                  color: footerTextColor ? `${footerTextColor}DD` : '#9ca3af',
+                }}
+                onMouseEnter={(e) => {
+                  if (footerTextColor) {
+                    e.currentTarget.style.color = footerTextColor;
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  if (footerTextColor) {
+                    e.currentTarget.style.color = `${footerTextColor}DD`;
+                  }
+                }}
               >
                 {t('privacyPolicy')}
               </Link>
               <Link
                 href={getLocalizedHref('/terms')}
-                className="text-gray-400 hover:text-white transition-colors"
+                className="transition-colors"
+                style={{ 
+                  color: footerTextColor ? `${footerTextColor}DD` : '#9ca3af',
+                }}
+                onMouseEnter={(e) => {
+                  if (footerTextColor) {
+                    e.currentTarget.style.color = footerTextColor;
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  if (footerTextColor) {
+                    e.currentTarget.style.color = `${footerTextColor}DD`;
+                  }
+                }}
               >
                 {t('terms')}
               </Link>

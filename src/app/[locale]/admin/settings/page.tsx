@@ -45,6 +45,10 @@ const settingsSchema = z.object({
     name: z.string().min(1, 'Firma adı zorunludur'),
     slogan: z.string().optional(),
     logo: z.string().optional(),
+    nameColor: z.string().optional(),
+    nameFontSize: z.number().optional(),
+    sloganColor: z.string().optional(),
+    sloganFontSize: z.number().optional(),
   }),
   contact: z.object({
     email: z.string().email('Geçerli bir e-posta girin'),
@@ -79,6 +83,10 @@ const defaultSettings: SettingsFormData = {
     name: 'Vav Yapı',
     slogan: 'Güvenilir İnşaat Çözümleri',
     logo: '',
+    nameColor: '',
+    nameFontSize: undefined,
+    sloganColor: '',
+    sloganFontSize: undefined,
   },
   contact: {
     email: 'info@vavyapi.com',
@@ -142,6 +150,10 @@ export default function AdminSettingsPage() {
             name: settings.siteName?.tr || defaultSettings.company.name,
             slogan: settings.siteSlogan?.tr || defaultSettings.company.slogan,
             logo: settings.logo?.light?.url || defaultSettings.company.logo,
+            nameColor: settings.companyNameStyle?.color || defaultSettings.company.nameColor,
+            nameFontSize: settings.companyNameStyle?.fontSize || defaultSettings.company.nameFontSize,
+            sloganColor: settings.sloganStyle?.color || defaultSettings.company.sloganColor,
+            sloganFontSize: settings.sloganStyle?.fontSize || defaultSettings.company.sloganFontSize,
           },
           contact: {
             email: settings.contact?.email || defaultSettings.contact.email,
@@ -219,6 +231,14 @@ export default function AdminSettingsPage() {
           de: data.company.slogan || '',
           fr: data.company.slogan || '',
         },
+        companyNameStyle: data.company.nameColor || data.company.nameFontSize ? {
+          color: data.company.nameColor || undefined,
+          fontSize: data.company.nameFontSize || undefined,
+        } : undefined,
+        sloganStyle: data.company.sloganColor || data.company.sloganFontSize ? {
+          color: data.company.sloganColor || undefined,
+          fontSize: data.company.sloganFontSize || undefined,
+        } : undefined,
         logo: {
           ...currentSettings.logo,
           light: {
@@ -497,6 +517,88 @@ export default function AdminSettingsPage() {
                         {t('form.slogan')}
                       </label>
                       <Input {...register('company.slogan')} />
+                    </div>
+
+                    {/* Firma Adı Stil Ayarları */}
+                    <div className="border-t border-gray-200 dark:border-gray-700 pt-4 mt-4">
+                      <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">
+                        Firma Adı Stil Ayarları
+                      </h3>
+                      
+                      <div className="space-y-4">
+                        <div>
+                          <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
+                            Firma Adı Rengi
+                          </label>
+                          <div className="flex items-center gap-2">
+                            <Input
+                              type="color"
+                              {...register('company.nameColor')}
+                              className="w-16 h-10"
+                            />
+                            <Input
+                              type="text"
+                              {...register('company.nameColor')}
+                              placeholder="#000000"
+                              className="flex-1"
+                            />
+                          </div>
+                        </div>
+
+                        <div>
+                          <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
+                            Firma Adı Boyutu (px)
+                          </label>
+                          <Input
+                            type="number"
+                            {...register('company.nameFontSize', { valueAsNumber: true })}
+                            placeholder="18"
+                            min="10"
+                            max="72"
+                          />
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Slogan Stil Ayarları */}
+                    <div className="border-t border-gray-200 dark:border-gray-700 pt-4 mt-4">
+                      <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">
+                        Slogan Stil Ayarları
+                      </h3>
+                      
+                      <div className="space-y-4">
+                        <div>
+                          <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
+                            Slogan Rengi
+                          </label>
+                          <div className="flex items-center gap-2">
+                            <Input
+                              type="color"
+                              {...register('company.sloganColor')}
+                              className="w-16 h-10"
+                            />
+                            <Input
+                              type="text"
+                              {...register('company.sloganColor')}
+                              placeholder="#666666"
+                              className="flex-1"
+                            />
+                          </div>
+                        </div>
+
+                        <div>
+                          <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
+                            Slogan Boyutu (px)
+                          </label>
+                          <Input
+                            type="number"
+                            {...register('company.sloganFontSize', { valueAsNumber: true })}
+                            placeholder="12"
+                            min="8"
+                            max="48"
+                          />
+                        </div>
+                      </div>
                     </div>
                   </CardContent>
                 </Card>
