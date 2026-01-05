@@ -146,7 +146,7 @@ export function ColumnRenderer({ columnId, index, isNested = false }: ColumnRend
     flexShrink: isWidthPercent ? undefined : 0,
     // Eğer px kullanılıyorsa, min-width de ekle ki küçülmesin
     minWidth: isWidthPercent ? undefined : `${columnWidth}px`,
-  }), [settings, padding, gridColumnSpan, isWidthPercent, columnWidth]);
+  }), [settings, padding, gridColumnSpan, isWidthPercent, columnWidth, isNested]);
   
   // Loading state - skeleton placeholder
   if (loading) {

@@ -90,7 +90,9 @@ export function ColumnSettings({ columnId, activeTab, onUpdate }: ColumnSettings
       if (widthUpdateTimerRef.current) {
         clearTimeout(widthUpdateTimerRef.current);
       }
-      Object.values(nestedWidthUpdateTimersRef.current).forEach(timer => {
+      // Ref değerini kopyala çünkü cleanup sırasında değişmiş olabilir
+      const timers = { ...nestedWidthUpdateTimersRef.current };
+      Object.values(timers).forEach(timer => {
         if (timer) {
           clearTimeout(timer);
         }
@@ -397,8 +399,9 @@ export function ColumnSettings({ columnId, activeTab, onUpdate }: ColumnSettings
                       setNestedColumns(updatedNestedColumns);
                       
                       // Önceki timer'ı temizle
-                      if (nestedWidthUpdateTimersRef.current[nestedCol.id]) {
-                        clearTimeout(nestedWidthUpdateTimersRef.current[nestedCol.id]);
+                      const existingTimer = nestedWidthUpdateTimersRef.current[nestedCol.id];
+                      if (existingTimer) {
+                        clearTimeout(existingTimer);
                       }
                       
                       // Debounce: 1.5 saniye bekle, sonra Firestore'a kaydet
