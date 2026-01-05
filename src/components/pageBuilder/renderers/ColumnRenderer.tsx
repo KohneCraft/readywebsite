@@ -8,6 +8,7 @@ import type { Column, Breakpoint } from '@/types/pageBuilder';
 interface ColumnRendererProps {
   columnId: string;
   index: number;
+  isNested?: boolean; // Nested column mu kontrolü için
 }
 
 function getDeviceType(): Breakpoint {
@@ -18,7 +19,7 @@ function getDeviceType(): Breakpoint {
   return 'desktop';
 }
 
-export function ColumnRenderer({ columnId, index }: ColumnRendererProps) {
+export function ColumnRenderer({ columnId, index, isNested = false }: ColumnRendererProps) {
   const [column, setColumn] = useState<Column | null>(null);
   const [nestedColumns, setNestedColumns] = useState<Column[]>([]);
   const [loading, setLoading] = useState(true);
@@ -140,7 +141,7 @@ export function ColumnRenderer({ columnId, index }: ColumnRendererProps) {
     flexDirection: 'column',
     justifyContent: settings.verticalAlign || 'flex-start',
     alignItems: settings.horizontalAlign || 'flex-start',
-    gridColumn: gridColumnSpan, // Grid column span kullan (sadece % için)
+    gridColumn: isNested ? undefined : gridColumnSpan, // Nested column'lar için grid-column kullanma, sadece section seviyesindeki kolonlar için
     // Eğer px kullanılıyorsa ve grid içindeyse, flex-shrink: 0 ekle ki genişlik korunsun
     flexShrink: isWidthPercent ? undefined : 0,
     // Eğer px kullanılıyorsa, min-width de ekle ki küçülmesin
@@ -199,6 +200,7 @@ export function ColumnRenderer({ columnId, index }: ColumnRendererProps) {
               key={nestedCol.id}
               columnId={nestedCol.id}
               index={nestedIndex}
+              isNested={true} // Nested column olduğunu belirt
             />
           ))}
         </div>

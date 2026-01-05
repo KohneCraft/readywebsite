@@ -5,7 +5,7 @@
 // Column ayarları paneli
 // ============================================
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { getColumnById } from '@/lib/firebase/firestore';
 import { SpacingControl } from '../controls/SpacingControl';
 import { ColorPicker } from '../controls/ColorPicker';
@@ -26,6 +26,10 @@ export function ColumnSettings({ columnId, activeTab, onUpdate }: ColumnSettings
   const [loading, setLoading] = useState(true);
   const [widthUnit, setWidthUnit] = useState<'percent' | 'pixels'>('percent');
   const [widthValue, setWidthValue] = useState<number>(100);
+  
+  // Debounce için timer ref'leri
+  const widthUpdateTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const nestedWidthUpdateTimersRef = useRef<Record<string, NodeJS.Timeout | null>>({});
 
   useEffect(() => {
     async function loadColumn() {
@@ -79,6 +83,20 @@ export function ColumnSettings({ columnId, activeTab, onUpdate }: ColumnSettings
       }
     }
   }, [column?.width]);
+  
+  // Cleanup: Component unmount olduğunda timer'ları temizle
+  useEffect(() => {
+    return () => {
+      if (widthUpdateTimerRef.current) {
+        clearTimeout(widthUpdateTimerRef.current);
+      }
+      Object.values(nestedWidthUpdateTimersRef.current).forEach(timer => {
+        if (timer) {
+          clearTimeout(timer);
+        }
+      });
+    };
+  }, []);
 
   if (loading) {
     return (
@@ -129,24 +147,32 @@ export function ColumnSettings({ columnId, activeTab, onUpdate }: ColumnSettings
               max={widthUnit === 'percent' ? 100 : undefined}
               step={widthUnit === 'percent' ? 0.1 : 1}
               value={widthValue}
-              onChange={async (e) => {
+              onChange={(e) => {
                 const newValue = widthUnit === 'percent' 
                   ? parseFloat(e.target.value) || 0
                   : parseInt(e.target.value) || 0;
                 setWidthValue(newValue);
                 
+                // UI'ı hemen güncelle (anlık görünüm için)
                 const updated = { ...column, width: newValue };
                 setColumn(updated);
                 onUpdate(updated);
                 
-                // Firestore'da güncelle
-                try {
-                  const { updateColumn } = await import('@/lib/firebase/firestore');
-                  await updateColumn(column.id, { width: newValue });
-                  window.dispatchEvent(new CustomEvent('section-updated', { detail: { sectionId: 'any' } }));
-                } catch (error) {
-                  console.error('Kolon genişliği güncelleme hatası:', error);
+                // Önceki timer'ı temizle
+                if (widthUpdateTimerRef.current) {
+                  clearTimeout(widthUpdateTimerRef.current);
                 }
+                
+                // Debounce: 1.5 saniye bekle, sonra Firestore'a kaydet
+                widthUpdateTimerRef.current = setTimeout(async () => {
+                  try {
+                    const { updateColumn } = await import('@/lib/firebase/firestore');
+                    await updateColumn(column.id, { width: newValue });
+                    window.dispatchEvent(new CustomEvent('section-updated', { detail: { sectionId: 'any' } }));
+                  } catch (error) {
+                    console.error('Kolon genişliği güncelleme hatası:', error);
+                  }
+                }, 1500); // 1.5 saniye debounce
               }}
               className="flex-1 px-3 py-2 text-sm border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-white"
             />
@@ -361,21 +387,30 @@ export function ColumnSettings({ columnId, activeTab, onUpdate }: ColumnSettings
                     max="100"
                     step="0.1"
                     value={nestedCol.width || 0}
-                    onChange={async (e) => {
+                    onChange={(e) => {
                       const newWidth = parseFloat(e.target.value) || 0;
+                      
+                      // UI'ı hemen güncelle (anlık görünüm için)
                       const updatedNestedColumns = nestedColumns.map(c => 
                         c.id === nestedCol.id ? { ...c, width: newWidth } : c
                       );
                       setNestedColumns(updatedNestedColumns);
                       
-                      // Firestore'da güncelle
-                      try {
-                        const { updateColumn } = await import('@/lib/firebase/firestore');
-                        await updateColumn(nestedCol.id, { width: newWidth });
-                        window.dispatchEvent(new CustomEvent('section-updated', { detail: { sectionId: 'any' } }));
-                      } catch (error) {
-                        console.error('İç kolon genişliği güncelleme hatası:', error);
+                      // Önceki timer'ı temizle
+                      if (nestedWidthUpdateTimersRef.current[nestedCol.id]) {
+                        clearTimeout(nestedWidthUpdateTimersRef.current[nestedCol.id]);
                       }
+                      
+                      // Debounce: 1.5 saniye bekle, sonra Firestore'a kaydet
+                      nestedWidthUpdateTimersRef.current[nestedCol.id] = setTimeout(async () => {
+                        try {
+                          const { updateColumn } = await import('@/lib/firebase/firestore');
+                          await updateColumn(nestedCol.id, { width: newWidth });
+                          window.dispatchEvent(new CustomEvent('section-updated', { detail: { sectionId: 'any' } }));
+                        } catch (error) {
+                          console.error('İç kolon genişliği güncelleme hatası:', error);
+                        }
+                      }, 1500); // 1.5 saniye debounce
                     }}
                     className="flex-1"
                   />

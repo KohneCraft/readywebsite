@@ -34,7 +34,7 @@ export function RightPanel({ selectedElement, page, onUpdate, onSelectElement }:
   const handleSectionUpdate = useCallback(async (updates: Partial<Section>) => {
     if (!selectedElement) return;
     
-    // Debounce: 500ms bekle
+    // Debounce: 1.5 saniye bekle
     if (debounceTimer.current) {
       clearTimeout(debounceTimer.current);
     }
@@ -52,7 +52,7 @@ export function RightPanel({ selectedElement, page, onUpdate, onSelectElement }:
       } catch (error) {
         console.error('Section güncelleme hatası:', error);
       }
-    }, 500);
+    }, 1500); // 1.5 saniye debounce
   }, [selectedElement]);
 
   const handleColumnUpdate = useCallback(async (updates: Partial<Column>) => {
@@ -73,7 +73,7 @@ export function RightPanel({ selectedElement, page, onUpdate, onSelectElement }:
       } catch (error) {
         console.error('Column güncelleme hatası:', error);
       }
-    }, 500);
+    }, 1500); // 1.5 saniye debounce
   }, [selectedElement]);
 
   const handleBlockUpdate = useCallback(async (updates: Partial<Block>) => {
@@ -97,7 +97,7 @@ export function RightPanel({ selectedElement, page, onUpdate, onSelectElement }:
       } catch (error) {
         console.error('Block güncelleme hatası:', error);
       }
-    }, 500);
+    }, 1500); // 1.5 saniye debounce
   }, [selectedElement]);
 
   // View mode seçimi (Header, Footer, Page Settings veya Element)

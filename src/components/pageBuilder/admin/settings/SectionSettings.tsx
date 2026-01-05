@@ -5,7 +5,7 @@
 // Section ayarları paneli
 // ============================================
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { getSectionById, getColumnById } from '@/lib/firebase/firestore';
 import { SpacingControl } from '../controls/SpacingControl';
 import { ColorPicker } from '../controls/ColorPicker';
@@ -321,7 +321,7 @@ export function SectionSettings({ sectionId, activeTab, onUpdate }: SectionSetti
                         max={columnWidthUnit === 'percent' ? 100 : undefined}
                         step={columnWidthUnit === 'percent' ? 0.1 : 1}
                         value={displayWidth}
-                        onChange={async (e) => {
+                        onChange={(e) => {
                           const newWidth = columnWidthUnit === 'percent'
                             ? parseFloat(e.target.value) || 0
                             : parseInt(e.target.value) || 0;
@@ -330,14 +330,21 @@ export function SectionSettings({ sectionId, activeTab, onUpdate }: SectionSetti
                           );
                           setColumns(updatedColumns);
                           
-                          // Firestore'da güncelle
-                          try {
-                            const { updateColumn } = await import('@/lib/firebase/firestore');
-                            await updateColumn(col.id, { width: newWidth });
-                            window.dispatchEvent(new CustomEvent('section-updated', { detail: { sectionId: 'any' } }));
-                          } catch (error) {
-                            console.error('Kolon genişliği güncelleme hatası:', error);
+                          // Önceki timer'ı temizle
+                          if (columnWidthUpdateTimersRef.current[col.id]) {
+                            clearTimeout(columnWidthUpdateTimersRef.current[col.id]);
                           }
+                          
+                          // Debounce: 1.5 saniye bekle, sonra Firestore'a kaydet
+                          columnWidthUpdateTimersRef.current[col.id] = setTimeout(async () => {
+                            try {
+                              const { updateColumn } = await import('@/lib/firebase/firestore');
+                              await updateColumn(col.id, { width: newWidth });
+                              window.dispatchEvent(new CustomEvent('section-updated', { detail: { sectionId: 'any' } }));
+                            } catch (error) {
+                              console.error('Kolon genişliği güncelleme hatası:', error);
+                            }
+                          }, 1500); // 1.5 saniye debounce
                         }}
                         className="flex-1"
                       />
@@ -364,25 +371,44 @@ export function SectionSettings({ sectionId, activeTab, onUpdate }: SectionSetti
                               max="100"
                               step="0.1"
                               value={nestedCol.width || 0}
-                              onChange={async (e) => {
+                              onChange={(e) => {
                                 const newWidth = parseFloat(e.target.value) || 0;
-                                try {
-                                  const { updateColumn } = await import('@/lib/firebase/firestore');
-                                  await updateColumn(nestedCol.id, { width: newWidth });
-                                  window.dispatchEvent(new CustomEvent('section-updated', { detail: { sectionId: 'any' } }));
-                                  // Nested columns map'ini güncelle
-                                  const updatedNested = await getColumnById(nestedCol.id);
-                                  if (updatedNested) {
-                                    setNestedColumnsMap(prev => ({
-                                      ...prev,
-                                      [col.id]: nestedColumns.map(nc => 
-                                        nc.id === nestedCol.id ? updatedNested : nc
-                                      ),
-                                    }));
-                                  }
-                                } catch (error) {
-                                  console.error('İç kolon genişliği güncelleme hatası:', error);
+                                
+                                // UI'ı hemen güncelle (anlık görünüm için)
+                                const updatedNestedColumns = nestedColumns.map(nc => 
+                                  nc.id === nestedCol.id ? { ...nc, width: newWidth } : nc
+                                );
+                                setNestedColumnsMap(prev => ({
+                                  ...prev,
+                                  [col.id]: updatedNestedColumns,
+                                }));
+                                
+                                // Önceki timer'ı temizle
+                                const timerKey = `nested-${nestedCol.id}`;
+                                if (columnWidthUpdateTimersRef.current[timerKey]) {
+                                  clearTimeout(columnWidthUpdateTimersRef.current[timerKey]);
                                 }
+                                
+                                // Debounce: 1.5 saniye bekle, sonra Firestore'a kaydet
+                                columnWidthUpdateTimersRef.current[timerKey] = setTimeout(async () => {
+                                  try {
+                                    const { updateColumn } = await import('@/lib/firebase/firestore');
+                                    await updateColumn(nestedCol.id, { width: newWidth });
+                                    window.dispatchEvent(new CustomEvent('section-updated', { detail: { sectionId: 'any' } }));
+                                    // Nested columns map'ini güncelle
+                                    const updatedNested = await getColumnById(nestedCol.id);
+                                    if (updatedNested) {
+                                      setNestedColumnsMap(prev => ({
+                                        ...prev,
+                                        [col.id]: nestedColumns.map(nc => 
+                                          nc.id === nestedCol.id ? updatedNested : nc
+                                        ),
+                                      }));
+                                    }
+                                  } catch (error) {
+                                    console.error('İç kolon genişliği güncelleme hatası:', error);
+                                  }
+                                }, 1500); // 1.5 saniye debounce
                               }}
                               className="flex-1"
                             />
