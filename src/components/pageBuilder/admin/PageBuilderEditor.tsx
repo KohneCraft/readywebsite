@@ -29,7 +29,7 @@ interface PageBuilderEditorProps {
 export function PageBuilderEditor({ pageId }: PageBuilderEditorProps) {
   const [page, setPage] = useState<Page | null>(null);
   const [loading, setLoading] = useState(true);
-  const [selectedElement, setSelectedElement] = useState<{ type: 'section' | 'column' | 'block'; id: string } | null>(null);
+  const [selectedElement, setSelectedElement] = useState<{ type: 'section' | 'column' | 'block' | 'page' | 'header' | 'footer'; id: string } | null>(null);
   const [activeBlock, setActiveBlock] = useState<{ type: string; source: 'library' | 'canvas' } | null>(null);
   const [device, setDevice] = useState<'desktop' | 'tablet' | 'mobile'>('desktop');
   const [zoom, setZoom] = useState(100);

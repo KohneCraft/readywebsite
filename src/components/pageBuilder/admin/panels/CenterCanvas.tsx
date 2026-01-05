@@ -16,8 +16,8 @@ interface CenterCanvasProps {
   page: Page;
   device: 'desktop' | 'tablet' | 'mobile';
   zoom: number;
-  selectedElement: { type: 'section' | 'column' | 'block'; id: string } | null;
-  onSelectElement: (element: { type: 'section' | 'column' | 'block'; id: string } | null) => void;
+  selectedElement: { type: 'section' | 'column' | 'block' | 'page' | 'header' | 'footer'; id: string } | null;
+  onSelectElement: (element: { type: 'section' | 'column' | 'block' | 'page' | 'header' | 'footer'; id: string } | null) => void;
   onMoveSection?: (sectionId: string, direction: 'up' | 'down') => Promise<void>;
   onDuplicateSection?: (sectionId: string) => Promise<void>;
   onDeleteSection?: (sectionId: string) => Promise<void>;
