@@ -110,6 +110,8 @@ export function ColumnRenderer({ columnId, index }: ColumnRendererProps) {
       : 'none',
     boxShadow: settings.boxShadow || 'none',
     minHeight: settings.minHeight ? `${settings.minHeight}px` : 'auto',
+    maxHeight: settings.maxHeight ? `${settings.maxHeight}px` : 'none',
+    maxWidth: settings.maxWidth ? `${settings.maxWidth}px` : 'none',
     height: settings.height 
       ? (typeof settings.height === 'number' ? `${settings.height}px` : settings.height)
       : 'auto',

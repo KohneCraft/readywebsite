@@ -34,6 +34,10 @@ export function PageBuilderEditor({ pageId }: PageBuilderEditorProps) {
   const [device, setDevice] = useState<'desktop' | 'tablet' | 'mobile'>('desktop');
   const [zoom, setZoom] = useState(100);
   const [hasChanges, setHasChanges] = useState(false);
+  const [leftPanelWidth, setLeftPanelWidth] = useState(320); // Varsayılan 320px (w-80)
+  const [rightPanelWidth, setRightPanelWidth] = useState(320); // Varsayılan 320px (w-80)
+  const [isResizingLeft, setIsResizingLeft] = useState(false);
+  const [isResizingRight, setIsResizingRight] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
 
   const sensors = useSensors(
@@ -308,9 +312,46 @@ export function PageBuilderEditor({ pageId }: PageBuilderEditorProps) {
     };
   }, [page, pageId]);
 
+  // Resize handlers - TÜM hook'lar early return'lerden ÖNCE olmalı
+  useEffect(() => {
+    const handleMouseMove = (e: MouseEvent) => {
+      if (isResizingLeft) {
+        const newWidth = e.clientX;
+        if (newWidth >= 200 && newWidth <= 600) {
+          setLeftPanelWidth(newWidth);
+        }
+      }
+      if (isResizingRight) {
+        const newWidth = window.innerWidth - e.clientX;
+        if (newWidth >= 200 && newWidth <= 600) {
+          setRightPanelWidth(newWidth);
+        }
+      }
+    };
+
+    const handleMouseUp = () => {
+      setIsResizingLeft(false);
+      setIsResizingRight(false);
+    };
+
+    if (isResizingLeft || isResizingRight) {
+      document.addEventListener('mousemove', handleMouseMove);
+      document.addEventListener('mouseup', handleMouseUp);
+      document.body.style.cursor = 'col-resize';
+      document.body.style.userSelect = 'none';
+    }
+
+    return () => {
+      document.removeEventListener('mousemove', handleMouseMove);
+      document.removeEventListener('mouseup', handleMouseUp);
+      document.body.style.cursor = '';
+      document.body.style.userSelect = '';
+    };
+  }, [isResizingLeft, isResizingRight]);
+
   if (loading) {
     return (
-      <div className="h-screen flex items-center justify-center">
+      <div className="fixed inset-0 flex items-center justify-center bg-gray-50 dark:bg-gray-900 z-50">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600 mx-auto mb-4"></div>
           <p className="text-gray-600 dark:text-gray-400">Sayfa yükleniyor...</p>
@@ -321,7 +362,7 @@ export function PageBuilderEditor({ pageId }: PageBuilderEditorProps) {
 
   if (!page) {
     return (
-      <div className="h-screen flex items-center justify-center">
+      <div className="fixed inset-0 flex items-center justify-center bg-gray-50 dark:bg-gray-900 z-50">
         <div className="text-center">
           <p className="text-gray-600 dark:text-gray-400">Sayfa bulunamadı</p>
         </div>
@@ -335,7 +376,7 @@ export function PageBuilderEditor({ pageId }: PageBuilderEditorProps) {
       onDragStart={handleDragStart}
       onDragEnd={handleDragEnd}
     >
-      <div className="h-screen flex flex-col bg-gray-50 dark:bg-gray-900">
+      <div className="fixed inset-0 flex flex-col bg-gray-50 dark:bg-gray-900 z-50">
         {/* Top Bar */}
         <TopBar
           page={page}
@@ -349,43 +390,71 @@ export function PageBuilderEditor({ pageId }: PageBuilderEditorProps) {
         />
 
         {/* Main Content */}
-        <div className="flex-1 flex overflow-hidden">
+        <div className="flex-1 flex overflow-hidden relative">
           {/* Left Panel - Blok Kütüphanesi */}
-          <LeftPanel />
+          <div 
+            className="bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 flex flex-col relative"
+            style={{ width: `${leftPanelWidth}px`, minWidth: '200px', maxWidth: '600px' }}
+          >
+            <LeftPanel />
+            {/* Resize Handle */}
+            <div
+              className="absolute right-0 top-0 bottom-0 w-1 cursor-col-resize hover:bg-primary-500 transition-colors z-10"
+              onMouseDown={(e) => {
+                e.preventDefault();
+                setIsResizingLeft(true);
+              }}
+            />
+          </div>
 
           {/* Center Canvas - Düzenleme Alanı */}
-          <CenterCanvas
-            page={page}
-            device={device}
-            zoom={zoom}
-            selectedElement={selectedElement}
-            onSelectElement={setSelectedElement}
-            onMoveSection={async (sectionId, direction) => {
-              const { moveSection } = await import('@/lib/firebase/firestore');
-              await moveSection(sectionId, direction);
-              await loadPage();
-            }}
-            onDuplicateSection={async (sectionId) => {
-              const { duplicateSection } = await import('@/lib/firebase/firestore');
-              await duplicateSection(sectionId);
-              await loadPage();
-            }}
-            onDeleteSection={async (sectionId) => {
-              const { deleteSection } = await import('@/lib/firebase/firestore');
-              await deleteSection(sectionId);
-              // Page'den section ID'sini çıkar
-              const updatedSections = page.sections?.filter(id => id !== sectionId) || [];
-              await updatePage(page.id, { sections: updatedSections });
-              await loadPage();
-            }}
-          />
+          <div className="flex-1 overflow-auto" style={{ width: `calc(100% - ${leftPanelWidth + rightPanelWidth}px)` }}>
+            <CenterCanvas
+              page={page}
+              device={device}
+              zoom={zoom}
+              selectedElement={selectedElement}
+              onSelectElement={setSelectedElement}
+              onMoveSection={async (sectionId, direction) => {
+                const { moveSection } = await import('@/lib/firebase/firestore');
+                await moveSection(sectionId, direction);
+                await loadPage();
+              }}
+              onDuplicateSection={async (sectionId) => {
+                const { duplicateSection } = await import('@/lib/firebase/firestore');
+                await duplicateSection(sectionId);
+                await loadPage();
+              }}
+              onDeleteSection={async (sectionId) => {
+                const { deleteSection } = await import('@/lib/firebase/firestore');
+                await deleteSection(sectionId);
+                // Page'den section ID'sini çıkar
+                const updatedSections = page.sections?.filter(id => id !== sectionId) || [];
+                await updatePage(page.id, { sections: updatedSections });
+                await loadPage();
+              }}
+            />
+          </div>
 
           {/* Right Panel - Ayarlar */}
-          <RightPanel
-            selectedElement={selectedElement}
-            page={page}
-            onUpdate={handlePageUpdate}
-          />
+          <div 
+            className="bg-white dark:bg-gray-800 border-l border-gray-200 dark:border-gray-700 flex flex-col relative"
+            style={{ width: `${rightPanelWidth}px`, minWidth: '200px', maxWidth: '600px' }}
+          >
+            {/* Resize Handle */}
+            <div
+              className="absolute left-0 top-0 bottom-0 w-1 cursor-col-resize hover:bg-primary-500 transition-colors z-10"
+              onMouseDown={(e) => {
+                e.preventDefault();
+                setIsResizingRight(true);
+              }}
+            />
+            <RightPanel
+              selectedElement={selectedElement}
+              page={page}
+              onUpdate={handlePageUpdate}
+            />
+          </div>
         </div>
 
         {/* Drag Overlay */}

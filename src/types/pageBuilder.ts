@@ -256,6 +256,8 @@ export interface Column {
 export interface ColumnSettings {
   backgroundColor?: string;
   height?: number | string; // px veya 'auto' veya '100%'
+  maxHeight?: number; // px
+  maxWidth?: number; // px
   backgroundImage?: string;
   padding?: Spacing;
   margin?: Spacing;

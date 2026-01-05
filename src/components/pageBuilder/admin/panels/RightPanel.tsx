@@ -102,7 +102,7 @@ export function RightPanel({ selectedElement, page, onUpdate }: RightPanelProps)
   // View mode seçimi (Header, Footer, Page Settings veya Element)
   if (!selectedElement) {
     return (
-      <div className="w-80 bg-white dark:bg-gray-800 border-l border-gray-200 dark:border-gray-700 flex flex-col">
+      <div className="w-full h-full bg-white dark:bg-gray-800 flex flex-col overflow-hidden">
         {/* View Mode Selector */}
         <div className="p-4 border-b border-gray-200 dark:border-gray-700">
           <div className="grid grid-cols-2 gap-2">
@@ -245,7 +245,7 @@ export function RightPanel({ selectedElement, page, onUpdate }: RightPanelProps)
   }
 
   return (
-    <div className="w-80 bg-white dark:bg-gray-800 border-l border-gray-200 dark:border-gray-700 flex flex-col">
+    <div className="w-full h-full bg-white dark:bg-gray-800 flex flex-col overflow-hidden">
       {/* Header */}
       <div className="p-4 border-b border-gray-200 dark:border-gray-700">
         <div className="flex items-center justify-between mb-2">
@@ -282,7 +282,7 @@ export function RightPanel({ selectedElement, page, onUpdate }: RightPanelProps)
       </div>
 
       {/* Content */}
-      <div className="flex-1 overflow-y-auto p-4">
+      <div className="flex-1 overflow-y-auto p-4 overflow-x-hidden">
         {selectedElement.type === 'section' && (
           <SectionSettings
             sectionId={selectedElement.id}

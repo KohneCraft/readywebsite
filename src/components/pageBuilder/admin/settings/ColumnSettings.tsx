@@ -188,14 +188,93 @@ export function ColumnSettings({ columnId, activeTab, onUpdate }: ColumnSettings
           </label>
           <ColorPicker
             color={settings.backgroundColor || '#ffffff'}
-            onChange={(color) => {
+            onChange={async (color) => {
               const updated = {
                 ...column,
                 settings: { ...settings, backgroundColor: color },
               };
               setColumn(updated);
               onUpdate(updated);
+              
+              // Firestore'da güncelle
+              try {
+                const { updateColumn } = await import('@/lib/firebase/firestore');
+                await updateColumn(column.id, { 
+                  settings: { ...settings, backgroundColor: color },
+                });
+                window.dispatchEvent(new CustomEvent('section-updated', { detail: { sectionId: 'any' } }));
+              } catch (error) {
+                console.error('Kolon arka plan rengi güncelleme hatası:', error);
+              }
             }}
+          />
+        </div>
+
+        <div>
+          <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
+            Max Genişlik (px)
+          </label>
+          <input
+            type="number"
+            min="0"
+            step="1"
+            value={settings.maxWidth || ''}
+            placeholder="Sınırsız"
+            onChange={async (e) => {
+              const maxWidthValue = e.target.value ? parseInt(e.target.value) : undefined;
+              const updated = {
+                ...column,
+                settings: { ...settings, maxWidth: maxWidthValue },
+              };
+              setColumn(updated);
+              onUpdate(updated);
+              
+              // Firestore'da güncelle
+              try {
+                const { updateColumn } = await import('@/lib/firebase/firestore');
+                await updateColumn(column.id, { 
+                  settings: { ...settings, maxWidth: maxWidthValue },
+                });
+                window.dispatchEvent(new CustomEvent('section-updated', { detail: { sectionId: 'any' } }));
+              } catch (error) {
+                console.error('Kolon max genişlik güncelleme hatası:', error);
+              }
+            }}
+            className="w-full px-3 py-2 text-sm border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-white"
+          />
+        </div>
+
+        <div>
+          <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
+            Max Yükseklik (px)
+          </label>
+          <input
+            type="number"
+            min="0"
+            step="1"
+            value={settings.maxHeight || ''}
+            placeholder="Sınırsız"
+            onChange={async (e) => {
+              const maxHeightValue = e.target.value ? parseInt(e.target.value) : undefined;
+              const updated = {
+                ...column,
+                settings: { ...settings, maxHeight: maxHeightValue },
+              };
+              setColumn(updated);
+              onUpdate(updated);
+              
+              // Firestore'da güncelle
+              try {
+                const { updateColumn } = await import('@/lib/firebase/firestore');
+                await updateColumn(column.id, { 
+                  settings: { ...settings, maxHeight: maxHeightValue },
+                });
+                window.dispatchEvent(new CustomEvent('section-updated', { detail: { sectionId: 'any' } }));
+              } catch (error) {
+                console.error('Kolon max yükseklik güncelleme hatası:', error);
+              }
+            }}
+            className="w-full px-3 py-2 text-sm border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-white"
           />
         </div>
 
