@@ -287,6 +287,7 @@ export function SectionRenderer({ sectionId }: SectionRendererProps) {
                 key={columnId} 
                 columnId={columnId}
                 index={colIndex}
+                isFlexLayout={settings.columnLayout === 'column'}
               />
             ))
           ) : (

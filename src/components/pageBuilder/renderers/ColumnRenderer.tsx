@@ -9,6 +9,7 @@ interface ColumnRendererProps {
   columnId: string;
   index: number;
   isNested?: boolean; // Nested column mu kontrolü için
+  isFlexLayout?: boolean; // Parent section flex layout mu? (columnLayout === 'column')
 }
 
 function getDeviceType(): Breakpoint {
@@ -19,7 +20,7 @@ function getDeviceType(): Breakpoint {
   return 'desktop';
 }
 
-export function ColumnRenderer({ columnId, index, isNested = false }: ColumnRendererProps) {
+export function ColumnRenderer({ columnId, index, isNested = false, isFlexLayout = false }: ColumnRendererProps) {
   const [column, setColumn] = useState<Column | null>(null);
   const [nestedColumns, setNestedColumns] = useState<Column[]>([]);
   const [loading, setLoading] = useState(true);
@@ -141,12 +142,12 @@ export function ColumnRenderer({ columnId, index, isNested = false }: ColumnRend
     flexDirection: 'column',
     justifyContent: settings.verticalAlign || 'flex-start',
     alignItems: settings.horizontalAlign || 'flex-start',
-    gridColumn: isNested ? undefined : gridColumnSpan, // Nested column'lar için grid-column kullanma, sadece section seviyesindeki kolonlar için
+    gridColumn: (isNested || isFlexLayout) ? undefined : gridColumnSpan, // Nested column'lar ve flex layout için grid-column kullanma
     // Eğer px kullanılıyorsa ve grid içindeyse, flex-shrink: 0 ekle ki genişlik korunsun
     flexShrink: isWidthPercent ? undefined : 0,
     // Eğer px kullanılıyorsa, min-width de ekle ki küçülmesin
     minWidth: isWidthPercent ? undefined : `${columnWidth}px`,
-  }), [settings, padding, gridColumnSpan, isWidthPercent, columnWidth, isNested]);
+  }), [settings, padding, gridColumnSpan, isWidthPercent, columnWidth, isNested, isFlexLayout]);
   
   // Loading state - skeleton placeholder
   if (loading) {
