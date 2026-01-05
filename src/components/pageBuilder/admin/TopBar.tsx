@@ -5,10 +5,12 @@
 // Üst toolbar: sayfa bilgisi, cihaz seçici, zoom, kaydet
 // ============================================
 
-import { Save, Eye, Monitor, Tablet, Smartphone, ZoomIn, ZoomOut } from 'lucide-react';
+import { Save, Eye, Monitor, Tablet, Smartphone, ZoomIn, ZoomOut, ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { Spinner } from '@/components/ui/Spinner';
 import { cn } from '@/lib/utils';
+import { useRouter } from 'next/navigation';
+import { useLocale } from 'next-intl';
 import type { Page } from '@/types/pageBuilder';
 
 interface TopBarProps {
@@ -32,10 +34,29 @@ export function TopBar({
   isSaving,
   onSave,
 }: TopBarProps) {
+  const router = useRouter();
+  const locale = useLocale();
+
+  const getLocalizedHref = (href: string) => {
+    if (locale === 'tr') return href;
+    return `/${locale}${href}`;
+  };
+
+  const handleBack = () => {
+    router.push(getLocalizedHref('/admin/page-builder'));
+  };
+
   return (
     <div className="h-16 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between px-6">
-      {/* Sol Taraf - Sayfa Bilgisi */}
+      {/* Sol Taraf - Geri Dön ve Sayfa Bilgisi */}
       <div className="flex items-center gap-4">
+        <button
+          onClick={handleBack}
+          className="p-2 rounded hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-400 transition-colors"
+          title="Geri Dön"
+        >
+          <ArrowLeft className="w-5 h-5" />
+        </button>
         <div>
           <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
             {page.title || 'Yeni Sayfa'}

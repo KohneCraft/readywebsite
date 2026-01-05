@@ -119,6 +119,7 @@ export default function PageBuilderListPage() {
             <Link
               key={page.id}
               href={getLocalizedHref(`/admin/page-builder/${page.id}`)}
+              prefetch={false}
             >
               <Card hover className="h-full group">
                 <CardContent className="p-6">

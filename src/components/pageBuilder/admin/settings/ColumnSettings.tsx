@@ -24,6 +24,8 @@ export function ColumnSettings({ columnId, activeTab, onUpdate }: ColumnSettings
   const [column, setColumn] = useState<Column | null>(null);
   const [nestedColumns, setNestedColumns] = useState<Column[]>([]);
   const [loading, setLoading] = useState(true);
+  const [widthUnit, setWidthUnit] = useState<'percent' | 'pixels'>('percent');
+  const [widthValue, setWidthValue] = useState<number>(100);
 
   useEffect(() => {
     async function loadColumn() {
@@ -64,6 +66,20 @@ export function ColumnSettings({ columnId, activeTab, onUpdate }: ColumnSettings
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [column?.columns]);
 
+  // Width unit ve value'yu column'dan yükle
+  useEffect(() => {
+    if (column?.width !== undefined) {
+      // Eğer width 0-100 arasındaysa %, değilse px
+      if (column.width <= 100 && column.width >= 0) {
+        setWidthUnit('percent');
+        setWidthValue(column.width);
+      } else {
+        setWidthUnit('pixels');
+        setWidthValue(column.width);
+      }
+    }
+  }, [column?.width]);
+
   if (loading) {
     return (
       <div className="flex items-center justify-center py-8">
@@ -87,31 +103,57 @@ export function ColumnSettings({ columnId, activeTab, onUpdate }: ColumnSettings
       <div className="space-y-4">
         <div>
           <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
-            Genişlik (%)
+            Genişlik
           </label>
-          <input
-            type="number"
-            min="0"
-            max="100"
-            step="0.1"
-            value={column.width || 100}
-            onChange={async (e) => {
-              const newWidth = parseFloat(e.target.value) || 100;
-              const updated = { ...column, width: newWidth };
-              setColumn(updated);
-              onUpdate(updated);
-              
-              // Firestore'da güncelle
-              try {
-                const { updateColumn } = await import('@/lib/firebase/firestore');
-                await updateColumn(column.id, { width: newWidth });
-                window.dispatchEvent(new CustomEvent('section-updated', { detail: { sectionId: 'any' } }));
-              } catch (error) {
-                console.error('Kolon genişliği güncelleme hatası:', error);
-              }
-            }}
-            className="w-full px-3 py-2 text-sm border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-white"
-          />
+          <div className="flex gap-2">
+            <select
+              value={widthUnit}
+              onChange={(e) => {
+                const unit = e.target.value as 'percent' | 'pixels';
+                setWidthUnit(unit);
+                // Birim değiştiğinde değeri sıfırla veya dönüştür
+                if (unit === 'percent') {
+                  setWidthValue(100);
+                } else {
+                  setWidthValue(500); // Varsayılan px değeri
+                }
+              }}
+              className="w-24 px-3 py-2 text-sm border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-white"
+            >
+              <option value="percent">%</option>
+              <option value="pixels">px</option>
+            </select>
+            <input
+              type="number"
+              min="0"
+              max={widthUnit === 'percent' ? 100 : undefined}
+              step={widthUnit === 'percent' ? 0.1 : 1}
+              value={widthValue}
+              onChange={async (e) => {
+                const newValue = widthUnit === 'percent' 
+                  ? parseFloat(e.target.value) || 0
+                  : parseInt(e.target.value) || 0;
+                setWidthValue(newValue);
+                
+                const updated = { ...column, width: newValue };
+                setColumn(updated);
+                onUpdate(updated);
+                
+                // Firestore'da güncelle
+                try {
+                  const { updateColumn } = await import('@/lib/firebase/firestore');
+                  await updateColumn(column.id, { width: newValue });
+                  window.dispatchEvent(new CustomEvent('section-updated', { detail: { sectionId: 'any' } }));
+                } catch (error) {
+                  console.error('Kolon genişliği güncelleme hatası:', error);
+                }
+              }}
+              className="flex-1 px-3 py-2 text-sm border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-white"
+            />
+            <span className="px-2 py-2 text-sm text-gray-500 dark:text-gray-400">
+              {widthUnit === 'percent' ? '%' : 'px'}
+            </span>
+          </div>
         </div>
 
         <div>

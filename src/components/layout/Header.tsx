@@ -191,7 +191,7 @@ export function Header() {
         <div className="container">
           <div className="flex items-center justify-between h-16 lg:h-20">
             {/* Logo */}
-            <Link href={getLocalizedHref('/')} className="flex items-center gap-2">
+            <Link href={getLocalizedHref('/')} prefetch={false} className="flex items-center gap-2">
               {logoUrl ? (
                 <Image
                   src={logoUrl} 
@@ -299,7 +299,7 @@ export function Header() {
               <div className="p-6">
                 {/* Close button */}
                 <div className="flex items-center justify-between mb-8">
-                  <Link href={getLocalizedHref('/admin/page-builder')} className="flex items-center gap-2">
+                  <Link href={getLocalizedHref('/admin/page-builder')} prefetch={false} className="flex items-center gap-2">
                     <div className="w-8 h-8 bg-primary-600 rounded-lg flex items-center justify-center">
                       <span className="text-white font-bold text-xs">PB</span>
                     </div>

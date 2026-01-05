@@ -125,7 +125,13 @@ export function SectionRenderer({ sectionId }: SectionRendererProps) {
     if (columns.length === 0) return '1fr';
     return columns.map(col => {
       const width = col.width || (100 / columns.length);
-      return `${width}fr`;
+      // Width birim kontrolü: 0-100 arası % olarak, değilse px olarak
+      if (width <= 100 && width >= 0) {
+        return `${width}fr`;
+      } else {
+        // px kullanılıyorsa, fr yerine px kullan
+        return `${width}px`;
+      }
     }).join(' ');
   }, [settings.columnLayout, columns]);
   

@@ -85,7 +85,14 @@ export function ColumnRenderer({ columnId, index }: ColumnRendererProps) {
   const responsiveSettings = useMemo(() => settings.responsive?.[deviceType] || {}, [settings.responsive, deviceType]);
   const columnWidth = useMemo(() => responsiveSettings.width || column?.width || 100, [responsiveSettings.width, column?.width]);
   const padding = useMemo(() => responsiveSettings.padding || settings.padding || { top: 0, right: 0, bottom: 0, left: 0 }, [responsiveSettings.padding, settings.padding]);
-  const gridColumnSpan = useMemo(() => columnWidth ? `span ${Math.round((columnWidth / 100) * 12)}` : 'span 12', [columnWidth]);
+  // Width birim kontrolü: 0-100 arası % olarak, değilse px olarak
+  const isWidthPercent = useMemo(() => columnWidth <= 100 && columnWidth >= 0, [columnWidth]);
+  const gridColumnSpan = useMemo(() => {
+    if (isWidthPercent) {
+      return columnWidth ? `span ${Math.round((columnWidth / 100) * 12)}` : 'span 12';
+    }
+    return undefined; // px kullanılıyorsa grid span kullanma
+  }, [columnWidth, isWidthPercent]);
   
   // Nested columns için grid template - useMemo ile optimize et
   const nestedGridTemplate = useMemo(() => {
@@ -112,6 +119,7 @@ export function ColumnRenderer({ columnId, index }: ColumnRendererProps) {
     minHeight: settings.minHeight ? `${settings.minHeight}px` : 'auto',
     maxHeight: settings.maxHeight ? `${settings.maxHeight}px` : 'none',
     maxWidth: settings.maxWidth ? `${settings.maxWidth}px` : 'none',
+    width: isWidthPercent ? undefined : `${columnWidth}px`, // px ise width kullan
     height: settings.height 
       ? (typeof settings.height === 'number' ? `${settings.height}px` : settings.height)
       : 'auto',
@@ -119,8 +127,8 @@ export function ColumnRenderer({ columnId, index }: ColumnRendererProps) {
     flexDirection: 'column',
     justifyContent: settings.verticalAlign || 'flex-start',
     alignItems: settings.horizontalAlign || 'flex-start',
-    gridColumn: gridColumnSpan, // Grid column span kullan
-  }), [settings, padding, gridColumnSpan]);
+    gridColumn: gridColumnSpan, // Grid column span kullan (sadece % için)
+  }), [settings, padding, gridColumnSpan, isWidthPercent, columnWidth]);
   
   // Loading state - skeleton placeholder
   if (loading) {
