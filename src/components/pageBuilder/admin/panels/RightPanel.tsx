@@ -243,6 +243,7 @@ export function RightPanel({ selectedElement, page, onUpdate, onSelectElement, o
             sectionId={selectedElement.id}
             activeTab={activeTab}
             onUpdate={handleSectionUpdate}
+            onColumnUpdate={onColumnUpdate}
           />
         )}
         {selectedElement.type === 'column' && (

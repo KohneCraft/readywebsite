@@ -1,33 +1,31 @@
 'use client';
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useRef } from 'react';
 import { ColumnRenderer } from './ColumnRenderer';
 import { getSectionById, getColumnById } from '@/lib/firebase/firestore';
-import type { Section, Breakpoint, Column } from '@/types/pageBuilder';
+import type { Section, Column } from '@/types/pageBuilder';
+import { useDeviceType } from '@/hooks/useDeviceType';
 
 interface SectionRendererProps {
   sectionId: string;
 }
 
-function getDeviceType(): Breakpoint {
-  if (typeof window === 'undefined') return 'desktop';
-  const width = window.innerWidth;
-  if (width < 768) return 'mobile';
-  if (width < 1024) return 'tablet';
-  return 'desktop';
-}
-
 export function SectionRenderer({ sectionId }: SectionRendererProps) {
+  const sectionRef = useRef<HTMLElement>(null);
   const [section, setSection] = useState<Section | null>(null);
   const [columns, setColumns] = useState<Column[]>([]);
   const [isVisible, setIsVisible] = useState(false);
   const [loading, setLoading] = useState(true);
   
   useEffect(() => {
+    let isMounted = true;
+
     async function loadSection() {
       try {
         setLoading(true);
         const sectionData = await getSectionById(sectionId);
+        if (!isMounted) return;
+        
         if (process.env.NODE_ENV === 'development') {
           console.log(`SectionRenderer - Section yüklendi (${sectionId}):`, sectionData);
         }
@@ -38,29 +36,43 @@ export function SectionRenderer({ sectionId }: SectionRendererProps) {
         }
         setSection(sectionData);
       } catch (error) {
+        if (!isMounted) return;
         if (process.env.NODE_ENV === 'development') {
           console.error(`Section yükleme hatası (${sectionId}):`, error);
         }
       } finally {
-        setLoading(false);
+        if (isMounted) {
+          setLoading(false);
+        }
       }
     }
     loadSection();
+
+    return () => {
+      isMounted = false;
+    };
   }, [sectionId]);
 
   // Column'ları yükle (width bilgileri için)
   useEffect(() => {
+    let isMounted = true;
+
     async function loadColumns() {
       if (!section?.columns || section.columns.length === 0) {
-        setColumns([]);
+        if (isMounted) {
+          setColumns([]);
+        }
         return;
       }
 
       try {
         const columnPromises = section.columns.map(columnId => getColumnById(columnId));
         const loadedColumns = await Promise.all(columnPromises);
-        setColumns(loadedColumns.filter(Boolean) as Column[]);
+        if (isMounted) {
+          setColumns(loadedColumns.filter(Boolean) as Column[]);
+        }
       } catch (error) {
+        if (!isMounted) return;
         if (process.env.NODE_ENV === 'development') {
           console.error('Column yükleme hatası:', error);
         }
@@ -71,10 +83,14 @@ export function SectionRenderer({ sectionId }: SectionRendererProps) {
     if (section) {
       loadColumns();
     }
+
+    return () => {
+      isMounted = false;
+    };
   }, [section?.columns, section]);
   
   // TÜM hook'lar en üstte olmalı - early return'lerden ÖNCE
-  const deviceType = useMemo(() => getDeviceType(), []);
+  const deviceType = useDeviceType();
   
   // Settings ve hesaplamalar - useMemo ile optimize et
   const settings = useMemo(() => {
@@ -153,9 +169,16 @@ export function SectionRenderer({ sectionId }: SectionRendererProps) {
       });
     }
     
-    // Eğer px kolonlar varsa, tüm kolonlar için 1fr kullan (width CSS property ile kontrol edilecek)
+    // Eğer px kolonlar varsa, her kolon için doğru değeri kullan (fixed + fluid düzen)
     if (hasPxColumns) {
-      const result = columns.map(() => '1fr').join(' ');
+      const result = columns.map(col => {
+        const width = col.width || (100 / columns.length);
+        // 100'den büyükse veya 0'dan küçükse px kabul et
+        const isPx = width > 100 || width < 0;
+        if (isPx) return `${width}px`;
+        // Px olmayanlar için kalan alanı paylaştır
+        return '1fr';
+      }).join(' ');
       if (process.env.NODE_ENV === 'development') {
         console.log('SectionRenderer - px kolonlar tespit edildi, grid-template-columns:', result);
       }
@@ -186,13 +209,13 @@ export function SectionRenderer({ sectionId }: SectionRendererProps) {
       { threshold: 0.1 }
     );
     
-    const element = document.getElementById(`section-${sectionId}`);
+    const element = sectionRef.current;
     if (element) {
       observer.observe(element);
     }
     
     return () => observer.disconnect();
-  }, [animation, sectionId]);
+  }, [animation]);
   
   // Loading state - skeleton placeholder
   if (loading) {
@@ -246,6 +269,7 @@ export function SectionRenderer({ sectionId }: SectionRendererProps) {
   
   return (
     <section 
+      ref={sectionRef}
       id={`section-${sectionId}`}
       className={`section-renderer ${animationClass}`}
       style={{ ...sectionStyle, ...animationStyle } as React.CSSProperties}
@@ -282,14 +306,21 @@ export function SectionRenderer({ sectionId }: SectionRendererProps) {
           }}
         >
           {section.columns && section.columns.length > 0 ? (
-            section.columns.map((columnId, colIndex) => (
-              <ColumnRenderer 
-                key={columnId} 
-                columnId={columnId}
-                index={colIndex}
-                isFlexLayout={settings.columnLayout === 'column'}
-              />
-            ))
+            section.columns.map((columnId, colIndex) => {
+              // Section içinde yüklenen columns state'inden ilgili objeyi bul
+              const columnData = columns.find(c => c.id === columnId);
+              
+              return (
+                <ColumnRenderer 
+                  key={columnId} 
+                  columnId={columnId}
+                  index={colIndex}
+                  isFlexLayout={settings.columnLayout === 'column'}
+                  depth={0}
+                  initialData={columnData} // Veriyi prop olarak gönder (double fetch önleme)
+                />
+              );
+            })
           ) : (
             <div className="text-center text-gray-500 p-8">
               <p>Bu section'da henüz içerik yok.</p>

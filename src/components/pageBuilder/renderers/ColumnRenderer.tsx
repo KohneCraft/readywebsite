@@ -1,36 +1,47 @@
 'use client';
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useRef } from 'react';
 import { BlockRenderer } from './BlockRenderer';
 import { getColumnById } from '@/lib/firebase/firestore';
-import type { Column, Breakpoint } from '@/types/pageBuilder';
+import type { Column } from '@/types/pageBuilder';
+import { useDeviceType } from '@/hooks/useDeviceType';
 
 interface ColumnRendererProps {
   columnId: string;
   index: number;
   isNested?: boolean; // Nested column mu kontrolü için
   isFlexLayout?: boolean; // Parent section flex layout mu? (columnLayout === 'column')
+  depth?: number; // İç içe kolon derinliği (sonsuz döngü önleme)
+  initialData?: Column; // Parent'tan gelen veri (double fetch önleme)
 }
 
-function getDeviceType(): Breakpoint {
-  if (typeof window === 'undefined') return 'desktop';
-  const width = window.innerWidth;
-  if (width < 768) return 'mobile';
-  if (width < 1024) return 'tablet';
-  return 'desktop';
-}
-
-export function ColumnRenderer({ columnId, index, isNested = false, isFlexLayout = false }: ColumnRendererProps) {
-  const [column, setColumn] = useState<Column | null>(null);
+export function ColumnRenderer({ columnId, index, isNested: _isNested = false, isFlexLayout = false, depth = 0, initialData }: ColumnRendererProps) {
+  // TÜM hook'lar en üstte olmalı (early return'lerden önce)
+  const columnRef = useRef<HTMLDivElement>(null);
+  const deviceType = useDeviceType();
+  // State başlangıcında initialData varsa onu kullan, yoksa null
+  const [column, setColumn] = useState<Column | null>(initialData || null);
   const [nestedColumns, setNestedColumns] = useState<Column[]>([]);
-  const [loading, setLoading] = useState(true);
+  // Eğer initialData geldiyse loading false başlasın
+  const [loading, setLoading] = useState(!initialData);
   const [nestedColumnsLoading, setNestedColumnsLoading] = useState(false);
   
   useEffect(() => {
+    let isMounted = true;
+
+    // Eğer veri dışarıdan (parent'tan) geldiyse tekrar çekme!
+    if (initialData) {
+      setColumn(initialData);
+      setLoading(false);
+      return;
+    }
+
     async function loadColumn() {
       try {
         setLoading(true);
         const columnData = await getColumnById(columnId);
+        if (!isMounted) return;
+        
         if (process.env.NODE_ENV === 'development') {
           console.log(`ColumnRenderer - Column yüklendi (${columnId}):`, columnData);
         }
@@ -41,22 +52,33 @@ export function ColumnRenderer({ columnId, index, isNested = false, isFlexLayout
         }
         setColumn(columnData);
       } catch (error) {
+        if (!isMounted) return;
         if (process.env.NODE_ENV === 'development') {
           console.error(`Column yükleme hatası (${columnId}):`, error);
         }
       } finally {
-        setLoading(false);
+        if (isMounted) {
+          setLoading(false);
+        }
       }
     }
     loadColumn();
-  }, [columnId]);
+
+    return () => {
+      isMounted = false;
+    };
+  }, [columnId, initialData]);
 
   // Nested columns'ları yükle
   useEffect(() => {
+    let isMounted = true;
+
     async function loadNestedColumns() {
       if (!column?.columns || column.columns.length === 0) {
-        setNestedColumns([]);
-        setNestedColumnsLoading(false);
+        if (isMounted) {
+          setNestedColumns([]);
+          setNestedColumnsLoading(false);
+        }
         return;
       }
 
@@ -64,23 +86,30 @@ export function ColumnRenderer({ columnId, index, isNested = false, isFlexLayout
         setNestedColumnsLoading(true);
         const columnPromises = column.columns.map(nestedColumnId => getColumnById(nestedColumnId));
         const loadedColumns = await Promise.all(columnPromises);
-        setNestedColumns(loadedColumns.filter(Boolean) as Column[]);
+        if (isMounted) {
+          setNestedColumns(loadedColumns.filter(Boolean) as Column[]);
+        }
       } catch (error) {
+        if (!isMounted) return;
         if (process.env.NODE_ENV === 'development') {
           console.error(`Nested column yükleme hatası (${columnId}):`, error);
         }
         setNestedColumns([]);
       } finally {
-        setNestedColumnsLoading(false);
+        if (isMounted) {
+          setNestedColumnsLoading(false);
+        }
       }
     }
 
     if (column) {
       loadNestedColumns();
     }
+
+    return () => {
+      isMounted = false;
+    };
   }, [column, columnId]);
-  
-  const deviceType = useMemo(() => getDeviceType(), []);
   
   // Settings ve hesaplamalar - TÜM hook'lar en üstte olmalı (early return'lerden önce)
   const settings = useMemo(() => column?.settings || {}, [column?.settings]);
@@ -89,15 +118,14 @@ export function ColumnRenderer({ columnId, index, isNested = false, isFlexLayout
   const padding = useMemo(() => responsiveSettings.padding || settings.padding || { top: 0, right: 0, bottom: 0, left: 0 }, [responsiveSettings.padding, settings.padding]);
   // Width birim kontrolü: 0-100 arası % olarak, değilse px olarak
   const isWidthPercent = useMemo(() => columnWidth <= 100 && columnWidth >= 0, [columnWidth]);
-  const gridColumnSpan = useMemo(() => {
-    if (isWidthPercent) {
-      return columnWidth ? `span ${Math.round((columnWidth / 100) * 12)}` : 'span 12';
-    }
-    return undefined; // px kullanılıyorsa grid span kullanma
-  }, [columnWidth, isWidthPercent]);
+  // gridColumnSpan kaldırıldı - SectionRenderer'daki gridTemplateColumns zaten genişliği kontrol ediyor
   
   // Nested columns için grid template - useMemo ile optimize et
   const nestedGridTemplate = useMemo(() => {
+    // Eğer parent section Flex (Column) düzenindeyse, 
+    // nested kolonları yan yana değil, alt alta (tek sütun) olarak zorla.
+    if (isFlexLayout) return '1fr';
+    
     if (nestedColumns.length === 0) return '1fr';
     
     // Tüm nested kolonların birimlerini kontrol et
@@ -106,9 +134,16 @@ export function ColumnRenderer({ columnId, index, isNested = false, isFlexLayout
       return width > 100 || width < 0;
     });
     
-    // Eğer px kolonlar varsa, tüm kolonlar için 1fr kullan (width CSS property ile kontrol edilecek)
+    // Eğer px kolonlar varsa, her kolon için doğru değeri kullan (fixed + fluid düzen)
     if (hasPxColumns) {
-      return nestedColumns.map(() => '1fr').join(' ');
+      return nestedColumns.map(col => {
+        const width = col.width || (100 / nestedColumns.length);
+        // 100'den büyükse veya 0'dan küçükse px kabul et
+        const isPx = width > 100 || width < 0;
+        if (isPx) return `${width}px`;
+        // Px olmayanlar için kalan alanı paylaştır
+        return '1fr';
+      }).join(' ');
     }
     
     // Tüm kolonlar % ise, fr kullan
@@ -116,7 +151,7 @@ export function ColumnRenderer({ columnId, index, isNested = false, isFlexLayout
       const width = col.width || (100 / nestedColumns.length);
       return `${width}fr`;
     }).join(' ');
-  }, [nestedColumns]);
+  }, [nestedColumns, isFlexLayout]);
   
   // Column style - useMemo ile optimize et
   const columnStyle: React.CSSProperties = useMemo(() => ({
@@ -142,12 +177,20 @@ export function ColumnRenderer({ columnId, index, isNested = false, isFlexLayout
     flexDirection: 'column',
     justifyContent: settings.verticalAlign || 'flex-start',
     alignItems: settings.horizontalAlign || 'flex-start',
-    gridColumn: (isNested || isFlexLayout) ? undefined : gridColumnSpan, // Nested column'lar ve flex layout için grid-column kullanma
+    // gridColumn kaldırıldı - SectionRenderer'daki gridTemplateColumns zaten genişliği kontrol ediyor
     // Eğer px kullanılıyorsa ve grid içindeyse, flex-shrink: 0 ekle ki genişlik korunsun
     flexShrink: isWidthPercent ? undefined : 0,
     // Eğer px kullanılıyorsa, min-width de ekle ki küçülmesin
     minWidth: isWidthPercent ? undefined : `${columnWidth}px`,
-  }), [settings, padding, gridColumnSpan, isWidthPercent, columnWidth, isNested, isFlexLayout]);
+  }), [settings, padding, isWidthPercent, columnWidth]);
+  
+  // Güvenlik kilidi: Maksimum iç içe kolon derinliği (hook'lardan sonra kontrol et)
+  if (depth > 5) {
+    if (process.env.NODE_ENV === 'development') {
+      console.warn(`ColumnRenderer - Maksimum iç içe kolon derinliğine ulaşıldı (${depth}). Sonsuz döngü önlendi.`);
+    }
+    return null;
+  }
   
   // Loading state - skeleton placeholder
   if (loading) {
@@ -179,6 +222,7 @@ export function ColumnRenderer({ columnId, index, isNested = false, isFlexLayout
   
   return (
     <div 
+      ref={columnRef}
       className="column-renderer"
       style={columnStyle}
       data-column-index={index ?? 0}
@@ -190,9 +234,9 @@ export function ColumnRenderer({ columnId, index, isNested = false, isFlexLayout
         </div>
       ) : nestedColumns.length > 0 ? (
         <div
-          className="nested-columns-wrapper grid gap-2"
+          className={`nested-columns-wrapper ${isFlexLayout ? 'flex flex-col' : 'grid'} gap-2`}
           style={{
-            gridTemplateColumns: nestedGridTemplate,
+            gridTemplateColumns: isFlexLayout ? undefined : nestedGridTemplate,
             width: '100%', // Parent kolonun genişliğini tam kullan
           }}
         >
@@ -202,6 +246,8 @@ export function ColumnRenderer({ columnId, index, isNested = false, isFlexLayout
               columnId={nestedCol.id}
               index={nestedIndex}
               isNested={true} // Nested column olduğunu belirt
+              isFlexLayout={isFlexLayout} // Parent section'ın layout bilgisini nested columns'a da geçir
+              depth={depth + 1} // Derinliği artır (sonsuz döngü önleme)
             />
           ))}
         </div>

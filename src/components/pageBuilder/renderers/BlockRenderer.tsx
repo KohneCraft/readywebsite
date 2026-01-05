@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useRef } from 'react';
 import { 
   TextBlock, 
   HeadingBlock, 
@@ -35,15 +35,20 @@ const blockComponents: Record<BlockType, React.ComponentType<{ props: Block['pro
 };
 
 export function BlockRenderer({ blockId, index }: BlockRendererProps) {
+  const blockRef = useRef<HTMLDivElement>(null);
   const [block, setBlock] = useState<Block | null>(null);
   const [isVisible, setIsVisible] = useState(false);
   const [loading, setLoading] = useState(true);
   
   useEffect(() => {
+    let isMounted = true;
+
     async function loadBlock() {
       try {
         setLoading(true);
         const blockData = await getBlockById(blockId);
+        if (!isMounted) return;
+        
         if (process.env.NODE_ENV === 'development') {
           console.log(`BlockRenderer - Block yüklendi (${blockId}):`, blockData);
         }
@@ -54,14 +59,21 @@ export function BlockRenderer({ blockId, index }: BlockRendererProps) {
         }
         setBlock(blockData);
       } catch (error) {
+        if (!isMounted) return;
         if (process.env.NODE_ENV === 'development') {
           console.error(`Block yükleme hatası (${blockId}):`, error);
         }
       } finally {
-        setLoading(false);
+        if (isMounted) {
+          setLoading(false);
+        }
       }
     }
     loadBlock();
+
+    return () => {
+      isMounted = false;
+    };
   }, [blockId]);
   
   // Animation hesaplamaları - early return'lerden önce
@@ -90,13 +102,13 @@ export function BlockRenderer({ blockId, index }: BlockRendererProps) {
       { threshold: 0.1 }
     );
     
-    const element = document.getElementById(`block-${blockId}`);
+    const element = blockRef.current;
     if (element) {
       observer.observe(element);
     }
     
     return () => observer.disconnect();
-  }, [animation, blockId]);
+  }, [animation]);
   
   // Loading state - skeleton placeholder
   if (loading) {
@@ -135,6 +147,7 @@ export function BlockRenderer({ blockId, index }: BlockRendererProps) {
   
   return (
     <div 
+      ref={blockRef}
       id={`block-${blockId}`}
       className={`block-renderer block-${block.type} ${animationClass}`}
       style={animationStyle as React.CSSProperties}

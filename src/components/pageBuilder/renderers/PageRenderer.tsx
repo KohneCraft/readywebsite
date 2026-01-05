@@ -11,16 +11,18 @@ interface PageRendererProps {
   allowDraft?: boolean; // Preview modunda taslak sayfaları da göster
 }
 
-function updateMetaTag(property: string, content: string) {
-  if (!content) return;
+function updateMetaTag(property: string, content: string, dataAttribute: string = 'data-generated-by-page-renderer'): HTMLMetaElement | null {
+  if (!content) return null;
   
-  let tag = document.querySelector(`meta[property="${property}"]`);
+  let tag = document.querySelector(`meta[property="${property}"][${dataAttribute}]`) as HTMLMetaElement | null;
   if (!tag) {
     tag = document.createElement('meta');
     tag.setAttribute('property', property);
+    tag.setAttribute(dataAttribute, 'true');
     document.head.appendChild(tag);
   }
   tag.setAttribute('content', content);
+  return tag;
 }
 
 export function PageRenderer({ pageId, slug, allowDraft = false }: PageRendererProps) {
@@ -77,23 +79,46 @@ export function PageRenderer({ pageId, slug, allowDraft = false }: PageRendererP
   
   // SEO Meta Tags
   useEffect(() => {
-    if (page?.settings?.seo) {
-      document.title = page.settings.seo.title || page.title;
-      
-      // Meta description
-      let metaDesc = document.querySelector('meta[name="description"]');
-      if (!metaDesc) {
-        metaDesc = document.createElement('meta');
-        metaDesc.setAttribute('name', 'description');
-        document.head.appendChild(metaDesc);
-      }
-      metaDesc.setAttribute('content', page.settings.seo.description || '');
-      
-      // Open Graph tags
-      if (page.settings.seo.ogTitle) updateMetaTag('og:title', page.settings.seo.ogTitle);
-      if (page.settings.seo.ogDescription) updateMetaTag('og:description', page.settings.seo.ogDescription);
-      if (page.settings.seo.ogImage) updateMetaTag('og:image', page.settings.seo.ogImage);
+    if (!page?.settings?.seo) return;
+    
+    const originalTitle = document.title;
+    const addedMetaTags: HTMLElement[] = [];
+    
+    document.title = page.settings.seo.title || page.title;
+    
+    // Meta description
+    let metaDesc = document.querySelector('meta[name="description"][data-generated-by-page-renderer]') as HTMLMetaElement | null;
+    if (!metaDesc) {
+      metaDesc = document.createElement('meta');
+      metaDesc.setAttribute('name', 'description');
+      metaDesc.setAttribute('data-generated-by-page-renderer', 'true');
+      document.head.appendChild(metaDesc);
+      addedMetaTags.push(metaDesc);
     }
+    metaDesc.setAttribute('content', page.settings.seo.description || '');
+    
+    // Open Graph tags
+    if (page.settings.seo.ogTitle) {
+      const tag = updateMetaTag('og:title', page.settings.seo.ogTitle);
+      if (tag) addedMetaTags.push(tag);
+    }
+    if (page.settings.seo.ogDescription) {
+      const tag = updateMetaTag('og:description', page.settings.seo.ogDescription);
+      if (tag) addedMetaTags.push(tag);
+    }
+    if (page.settings.seo.ogImage) {
+      const tag = updateMetaTag('og:image', page.settings.seo.ogImage);
+      if (tag) addedMetaTags.push(tag);
+    }
+    
+    // Cleanup: Bu component tarafından eklenen meta tag'leri kaldır
+    return () => {
+      document.title = originalTitle;
+      // Önce eklenen tag'leri kaldır
+      addedMetaTags.forEach(tag => tag.remove());
+      // Sonra data attribute ile işaretlenmiş tüm tag'leri kaldır (güvenlik için)
+      document.querySelectorAll('meta[data-generated-by-page-renderer]').forEach(el => el.remove());
+    };
   }, [page]);
   
   // Custom CSS/JS injection

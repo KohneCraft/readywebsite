@@ -18,9 +18,10 @@ interface SectionSettingsProps {
   sectionId: string;
   activeTab: 'style' | 'settings' | 'advanced';
   onUpdate: (updates: Partial<Section>) => void;
+  onColumnUpdate?: (columnId: string, updates: Partial<Column>) => void;
 }
 
-export function SectionSettings({ sectionId, activeTab, onUpdate }: SectionSettingsProps) {
+export function SectionSettings({ sectionId, activeTab, onUpdate, onColumnUpdate }: SectionSettingsProps) {
   const [section, setSection] = useState<Section | null>(null);
   const [columns, setColumns] = useState<Column[]>([]);
   const [nestedColumnsMap, setNestedColumnsMap] = useState<Record<string, Column[]>>({});
@@ -330,8 +331,10 @@ export function SectionSettings({ sectionId, activeTab, onUpdate }: SectionSetti
                             c.id === col.id ? { ...c, width: newWidth } : c
                           );
                           setColumns(updatedColumns);
-                          // onUpdate'e column bilgisi gönder - gerçek kayıt "Kaydet" butonuna tıklandığında yapılacak
-                          // Burada sadece state güncellemesi yapıyoruz
+                          // Column güncellemesini pending updates'e ekle
+                          if (onColumnUpdate) {
+                            onColumnUpdate(col.id, { width: newWidth });
+                          }
                         }}
                         className="flex-1"
                       />
@@ -369,8 +372,10 @@ export function SectionSettings({ sectionId, activeTab, onUpdate }: SectionSetti
                                   ...prev,
                                   [col.id]: updatedNestedColumns,
                                 }));
-                                // Gerçek kayıt "Kaydet" butonuna tıklandığında yapılacak
-                                // Burada sadece state güncellemesi yapıyoruz
+                                // Nested column güncellemesini pending updates'e ekle
+                                if (onColumnUpdate) {
+                                  onColumnUpdate(nestedCol.id, { width: newWidth });
+                                }
                               }}
                               className="flex-1"
                             />
