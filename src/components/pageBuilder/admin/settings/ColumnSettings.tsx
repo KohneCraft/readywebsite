@@ -5,7 +5,7 @@
 // Column ayarları paneli
 // ============================================
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { getColumnById } from '@/lib/firebase/firestore';
 import { SpacingControl } from '../controls/SpacingControl';
 import { ColorPicker } from '../controls/ColorPicker';
@@ -26,10 +26,6 @@ export function ColumnSettings({ columnId, activeTab, onUpdate }: ColumnSettings
   const [loading, setLoading] = useState(true);
   const [widthUnit, setWidthUnit] = useState<'percent' | 'pixels'>('percent');
   const [widthValue, setWidthValue] = useState<number>(100);
-  
-  // Debounce için timer ref'leri
-  const widthUpdateTimerRef = useRef<NodeJS.Timeout | null>(null);
-  const nestedWidthUpdateTimersRef = useRef<Record<string, NodeJS.Timeout | null>>({});
 
   useEffect(() => {
     async function loadColumn() {
@@ -84,23 +80,6 @@ export function ColumnSettings({ columnId, activeTab, onUpdate }: ColumnSettings
     }
   }, [column?.width]);
   
-  // Cleanup: Component unmount olduğunda timer'ları temizle
-  useEffect(() => {
-    // Ref değerlerini kopyala çünkü cleanup sırasında değişmiş olabilir
-    const widthTimer = widthUpdateTimerRef.current;
-    const nestedTimers = { ...nestedWidthUpdateTimersRef.current };
-    
-    return () => {
-      if (widthTimer) {
-        clearTimeout(widthTimer);
-      }
-      Object.values(nestedTimers).forEach(timer => {
-        if (timer) {
-          clearTimeout(timer);
-        }
-      });
-    };
-  }, []);
 
   if (loading) {
     return (
@@ -161,22 +140,7 @@ export function ColumnSettings({ columnId, activeTab, onUpdate }: ColumnSettings
                 const updated = { ...column, width: newValue };
                 setColumn(updated);
                 onUpdate(updated);
-                
-                // Önceki timer'ı temizle
-                if (widthUpdateTimerRef.current) {
-                  clearTimeout(widthUpdateTimerRef.current);
-                }
-                
-                // Debounce: 1.5 saniye bekle, sonra Firestore'a kaydet
-                widthUpdateTimerRef.current = setTimeout(async () => {
-                  try {
-                    const { updateColumn } = await import('@/lib/firebase/firestore');
-                    await updateColumn(column.id, { width: newValue });
-                    window.dispatchEvent(new CustomEvent('section-updated', { detail: { sectionId: 'any' } }));
-                  } catch (error) {
-                    console.error('Kolon genişliği güncelleme hatası:', error);
-                  }
-                }, 1500); // 1.5 saniye debounce
+                // Gerçek kayıt "Kaydet" butonuna tıklandığında yapılacak
               }}
               className="flex-1 px-3 py-2 text-sm border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-white"
             />
@@ -399,23 +363,8 @@ export function ColumnSettings({ columnId, activeTab, onUpdate }: ColumnSettings
                         c.id === nestedCol.id ? { ...c, width: newWidth } : c
                       );
                       setNestedColumns(updatedNestedColumns);
-                      
-                      // Önceki timer'ı temizle
-                      const existingTimer = nestedWidthUpdateTimersRef.current[nestedCol.id];
-                      if (existingTimer) {
-                        clearTimeout(existingTimer);
-                      }
-                      
-                      // Debounce: 1.5 saniye bekle, sonra Firestore'a kaydet
-                      nestedWidthUpdateTimersRef.current[nestedCol.id] = setTimeout(async () => {
-                        try {
-                          const { updateColumn } = await import('@/lib/firebase/firestore');
-                          await updateColumn(nestedCol.id, { width: newWidth });
-                          window.dispatchEvent(new CustomEvent('section-updated', { detail: { sectionId: 'any' } }));
-                        } catch (error) {
-                          console.error('İç kolon genişliği güncelleme hatası:', error);
-                        }
-                      }, 1500); // 1.5 saniye debounce
+                      // Gerçek kayıt "Kaydet" butonuna tıklandığında yapılacak
+                      // Burada sadece state güncellemesi yapıyoruz
                     }}
                     className="flex-1"
                   />

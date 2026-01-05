@@ -5,7 +5,7 @@
 // Ayarlar paneli - seçili elementin özelliklerini düzenler
 // ============================================
 
-import { useState, useCallback, useRef } from 'react';
+import { useState, useCallback } from 'react';
 import { X, Settings as SettingsIcon, Navigation, Layout, Image as ImageIcon } from 'lucide-react';
 import { SectionSettings } from '../settings/SectionSettings';
 import { ColumnSettings } from '../settings/ColumnSettings';
@@ -14,7 +14,6 @@ import { PageSettings } from '../settings/PageSettings';
 import { HeaderSettings } from '../settings/HeaderSettings';
 import { FooterSettings } from '../settings/FooterSettings';
 import { IconSettings } from '../settings/IconSettings';
-import { updateSection, updateColumn, updateBlock } from '@/lib/firebase/firestore';
 import { cn } from '@/lib/utils';
 import type { Page, Section, Column, Block } from '@/types/pageBuilder';
 
@@ -23,82 +22,33 @@ interface RightPanelProps {
   page?: Page;
   onUpdate?: (updates: Partial<Page>) => void;
   onSelectElement?: (element: { type: 'section' | 'column' | 'block' | 'page' | 'header' | 'footer'; id: string } | null) => void;
+  onSectionUpdate?: (sectionId: string, updates: Partial<Section>) => void;
+  onColumnUpdate?: (columnId: string, updates: Partial<Column>) => void;
+  onBlockUpdate?: (blockId: string, updates: Partial<Block>) => void;
 }
 
-export function RightPanel({ selectedElement, page, onUpdate, onSelectElement }: RightPanelProps) {
+export function RightPanel({ selectedElement, page, onUpdate, onSelectElement, onSectionUpdate, onColumnUpdate, onBlockUpdate }: RightPanelProps) {
   const [activeTab, setActiveTab] = useState<'style' | 'settings' | 'advanced'>('style');
   const [viewMode, setViewMode] = useState<'element' | 'header' | 'footer' | 'page' | 'icon'>('element');
-  const debounceTimer = useRef<NodeJS.Timeout | null>(null);
 
-  // Debounced update fonksiyonları
-  const handleSectionUpdate = useCallback(async (updates: Partial<Section>) => {
-    if (!selectedElement) return;
-    
-    // Debounce: 1.5 saniye bekle
-    if (debounceTimer.current) {
-      clearTimeout(debounceTimer.current);
-    }
-    
-    debounceTimer.current = setTimeout(async () => {
-      try {
-        await updateSection(selectedElement.id, {
-          name: updates.name,
-          settings: updates.settings,
-          order: updates.order,
-          visibility: updates.visibility,
-        });
-        // Section güncelleme event'i gönder
-        window.dispatchEvent(new CustomEvent('section-updated', { detail: { sectionId: selectedElement.id } }));
-      } catch (error) {
-        console.error('Section güncelleme hatası:', error);
-      }
-    }, 1500); // 1.5 saniye debounce
-  }, [selectedElement]);
+  // State güncelleme fonksiyonları - debounce yok, sadece pending updates'e ekle
+  const handleSectionUpdate = useCallback((updates: Partial<Section>) => {
+    if (!selectedElement || !onSectionUpdate) return;
+    // Pending updates'e ekle - gerçek kayıt TopBar'daki Kaydet butonuna tıklandığında yapılacak
+    onSectionUpdate(selectedElement.id, updates);
+  }, [selectedElement, onSectionUpdate]);
 
-  const handleColumnUpdate = useCallback(async (updates: Partial<Column>) => {
-    if (!selectedElement) return;
-    
-    if (debounceTimer.current) {
-      clearTimeout(debounceTimer.current);
-    }
-    
-    debounceTimer.current = setTimeout(async () => {
-      try {
-        await updateColumn(selectedElement.id, {
-          width: updates.width,
-          settings: updates.settings,
-          order: updates.order,
-        });
-        window.dispatchEvent(new CustomEvent('section-updated', { detail: { sectionId: 'any' } }));
-      } catch (error) {
-        console.error('Column güncelleme hatası:', error);
-      }
-    }, 1500); // 1.5 saniye debounce
-  }, [selectedElement]);
+  const handleColumnUpdate = useCallback((updates: Partial<Column>) => {
+    if (!selectedElement || !onColumnUpdate) return;
+    // Pending updates'e ekle - gerçek kayıt TopBar'daki Kaydet butonuna tıklandığında yapılacak
+    onColumnUpdate(selectedElement.id, updates);
+  }, [selectedElement, onColumnUpdate]);
 
-  const handleBlockUpdate = useCallback(async (updates: Partial<Block>) => {
-    if (!selectedElement) return;
-    
-    if (debounceTimer.current) {
-      clearTimeout(debounceTimer.current);
-    }
-    
-    debounceTimer.current = setTimeout(async () => {
-      try {
-        const updateData: any = {};
-        if (updates.props !== undefined) {
-          updateData.props = updates.props;
-        }
-        if (updates.order !== undefined) {
-          updateData.order = updates.order;
-        }
-        await updateBlock(selectedElement.id, updateData);
-        window.dispatchEvent(new CustomEvent('section-updated', { detail: { sectionId: 'any' } }));
-      } catch (error) {
-        console.error('Block güncelleme hatası:', error);
-      }
-    }, 1500); // 1.5 saniye debounce
-  }, [selectedElement]);
+  const handleBlockUpdate = useCallback((updates: Partial<Block>) => {
+    if (!selectedElement || !onBlockUpdate) return;
+    // Pending updates'e ekle - gerçek kayıt TopBar'daki Kaydet butonuna tıklandığında yapılacak
+    onBlockUpdate(selectedElement.id, updates);
+  }, [selectedElement, onBlockUpdate]);
 
   // View mode seçimi (Header, Footer, Page Settings veya Element)
   if (!selectedElement) {

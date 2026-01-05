@@ -20,7 +20,8 @@ import {
   createBlock,
   moveBlock,
 } from '@/lib/firebase/firestore';
-import type { Page, BlockType } from '@/types/pageBuilder';
+import type { Page, BlockType, Section, Column, Block } from '@/types/pageBuilder';
+import { updateSection, updateColumn, updateBlock } from '@/lib/firebase/firestore';
 
 interface PageBuilderEditorProps {
   pageId: string;
@@ -39,6 +40,11 @@ export function PageBuilderEditor({ pageId }: PageBuilderEditorProps) {
   const [isResizingLeft, setIsResizingLeft] = useState(false);
   const [isResizingRight, setIsResizingRight] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  
+  // Pending değişiklikleri tutmak için state'ler
+  const [pendingSectionUpdates, setPendingSectionUpdates] = useState<Record<string, Partial<Section>>>({});
+  const [pendingColumnUpdates, setPendingColumnUpdates] = useState<Record<string, Partial<Column>>>({});
+  const [pendingBlockUpdates, setPendingBlockUpdates] = useState<Record<string, Partial<Block>>>({});
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -58,6 +64,10 @@ export function PageBuilderEditor({ pageId }: PageBuilderEditorProps) {
       const pageData = await getPageById(pageId);
       setPage(pageData);
       setHasChanges(false);
+      // Pending değişiklikleri temizle
+      setPendingSectionUpdates({});
+      setPendingColumnUpdates({});
+      setPendingBlockUpdates({});
     } catch (error) {
       console.error('Sayfa yüklenirken hata:', error);
     } finally {
@@ -234,13 +244,54 @@ export function PageBuilderEditor({ pageId }: PageBuilderEditorProps) {
     setActiveBlock(null);
   }, [page, pageId]);
 
-  // Kaydet
+  // Kaydet - Tüm pending değişiklikleri kaydet
   const handleSave = useCallback(async () => {
-    if (!page || !hasChanges) return;
+    if (!page) return;
+    
+    // Eğer hiç pending değişiklik yoksa ve hasChanges false ise, sadece page'i kaydet
+    const hasPendingChanges = 
+      Object.keys(pendingSectionUpdates).length > 0 ||
+      Object.keys(pendingColumnUpdates).length > 0 ||
+      Object.keys(pendingBlockUpdates).length > 0 ||
+      hasChanges;
 
-      try {
-        setIsSaving(true);
-        // Sadece güncellenebilir field'ları gönder (undefined field'ları filtrele)
+    if (!hasPendingChanges) return;
+
+    try {
+      setIsSaving(true);
+      
+      // Pending section değişikliklerini kaydet
+      for (const [sectionId, updates] of Object.entries(pendingSectionUpdates)) {
+        try {
+          await updateSection(sectionId, updates);
+          window.dispatchEvent(new CustomEvent('section-updated', { detail: { sectionId } }));
+        } catch (error) {
+          console.error(`Section ${sectionId} güncelleme hatası:`, error);
+        }
+      }
+      
+      // Pending column değişikliklerini kaydet
+      for (const [columnId, updates] of Object.entries(pendingColumnUpdates)) {
+        try {
+          await updateColumn(columnId, updates);
+          window.dispatchEvent(new CustomEvent('section-updated', { detail: { sectionId: 'any' } }));
+        } catch (error) {
+          console.error(`Column ${columnId} güncelleme hatası:`, error);
+        }
+      }
+      
+      // Pending block değişikliklerini kaydet
+      for (const [blockId, updates] of Object.entries(pendingBlockUpdates)) {
+        try {
+          await updateBlock(blockId, updates);
+          window.dispatchEvent(new CustomEvent('section-updated', { detail: { sectionId: 'any' } }));
+        } catch (error) {
+          console.error(`Block ${blockId} güncelleme hatası:`, error);
+        }
+      }
+      
+      // Page değişikliklerini kaydet (eğer varsa)
+      if (hasChanges) {
         const updateData: Partial<Page> = {
           title: page.title,
           slug: page.slug,
@@ -248,20 +299,23 @@ export function PageBuilderEditor({ pageId }: PageBuilderEditorProps) {
           settings: page.settings,
           status: page.status,
         };
-        
-        // publishedAt sadece published ise ve yoksa ekle
-        if (page.status === 'published' && !page.publishedAt) {
-          // updatePage fonksiyonu zaten bunu handle ediyor
-        }
-        
         await updatePage(pageId, updateData);
-        setHasChanges(false);
-      } catch (error) {
-        console.error('Kaydetme hatası:', error);
-      } finally {
-        setIsSaving(false);
       }
-  }, [page, pageId, hasChanges]);
+      
+      // Pending değişiklikleri temizle
+      setPendingSectionUpdates({});
+      setPendingColumnUpdates({});
+      setPendingBlockUpdates({});
+      setHasChanges(false);
+      
+      // Sayfayı yeniden yükle
+      await loadPage();
+    } catch (error) {
+      console.error('Kaydetme hatası:', error);
+    } finally {
+      setIsSaving(false);
+    }
+  }, [page, pageId, hasChanges, pendingSectionUpdates, pendingColumnUpdates, pendingBlockUpdates, loadPage]);
 
   // Sayfa güncelleme
   const handlePageUpdate = useCallback((updates: Partial<Page>) => {
@@ -454,6 +508,27 @@ export function PageBuilderEditor({ pageId }: PageBuilderEditorProps) {
               page={page}
               onUpdate={handlePageUpdate}
               onSelectElement={setSelectedElement}
+              onSectionUpdate={(sectionId, updates) => {
+                setPendingSectionUpdates(prev => ({
+                  ...prev,
+                  [sectionId]: { ...prev[sectionId], ...updates }
+                }));
+                setHasChanges(true);
+              }}
+              onColumnUpdate={(columnId, updates) => {
+                setPendingColumnUpdates(prev => ({
+                  ...prev,
+                  [columnId]: { ...prev[columnId], ...updates }
+                }));
+                setHasChanges(true);
+              }}
+              onBlockUpdate={(blockId, updates) => {
+                setPendingBlockUpdates(prev => ({
+                  ...prev,
+                  [blockId]: { ...prev[blockId], ...updates }
+                }));
+                setHasChanges(true);
+              }}
             />
           </div>
         </div>
