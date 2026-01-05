@@ -77,7 +77,18 @@ export function SectionRenderer({ sectionId }: SectionRendererProps) {
   const deviceType = useMemo(() => getDeviceType(), []);
   
   // Settings ve hesaplamalar - useMemo ile optimize et
-  const settings = useMemo(() => section?.settings || {}, [section?.settings]);
+  const settings = useMemo(() => {
+    const s = section?.settings || {};
+    if (process.env.NODE_ENV === 'development') {
+      console.log('SectionRenderer - Settings:', {
+        maxHeight: s.maxHeight,
+        columnLayout: s.columnLayout,
+        columnGap: s.columnGap,
+        fullSettings: s
+      });
+    }
+    return s;
+  }, [section?.settings]);
   const animation = useMemo(() => settings.animation, [settings]);
   
   // Section style - useMemo ile optimize et
@@ -95,7 +106,7 @@ export function SectionRenderer({ sectionId }: SectionRendererProps) {
       ? `${settings.margin.top || 0}px ${settings.margin.right || 0}px ${settings.margin.bottom || 0}px ${settings.margin.left || 0}px`
       : '0',
     minHeight: settings.minHeight ? `${settings.minHeight}px` : 'auto',
-    maxHeight: settings.maxHeight ? `${settings.maxHeight}px` : 'none',
+    maxHeight: settings.maxHeight !== undefined && settings.maxHeight !== null ? `${settings.maxHeight}px` : undefined,
     borderTop: settings.borderTop?.width 
       ? `${settings.borderTop.width}px ${settings.borderTop.style} ${settings.borderTop.color}` 
       : 'none',
@@ -122,6 +133,7 @@ export function SectionRenderer({ sectionId }: SectionRendererProps) {
   
   // Grid template columns - useMemo ile optimize et
   const gridTemplateColumns = useMemo(() => {
+    // Alt Alta (column) düzeni için grid kullanma, flex kullanılacak
     if (settings.columnLayout === 'column') return undefined;
     if (columns.length === 0) return '1fr';
     
@@ -264,8 +276,8 @@ export function SectionRenderer({ sectionId }: SectionRendererProps) {
           style={{
             display: settings.columnLayout === 'column' ? 'flex' : 'grid',
             flexDirection: settings.columnLayout === 'column' ? 'column' : undefined,
-            gridTemplateColumns: gridTemplateColumns,
-            gap: `${settings.columnGap || 30}px`
+            gridTemplateColumns: settings.columnLayout === 'column' ? undefined : gridTemplateColumns,
+            gap: settings.columnGap !== undefined && settings.columnGap !== null ? `${settings.columnGap}px` : '30px'
           }}
         >
           {section.columns && section.columns.length > 0 ? (
