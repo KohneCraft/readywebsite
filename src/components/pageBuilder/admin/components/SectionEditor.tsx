@@ -18,8 +18,8 @@ interface SectionEditorProps {
   index: number;
   isSelected: boolean;
   onSelect: () => void;
-  selectedElement?: { type: 'section' | 'column' | 'block'; id: string } | null;
-  onSelectElement?: (element: { type: 'section' | 'column' | 'block'; id: string } | null) => void;
+  selectedElement?: { type: 'section' | 'column' | 'block' | 'page' | 'header' | 'footer'; id: string } | null;
+  onSelectElement?: (element: { type: 'section' | 'column' | 'block' | 'page' | 'header' | 'footer'; id: string } | null) => void;
   onMove?: (sectionId: string, direction: 'up' | 'down') => Promise<void>;
   onDuplicate?: (sectionId: string) => Promise<void>;
   onDelete?: (sectionId: string) => Promise<void>;

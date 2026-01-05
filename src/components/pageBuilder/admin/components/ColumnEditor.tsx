@@ -18,8 +18,8 @@ interface ColumnEditorProps {
   index: number;
   isSelected: boolean;
   onSelect: () => void;
-  selectedElement?: { type: 'section' | 'column' | 'block'; id: string } | null;
-  onSelectElement?: (element: { type: 'section' | 'column' | 'block'; id: string } | null) => void;
+  selectedElement?: { type: 'section' | 'column' | 'block' | 'page' | 'header' | 'footer'; id: string } | null;
+  onSelectElement?: (element: { type: 'section' | 'column' | 'block' | 'page' | 'header' | 'footer'; id: string } | null) => void;
   onAddColumn?: (afterColumnId: string) => Promise<void>; // Yan yana kolon eklemek için
   onDeleteColumn?: (columnId: string) => Promise<void>; // Kolon silmek için
 }
