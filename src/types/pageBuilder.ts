@@ -317,6 +317,7 @@ export interface SectionSettings {
   
   // Dimensions
   minHeight?: number;
+  maxHeight?: number; // px
   height?: 'auto' | number;
   
   // Borders
