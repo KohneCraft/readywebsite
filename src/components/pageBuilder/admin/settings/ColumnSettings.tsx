@@ -86,13 +86,15 @@ export function ColumnSettings({ columnId, activeTab, onUpdate }: ColumnSettings
   
   // Cleanup: Component unmount olduğunda timer'ları temizle
   useEffect(() => {
+    // Ref değerlerini kopyala çünkü cleanup sırasında değişmiş olabilir
+    const widthTimer = widthUpdateTimerRef.current;
+    const nestedTimers = { ...nestedWidthUpdateTimersRef.current };
+    
     return () => {
-      if (widthUpdateTimerRef.current) {
-        clearTimeout(widthUpdateTimerRef.current);
+      if (widthTimer) {
+        clearTimeout(widthTimer);
       }
-      // Ref değerini kopyala çünkü cleanup sırasında değişmiş olabilir
-      const timers = { ...nestedWidthUpdateTimersRef.current };
-      Object.values(timers).forEach(timer => {
+      Object.values(nestedTimers).forEach(timer => {
         if (timer) {
           clearTimeout(timer);
         }

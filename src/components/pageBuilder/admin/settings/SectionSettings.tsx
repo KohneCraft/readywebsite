@@ -26,6 +26,9 @@ export function SectionSettings({ sectionId, activeTab, onUpdate }: SectionSetti
   const [nestedColumnsMap, setNestedColumnsMap] = useState<Record<string, Column[]>>({});
   const [loading, setLoading] = useState(true);
   const [columnWidthUnit, setColumnWidthUnit] = useState<'percent' | 'pixels'>('percent');
+  
+  // Debounce için timer ref'leri - her kolon için ayrı timer
+  const columnWidthUpdateTimersRef = useRef<Record<string, NodeJS.Timeout | null>>({});
 
   useEffect(() => {
     async function loadSection() {
@@ -79,6 +82,21 @@ export function SectionSettings({ sectionId, activeTab, onUpdate }: SectionSetti
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [section?.columns]);
+
+  // Cleanup: Component unmount olduğunda timer'ları temizle
+  // TÜM hook'lar early return'lerden ÖNCE olmalı
+  useEffect(() => {
+    // Ref değerini kopyala çünkü cleanup sırasında değişmiş olabilir
+    const timers = { ...columnWidthUpdateTimersRef.current };
+    
+    return () => {
+      Object.values(timers).forEach(timer => {
+        if (timer) {
+          clearTimeout(timer);
+        }
+      });
+    };
+  }, []);
 
   if (loading) {
     return (
@@ -331,8 +349,9 @@ export function SectionSettings({ sectionId, activeTab, onUpdate }: SectionSetti
                           setColumns(updatedColumns);
                           
                           // Önceki timer'ı temizle
-                          if (columnWidthUpdateTimersRef.current[col.id]) {
-                            clearTimeout(columnWidthUpdateTimersRef.current[col.id]);
+                          const existingTimer = columnWidthUpdateTimersRef.current[col.id];
+                          if (existingTimer) {
+                            clearTimeout(existingTimer);
                           }
                           
                           // Debounce: 1.5 saniye bekle, sonra Firestore'a kaydet
@@ -386,7 +405,10 @@ export function SectionSettings({ sectionId, activeTab, onUpdate }: SectionSetti
                                 // Önceki timer'ı temizle
                                 const timerKey = `nested-${nestedCol.id}`;
                                 if (columnWidthUpdateTimersRef.current[timerKey]) {
-                                  clearTimeout(columnWidthUpdateTimersRef.current[timerKey]);
+                                  const timer = columnWidthUpdateTimersRef.current[timerKey];
+                                  if (timer) {
+                                    clearTimeout(timer);
+                                  }
                                 }
                                 
                                 // Debounce: 1.5 saniye bekle, sonra Firestore'a kaydet
