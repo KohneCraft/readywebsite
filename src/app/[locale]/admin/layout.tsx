@@ -6,7 +6,6 @@
 // ============================================
 
 import { useState, useEffect, createContext, useContext } from 'react';
-import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useLocale, useTranslations } from 'next-intl';
 import { 
