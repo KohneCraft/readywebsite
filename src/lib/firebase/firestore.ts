@@ -829,10 +829,19 @@ export async function getSectionById(id: string): Promise<Section | null> {
  */
 export async function updateSection(id: string, input: SectionUpdateInput): Promise<void> {
   const docRef = doc(db, COLLECTIONS.sections, id);
-  await updateDoc(docRef, {
-    ...input,
+  // Undefined field'ları filtrele
+  const updateData: Record<string, any> = {
     updatedAt: serverTimestamp(),
+  };
+  
+  Object.keys(input).forEach(key => {
+    const value = (input as any)[key];
+    if (value !== undefined) {
+      updateData[key] = value;
+    }
   });
+  
+  await updateDoc(docRef, updateData);
 }
 
 /**
