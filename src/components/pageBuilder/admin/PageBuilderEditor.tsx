@@ -453,6 +453,7 @@ export function PageBuilderEditor({ pageId }: PageBuilderEditorProps) {
               selectedElement={selectedElement}
               page={page}
               onUpdate={handlePageUpdate}
+              onSelectElement={setSelectedElement}
             />
           </div>
         </div>

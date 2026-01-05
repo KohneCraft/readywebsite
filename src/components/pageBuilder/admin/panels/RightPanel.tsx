@@ -22,9 +22,10 @@ interface RightPanelProps {
   selectedElement: { type: 'section' | 'column' | 'block' | 'page' | 'header' | 'footer'; id: string } | null;
   page?: Page;
   onUpdate?: (updates: Partial<Page>) => void;
+  onSelectElement?: (element: { type: 'section' | 'column' | 'block' | 'page' | 'header' | 'footer'; id: string } | null) => void;
 }
 
-export function RightPanel({ selectedElement, page, onUpdate }: RightPanelProps) {
+export function RightPanel({ selectedElement, page, onUpdate, onSelectElement }: RightPanelProps) {
   const [activeTab, setActiveTab] = useState<'style' | 'settings' | 'advanced'>('style');
   const [viewMode, setViewMode] = useState<'element' | 'header' | 'footer' | 'page' | 'icon'>('element');
   const debounceTimer = useRef<NodeJS.Timeout | null>(null);
@@ -255,8 +256,12 @@ export function RightPanel({ selectedElement, page, onUpdate }: RightPanelProps)
           <button
             onClick={() => {
               // Seçimi temizle
+              if (onSelectElement) {
+                onSelectElement(null);
+              }
             }}
             className="p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded transition-colors"
+            title="Kapat"
           >
             <X className="w-4 h-4 text-gray-500" />
           </button>

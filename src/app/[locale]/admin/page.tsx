@@ -7,6 +7,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { useLocale, useTranslations } from 'next-intl';
 import { motion } from 'framer-motion';
 import { 
@@ -45,6 +46,7 @@ interface RecentPage {
 export default function AdminDashboard() {
   const t = useTranslations('admin');
   const locale = useLocale() as Locale;
+  const router = useRouter();
   const [stats, setStats] = useState(initialStats);
   const [recentPages, setRecentPages] = useState<RecentPage[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -255,11 +257,12 @@ export default function AdminDashboard() {
                   </div>
                 ) : (
                   recentPages.map((page) => (
-                    <Link
+                    <div
                       key={page.id}
-                      href={getLocalizedHref(`/admin/page-builder/${page.id}`)}
-                      prefetch={false}
-                      className="flex items-center justify-between p-3 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors"
+                      onClick={() => {
+                        router.push(getLocalizedHref(`/admin/page-builder/${page.id}`));
+                      }}
+                      className="flex items-center justify-between p-3 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors cursor-pointer"
                     >
                       <div className="flex items-center gap-3">
                         <div className="w-10 h-10 bg-gray-100 dark:bg-gray-800 rounded-lg flex items-center justify-center">
@@ -278,7 +281,7 @@ export default function AdminDashboard() {
                       <Badge variant={page.status === 'published' ? 'success' : 'secondary'}>
                         {page.status === 'published' ? 'Yayında' : 'Taslak'}
                       </Badge>
-                    </Link>
+                    </div>
                   ))
                 )}
               </div>

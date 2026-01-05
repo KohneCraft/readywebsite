@@ -47,18 +47,18 @@ export function TopBar({
   };
 
   return (
-    <div className="h-16 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between px-6">
+    <div className="h-12 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between px-4">
       {/* Sol Taraf - Geri Dön ve Sayfa Bilgisi */}
       <div className="flex items-center gap-4">
         <button
           onClick={handleBack}
-          className="p-2 rounded hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-400 transition-colors"
+          className="p-1.5 rounded hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-400 transition-colors"
           title="Geri Dön"
         >
-          <ArrowLeft className="w-5 h-5" />
+          <ArrowLeft className="w-4 h-4" />
         </button>
         <div>
-          <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
+          <h2 className="text-sm font-semibold text-gray-900 dark:text-white">
             {page.title || 'Yeni Sayfa'}
           </h2>
           <p className="text-xs text-gray-500 dark:text-gray-400">
@@ -66,12 +66,12 @@ export function TopBar({
           </p>
         </div>
         {hasChanges && (
-          <span className="px-2 py-1 text-xs bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400 rounded-full">
+          <span className="px-1.5 py-0.5 text-xs bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400 rounded-full">
             Kaydedilmemiş değişiklikler
           </span>
         )}
         {page.status === 'published' && (
-          <span className="px-2 py-1 text-xs bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 rounded-full">
+          <span className="px-1.5 py-0.5 text-xs bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 rounded-full">
             Yayında
           </span>
         )}
@@ -84,61 +84,61 @@ export function TopBar({
           <button
             onClick={() => onDeviceChange('desktop')}
             className={cn(
-              'p-2 rounded transition-colors',
+              'p-1.5 rounded transition-colors',
               device === 'desktop'
                 ? 'bg-white dark:bg-gray-600 text-primary-600 dark:text-primary-400 shadow-sm'
                 : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
             )}
             title="Masaüstü"
           >
-            <Monitor className="w-4 h-4" />
+            <Monitor className="w-3.5 h-3.5" />
           </button>
           <button
             onClick={() => onDeviceChange('tablet')}
             className={cn(
-              'p-2 rounded transition-colors',
+              'p-1.5 rounded transition-colors',
               device === 'tablet'
                 ? 'bg-white dark:bg-gray-600 text-primary-600 dark:text-primary-400 shadow-sm'
                 : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
             )}
             title="Tablet"
           >
-            <Tablet className="w-4 h-4" />
+            <Tablet className="w-3.5 h-3.5" />
           </button>
           <button
             onClick={() => onDeviceChange('mobile')}
             className={cn(
-              'p-2 rounded transition-colors',
+              'p-1.5 rounded transition-colors',
               device === 'mobile'
                 ? 'bg-white dark:bg-gray-600 text-primary-600 dark:text-primary-400 shadow-sm'
                 : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
             )}
             title="Mobil"
           >
-            <Smartphone className="w-4 h-4" />
+            <Smartphone className="w-3.5 h-3.5" />
           </button>
         </div>
 
         <div className="w-px h-6 bg-gray-200 dark:bg-gray-700 mx-2" />
 
         {/* Zoom Kontrolü */}
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1.5">
           <button
             onClick={() => onZoomChange(Math.max(25, zoom - 25))}
-            className="p-2 rounded hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-400 transition-colors"
+            className="p-1.5 rounded hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-400 transition-colors"
             title="Uzaklaştır"
           >
-            <ZoomOut className="w-4 h-4" />
+            <ZoomOut className="w-3.5 h-3.5" />
           </button>
-          <span className="text-sm font-medium text-gray-700 dark:text-gray-300 min-w-[3rem] text-center">
+          <span className="text-xs font-medium text-gray-700 dark:text-gray-300 min-w-[2.5rem] text-center">
             {zoom}%
           </span>
           <button
             onClick={() => onZoomChange(Math.min(200, zoom + 25))}
-            className="p-2 rounded hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-400 transition-colors"
+            className="p-1.5 rounded hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-400 transition-colors"
             title="Yakınlaştır"
           >
-            <ZoomIn className="w-4 h-4" />
+            <ZoomIn className="w-3.5 h-3.5" />
           </button>
         </div>
       </div>
@@ -154,8 +154,9 @@ export function TopBar({
             const locale = window.location.pathname.split('/')[1] || 'tr';
             window.open(`/${locale}/preview/${page.slug}`, '_blank');
           }}
+          className="text-xs px-2 py-1 h-7"
         >
-          <Eye className="w-4 h-4 mr-2" />
+          <Eye className="w-3.5 h-3.5 mr-1.5" />
           Önizle
         </Button>
 
@@ -165,15 +166,16 @@ export function TopBar({
           size="sm"
           onClick={onSave}
           disabled={!hasChanges || isSaving}
+          className="text-xs px-2 py-1 h-7"
         >
           {isSaving ? (
             <>
-              <Spinner size="sm" className="mr-2" />
+              <Spinner size="sm" className="mr-1.5" />
               Kaydediliyor...
             </>
           ) : (
             <>
-              <Save className="w-4 h-4 mr-2" />
+              <Save className="w-3.5 h-3.5 mr-1.5" />
               Kaydet
             </>
           )}

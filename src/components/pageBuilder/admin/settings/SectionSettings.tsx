@@ -25,6 +25,7 @@ export function SectionSettings({ sectionId, activeTab, onUpdate }: SectionSetti
   const [columns, setColumns] = useState<Column[]>([]);
   const [nestedColumnsMap, setNestedColumnsMap] = useState<Record<string, Column[]>>({});
   const [loading, setLoading] = useState(true);
+  const [columnWidthUnit, setColumnWidthUnit] = useState<'percent' | 'pixels'>('percent');
 
   useEffect(() => {
     async function loadSection() {
@@ -217,6 +218,29 @@ export function SectionSettings({ sectionId, activeTab, onUpdate }: SectionSetti
         </div>
 
         <div>
+          <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
+            Max Yükseklik (px)
+          </label>
+          <input
+            type="number"
+            min="0"
+            step="1"
+            value={settings.maxHeight || ''}
+            placeholder="Sınırsız"
+            onChange={(e) => {
+              const maxHeightValue = e.target.value ? parseInt(e.target.value) : undefined;
+              const updated = {
+                ...section,
+                settings: { ...settings, maxHeight: maxHeightValue },
+              };
+              setSection(updated);
+              onUpdate(updated);
+            }}
+            className="w-full px-3 py-2 text-sm border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-white"
+          />
+        </div>
+
+        <div>
           <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-2">
             Kolon Düzeni
           </label>
@@ -259,14 +283,32 @@ export function SectionSettings({ sectionId, activeTab, onUpdate }: SectionSetti
         {/* Kolon Genişlikleri */}
         {columns.length > 0 && (
           <div className="border-t border-gray-200 dark:border-gray-700 pt-4 mt-4">
-            <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-2">
-              Kolon Genişlikleri (%)
-            </label>
+            <div className="flex items-center justify-between mb-2">
+              <label className="block text-xs font-medium text-gray-700 dark:text-gray-300">
+                Kolon Genişlikleri
+              </label>
+              <select
+                value={columnWidthUnit}
+                onChange={(e) => {
+                  const unit = e.target.value as 'percent' | 'pixels';
+                  setColumnWidthUnit(unit);
+                }}
+                className="px-2 py-1 text-xs border border-gray-200 dark:border-gray-700 rounded bg-white dark:bg-gray-900 text-gray-900 dark:text-white"
+              >
+                <option value="percent">%</option>
+                <option value="pixels">px</option>
+              </select>
+            </div>
             <div className="space-y-2">
               {columns.map((col, index) => {
                 // Bu kolonun iç kolonlarını kontrol et
                 const nestedColumns = nestedColumnsMap[col.id] || [];
                 const hasNestedColumns = nestedColumns.length > 0;
+                // Width birim kontrolü: 0-100 arası % olarak, değilse px olarak
+                const isCurrentWidthPercent = col.width !== undefined && col.width <= 100 && col.width >= 0;
+                const displayWidth = columnWidthUnit === 'percent' && !isCurrentWidthPercent
+                  ? Math.round((col.width || 0) / 12 * 100) // px'den %'ye yaklaşık dönüşüm
+                  : col.width || 0;
                 return (
                   <div key={col.id} className="space-y-2">
                     <div className="flex items-center gap-2">
@@ -276,11 +318,13 @@ export function SectionSettings({ sectionId, activeTab, onUpdate }: SectionSetti
                       <Input
                         type="number"
                         min="0"
-                        max="100"
-                        step="0.1"
-                        value={col.width || 0}
+                        max={columnWidthUnit === 'percent' ? 100 : undefined}
+                        step={columnWidthUnit === 'percent' ? 0.1 : 1}
+                        value={displayWidth}
                         onChange={async (e) => {
-                          const newWidth = parseFloat(e.target.value) || 0;
+                          const newWidth = columnWidthUnit === 'percent'
+                            ? parseFloat(e.target.value) || 0
+                            : parseInt(e.target.value) || 0;
                           const updatedColumns = columns.map(c => 
                             c.id === col.id ? { ...c, width: newWidth } : c
                           );
@@ -297,7 +341,9 @@ export function SectionSettings({ sectionId, activeTab, onUpdate }: SectionSetti
                         }}
                         className="flex-1"
                       />
-                      <span className="text-xs text-gray-500 dark:text-gray-500">%</span>
+                      <span className="text-xs text-gray-500 dark:text-gray-500">
+                        {columnWidthUnit === 'percent' ? '%' : 'px'}
+                      </span>
                       {hasNestedColumns && (
                         <span className="text-xs text-gray-400 dark:text-gray-500">
                           ({nestedColumns.length} iç kolon)
@@ -348,42 +394,54 @@ export function SectionSettings({ sectionId, activeTab, onUpdate }: SectionSetti
                   </div>
                 );
               })}
-              <div className="mt-2 pt-2 border-t border-gray-200 dark:border-gray-700">
-                <div className="flex items-center justify-between text-xs">
-                  <span className="text-gray-600 dark:text-gray-400">Toplam:</span>
-                  <span className={cn(
-                    'font-medium',
-                    columns.reduce((sum, col) => sum + (col.width || 0), 0) === 100
-                      ? 'text-green-600 dark:text-green-400'
-                      : 'text-red-600 dark:text-red-400'
-                  )}>
-                    {columns.reduce((sum, col) => sum + (col.width || 0), 0).toFixed(1)}%
-                  </span>
+              {columnWidthUnit === 'percent' && (
+                <div className="mt-2 pt-2 border-t border-gray-200 dark:border-gray-700">
+                  <div className="flex items-center justify-between text-xs">
+                    <span className="text-gray-600 dark:text-gray-400">Toplam:</span>
+                    <span className={cn(
+                      'font-medium',
+                      columns.reduce((sum, col) => {
+                        const width = col.width || 0;
+                        // Sadece % olan kolonları topla
+                        return (width <= 100 && width >= 0) ? sum + width : sum;
+                      }, 0) === 100
+                        ? 'text-green-600 dark:text-green-400'
+                        : 'text-red-600 dark:text-red-400'
+                    )}>
+                      {columns.reduce((sum, col) => {
+                        const width = col.width || 0;
+                        return (width <= 100 && width >= 0) ? sum + width : sum;
+                      }, 0).toFixed(1)}%
+                    </span>
+                  </div>
+                  {columns.reduce((sum, col) => {
+                    const width = col.width || 0;
+                    return (width <= 100 && width >= 0) ? sum + width : sum;
+                  }, 0) !== 100 && (
+                    <button
+                      onClick={async () => {
+                        // Eşit dağıt
+                        const equalWidth = 100 / columns.length;
+                        const updatedColumns = columns.map(c => ({ ...c, width: equalWidth }));
+                        setColumns(updatedColumns);
+                        
+                        try {
+                          const { updateColumn } = await import('@/lib/firebase/firestore');
+                          await Promise.all(
+                            updatedColumns.map(col => updateColumn(col.id, { width: col.width }))
+                          );
+                          window.dispatchEvent(new CustomEvent('section-updated', { detail: { sectionId: 'any' } }));
+                        } catch (error) {
+                          console.error('Kolon genişlikleri güncelleme hatası:', error);
+                        }
+                      }}
+                      className="mt-2 text-xs text-primary-600 dark:text-primary-400 hover:underline"
+                    >
+                      Eşit Dağıt ({columns.length > 0 ? (100 / columns.length).toFixed(1) : 0}%)
+                    </button>
+                  )}
                 </div>
-                {columns.reduce((sum, col) => sum + (col.width || 0), 0) !== 100 && (
-                  <button
-                    onClick={async () => {
-                      // Eşit dağıt
-                      const equalWidth = 100 / columns.length;
-                      const updatedColumns = columns.map(c => ({ ...c, width: equalWidth }));
-                      setColumns(updatedColumns);
-                      
-                      try {
-                        const { updateColumn } = await import('@/lib/firebase/firestore');
-                        await Promise.all(
-                          updatedColumns.map(col => updateColumn(col.id, { width: col.width }))
-                        );
-                        window.dispatchEvent(new CustomEvent('section-updated', { detail: { sectionId: 'any' } }));
-                      } catch (error) {
-                        console.error('Kolon genişlikleri güncelleme hatası:', error);
-                      }
-                    }}
-                    className="mt-2 text-xs text-primary-600 dark:text-primary-400 hover:underline"
-                  >
-                    Eşit Dağıt ({columns.length > 0 ? (100 / columns.length).toFixed(1) : 0}%)
-                  </button>
-                )}
-              </div>
+              )}
             </div>
           </div>
         )}

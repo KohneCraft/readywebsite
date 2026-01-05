@@ -88,13 +88,6 @@ export function CenterCanvas({
 
   return (
     <div className="flex-1 flex flex-col overflow-hidden bg-gray-100 dark:bg-gray-900">
-      {/* Canvas Toolbar */}
-      <div className="h-12 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 flex items-center justify-center px-4">
-        <div className="text-xs text-gray-500 dark:text-gray-400">
-          {device === 'desktop' ? 'Masaüstü Görünümü' : device === 'tablet' ? 'Tablet Görünümü' : 'Mobil Görünümü'}
-        </div>
-      </div>
-
       {/* Canvas Area */}
       <div className="flex-1 overflow-auto p-8">
         <div className="mx-auto" style={{ width: deviceWidths[device] }}>

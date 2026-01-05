@@ -95,6 +95,7 @@ export function SectionRenderer({ sectionId }: SectionRendererProps) {
       ? `${settings.margin.top || 0}px ${settings.margin.right || 0}px ${settings.margin.bottom || 0}px ${settings.margin.left || 0}px`
       : '0',
     minHeight: settings.minHeight ? `${settings.minHeight}px` : 'auto',
+    maxHeight: settings.maxHeight ? `${settings.maxHeight}px` : 'none',
     borderTop: settings.borderTop?.width 
       ? `${settings.borderTop.width}px ${settings.borderTop.style} ${settings.borderTop.color}` 
       : 'none',
