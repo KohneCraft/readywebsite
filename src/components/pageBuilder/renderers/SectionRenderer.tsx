@@ -124,16 +124,40 @@ export function SectionRenderer({ sectionId }: SectionRendererProps) {
   const gridTemplateColumns = useMemo(() => {
     if (settings.columnLayout === 'column') return undefined;
     if (columns.length === 0) return '1fr';
-    return columns.map(col => {
+    
+    // Tüm kolonların birimlerini kontrol et
+    const hasPxColumns = columns.some(col => {
       const width = col.width || (100 / columns.length);
-      // Width birim kontrolü: 0-100 arası % olarak, değilse px olarak
-      if (width <= 100 && width >= 0) {
-        return `${width}fr`;
-      } else {
-        // px kullanılıyorsa, fr yerine px kullan
-        return `${width}px`;
+      // 0-100 arası % olarak kabul et, değilse px
+      return width > 100 || width < 0;
+    });
+    
+    if (process.env.NODE_ENV === 'development') {
+      console.log('SectionRenderer - gridTemplateColumns hesaplanıyor:', {
+        columnsCount: columns.length,
+        columns: columns.map(col => ({ id: col.id, width: col.width })),
+        hasPxColumns,
+      });
+    }
+    
+    // Eğer px kolonlar varsa, tüm kolonlar için 1fr kullan (width CSS property ile kontrol edilecek)
+    if (hasPxColumns) {
+      const result = columns.map(() => '1fr').join(' ');
+      if (process.env.NODE_ENV === 'development') {
+        console.log('SectionRenderer - px kolonlar tespit edildi, grid-template-columns:', result);
       }
+      return result;
+    }
+    
+    // Tüm kolonlar % ise, fr kullan
+    const result = columns.map(col => {
+      const width = col.width || (100 / columns.length);
+      return `${width}fr`;
     }).join(' ');
+    if (process.env.NODE_ENV === 'development') {
+      console.log('SectionRenderer - % kolonlar, grid-template-columns:', result);
+    }
+    return result;
   }, [settings.columnLayout, columns]);
   
   // Intersection Observer for animations - TÜM hook'lar en üstte

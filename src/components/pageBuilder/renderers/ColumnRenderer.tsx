@@ -97,6 +97,19 @@ export function ColumnRenderer({ columnId, index }: ColumnRendererProps) {
   // Nested columns için grid template - useMemo ile optimize et
   const nestedGridTemplate = useMemo(() => {
     if (nestedColumns.length === 0) return '1fr';
+    
+    // Tüm nested kolonların birimlerini kontrol et
+    const hasPxColumns = nestedColumns.some(col => {
+      const width = col.width || (100 / nestedColumns.length);
+      return width > 100 || width < 0;
+    });
+    
+    // Eğer px kolonlar varsa, tüm kolonlar için 1fr kullan (width CSS property ile kontrol edilecek)
+    if (hasPxColumns) {
+      return nestedColumns.map(() => '1fr').join(' ');
+    }
+    
+    // Tüm kolonlar % ise, fr kullan
     return nestedColumns.map(col => {
       const width = col.width || (100 / nestedColumns.length);
       return `${width}fr`;
@@ -128,6 +141,10 @@ export function ColumnRenderer({ columnId, index }: ColumnRendererProps) {
     justifyContent: settings.verticalAlign || 'flex-start',
     alignItems: settings.horizontalAlign || 'flex-start',
     gridColumn: gridColumnSpan, // Grid column span kullan (sadece % için)
+    // Eğer px kullanılıyorsa ve grid içindeyse, flex-shrink: 0 ekle ki genişlik korunsun
+    flexShrink: isWidthPercent ? undefined : 0,
+    // Eğer px kullanılıyorsa, min-width de ekle ki küçülmesin
+    minWidth: isWidthPercent ? undefined : `${columnWidth}px`,
   }), [settings, padding, gridColumnSpan, isWidthPercent, columnWidth]);
   
   // Loading state - skeleton placeholder
@@ -174,6 +191,7 @@ export function ColumnRenderer({ columnId, index }: ColumnRendererProps) {
           className="nested-columns-wrapper grid gap-2"
           style={{
             gridTemplateColumns: nestedGridTemplate,
+            width: '100%', // Parent kolonun genişliğini tam kullan
           }}
         >
           {nestedColumns.map((nestedCol, nestedIndex) => (
