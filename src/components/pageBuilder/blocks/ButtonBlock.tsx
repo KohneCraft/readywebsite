@@ -2,6 +2,7 @@
 
 import { memo } from 'react';
 import Link from 'next/link';
+import { useDeviceType } from '@/hooks/useDeviceType';
 import type { BlockProps } from '@/types/pageBuilder';
 
 interface ButtonBlockProps {
@@ -9,20 +10,32 @@ interface ButtonBlockProps {
 }
 
 function ButtonBlockComponent({ props }: ButtonBlockProps) {
+  const deviceType = useDeviceType();
+  
+  // Responsive font size and padding
+  const baseFontSize = props.fontSize || 16;
+  const responsiveFontSize = deviceType === 'mobile' ? baseFontSize * 0.85 : baseFontSize;
+  
+  const getPadding = () => {
+    if (props.padding) {
+      const scale = deviceType === 'mobile' ? 0.75 : deviceType === 'tablet' ? 0.9 : 1;
+      return `${(props.padding.top || 12) * scale}px ${(props.padding.right || 24) * scale}px ${(props.padding.bottom || 12) * scale}px ${(props.padding.left || 24) * scale}px`;
+    }
+    return deviceType === 'mobile' ? '10px 18px' : '12px 24px';
+  };
+  
   const buttonStyle = {
     backgroundColor: props.backgroundColor || '#007bff',
     color: props.textColor || '#ffffff',
-    fontSize: `${props.fontSize || 16}px`,
+    fontSize: `${responsiveFontSize}px`,
     fontWeight: props.fontWeight || 600,
     fontFamily: props.fontFamily || 'inherit',
-    padding: props.padding
-      ? `${props.padding.top || 12}px ${props.padding.right || 24}px ${props.padding.bottom || 12}px ${props.padding.left || 24}px`
-      : '12px 24px',
+    padding: getPadding(),
     borderRadius: `${props.borderRadius || 6}px`,
     border: props.border?.width 
       ? `${props.border.width}px ${props.border.style} ${props.border.color}` 
       : 'none',
-    width: props.buttonWidth === 'full' ? '100%' : 'auto',
+    width: props.buttonWidth === 'full' || deviceType === 'mobile' ? '100%' : 'auto',
     display: 'inline-flex',
     alignItems: 'center',
     justifyContent: 'center',
@@ -30,6 +43,7 @@ function ButtonBlockComponent({ props }: ButtonBlockProps) {
     textDecoration: 'none',
     cursor: 'pointer',
     transition: 'all 0.3s ease',
+    minWidth: deviceType === 'mobile' ? '100%' : 'auto',
   };
   
   const containerStyle = {

@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, memo, useEffect } from 'react';
+import { useDeviceType } from '@/hooks/useDeviceType';
 import { sanitizeCSS } from '@/lib/sanitize';
 import type { BlockProps } from '@/types/pageBuilder';
 
@@ -11,16 +12,22 @@ interface VideoBlockProps {
 function VideoBlockComponent({ props }: VideoBlockProps) {
   const [loaded, setLoaded] = useState(false);
   const [error, setError] = useState(false);
+  const deviceType = useDeviceType();
+  
+  // Responsive padding
+  const getPadding = () => {
+    if (!props.padding) return '0';
+    const scale = deviceType === 'mobile' ? 0.5 : deviceType === 'tablet' ? 0.75 : 1;
+    return `${(props.padding.top || 0) * scale}px ${(props.padding.right || 0) * scale}px ${(props.padding.bottom || 0) * scale}px ${(props.padding.left || 0) * scale}px`;
+  };
   
   const containerStyle = {
-    width: props.imageWidth || '100%',
+    width: '100%',
     maxWidth: props.maxWidth ? `${props.maxWidth}px` : '100%',
     margin: props.margin
       ? `${props.margin.top || 0}px ${props.margin.right || 0}px ${props.margin.bottom || 0}px ${props.margin.left || 0}px`
-      : '0',
-    padding: props.padding
-      ? `${props.padding.top || 0}px ${props.padding.right || 0}px ${props.padding.bottom || 0}px ${props.padding.left || 0}px`
-      : '0',
+      : '0 auto',
+    padding: getPadding(),
   };
   
   const videoStyle = {
@@ -48,8 +55,12 @@ function VideoBlockComponent({ props }: VideoBlockProps) {
     
     return () => {
       const el = document.getElementById(styleId);
-      if (el && el.parentNode) {
-        el.parentNode.removeChild(el);
+      try {
+        if (el && el.parentNode && el.parentNode.contains(el)) {
+          el.parentNode.removeChild(el);
+        }
+      } catch (error) {
+        // Sessizce yoksay
       }
     };
   }, [props.customCSS, props.id]);

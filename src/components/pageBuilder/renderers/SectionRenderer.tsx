@@ -144,6 +144,16 @@ export function SectionRenderer({ sectionId }: SectionRendererProps) {
     if (settings.columnLayout === 'column') return undefined;
     if (columns.length === 0) return '1fr';
     
+    // Mobil cihazlarda her zaman tek sütun (tüm kolonlar alt alta)
+    if (deviceType === 'mobile') {
+      return '1fr';
+    }
+    
+    // Tablet için 2 sütun (2'den fazla kolon varsa)
+    if (deviceType === 'tablet' && columns.length > 2) {
+      return 'repeat(2, 1fr)';
+    }
+    
     // Tüm kolonların birimlerini kontrol et
     const hasPxColumns = columns.some(col => {
       const width = col.width || (100 / columns.length);
@@ -156,6 +166,7 @@ export function SectionRenderer({ sectionId }: SectionRendererProps) {
         columnsCount: columns.length,
         columns: columns.map(col => ({ id: col.id, width: col.width })),
         hasPxColumns,
+        deviceType,
       });
     }
     
@@ -180,7 +191,7 @@ export function SectionRenderer({ sectionId }: SectionRendererProps) {
     }).join(' ');
     logger.pageBuilder.debug('% kolonlar', { gridTemplateColumns: result });
     return result;
-  }, [settings.columnLayout, columns]);
+  }, [settings.columnLayout, columns, deviceType]);
   
   // Intersection Observer for animations - TÜM hook'lar en üstte
   useEffect(() => {
@@ -271,7 +282,9 @@ export function SectionRenderer({ sectionId }: SectionRendererProps) {
           maxWidth: settings.fullWidth ? '100%' : `${settings.maxWidth || 1200}px`,
           margin: '0 auto',
           position: 'relative',
-          zIndex: 1
+          zIndex: 1,
+          paddingLeft: deviceType === 'mobile' ? '16px' : deviceType === 'tablet' ? '24px' : undefined,
+          paddingRight: deviceType === 'mobile' ? '16px' : deviceType === 'tablet' ? '24px' : undefined,
         }}
       >
         <div 
@@ -280,7 +293,13 @@ export function SectionRenderer({ sectionId }: SectionRendererProps) {
             display: settings.columnLayout === 'column' ? 'flex' : 'grid',
             flexDirection: settings.columnLayout === 'column' ? 'column' : undefined,
             gridTemplateColumns: settings.columnLayout === 'column' ? undefined : gridTemplateColumns,
-            gap: settings.columnGap !== undefined && settings.columnGap !== null ? `${settings.columnGap}px` : '30px'
+            gap: settings.columnGap !== undefined && settings.columnGap !== null 
+              ? deviceType === 'mobile' 
+                ? `${Math.max(15, (settings.columnGap || 30) * 0.5)}px` 
+                : deviceType === 'tablet'
+                  ? `${Math.max(20, (settings.columnGap || 30) * 0.75)}px`
+                  : `${settings.columnGap}px`
+              : deviceType === 'mobile' ? '15px' : deviceType === 'tablet' ? '20px' : '30px'
           }}
         >
           {section.columns && section.columns.length > 0 ? (

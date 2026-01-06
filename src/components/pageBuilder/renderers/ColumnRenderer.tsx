@@ -108,7 +108,19 @@ export function ColumnRenderer({ columnId, index, isNested: _isNested = false, i
   const settings = useMemo(() => column?.settings || {}, [column?.settings]);
   const responsiveSettings = useMemo(() => settings.responsive?.[deviceType] || {}, [settings.responsive, deviceType]);
   const columnWidth = useMemo(() => responsiveSettings.width || column?.width || 100, [responsiveSettings.width, column?.width]);
-  const padding = useMemo(() => responsiveSettings.padding || settings.padding || { top: 0, right: 0, bottom: 0, left: 0 }, [responsiveSettings.padding, settings.padding]);
+  
+  // Responsive padding: mobil ve tablette daha az padding
+  const padding = useMemo(() => {
+    const basePadding = responsiveSettings.padding || settings.padding || { top: 0, right: 0, bottom: 0, left: 0 };
+    const scale = deviceType === 'mobile' ? 0.6 : deviceType === 'tablet' ? 0.8 : 1;
+    return {
+      top: basePadding.top * scale,
+      right: basePadding.right * scale,
+      bottom: basePadding.bottom * scale,
+      left: basePadding.left * scale,
+    };
+  }, [responsiveSettings.padding, settings.padding, deviceType]);
+  
   // Width birim kontrolü: 0-100 arası % olarak, değilse px olarak
   const isWidthPercent = useMemo(() => columnWidth <= 100 && columnWidth >= 0, [columnWidth]);
   // gridColumnSpan kaldırıldı - SectionRenderer'daki gridTemplateColumns zaten genişliği kontrol ediyor

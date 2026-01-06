@@ -113,16 +113,15 @@ export function PageRenderer({ pageId, slug, allowDraft = false }: PageRendererP
     // Cleanup: Bu component tarafından eklenen meta tag'leri kaldır
     return () => {
       document.title = originalTitle;
-      // Önce eklenen tag'leri kaldır
-      addedMetaTags.forEach(tag => {
-        if (tag.parentNode) {
-          tag.parentNode.removeChild(tag);
-        }
-      });
-      // Sonra data attribute ile işaretlenmiş tüm tag'leri kaldır (güvenlik için)
+      
+      // Güvenli cleanup: Her elementi ayrı ayrı ve null check ile kaldır
       document.querySelectorAll('meta[data-generated-by-page-renderer]').forEach(el => {
-        if (el.parentNode) {
-          el.parentNode.removeChild(el);
+        try {
+          if (el && el.parentNode && el.parentNode.contains(el)) {
+            el.parentNode.removeChild(el);
+          }
+        } catch (error) {
+          // Sessizce yoksay - element zaten kaldırılmış olabilir
         }
       });
     };
@@ -145,8 +144,12 @@ export function PageRenderer({ pageId, slug, allowDraft = false }: PageRendererP
     
     return () => {
       const el = document.getElementById(styleId);
-      if (el && el.parentNode) {
-        el.parentNode.removeChild(el);
+      try {
+        if (el && el.parentNode && el.parentNode.contains(el)) {
+          el.parentNode.removeChild(el);
+        }
+      } catch (error) {
+        // Sessizce yoksay - element zaten kaldırılmış olabilir
       }
     };
   }, [page?.settings?.customCSS, page?.id]);

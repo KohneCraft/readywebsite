@@ -52,8 +52,12 @@ function HTMLBlockComponent({ props }: HTMLBlockProps) {
       if (props.css) {
         const styleId = `html-block-css-${props.id || 'default'}`;
         const styleEl = document.getElementById(styleId);
-        if (styleEl && styleEl.parentNode) {
-          styleEl.parentNode.removeChild(styleEl);
+        try {
+          if (styleEl && styleEl.parentNode && styleEl.parentNode.contains(styleEl)) {
+            styleEl.parentNode.removeChild(styleEl);
+          }
+        } catch (error) {
+          // Sessizce yoksay
         }
       }
     };
@@ -76,8 +80,12 @@ function HTMLBlockComponent({ props }: HTMLBlockProps) {
     
     return () => {
       const el = document.getElementById(styleId);
-      if (el && el.parentNode) {
-        el.parentNode.removeChild(el);
+      try {
+        if (el && el.parentNode && el.parentNode.contains(el)) {
+          el.parentNode.removeChild(el);
+        }
+      } catch (error) {
+        // Sessizce yoksay
       }
     };
   }, [props.customCSS, props.id]);

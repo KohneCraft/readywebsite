@@ -19,8 +19,22 @@ function TextBlockComponent({ props }: TextBlockProps) {
     [props.content]
   );
   
-  const style = {
-    fontSize: responsiveProps.fontSize || props.fontSize || 16,
+  // Responsive font size: mobilde %80, tablette %90
+  const baseFontSize = props.fontSize || 16;
+  const responsiveFontSize = responsiveProps.fontSize || 
+    (deviceType === 'mobile' ? baseFontSize * 0.8 : 
+     deviceType === 'tablet' ? baseFontSize * 0.9 : 
+     baseFontSize);
+  
+  // Responsive padding: mobil ve tablette daha az padding
+  const getPadding = () => {
+    if (!props.padding) return '0';
+    const scale = deviceType === 'mobile' ? 0.6 : deviceType === 'tablet' ? 0.8 : 1;
+    return `${(props.padding.top || 0) * scale}px ${(props.padding.right || 0) * scale}px ${(props.padding.bottom || 0) * scale}px ${(props.padding.left || 0) * scale}px`;
+  };
+  
+  const style: React.CSSProperties = {
+    fontSize: responsiveFontSize,
     fontFamily: props.fontFamily || 'inherit',
     fontWeight: props.fontWeight || 400,
     fontStyle: props.fontStyle || 'normal',
@@ -31,9 +45,7 @@ function TextBlockComponent({ props }: TextBlockProps) {
     letterSpacing: `${props.letterSpacing || 0}px`,
     textDecoration: props.textDecoration || 'none',
     textTransform: props.textTransform || 'none',
-    padding: props.padding 
-      ? `${props.padding.top || 0}px ${props.padding.right || 0}px ${props.padding.bottom || 0}px ${props.padding.left || 0}px`
-      : '0',
+    padding: getPadding(),
     margin: props.margin
       ? `${props.margin.top || 0}px ${props.margin.right || 0}px ${props.margin.bottom || 0}px ${props.margin.left || 0}px`
       : '0',
@@ -42,6 +54,9 @@ function TextBlockComponent({ props }: TextBlockProps) {
       ? `${props.border.width}px ${props.border.style} ${props.border.color}` 
       : 'none',
     boxShadow: props.boxShadow || 'none',
+    wordWrap: 'break-word',
+    overflowWrap: 'break-word',
+    maxWidth: '100%',
   };
   
   return (

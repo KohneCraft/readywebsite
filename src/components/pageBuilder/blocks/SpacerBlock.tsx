@@ -39,8 +39,12 @@ function SpacerBlockComponent({ props }: SpacerBlockProps) {
     
     return () => {
       const el = document.getElementById(styleId);
-      if (el && el.parentNode) {
-        el.parentNode.removeChild(el);
+      try {
+        if (el && el.parentNode && el.parentNode.contains(el)) {
+          el.parentNode.removeChild(el);
+        }
+      } catch (error) {
+        // Sessizce yoksay
       }
     };
   }, [props.customCSS, props.id]);

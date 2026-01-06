@@ -47,8 +47,12 @@ function MapBlockComponent({ props }: MapBlockProps) {
     
     return () => {
       const el = document.getElementById(styleId);
-      if (el && el.parentNode) {
-        el.parentNode.removeChild(el);
+      try {
+        if (el && el.parentNode && el.parentNode.contains(el)) {
+          el.parentNode.removeChild(el);
+        }
+      } catch (error) {
+        // Sessizce yoksay
       }
     };
   }, [props.customCSS, props.id]);
@@ -65,13 +69,17 @@ function MapBlockComponent({ props }: MapBlockProps) {
       if (!apiKey) {
         logger.pageBuilder.warn('Google Maps API key bulunamadı. Lütfen NEXT_PUBLIC_GOOGLE_MAPS_API_KEY environment variable\'ını ayarlayın.');
         // React-safe DOM manipulation
-        while (currentRef.firstChild) {
-          currentRef.removeChild(currentRef.firstChild);
+        try {
+          while (currentRef.firstChild) {
+            currentRef.removeChild(currentRef.firstChild);
+          }
+          const placeholder = document.createElement('div');
+          placeholder.className = 'flex items-center justify-center h-full bg-gray-100 dark:bg-gray-800 rounded-lg';
+          placeholder.innerHTML = '<span class="text-gray-400">Google Maps API key gerekli</span>';
+          currentRef.appendChild(placeholder);
+        } catch (error) {
+          // Sessizce yoksay
         }
-        const placeholder = document.createElement('div');
-        placeholder.className = 'flex items-center justify-center h-full bg-gray-100 dark:bg-gray-800 rounded-lg';
-        placeholder.innerHTML = '<span class="text-gray-400">Google Maps API key gerekli</span>';
-        currentRef.appendChild(placeholder);
         return;
       }
       
@@ -84,10 +92,14 @@ function MapBlockComponent({ props }: MapBlockProps) {
       iframe.setAttribute('allowfullscreen', 'true');
       
       // React-safe DOM manipulation
-      while (currentRef.firstChild) {
-        currentRef.removeChild(currentRef.firstChild);
+      try {
+        while (currentRef.firstChild) {
+          currentRef.removeChild(currentRef.firstChild);
+        }
+        currentRef.appendChild(iframe);
+      } catch (error) {
+        // Sessizce yoksay
       }
-      currentRef.appendChild(iframe);
     } else {
       // OpenStreetMap
       const iframe = document.createElement('iframe');
@@ -98,16 +110,24 @@ function MapBlockComponent({ props }: MapBlockProps) {
       iframe.style.border = '0';
       
       // React-safe DOM manipulation
-      while (currentRef.firstChild) {
-        currentRef.removeChild(currentRef.firstChild);
+      try {
+        while (currentRef.firstChild) {
+          currentRef.removeChild(currentRef.firstChild);
+        }
+        currentRef.appendChild(iframe);
+      } catch (error) {
+        // Sessizce yoksay
       }
-      currentRef.appendChild(iframe);
     }
     
     return () => {
       // Cleanup: Remove all children safely
-      while (currentRef.firstChild) {
-        currentRef.removeChild(currentRef.firstChild);
+      try {
+        while (currentRef.firstChild) {
+          currentRef.removeChild(currentRef.firstChild);
+        }
+      } catch (error) {
+        // Sessizce yoksay - ref zaten unmount olmuş olabilir
       }
     };
   }, [props.latitude, props.longitude, props.zoom, props.mapProvider]);

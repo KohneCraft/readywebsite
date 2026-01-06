@@ -20,8 +20,12 @@ export function FaviconProvider() {
           // Mevcut favicon linklerini kaldır (React-safe)
           const existingLinks = document.querySelectorAll('link[rel="icon"], link[rel="shortcut icon"], link[rel="apple-touch-icon"]');
           existingLinks.forEach(link => {
-            if (link.parentNode) {
-              link.parentNode.removeChild(link);
+            try {
+              if (link && link.parentNode && link.parentNode.contains(link)) {
+                link.parentNode.removeChild(link);
+              }
+            } catch (error) {
+              // Sessizce yoksay
             }
           });
           
@@ -59,8 +63,12 @@ export function FaviconProvider() {
       // Cleanup: Provider tarafından eklenen favicon'ları kaldır
       const providerLinks = document.querySelectorAll('link[data-favicon-provider="true"]');
       providerLinks.forEach(link => {
-        if (link.parentNode) {
-          link.parentNode.removeChild(link);
+        try {
+          if (link && link.parentNode && link.parentNode.contains(link)) {
+            link.parentNode.removeChild(link);
+          }
+        } catch (error) {
+          // Sessizce yoksay - element zaten kaldırılmış olabilir
         }
       });
     };

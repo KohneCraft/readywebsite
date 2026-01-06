@@ -2,6 +2,7 @@
 
 import { useState, memo } from 'react';
 import Image from 'next/image';
+import { useDeviceType } from '@/hooks/useDeviceType';
 import type { BlockProps } from '@/types/pageBuilder';
 
 interface ImageBlockProps {
@@ -10,16 +11,22 @@ interface ImageBlockProps {
 
 function ImageBlockComponent({ props }: ImageBlockProps) {
   const [loaded, setLoaded] = useState(false);
+  const deviceType = useDeviceType();
+  
+  // Responsive padding
+  const getPadding = () => {
+    if (!props.padding) return '0';
+    const scale = deviceType === 'mobile' ? 0.5 : deviceType === 'tablet' ? 0.75 : 1;
+    return `${(props.padding.top || 0) * scale}px ${(props.padding.right || 0) * scale}px ${(props.padding.bottom || 0) * scale}px ${(props.padding.left || 0) * scale}px`;
+  };
   
   const containerStyle = {
-    width: props.imageWidth || '100%',
+    width: '100%',
     maxWidth: props.maxWidth ? `${props.maxWidth}px` : '100%',
     margin: props.margin
       ? `${props.margin.top || 0}px ${props.margin.right || 0}px ${props.margin.bottom || 0}px ${props.margin.left || 0}px`
-      : '0',
-    padding: props.padding
-      ? `${props.padding.top || 0}px ${props.padding.right || 0}px ${props.padding.bottom || 0}px ${props.padding.left || 0}px`
-      : '0',
+      : '0 auto',
+    padding: getPadding(),
   };
   
   const imageStyle = {
