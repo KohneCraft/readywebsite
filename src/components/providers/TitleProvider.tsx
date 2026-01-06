@@ -5,7 +5,7 @@
 // Browser tab başlığını dinamik olarak günceller
 // ============================================
 
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { useLocale } from 'next-intl';
 import { getSiteSettings } from '@/lib/firebase/firestore';
 import { logger } from '@/lib/logger';
@@ -13,6 +13,8 @@ import type { Locale } from '@/i18n';
 
 export function TitleProvider() {
   const locale = useLocale() as Locale;
+  const isInitializedRef = useRef(false);
+  const currentTitleRef = useRef<string>('');
   
   useEffect(() => {
     async function updateTitle() {
@@ -21,8 +23,17 @@ export function TitleProvider() {
         const siteName = settings?.siteName?.[locale] || settings?.siteName?.tr || 'Page Builder';
         const siteSlogan = settings?.siteSlogan?.[locale] || settings?.siteSlogan?.tr || '';
         
+        const newTitle = siteSlogan ? `${siteName} | ${siteSlogan}` : siteName;
+        
+        // Eğer title zaten aynıysa, güncelleme yapma
+        if (newTitle === currentTitleRef.current) {
+          return;
+        }
+        
+        currentTitleRef.current = newTitle;
+        
         // Browser tab başlığını güncelle
-        document.title = siteSlogan ? `${siteName} | ${siteSlogan}` : siteName;
+        document.title = newTitle;
         
         logger.ui.debug('Browser title güncellendi', { siteName, siteSlogan });
       } catch (error) {
@@ -32,18 +43,24 @@ export function TitleProvider() {
     
     updateTitle();
     
-    // Site settings güncellemelerini dinle
-    const handleSettingsUpdate = () => {
-      updateTitle();
-    };
-    
-    window.addEventListener('site-settings-updated', handleSettingsUpdate);
-    window.addEventListener('theme-updated', handleSettingsUpdate);
-    
-    return () => {
-      window.removeEventListener('site-settings-updated', handleSettingsUpdate);
-      window.removeEventListener('theme-updated', handleSettingsUpdate);
-    };
+    // Sadece ilk mount'ta event listener ekle
+    if (!isInitializedRef.current) {
+      isInitializedRef.current = true;
+      
+      // Site settings güncellemelerini dinle
+      const handleSettingsUpdate = () => {
+        currentTitleRef.current = ''; // Reset cache
+        updateTitle();
+      };
+      
+      window.addEventListener('site-settings-updated', handleSettingsUpdate);
+      window.addEventListener('theme-updated', handleSettingsUpdate);
+      
+      return () => {
+        window.removeEventListener('site-settings-updated', handleSettingsUpdate);
+        window.removeEventListener('theme-updated', handleSettingsUpdate);
+      };
+    }
   }, [locale]);
   
   return null;

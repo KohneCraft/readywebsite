@@ -5,23 +5,37 @@
 // Site favicon'unu dinamik olarak günceller
 // ============================================
 
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { getSiteSettings } from '@/lib/firebase/firestore';
 import { logger } from '@/lib/logger';
 
 export function FaviconProvider() {
+  const isInitializedRef = useRef(false);
+  const currentFaviconRef = useRef<string>('');
+  
   useEffect(() => {
+    // Sadece bir kez çalışsın
+    if (isInitializedRef.current) return;
+    isInitializedRef.current = true;
+    
     async function updateFavicon() {
       try {
         const settings = await getSiteSettings();
         const faviconUrl = settings?.logo?.favicon?.url;
         
+        // Eğer aynı favicon zaten yüklüyse, hiçbir şey yapma
+        if (faviconUrl === currentFaviconRef.current) {
+          return;
+        }
+        
         if (faviconUrl) {
+          currentFaviconRef.current = faviconUrl;
+          
           // Mevcut favicon linklerini kaldır (React-safe)
-          const existingLinks = document.querySelectorAll('link[rel="icon"], link[rel="shortcut icon"], link[rel="apple-touch-icon"]');
+          const existingLinks = Array.from(document.querySelectorAll('link[rel="icon"], link[rel="shortcut icon"], link[rel="apple-touch-icon"]'));
           existingLinks.forEach(link => {
             try {
-              if (link && link.parentNode && link.parentNode.contains(link)) {
+              if (link && link.parentNode && document.head.contains(link)) {
                 link.parentNode.removeChild(link);
               }
             } catch (error) {
@@ -53,6 +67,8 @@ export function FaviconProvider() {
     
     // Theme güncellemelerini dinle
     const handleThemeUpdate = () => {
+      // Theme değiştiğinde favicon'u güncelle
+      currentFaviconRef.current = ''; // Reset cache
       updateFavicon();
     };
     
@@ -60,19 +76,8 @@ export function FaviconProvider() {
     
     return () => {
       window.removeEventListener('theme-updated', handleThemeUpdate);
-      // Cleanup: Provider tarafından eklenen favicon'ları kaldır
-      const providerLinks = document.querySelectorAll('link[data-favicon-provider="true"]');
-      providerLinks.forEach(link => {
-        try {
-          if (link && link.parentNode && link.parentNode.contains(link)) {
-            link.parentNode.removeChild(link);
-          }
-        } catch (error) {
-          // Sessizce yoksay - element zaten kaldırılmış olabilir
-        }
-      });
     };
-  }, []);
+  }, []); // Boş dependency array - sadece mount'ta çalış
   
   return null;
 }
