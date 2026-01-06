@@ -3,7 +3,6 @@
 import { useState, useEffect } from 'react';
 import { SectionRenderer } from './SectionRenderer';
 import { getPageById, getPageBySlug } from '@/lib/firebase/firestore';
-import { sanitizeAdminCode } from '@/lib/sanitize';
 import { logger } from '@/lib/logger';
 import type { Page } from '@/types/pageBuilder';
 
@@ -184,11 +183,6 @@ export function PageRenderer({ pageId, slug, allowDraft = false }: PageRendererP
         '--heading-font': page.settings?.headingFont || 'Montserrat'
       } as React.CSSProperties}
     >
-      {/* Custom head code */}
-      {page.settings?.headCode && (
-        <div dangerouslySetInnerHTML={{ __html: sanitizeAdminCode(page.settings.headCode) }} />
-      )}
-      
       {/* Sections */}
       {page.sections && page.sections.length > 0 ? (
         page.sections.map((sectionId) => (
@@ -202,11 +196,6 @@ export function PageRenderer({ pageId, slug, allowDraft = false }: PageRendererP
           <p>Bu sayfada henüz içerik yok.</p>
           <p className="text-sm mt-2">Section sayısı: {page.sections?.length || 0}</p>
         </div>
-      )}
-      
-      {/* Custom footer code */}
-      {page.settings?.footerCode && (
-        <div dangerouslySetInnerHTML={{ __html: sanitizeAdminCode(page.settings.footerCode) }} />
       )}
     </div>
   );
