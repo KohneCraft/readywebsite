@@ -221,8 +221,8 @@ export function Header() {
                 <span 
                   className="font-bold leading-tight"
                   style={{ 
-                    color: siteSettings?.companyNameStyle?.color || headerTextColor || undefined,
-                    fontSize: siteSettings?.companyNameStyle?.fontSize ? `${siteSettings.companyNameStyle.fontSize}px` : undefined,
+                    color: (siteSettings as any)?.companyNameStyle?.color || headerTextColor || undefined,
+                    fontSize: (siteSettings as any)?.companyNameStyle?.fontSize ? `${(siteSettings as any).companyNameStyle.fontSize}px` : undefined,
                   }}
                 >
                   {logoText}
@@ -231,8 +231,8 @@ export function Header() {
                   <span 
                     className="hidden sm:block"
                     style={{ 
-                      color: siteSettings?.sloganStyle?.color || (headerTextColor ? `${headerTextColor}CC` : undefined),
-                      fontSize: siteSettings?.sloganStyle?.fontSize ? `${siteSettings.sloganStyle.fontSize}px` : undefined,
+                      color: (siteSettings as any)?.sloganStyle?.color || (headerTextColor ? `${headerTextColor}CC` : undefined),
+                      fontSize: (siteSettings as any)?.sloganStyle?.fontSize ? `${(siteSettings as any).sloganStyle.fontSize}px` : undefined,
                     }}
                   >
                     {siteSettings.siteSlogan[locale as keyof typeof siteSettings.siteSlogan]}

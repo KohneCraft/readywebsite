@@ -187,8 +187,8 @@ export function Footer() {
                 <span 
                   className="font-bold leading-tight"
                   style={{ 
-                    color: siteSettings?.companyNameStyle?.color || footerTextColor || '#ffffff',
-                    fontSize: siteSettings?.companyNameStyle?.fontSize ? `${siteSettings.companyNameStyle.fontSize}px` : undefined,
+                    color: (siteSettings as any)?.companyNameStyle?.color || footerTextColor || '#ffffff',
+                    fontSize: (siteSettings as any)?.companyNameStyle?.fontSize ? `${(siteSettings as any).companyNameStyle.fontSize}px` : undefined,
                   }}
                 >
                   {footerLogoText}
@@ -196,8 +196,8 @@ export function Footer() {
                 {siteSettings?.siteSlogan?.[locale as keyof typeof siteSettings.siteSlogan] && (
                   <span 
                     style={{ 
-                      color: siteSettings?.sloganStyle?.color || (footerTextColor ? `${footerTextColor}CC` : '#9ca3af'),
-                      fontSize: siteSettings?.sloganStyle?.fontSize ? `${siteSettings.sloganStyle.fontSize}px` : undefined,
+                      color: (siteSettings as any)?.sloganStyle?.color || (footerTextColor ? `${footerTextColor}CC` : '#9ca3af'),
+                      fontSize: (siteSettings as any)?.sloganStyle?.fontSize ? `${(siteSettings as any).sloganStyle.fontSize}px` : undefined,
                     }}
                   >
                     {siteSettings.siteSlogan[locale as keyof typeof siteSettings.siteSlogan]}
