@@ -7,6 +7,7 @@
 
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { getDefaultThemes } from '@/lib/themes/default/defaultThemes';
+import { logger } from '@/lib/logger';
 import type { ThemeData, ThemeSettings } from '@/types/theme';
 
 interface ThemeContextType {
@@ -23,7 +24,7 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
   // Firestore'dan aktif temayı yükle
   const loadCurrentTheme = async () => {
     try {
-      console.log('ThemeContext - loadCurrentTheme başlatıldı');
+      logger.theme.debug('loadCurrentTheme başlatıldı');
       // Önce siteSettings'ten aktif tema bilgisini al
       const { getSiteSettings, getAvailableThemes, getThemeMetadata } = await import('@/lib/firebase/firestore');
       
@@ -34,17 +35,17 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
         const siteSettings = await getSiteSettings();
         activeThemeName = siteSettings.activeThemeName || null;
         activeThemeId = siteSettings.activeThemeId || null;
-        console.log('ThemeContext - SiteSettings\'ten aktif tema:', activeThemeName, '(ID:', activeThemeId, ')');
+        logger.theme.debug(`SiteSettings'ten aktif tema: ${activeThemeName} (ID: ${activeThemeId})`);
       } catch (error) {
-        console.warn('ThemeContext - SiteSettings yüklenirken hata:', error);
+        logger.theme.warn('SiteSettings yüklenirken hata:', error);
       }
       
       // Firestore'dan yüklenmiş temaları kontrol et
       const firestoreThemes = await getAvailableThemes();
-      console.log('ThemeContext - Firestore temaları:', firestoreThemes.map(t => ({ id: t.id, name: t.name })));
+      logger.theme.debug('Firestore temaları:', firestoreThemes.map(t => ({ id: t.id, name: t.name })));
       
       const defaultThemes = getDefaultThemes();
-      console.log('ThemeContext - Varsayılan temalar:', defaultThemes.map(t => t.metadata.name));
+      logger.theme.debug('Varsayılan temalar:', defaultThemes.map(t => t.metadata.name));
       
       // Aktif tema bilgisi varsa, o temayı bul
       if (activeThemeName || activeThemeId) {
@@ -55,7 +56,7 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
         );
         
         if (targetTheme) {
-          console.log(`ThemeContext - Aktif tema bulundu: ${targetTheme.name} (ID: ${targetTheme.id})`);
+          logger.theme.info(`Aktif tema bulundu: ${targetTheme.name} (ID: ${targetTheme.id})`);
           // Default temalardan eşleştir
           let matchedTheme = defaultThemes.find(t => 
             t.metadata.name === targetTheme.name || 
@@ -68,9 +69,9 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
             try {
               const firestoreMetadata = await getThemeMetadata(targetTheme.id);
               if (firestoreMetadata && firestoreMetadata.settings) {
-                console.log('ThemeContext - Firestore metadata settings:', JSON.stringify(firestoreMetadata.settings, null, 2));
-                console.log('ThemeContext - Firestore header navItems:', firestoreMetadata.settings?.header?.navItems);
-                console.log('ThemeContext - Firestore footer quickLinks:', firestoreMetadata.settings?.footer?.quickLinks);
+                logger.theme.debug('Firestore metadata settings:', firestoreMetadata.settings);
+                logger.theme.debug('Firestore header navItems:', firestoreMetadata.settings?.header?.navItems);
+                logger.theme.debug('Firestore footer quickLinks:', firestoreMetadata.settings?.footer?.quickLinks);
                 // Firestore'daki güncel ayarları kullan
                 matchedTheme = {
                   ...matchedTheme,
@@ -82,10 +83,10 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
                     },
                   },
                 };
-                console.log('ThemeContext - Birleştirilmiş theme settings:', JSON.stringify(matchedTheme.metadata.settings, null, 2));
+                logger.theme.debug('Birleştirilmiş theme settings:', matchedTheme.metadata.settings);
               }
             } catch (metaError) {
-              console.warn('ThemeContext - Tema metadata yüklenirken hata:', metaError);
+              logger.theme.warn('Tema metadata yüklenirken hata:', metaError);
             }
             setCurrentTheme(matchedTheme);
             return;
@@ -95,7 +96,7 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
       
       // Aktif tema bilgisi yoksa veya bulunamadıysa, ilk Firestore temasını kullan
       if (firestoreThemes.length > 0) {
-        console.warn('ThemeContext - Aktif tema bulunamadı, ilk Firestore teması kullanılıyor');
+        logger.theme.warn('Aktif tema bulunamadı, ilk Firestore teması kullanılıyor');
         const firstTheme = firestoreThemes[0];
         const matchedTheme = defaultThemes.find(t => t.metadata.name === firstTheme.name);
         if (matchedTheme) {
@@ -105,12 +106,12 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
       }
       
       // Firestore'da tema yoksa varsayılan temalardan ilkini kullan
-      console.log('ThemeContext - Firestore\'da tema yok, varsayılan temalar kullanılıyor');
+      logger.theme.debug('Firestore\'da tema yok, varsayılan temalar kullanılıyor');
       if (defaultThemes.length > 0) {
         setCurrentTheme(defaultThemes[0]);
       }
     } catch (error) {
-      console.error('ThemeContext - Tema yükleme hatası:', error);
+      logger.theme.error('Tema yükleme hatası:', error);
       // Hata durumunda varsayılan temayı kullan
       const themes = getDefaultThemes();
       if (themes.length > 0) {
@@ -126,7 +127,7 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
   // Tema güncellemelerini dinle (custom event ile)
   useEffect(() => {
     const handleThemeUpdate = () => {
-      console.log('Tema güncelleme eventi alındı, tema yeniden yükleniyor...');
+      logger.theme.info('Tema güncelleme eventi alındı, tema yeniden yükleniyor...');
       loadCurrentTheme();
     };
 
@@ -139,9 +140,9 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
   // Debug: themeSettings'i logla
   useEffect(() => {
     if (themeSettings) {
-      console.log('ThemeContext - themeSettings:', JSON.stringify(themeSettings, null, 2));
-      console.log('ThemeContext - header navItems:', themeSettings.header?.navItems);
-      console.log('ThemeContext - footer quickLinks:', themeSettings.footer?.quickLinks);
+      logger.theme.debug('themeSettings:', themeSettings);
+      logger.theme.debug('header navItems:', themeSettings.header?.navItems);
+      logger.theme.debug('footer quickLinks:', themeSettings.footer?.quickLinks);
     }
   }, [themeSettings]);
 

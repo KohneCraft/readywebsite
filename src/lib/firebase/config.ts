@@ -2,6 +2,7 @@ import { initializeApp, getApps, getApp, FirebaseApp } from 'firebase/app'
 import { getAuth, Auth } from 'firebase/auth'
 import { getFirestore, Firestore } from 'firebase/firestore'
 import { getStorage, FirebaseStorage } from 'firebase/storage'
+import { logger } from '@/lib/logger';
 
 // Validate environment variables
 const requiredEnvVars = {
@@ -20,7 +21,7 @@ if (process.env.NODE_ENV === 'development') {
     .map(([key]) => `NEXT_PUBLIC_FIREBASE_${key.toUpperCase()}`);
   
   if (missingVars.length > 0) {
-    console.warn('⚠️ Missing Firebase environment variables:', missingVars.join(', '));
+    logger.firebase.warn('⚠️ Missing Firebase environment variables:', missingVars.join(', '));
   }
 }
 
@@ -54,7 +55,7 @@ function initializeFirebase() {
     dbInstance = getFirestore(app);
     storageInstance = getStorage(app);
   } catch (error) {
-    console.error('❌ Firebase initialization error:', error);
+    logger.firebase.error('❌ Firebase initialization error:', error);
     // Don't throw, allow graceful degradation
   }
 }

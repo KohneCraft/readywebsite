@@ -3,6 +3,7 @@
 // Firebase Storage ve Firestore işlemleri
 // ============================================
 
+import { logger } from '@/lib/logger';
 import {
   collection,
   doc,
@@ -158,7 +159,7 @@ export async function uploadMedia(
     }
     return media;
   } catch (error) {
-    console.error('Upload error:', error);
+    logger.storage.error('Upload error:', error);
     throw error;
   }
 }
@@ -195,7 +196,7 @@ export async function getMediaList(
     const snapshot = await getDocs(q);
     return snapshot.docs.map((docSnap) => docToMedia(docSnap)!).filter(Boolean);
   } catch (error) {
-    console.error('Get media list error:', error);
+    logger.storage.error('Get media list error:', error);
     return [];
   }
 }
@@ -208,7 +209,7 @@ export async function getMediaById(mediaId: string): Promise<Media | null> {
     const docSnap = await getDoc(doc(db, COLLECTIONS.media, mediaId));
     return docToMedia(docSnap);
   } catch (error) {
-    console.error('Get media error:', error);
+    logger.storage.error('Get media error:', error);
     return null;
   }
 }
@@ -226,7 +227,7 @@ export async function updateMedia(
       updatedAt: serverTimestamp(),
     });
   } catch (error) {
-    console.error('Update media error:', error);
+    logger.storage.error('Update media error:', error);
     throw error;
   }
 }
@@ -251,7 +252,7 @@ export async function deleteMedia(mediaId: string): Promise<void> {
         const storageRef = ref(storage, mediaData.storagePath);
         await deleteObject(storageRef);
       } catch (storageError) {
-        console.warn('Storage silme hatası (devam ediliyor):', storageError);
+        logger.storage.warn('Storage silme hatası (devam ediliyor):', storageError);
       }
     }
 
@@ -261,14 +262,14 @@ export async function deleteMedia(mediaId: string): Promise<void> {
         const thumbnailRef = ref(storage, mediaData.thumbnail);
         await deleteObject(thumbnailRef);
       } catch (thumbnailError) {
-        console.warn('Thumbnail silme hatası (devam ediliyor):', thumbnailError);
+        logger.storage.warn('Thumbnail silme hatası (devam ediliyor):', thumbnailError);
       }
     }
 
     // Firestore'dan metadata'yı sil
     await deleteDoc(doc(db, COLLECTIONS.media, mediaId));
   } catch (error) {
-    console.error('Delete media error:', error);
+    logger.storage.error('Delete media error:', error);
     throw error;
   }
 }

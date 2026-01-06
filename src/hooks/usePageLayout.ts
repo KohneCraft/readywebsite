@@ -8,6 +8,7 @@
 import { useState, useEffect } from 'react';
 import { getActivePageLayout } from '@/lib/firebase/firestore';
 import { getDefaultElementsForPage } from '@/types';
+import { logger } from '@/lib/logger';
 import type { PageLayout, PageElement, PageType } from '@/types';
 
 interface UsePageLayoutResult {
@@ -47,7 +48,7 @@ export function usePageLayout(pageType: PageType): UsePageLayoutResult {
           setElements(elementsWithId);
         }
       } catch (err) {
-        console.error('Failed to load page layout:', err);
+        logger.firebase.error('Failed to load page layout', err);
         setError('Layout yüklenemedi');
         // Hata durumunda varsayılan elementleri kullan
         const defaultElements = getDefaultElementsForPage(pageType);

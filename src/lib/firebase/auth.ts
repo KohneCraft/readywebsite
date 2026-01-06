@@ -3,6 +3,7 @@
 // Authentication + Firestore role management
 // ============================================
 
+import { logger } from '@/lib/logger';
 import {
   signInWithEmailAndPassword,
   signOut as firebaseSignOut,
@@ -38,7 +39,7 @@ export async function signIn(
   
   // Profil yoksa otomatik oluştur
   if (!profile) {
-    console.log('User profile not found, creating default profile...');
+    logger.auth.info('User profile not found, creating default profile...');
     await createUserProfile(credential.user.uid, {
       email: credential.user.email || email,
       displayName: credential.user.displayName || email.split('@')[0],

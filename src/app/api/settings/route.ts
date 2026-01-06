@@ -6,6 +6,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { doc, getDoc, setDoc, Timestamp } from 'firebase/firestore';
 import { db } from '@/lib/firebase/config';
+import { logger } from '@/lib/logger';
 
 // Force dynamic rendering - prevent build-time Firebase initialization
 export const dynamic = 'force-dynamic';
@@ -49,7 +50,7 @@ export async function GET() {
       data: docSnap.data(),
     });
   } catch (error) {
-    console.error('Error fetching settings:', error);
+    logger.api.error('Error fetching settings', error);
     return NextResponse.json(
       { success: false, error: 'Failed to fetch settings' },
       { status: 500 }
@@ -76,7 +77,7 @@ export async function PUT(request: NextRequest) {
       message: 'Settings updated successfully',
     });
   } catch (error) {
-    console.error('Error updating settings:', error);
+    logger.api.error('Error updating settings', error);
     return NextResponse.json(
       { success: false, error: 'Failed to update settings' },
       { status: 500 }

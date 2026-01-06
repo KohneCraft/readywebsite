@@ -203,6 +203,14 @@ export interface SiteSettings {
     de: string;
     fr: string;
   };
+  companyNameStyle?: {
+    color?: string;
+    fontSize?: number; // px
+  };
+  sloganStyle?: {
+    color?: string;
+    fontSize?: number; // px
+  };
   footerText: {
     tr: string;
     en: string;

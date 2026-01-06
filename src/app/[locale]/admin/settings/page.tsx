@@ -34,8 +34,10 @@ import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Spinner } from '@/components/ui/Spinner';
 import { cn } from '@/lib/utils';
+import { toast } from '@/components/providers';
 import { getSiteSettings, updateSiteSettings } from '@/lib/firebase/firestore';
 import { getCurrentUser } from '@/lib/firebase/auth';
+import { logger } from '@/lib/logger';
 import { MediaSelector } from '@/components/pageBuilder/admin/media/MediaSelector';
 import { uploadMedia } from '@/lib/firebase/media';
 
@@ -184,7 +186,7 @@ export default function AdminSettingsPage() {
         reset(formData);
         setLogoPreview(formData.company.logo || null);
       } catch (error) {
-        console.error('Ayarlar yüklenirken hata:', error);
+        logger.api.error('Ayarlar yüklenirken hata', error);
         reset(defaultSettings);
       } finally {
         setIsLoading(false);
@@ -209,7 +211,7 @@ export default function AdminSettingsPage() {
     try {
       const user = await getCurrentUser();
       if (!user) {
-        alert('Lütfen giriş yapın');
+        toast.error('Lütfen giriş yapın');
         return;
       }
       
@@ -312,8 +314,8 @@ export default function AdminSettingsPage() {
       // Theme güncellemesi bildir (header/footer güncellenebilir)
       window.dispatchEvent(new CustomEvent('theme-updated'));
     } catch (error) {
-      console.error('Ayarlar kaydedilirken hata:', error);
-      alert('Ayarlar kaydedilirken bir hata oluştu');
+      logger.api.error('Ayarlar kaydedilirken hata', error);
+      toast.error('Ayarlar kaydedilirken bir hata oluştu');
     } finally {
       setIsSaving(false);
     }
@@ -342,7 +344,7 @@ export default function AdminSettingsPage() {
       setIsSaving(true);
       const user = await getCurrentUser();
       if (!user) {
-        alert('Lütfen giriş yapın');
+        toast.error('Lütfen giriş yapın');
         return;
       }
 
@@ -358,8 +360,8 @@ export default function AdminSettingsPage() {
         },
       });
     } catch (error) {
-      console.error('Logo yükleme hatası:', error);
-      alert('Logo yüklenirken bir hata oluştu');
+      logger.ui.error('Logo yükleme hatası', error);
+      toast.error('Logo yüklenirken bir hata oluştu');
     } finally {
       setIsSaving(false);
     }

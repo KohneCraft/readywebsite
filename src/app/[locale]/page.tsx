@@ -2,12 +2,13 @@
 
 // ============================================
 // Page Builder - Home Page
-// Dinamik ana sayfa: Tema yüklendiyse home sayfasını göster, yoksa landing page
+// Dinamik ana sayfa: Tema yülendiyse home sayfasını göster, yoksa landing page
 // ============================================
 
 import { useState, useEffect } from 'react';
 import { PageRenderer } from '@/components/pageBuilder/renderers/PageRenderer';
 import { getPageBySlug } from '@/lib/firebase/firestore';
+import { logger } from '@/lib/logger';
 import type { Page } from '@/types/pageBuilder';
 import LandingPage from './LandingPage';
 
@@ -20,21 +21,19 @@ export default function HomePage() {
       try {
         // 'home' slug'ına sahip sayfayı kontrol et
         const page = await getPageBySlug('home');
-        console.log('Ana sayfa yüklendi:', page);
+        logger.pageBuilder.debug('Ana sayfa yüklendi', page);
         if (page) {
-          console.log('Sayfa durumu:', page.status);
-          console.log('Section sayısı:', page.sections?.length || 0);
-          console.log('Section ID\'leri:', page.sections);
+          logger.pageBuilder.debug('Sayfa durumu', { status: page.status, sectionsCount: page.sections?.length || 0 });
           if (page.status === 'published') {
             setHomePage(page);
           } else {
-            console.warn('Ana sayfa yayınlanmamış:', page.status);
+            logger.pageBuilder.warn('Ana sayfa yayınlanmamış', { status: page.status });
           }
         } else {
-          console.warn('Ana sayfa bulunamadı (slug: home)');
+          logger.pageBuilder.warn('Ana sayfa bulunamadı (slug: home)');
         }
       } catch (error) {
-        console.error('Ana sayfa yüklenirken hata:', error);
+        logger.pageBuilder.error('Ana sayfa yüklenirken hata', error);
       } finally {
         setLoading(false);
       }

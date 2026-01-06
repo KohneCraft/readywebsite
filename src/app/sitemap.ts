@@ -5,6 +5,7 @@
 
 import { MetadataRoute } from 'next';
 import { getAllPages } from '@/lib/firebase/firestore';
+import { logger } from '@/lib/logger';
 
 const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://pagebuilder.com';
 const LOCALES = ['tr', 'en', 'de', 'fr'];
@@ -42,7 +43,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
     return [...staticEntries, ...pageEntries];
   } catch (error) {
-    console.error('Sitemap generation error:', error);
+    logger.api.error('Sitemap generation error', error);
     return staticEntries;
   }
 }

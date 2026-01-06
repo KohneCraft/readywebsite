@@ -17,9 +17,11 @@ import {
 } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
+import { toast } from '@/components/providers';
 import { cn } from '@/lib/utils';
 import { getAllPages, createPage } from '@/lib/firebase/firestore';
 import { getCurrentUser } from '@/lib/firebase/auth';
+import { logger } from '@/lib/logger';
 import type { Locale } from '@/i18n';
 import type { Page } from '@/types/pageBuilder';
 
@@ -46,7 +48,7 @@ export default function PageBuilderListPage() {
         const pagesData = await getAllPages();
         setPages(pagesData);
       } catch (error) {
-        console.error('Failed to load pages:', error);
+        logger.api.error('Failed to load pages', error);
         setPages([]);
       } finally {
         setIsLoading(false);
@@ -58,7 +60,7 @@ export default function PageBuilderListPage() {
 
   const handleCreatePage = async () => {
     if (!newPageTitle.trim() || !newPageSlug.trim()) {
-      alert('Lütfen sayfa başlığı ve slug girin');
+      toast.error('Lütfen sayfa başlığı ve slug girin');
       return;
     }
 
@@ -66,7 +68,7 @@ export default function PageBuilderListPage() {
       // Auth'dan user ID al
       const user = await getCurrentUser();
       if (!user) {
-        alert('Giriş yapmanız gerekiyor');
+        toast.error('Giriş yapmanız gerekiyor');
         return;
       }
 
@@ -82,8 +84,8 @@ export default function PageBuilderListPage() {
       setNewPageTitle('');
       setNewPageSlug('');
     } catch (error) {
-      console.error('Sayfa oluşturma hatası:', error);
-      alert('Sayfa oluşturulurken bir hata oluştu');
+      logger.api.error('Sayfa oluşturma hatası', error);
+      toast.error('Sayfa oluşturulurken bir hata oluştu');
     }
   };
 

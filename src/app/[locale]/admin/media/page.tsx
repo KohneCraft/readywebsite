@@ -11,6 +11,8 @@ import { Image as ImageIcon, Video, Trash2 } from 'lucide-react';
 import { uploadMedia, getMediaList, deleteMedia, deleteMultipleMedia } from '@/lib/firebase/media';
 import { getCurrentUser, onAuthStateChanged } from '@/lib/firebase/auth';
 import { MediaUploader, MediaFilters, MediaGrid, MediaPreview } from '@/components/media';
+import { toast } from '@/components/providers';
+import { logger } from '@/lib/logger';
 import type { Media, MediaType, MediaSortBy, MediaViewMode } from '@/types/media';
 import { cn } from '@/lib/utils';
 
@@ -71,7 +73,7 @@ export default function MediaManagerPage() {
       const items = await getMediaList(authUserId, activeTab, sortBy, sortOrder);
       setMediaItems(items);
     } catch (error) {
-      console.error('Medya yüklenirken hata:', error);
+      logger.ui.error('Medya yüklenirken hata', error);
     } finally {
       setLoading(false);
     }
@@ -86,12 +88,12 @@ export default function MediaManagerPage() {
     // Firebase Auth kontrolü - ZORUNLU
     const currentUser = getCurrentUser();
     if (!currentUser) {
-      alert('❌ Medya yüklemek için Firebase Auth ile giriş yapmanız gerekiyor.\n\nGeçici oturum medya yükleme için yeterli değil.\n\nLütfen admin paneline Firebase Auth ile giriş yapın.');
+      toast.error('Medya yüklemek için Firebase Auth ile giriş yapmanız gerekiyor.');
       return;
     }
 
     if (!userId || !isFirebaseAuth) {
-      alert('❌ Kullanıcı doğrulaması başarısız. Lütfen sayfayı yenileyin ve Firebase Auth ile giriş yapın.');
+      toast.error('Kullanıcı doğrulaması başarısız. Lütfen sayfayı yenileyin.');
       return;
     }
 
@@ -116,7 +118,7 @@ export default function MediaManagerPage() {
 
         await uploadMedia(file, fileType, authUserId);
       } catch (error) {
-        console.error('Yükleme hatası:', error);
+        logger.ui.error('Yükleme hatası', error);
         errors.push(`${file.name}: ${error instanceof Error ? error.message : 'Yükleme başarısız'}`);
       }
     }
@@ -124,9 +126,9 @@ export default function MediaManagerPage() {
     setUploading(false);
 
     if (errors.length > 0) {
-      alert(`Bazı dosyalar yüklenemedi:\n${errors.join('\n')}`);
+      toast.error(`Bazı dosyalar yüklenemedi: ${errors.join(', ')}`);
     } else {
-      alert(`${files.length} dosya başarıyla yüklendi`);
+      toast.success(`${files.length} dosya başarıyla yüklendi`);
     }
 
     // Listeyi yenile
@@ -144,8 +146,8 @@ export default function MediaManagerPage() {
       setSelectedItems((prev) => prev.filter((id) => id !== itemId));
       await loadMedia();
     } catch (error) {
-      console.error('Silme hatası:', error);
-      alert('Medya silinirken hata oluştu');
+      logger.ui.error('Silme hatası', error);
+      toast.error('Medya silinirken hata oluştu');
     }
   };
 
@@ -162,10 +164,10 @@ export default function MediaManagerPage() {
       await deleteMultipleMedia(selectedItems);
       setSelectedItems([]);
       await loadMedia();
-      alert(`${selectedItems.length} öğe başarıyla silindi`);
+      toast.success(`${selectedItems.length} öğe başarıyla silindi`);
     } catch (error) {
-      console.error('Silme hatası:', error);
-      alert('Dosyalar silinirken hata oluştu');
+      logger.ui.error('Silme hatası', error);
+      toast.error('Dosyalar silinirken hata oluştu');
     } finally {
       setLoading(false);
     }

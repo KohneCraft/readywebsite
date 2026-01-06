@@ -25,6 +25,7 @@ import { Spinner } from '@/components/ui/Spinner';
 import { DashboardCharts } from '@/components/admin/DashboardCharts';
 import { cn } from '@/lib/utils';
 import { getAllPages } from '@/lib/firebase/firestore';
+import { logger } from '@/lib/logger';
 import type { Locale } from '@/i18n';
 
 // Initial stats - will be updated from Firestore
@@ -96,7 +97,7 @@ export default function AdminDashboard() {
       setRecentPages(recentPagesList);
 
     } catch (error) {
-      console.error('Error loading dashboard data:', error);
+      logger.api.error('Error loading dashboard data', error);
       // Keep initial empty state on error
     } finally {
       setIsLoading(false);

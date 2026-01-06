@@ -24,8 +24,10 @@ import {
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Spinner } from '@/components/ui/Spinner';
+import { ToastProvider } from '@/components/providers';
 import { onAuthStateChanged, signOut as firebaseSignOut, getUserProfile } from '@/lib/firebase/auth';
 import { getSiteSettings } from '@/lib/firebase/firestore';
+import { logger } from '@/lib/logger';
 import Image from 'next/image';
 import type { Locale } from '@/i18n';
 import type { User as UserType } from '@/types';
@@ -101,7 +103,7 @@ export default function AdminLayout({
           localStorage.removeItem('temp_admin_session');
         }
       } catch (error) {
-        console.error('Temp session error:', error);
+        logger.auth.error('Temp session error', error);
         localStorage.removeItem('temp_admin_session');
       }
     }
@@ -120,7 +122,7 @@ export default function AdminLayout({
             profile,
           });
         } catch (error) {
-          console.error('Failed to get user profile:', error);
+          logger.auth.error('Failed to get user profile', error);
           // Still allow access if Firebase Auth succeeds but profile fetch fails
           setUser({
             id: firebaseUser.uid,
@@ -153,7 +155,7 @@ export default function AdminLayout({
           setAdminIcon(settings.adminIcon);
         }
       } catch (error) {
-        console.error('Admin ayarları yükleme hatası:', error);
+        logger.ui.error('Admin ayarları yükleme hatası', error);
       }
     }
     loadAdminSettings();
@@ -182,7 +184,7 @@ export default function AdminLayout({
       const loginPath = locale === 'tr' ? '/admin/login' : `/${locale}/admin/login`;
       window.location.href = loginPath;
     } catch (error) {
-      console.error('Logout failed:', error);
+      logger.auth.error('Logout failed', error);
       // Geçici session'ı temizle
       localStorage.removeItem('temp_admin_session');
       // Even if signOut fails, redirect to login
@@ -232,6 +234,7 @@ export default function AdminLayout({
 
   return (
     <AdminContext.Provider value={{ user, isLoading, logout }}>
+      <ToastProvider />
       <div className="min-h-screen bg-gray-100 dark:bg-gray-900">
         {/* Mobile sidebar overlay */}
         {isMobileSidebarOpen && (

@@ -18,6 +18,7 @@ import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Spinner } from '@/components/ui/Spinner';
 import { signIn, getCurrentUser } from '@/lib/firebase/auth';
+import { logger } from '@/lib/logger';
 import type { Locale } from '@/i18n';
 
 const loginSchema = z.object({
@@ -115,12 +116,16 @@ export default function AdminLoginPage() {
     setError(null);
     
     try {
-      // Geçici admin girişi (Firebase olmadan)
-      if (data.email === 'admin@pagebuilder.com' && data.password === 'admin123') {
-        // Geçici session oluştur
+      // Geçici admin girişi kontrolü (environment variable ile)
+      const tempAdminEmail = process.env.NEXT_PUBLIC_TEMP_ADMIN_EMAIL;
+      const tempAdminPassword = process.env.NEXT_PUBLIC_TEMP_ADMIN_PASSWORD;
+      
+      if (tempAdminEmail && tempAdminPassword && 
+          data.email === tempAdminEmail && data.password === tempAdminPassword) {
+        // Geçici session oluştur (sadece geliştirme ortamında kullanılmalı)
         localStorage.setItem('temp_admin_session', JSON.stringify({
           id: 'temp-admin-001',
-          email: 'admin@pagebuilder.com',
+          email: tempAdminEmail,
           displayName: 'Admin',
           role: 'admin',
           timestamp: Date.now(),
@@ -133,7 +138,7 @@ export default function AdminLoginPage() {
       await signIn(data.email, data.password);
       router.push(getLocalizedHref('/admin'));
     } catch (err) {
-      console.error('Login error:', err);
+      logger.auth.error('Login error', err);
       setError(getErrorMessage(err));
     } finally {
       setIsLoading(false);
