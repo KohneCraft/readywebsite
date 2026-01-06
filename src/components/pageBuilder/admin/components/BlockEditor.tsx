@@ -6,9 +6,11 @@
 // ============================================
 
 import { useState, useEffect, useCallback } from 'react';
+import { toast } from 'sonner';
 import { useDraggable } from '@dnd-kit/core';
 import { GripVertical, Settings, Copy, Trash2, Loader2 } from 'lucide-react';
 import { BlockRenderer } from '@/components/pageBuilder/renderers/BlockRenderer';
+import { logger } from '@/lib/logger';
 import { cn } from '@/lib/utils';
 import type { Block } from '@/types/pageBuilder';
 
@@ -60,8 +62,8 @@ export function BlockEditor({
         onDelete();
       }
     } catch (error) {
-      console.error('Block silme hatası:', error);
-      alert('Block silinirken bir hata oluştu. Lütfen tekrar deneyin.');
+      logger.pageBuilder.error('Block silme hatası', error);
+      toast.error('Block silinirken bir hata oluştu. Lütfen tekrar deneyin.');
     } finally {
       setIsDeleting(false);
     }
@@ -74,8 +76,8 @@ export function BlockEditor({
     try {
       await onDuplicate(block.id);
     } catch (error) {
-      console.error('Block kopyalama hatası:', error);
-      alert('Block kopyalanırken bir hata oluştu. Lütfen tekrar deneyin.');
+      logger.pageBuilder.error('Block kopyalama hatası', error);
+      toast.error('Block kopyalanırken bir hata oluştu. Lütfen tekrar deneyin.');
     } finally {
       setIsDuplicating(false);
     }
@@ -114,7 +116,7 @@ export function BlockEditor({
 
   // Block validation (hook'lardan sonra)
   if (!block || !block.id || !block.type) {
-    console.error('Geçersiz block:', block);
+    logger.pageBuilder.error('Geçersiz block', block);
     return null;
   }
 

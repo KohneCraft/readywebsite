@@ -3,6 +3,7 @@
 import { useState, useEffect, useMemo, useRef } from 'react';
 import { ColumnRenderer } from './ColumnRenderer';
 import { getSectionById, getColumnById } from '@/lib/firebase/firestore';
+import { logger } from '@/lib/logger';
 import type { Section, Column } from '@/types/pageBuilder';
 import { useDeviceType } from '@/hooks/useDeviceType';
 
@@ -26,20 +27,14 @@ export function SectionRenderer({ sectionId }: SectionRendererProps) {
         const sectionData = await getSectionById(sectionId);
         if (!isMounted) return;
         
-        if (process.env.NODE_ENV === 'development') {
-          console.log(`SectionRenderer - Section yüklendi (${sectionId}):`, sectionData);
-        }
+        logger.pageBuilder.debug(`Section yüklendi (${sectionId})`, sectionData);
         if (!sectionData) {
-          if (process.env.NODE_ENV === 'development') {
-            console.warn(`Section bulunamadı: ${sectionId}`);
-          }
+          logger.pageBuilder.warn(`Section bulunamadı: ${sectionId}`);
         }
         setSection(sectionData);
       } catch (error) {
         if (!isMounted) return;
-        if (process.env.NODE_ENV === 'development') {
-          console.error(`Section yükleme hatası (${sectionId}):`, error);
-        }
+        logger.pageBuilder.error(`Section yükleme hatası (${sectionId})`, error);
       } finally {
         if (isMounted) {
           setLoading(false);
@@ -73,9 +68,7 @@ export function SectionRenderer({ sectionId }: SectionRendererProps) {
         }
       } catch (error) {
         if (!isMounted) return;
-        if (process.env.NODE_ENV === 'development') {
-          console.error('Column yükleme hatası:', error);
-        }
+        logger.pageBuilder.error('Column yükleme hatası', error);
         setColumns([]);
       }
     }
@@ -95,14 +88,11 @@ export function SectionRenderer({ sectionId }: SectionRendererProps) {
   // Settings ve hesaplamalar - useMemo ile optimize et
   const settings = useMemo(() => {
     const s = section?.settings || {};
-    if (process.env.NODE_ENV === 'development') {
-      console.log('SectionRenderer - Settings:', {
-        maxHeight: s.maxHeight,
-        columnLayout: s.columnLayout,
-        columnGap: s.columnGap,
-        fullSettings: s
-      });
-    }
+    logger.pageBuilder.debug('Section settings', {
+      maxHeight: s.maxHeight,
+      columnLayout: s.columnLayout,
+      columnGap: s.columnGap,
+    });
     return s;
   }, [section?.settings]);
   const animation = useMemo(() => settings.animation, [settings]);
@@ -162,7 +152,7 @@ export function SectionRenderer({ sectionId }: SectionRendererProps) {
     });
     
     if (process.env.NODE_ENV === 'development') {
-      console.log('SectionRenderer - gridTemplateColumns hesaplanıyor:', {
+      logger.pageBuilder.debug('gridTemplateColumns hesaplanıyor', {
         columnsCount: columns.length,
         columns: columns.map(col => ({ id: col.id, width: col.width })),
         hasPxColumns,
@@ -179,9 +169,7 @@ export function SectionRenderer({ sectionId }: SectionRendererProps) {
         // Px olmayanlar için kalan alanı paylaştır
         return '1fr';
       }).join(' ');
-      if (process.env.NODE_ENV === 'development') {
-        console.log('SectionRenderer - px kolonlar tespit edildi, grid-template-columns:', result);
-      }
+      logger.pageBuilder.debug('px kolonlar tespit edildi', { gridTemplateColumns: result });
       return result;
     }
     
@@ -190,9 +178,7 @@ export function SectionRenderer({ sectionId }: SectionRendererProps) {
       const width = col.width || (100 / columns.length);
       return `${width}fr`;
     }).join(' ');
-    if (process.env.NODE_ENV === 'development') {
-      console.log('SectionRenderer - % kolonlar, grid-template-columns:', result);
-    }
+    logger.pageBuilder.debug('% kolonlar', { gridTemplateColumns: result });
     return result;
   }, [settings.columnLayout, columns]);
   
@@ -230,9 +216,7 @@ export function SectionRenderer({ sectionId }: SectionRendererProps) {
   
   // Error state - section not found
   if (!section) {
-    if (process.env.NODE_ENV === 'development') {
-      console.warn(`SectionRenderer - Section bulunamadı (${sectionId})`);
-    }
+    logger.pageBuilder.warn(`Section bulunamadı (${sectionId})`);
     return (
       <section className="section-renderer-error text-center py-12 text-gray-500 dark:text-gray-400">
         <p>Section yüklenemedi</p>
@@ -242,17 +226,13 @@ export function SectionRenderer({ sectionId }: SectionRendererProps) {
   
   // Responsive visibility check
   if (section.visibility && !section.visibility[deviceType]) {
-    if (process.env.NODE_ENV === 'development') {
-      console.log(`SectionRenderer - Section görünür değil (${sectionId}, device: ${deviceType})`);
-    }
+    logger.pageBuilder.debug(`Section görünür değil (${sectionId}, device: ${deviceType})`);
     return null;
   }
   
   // Column kontrolü - empty state
   if (!section.columns || section.columns.length === 0) {
-    if (process.env.NODE_ENV === 'development') {
-      console.warn(`SectionRenderer - Section'da column yok (${sectionId})`);
-    }
+    logger.pageBuilder.warn(`Section'da column yok (${sectionId})`);
     return (
       <section className="section-renderer-empty text-center py-12 text-gray-500 dark:text-gray-400">
         <p>Bu section'da henüz içerik yok.</p>
@@ -260,12 +240,10 @@ export function SectionRenderer({ sectionId }: SectionRendererProps) {
     );
   }
   
-  if (process.env.NODE_ENV === 'development') {
-    console.log(`SectionRenderer - Section render ediliyor (${sectionId}):`, {
-      name: section.name,
-      columnsCount: section.columns.length,
-    });
-  }
+  logger.pageBuilder.debug(`Section render ediliyor (${sectionId})`, {
+    name: section.name,
+    columnsCount: section.columns.length,
+  });
   
   return (
     <section 

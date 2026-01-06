@@ -1,6 +1,7 @@
 'use client';
 
 import { memo } from 'react';
+import { sanitizeCSS } from '@/lib/sanitize';
 import type { BlockProps } from '@/types/pageBuilder';
 
 interface DividerBlockProps {
@@ -43,7 +44,7 @@ function DividerBlockComponent({ props }: DividerBlockProps) {
     >
       <hr style={dividerStyle} />
       {props.customCSS && (
-        <style dangerouslySetInnerHTML={{ __html: props.customCSS }} />
+        <style dangerouslySetInnerHTML={{ __html: sanitizeCSS(props.customCSS) }} />
       )}
     </div>
   );

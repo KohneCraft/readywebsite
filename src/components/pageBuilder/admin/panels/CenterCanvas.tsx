@@ -9,6 +9,7 @@ import { useState, useEffect } from 'react';
 import { useDroppable } from '@dnd-kit/core';
 import { SectionEditor } from '../components/SectionEditor';
 import { getSectionById } from '@/lib/firebase/firestore';
+import { logger } from '@/lib/logger';
 import { cn } from '@/lib/utils';
 import type { Page, Section } from '@/types/pageBuilder';
 
@@ -57,7 +58,7 @@ export function CenterCanvas({
         const loadedSections = await Promise.all(sectionPromises);
         setSections(loadedSections.filter(Boolean) as Section[]);
       } catch (error) {
-        console.error('Section yükleme hatası:', error);
+        logger.pageBuilder.error('Section yükleme hatası', error);
         setSections([]);
       } finally {
         setLoading(false);
@@ -76,7 +77,7 @@ export function CenterCanvas({
           setSections(prev => prev.map(s => s.id === sectionId ? updatedSection : s));
         }
       } catch (error) {
-        console.error('Section güncelleme hatası:', error);
+        logger.pageBuilder.error('Section güncelleme hatası', error);
       }
     };
 

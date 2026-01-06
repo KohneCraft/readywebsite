@@ -14,6 +14,7 @@ import {
   HTMLBlock
 } from '../blocks';
 import { getBlockById } from '@/lib/firebase/firestore';
+import { logger } from '@/lib/logger';
 import type { Block, BlockType } from '@/types/pageBuilder';
 
 interface BlockRendererProps {
@@ -49,20 +50,14 @@ export function BlockRenderer({ blockId, index }: BlockRendererProps) {
         const blockData = await getBlockById(blockId);
         if (!isMounted) return;
         
-        if (process.env.NODE_ENV === 'development') {
-          console.log(`BlockRenderer - Block yüklendi (${blockId}):`, blockData);
-        }
+        logger.pageBuilder.debug(`Block yüklendi (${blockId})`, blockData);
         if (!blockData) {
-          if (process.env.NODE_ENV === 'development') {
-            console.warn(`Block bulunamadı: ${blockId}`);
-          }
+          logger.pageBuilder.warn(`Block bulunamadı: ${blockId}`);
         }
         setBlock(blockData);
       } catch (error) {
         if (!isMounted) return;
-        if (process.env.NODE_ENV === 'development') {
-          console.error(`Block yükleme hatası (${blockId}):`, error);
-        }
+        logger.pageBuilder.error(`Block yükleme hatası (${blockId})`, error);
       } finally {
         if (isMounted) {
           setLoading(false);
@@ -121,9 +116,7 @@ export function BlockRenderer({ blockId, index }: BlockRendererProps) {
   
   // Error state - block not found
   if (!block) {
-    if (process.env.NODE_ENV === 'development') {
-      console.warn(`BlockRenderer - Block bulunamadı (${blockId})`);
-    }
+    logger.pageBuilder.warn(`Block bulunamadı (${blockId})`);
     return (
       <div className="block-renderer-error text-center py-4 text-gray-500 dark:text-gray-400 text-sm">
         Block yüklenemedi
@@ -135,9 +128,7 @@ export function BlockRenderer({ blockId, index }: BlockRendererProps) {
   
   // Error state - unknown block type
   if (!BlockComponent) {
-    if (process.env.NODE_ENV === 'development') {
-      console.warn(`Unknown block type: ${block.type}`);
-    }
+    logger.pageBuilder.warn(`Unknown block type: ${block.type}`);
     return (
       <div className="block-renderer-error text-center py-4 text-red-500 dark:text-red-400 text-sm">
         Bilinmeyen block tipi: {block.type}

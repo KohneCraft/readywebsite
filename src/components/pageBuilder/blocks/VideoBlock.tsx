@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, memo } from 'react';
+import { sanitizeCSS } from '@/lib/sanitize';
 import type { BlockProps } from '@/types/pageBuilder';
 
 interface VideoBlockProps {
@@ -72,7 +73,7 @@ function VideoBlockComponent({ props }: VideoBlockProps) {
           />
         )}
         {props.customCSS && (
-          <style dangerouslySetInnerHTML={{ __html: props.customCSS }} />
+          <style dangerouslySetInnerHTML={{ __html: sanitizeCSS(props.customCSS) }} />
         )}
       </div>
     </div>

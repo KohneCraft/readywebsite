@@ -19,6 +19,7 @@ import {
 import { cn } from '@/lib/utils';
 import { useTheme } from '@/contexts/ThemeContext';
 import { getSiteSettings } from '@/lib/firebase/firestore';
+import { logger } from '@/lib/logger';
 import type { Locale } from '@/i18n';
 import type { SiteSettings } from '@/types/settings';
 
@@ -44,7 +45,7 @@ export function Footer() {
         const settings = await getSiteSettings();
         setSiteSettings(settings);
       } catch (error) {
-        console.error('Site settings yükleme hatası:', error);
+        logger.ui.error('Site settings yükleme hatası', error);
       }
     }
     loadSiteSettings();
@@ -66,14 +67,11 @@ export function Footer() {
 
   // Tema ayarlarından quick links'i al
   const quickLinks = useMemo(() => {
-    console.log('Footer - themeSettings:', themeSettings);
-    console.log('Footer - footer quickLinks:', themeSettings?.footer?.quickLinks);
+    logger.ui.debug('Footer themeSettings', { footer: themeSettings?.footer?.quickLinks });
     if (themeSettings?.footer?.quickLinks && themeSettings.footer.quickLinks.length > 0) {
-      console.log('Footer - quickLinks kullanılıyor:', themeSettings.footer.quickLinks);
       return themeSettings.footer.quickLinks;
     }
     // Varsayılan links
-    console.log('Footer - varsayılan quickLinks kullanılıyor');
     return [
       { href: '/', label: tNav('home') },
     ];

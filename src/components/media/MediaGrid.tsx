@@ -9,6 +9,7 @@ import { useState } from 'react';
 import Image from 'next/image';
 import { Copy, Download, Trash2, Eye } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { logger } from '@/lib/logger';
 import type { Media, MediaViewMode } from '@/types/media';
 
 interface MediaGridProps {
@@ -54,7 +55,7 @@ export function MediaGrid({
       setCopiedId(itemId);
       setTimeout(() => setCopiedId(null), 2000);
     } catch (error) {
-      console.error('Copy error:', error);
+      logger.ui.error('Copy error', error);
     }
   }
 

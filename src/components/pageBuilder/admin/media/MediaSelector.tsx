@@ -7,9 +7,11 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import Image from 'next/image';
+import { toast } from 'sonner';
 import { X, Image as ImageIcon, Video, Upload, Check } from 'lucide-react';
 import { getMediaList, uploadMedia } from '@/lib/firebase/media';
 import { getCurrentUser } from '@/lib/firebase/auth';
+import { logger } from '@/lib/logger';
 import type { Media, MediaType } from '@/types/media';
 import { cn } from '@/lib/utils';
 
@@ -55,7 +57,7 @@ export function MediaSelector({
         }
       }
     } catch (error) {
-      console.error('Medya yüklenirken hata:', error);
+      logger.ui.error('Medya yüklenirken hata', error);
     } finally {
       setLoading(false);
     }
@@ -71,7 +73,7 @@ export function MediaSelector({
   const handleFileUpload = async (files: File[]) => {
     const user = getCurrentUser();
     if (!user) {
-      alert('Firebase Auth girişi gerekli. Lütfen giriş yapın.');
+      toast.error('Firebase Auth girişi gerekli. Lütfen giriş yapın.');
       return;
     }
 
@@ -97,7 +99,7 @@ export function MediaSelector({
         // Listeyi yenile
         await loadMedia();
       } catch (error) {
-        console.error('Yükleme hatası:', error);
+        logger.ui.error('Yükleme hatası', error);
         errors.push(`${file.name}: ${error instanceof Error ? error.message : 'Yükleme başarısız'}`);
       }
     }
@@ -105,7 +107,7 @@ export function MediaSelector({
     setUploading(false);
 
     if (errors.length > 0) {
-      alert(`Bazı dosyalar yüklenemedi:\n${errors.join('\n')}`);
+      toast.error(`Bazı dosyalar yüklenemedi:\n${errors.join('\n')}`);
     }
   };
 

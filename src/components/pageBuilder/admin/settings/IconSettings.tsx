@@ -6,12 +6,14 @@
 // ============================================
 
 import { useState, useEffect } from 'react';
+import { toast } from 'sonner';
 import { Image as ImageIcon, Upload, X, Info, Edit2 } from 'lucide-react';
 import Image from 'next/image';
 import { MediaSelector } from '../media/MediaSelector';
 import { uploadMedia } from '@/lib/firebase/media';
 import { getSiteSettings, updateSiteSettings } from '@/lib/firebase/firestore';
 import { getCurrentUser } from '@/lib/firebase/auth';
+import { logger } from '@/lib/logger';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Spinner } from '@/components/ui/Spinner';
@@ -51,7 +53,7 @@ export function IconSettings({ onUpdate }: IconSettingsProps) {
       setAdminTitle(adminTitle);
       setAdminIconUrl(adminIcon);
     } catch (error) {
-      console.error('Icon yükleme hatası:', error);
+      logger.ui.error('Icon yükleme hatası', error);
     } finally {
       setIsLoading(false);
     }
@@ -69,7 +71,7 @@ export function IconSettings({ onUpdate }: IconSettingsProps) {
       setIsSaving(true);
       const user = await getCurrentUser();
       if (!user) {
-        alert('Lütfen giriş yapın');
+        toast.error('Lütfen giriş yapın');
         return;
       }
 
@@ -79,8 +81,8 @@ export function IconSettings({ onUpdate }: IconSettingsProps) {
       setManualUrl(uploadedMedia.url);
       await saveIcon(uploadedMedia.url);
     } catch (error) {
-      console.error('Icon yükleme hatası:', error);
-      alert('Icon yüklenirken bir hata oluştu');
+      logger.ui.error('Icon yükleme hatası', error);
+      toast.error('Icon yüklenirken bir hata oluştu');
     } finally {
       setIsSaving(false);
     }
@@ -102,7 +104,7 @@ export function IconSettings({ onUpdate }: IconSettingsProps) {
       setIsSaving(true);
       const user = await getCurrentUser();
       if (!user) {
-        alert('Lütfen giriş yapın');
+        toast.error('Lütfen giriş yapın');
         return;
       }
       await updateSiteSettings({ 
@@ -116,8 +118,8 @@ export function IconSettings({ onUpdate }: IconSettingsProps) {
         onUpdate();
       }
     } catch (error) {
-      console.error('Icon kaydetme hatası:', error);
-      alert('Icon kaydedilirken bir hata oluştu');
+      logger.ui.error('Icon kaydetme hatası', error);
+      toast.error('Icon kaydedilirken bir hata oluştu');
     } finally {
       setIsSaving(false);
     }
@@ -218,7 +220,7 @@ export function IconSettings({ onUpdate }: IconSettingsProps) {
                 if (file) {
                   // Dosya boyutu kontrolü (100KB)
                   if (file.size > 100 * 1024) {
-                    alert('Dosya boyutu 100KB\'dan büyük olamaz');
+                    toast.error('Dosya boyutu 100KB\'dan büyük olamaz');
                     return;
                   }
                   handleFileUpload(file);
@@ -308,15 +310,15 @@ export function IconSettings({ onUpdate }: IconSettingsProps) {
                   setIsSaving(true);
                   const user = await getCurrentUser();
                   if (!user) {
-                    alert('Lütfen giriş yapın');
+                    toast.error('Lütfen giriş yapın');
                     return;
                   }
                   await updateSiteSettings({ adminTitle }, user.uid);
                   // Sayfayı yenile
                   window.location.reload();
                 } catch (error) {
-                  console.error('Admin başlık kaydetme hatası:', error);
-                  alert('Başlık kaydedilirken bir hata oluştu');
+                  logger.ui.error('Admin başlık kaydetme hatası', error);
+                  toast.error('Başlık kaydedilirken bir hata oluştu');
                 } finally {
                   setIsSaving(false);
                 }
@@ -356,15 +358,15 @@ export function IconSettings({ onUpdate }: IconSettingsProps) {
                       setIsSaving(true);
                       const user = await getCurrentUser();
                       if (!user) {
-                        alert('Lütfen giriş yapın');
+                        toast.error('Lütfen giriş yapın');
                         return;
                       }
                       setAdminIconUrl('');
                       await updateSiteSettings({ adminIcon: '' }, user.uid);
                       window.location.reload();
                     } catch (error) {
-                      console.error('Admin icon kaldırma hatası:', error);
-                      alert('Icon kaldırılırken bir hata oluştu');
+                      logger.ui.error('Admin icon kaldırma hatası', error);
+                      toast.error('Icon kaldırılırken bir hata oluştu');
                     } finally {
                       setIsSaving(false);
                     }
@@ -397,14 +399,14 @@ export function IconSettings({ onUpdate }: IconSettingsProps) {
                   const file = e.target.files?.[0];
                   if (file) {
                     if (file.size > 100 * 1024) {
-                      alert('Dosya boyutu 100KB\'dan büyük olamaz');
+                      toast.error('Dosya boyutu 100KB\'dan büyük olamaz');
                       return;
                     }
                     try {
                       setIsSaving(true);
                       const user = await getCurrentUser();
                       if (!user) {
-                        alert('Lütfen giriş yapın');
+                        toast.error('Lütfen giriş yapın');
                         return;
                       }
                       const uploadedMedia = await uploadMedia(file, 'image', user.uid);
@@ -412,8 +414,8 @@ export function IconSettings({ onUpdate }: IconSettingsProps) {
                       await updateSiteSettings({ adminIcon: uploadedMedia.url }, user.uid);
                       window.location.reload();
                     } catch (error) {
-                      console.error('Admin icon yükleme hatası:', error);
-                      alert('Icon yüklenirken bir hata oluştu');
+                      logger.ui.error('Admin icon yükleme hatası', error);
+                      toast.error('Icon yüklenirken bir hata oluştu');
                     } finally {
                       setIsSaving(false);
                     }
@@ -449,7 +451,7 @@ export function IconSettings({ onUpdate }: IconSettingsProps) {
               setIsSaving(true);
               const user = await getCurrentUser();
               if (!user) {
-                alert('Lütfen giriş yapın');
+                toast.error('Lütfen giriş yapın');
                 return;
               }
               setAdminIconUrl(media.url);
@@ -457,8 +459,8 @@ export function IconSettings({ onUpdate }: IconSettingsProps) {
               setIsAdminIconSelectorOpen(false);
               window.location.reload();
             } catch (error) {
-              console.error('Admin icon kaydetme hatası:', error);
-              alert('Icon kaydedilirken bir hata oluştu');
+              logger.ui.error('Admin icon kaydetme hatası', error);
+              toast.error('Icon kaydedilirken bir hata oluştu');
             } finally {
               setIsSaving(false);
             }

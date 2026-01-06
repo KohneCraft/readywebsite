@@ -7,6 +7,7 @@
 
 import { useState, useEffect } from 'react';
 import { getColumnById } from '@/lib/firebase/firestore';
+import { logger } from '@/lib/logger';
 import { SpacingControl } from '../controls/SpacingControl';
 import { ColorPicker } from '../controls/ColorPicker';
 import { Spinner } from '@/components/ui/Spinner';
@@ -34,7 +35,7 @@ export function ColumnSettings({ columnId, activeTab, onUpdate }: ColumnSettings
         const columnData = await getColumnById(columnId);
         setColumn(columnData);
       } catch (error) {
-        console.error('Column yükleme hatası:', error);
+        logger.pageBuilder.error('Column yükleme hatası', error);
       } finally {
         setLoading(false);
       }
@@ -55,7 +56,7 @@ export function ColumnSettings({ columnId, activeTab, onUpdate }: ColumnSettings
         const loadedColumns = await Promise.all(columnPromises);
         setNestedColumns(loadedColumns.filter(Boolean) as Column[]);
       } catch (error) {
-        console.error('Nested column yükleme hatası:', error);
+        logger.pageBuilder.error('Nested column yükleme hatası', error);
         setNestedColumns([]);
       }
     }
@@ -175,7 +176,7 @@ export function ColumnSettings({ columnId, activeTab, onUpdate }: ColumnSettings
                     });
                     window.dispatchEvent(new CustomEvent('section-updated', { detail: { sectionId: 'any' } }));
                   } catch (error) {
-                    console.error('Kolon yüksekliği güncelleme hatası:', error);
+                    logger.pageBuilder.error('Kolon yüksekliği güncelleme hatası', error);
                   }
                 })();
               }}
@@ -209,7 +210,7 @@ export function ColumnSettings({ columnId, activeTab, onUpdate }: ColumnSettings
                     });
                     window.dispatchEvent(new CustomEvent('section-updated', { detail: { sectionId: 'any' } }));
                   } catch (error) {
-                    console.error('Kolon yüksekliği güncelleme hatası:', error);
+                    logger.pageBuilder.error('Kolon yüksekliği güncelleme hatası', error);
                   }
                 }}
                 className="w-24 px-3 py-2 text-sm border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-white"
@@ -240,7 +241,7 @@ export function ColumnSettings({ columnId, activeTab, onUpdate }: ColumnSettings
                 });
                 window.dispatchEvent(new CustomEvent('section-updated', { detail: { sectionId: 'any' } }));
               } catch (error) {
-                console.error('Kolon arka plan rengi güncelleme hatası:', error);
+                logger.pageBuilder.error('Kolon arka plan rengi güncelleme hatası', error);
               }
             }}
           />
@@ -273,7 +274,7 @@ export function ColumnSettings({ columnId, activeTab, onUpdate }: ColumnSettings
                 });
                 window.dispatchEvent(new CustomEvent('section-updated', { detail: { sectionId: 'any' } }));
               } catch (error) {
-                console.error('Kolon max genişlik güncelleme hatası:', error);
+                logger.pageBuilder.error('Kolon max genişlik güncelleme hatası', error);
               }
             }}
             className="w-full px-3 py-2 text-sm border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-white"
@@ -307,7 +308,7 @@ export function ColumnSettings({ columnId, activeTab, onUpdate }: ColumnSettings
                 });
                 window.dispatchEvent(new CustomEvent('section-updated', { detail: { sectionId: 'any' } }));
               } catch (error) {
-                console.error('Kolon max yükseklik güncelleme hatası:', error);
+                logger.pageBuilder.error('Kolon max yükseklik güncelleme hatası', error);
               }
             }}
             className="w-full px-3 py-2 text-sm border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-white"
@@ -398,7 +399,7 @@ export function ColumnSettings({ columnId, activeTab, onUpdate }: ColumnSettings
                         );
                         window.dispatchEvent(new CustomEvent('section-updated', { detail: { sectionId: 'any' } }));
                       } catch (error) {
-                        console.error('İç kolon genişlikleri güncelleme hatası:', error);
+                        logger.pageBuilder.error('İç kolon genişlikleri güncelleme hatası', error);
                       }
                     }}
                     className="mt-2 text-xs text-primary-600 dark:text-primary-400 hover:underline"

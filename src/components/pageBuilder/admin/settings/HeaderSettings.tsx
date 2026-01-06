@@ -9,8 +9,10 @@ import { useState, useEffect } from 'react';
 import { useTheme } from '@/contexts/ThemeContext';
 import { getCurrentUser } from '@/lib/firebase/auth';
 import { updateActiveThemeSettings } from '@/lib/firebase/firestore';
+import { logger } from '@/lib/logger';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
+import { toast } from '@/components/providers';
 import type { ThemeSettings } from '@/types/theme';
 
 interface HeaderSettingsProps {
@@ -42,7 +44,7 @@ export function HeaderSettings({ activeTab, onUpdate }: HeaderSettingsProps) {
       setLoading(true);
       const user = getCurrentUser();
       if (!user) {
-        alert('Giriş yapmanız gerekiyor');
+        toast.error('Giriş yapmanız gerekiyor');
         return;
       }
 
@@ -78,10 +80,10 @@ export function HeaderSettings({ activeTab, onUpdate }: HeaderSettingsProps) {
           (onUpdate as (updates: any) => void)({});
         }
       }
-      alert('Header ayarları kaydedildi. Sayfayı yenileyin.');
+      toast.success('Header ayarları kaydedildi');
     } catch (error) {
-      console.error('Header ayarları kaydedilirken hata:', error);
-      alert('Header ayarları kaydedilemedi');
+      logger.theme.error('Header ayarları kaydedilirken hata', error);
+      toast.error('Header ayarları kaydedilemedi');
     } finally {
       setLoading(false);
     }

@@ -3,6 +3,8 @@
 import { useState, useEffect } from 'react';
 import { SectionRenderer } from './SectionRenderer';
 import { getPageById, getPageBySlug } from '@/lib/firebase/firestore';
+import { sanitizeAdminCode } from '@/lib/sanitize';
+import { logger } from '@/lib/logger';
 import type { Page } from '@/types/pageBuilder';
 
 interface PageRendererProps {
@@ -47,15 +49,13 @@ export function PageRenderer({ pageId, slug, allowDraft = false }: PageRendererP
           return;
         }
         
-        if (process.env.NODE_ENV === 'development') {
-          console.log('PageRenderer - Sayfa yüklendi:', {
-            id: pageData.id,
-            title: pageData.title,
-            slug: pageData.slug,
-            status: pageData.status,
-            sectionsCount: pageData.sections?.length || 0,
-          });
-        }
+        logger.pageBuilder.debug('Sayfa yüklendi', {
+          id: pageData.id,
+          title: pageData.title,
+          slug: pageData.slug,
+          status: pageData.status,
+          sectionsCount: pageData.sections?.length || 0,
+        });
         
         // Status kontrolü (preview modunda taslak sayfalar da görüntülenebilir)
         // Eğer status yoksa veya undefined ise, published olarak kabul et (geriye dönük uyumluluk)
@@ -67,7 +67,7 @@ export function PageRenderer({ pageId, slug, allowDraft = false }: PageRendererP
         
         setPage(pageData);
       } catch (err) {
-        console.error('Sayfa yükleme hatası:', err);
+        logger.pageBuilder.error('Sayfa yükleme hatası', err);
         setError('Sayfa yüklenirken bir hata oluştu');
       } finally {
         setLoading(false);
@@ -169,7 +169,7 @@ export function PageRenderer({ pageId, slug, allowDraft = false }: PageRendererP
     >
       {/* Custom head code */}
       {page.settings?.headCode && (
-        <div dangerouslySetInnerHTML={{ __html: page.settings.headCode }} />
+        <div dangerouslySetInnerHTML={{ __html: sanitizeAdminCode(page.settings.headCode) }} />
       )}
       
       {/* Sections */}
@@ -189,7 +189,7 @@ export function PageRenderer({ pageId, slug, allowDraft = false }: PageRendererP
       
       {/* Custom footer code */}
       {page.settings?.footerCode && (
-        <div dangerouslySetInnerHTML={{ __html: page.settings.footerCode }} />
+        <div dangerouslySetInnerHTML={{ __html: sanitizeAdminCode(page.settings.footerCode) }} />
       )}
     </div>
   );

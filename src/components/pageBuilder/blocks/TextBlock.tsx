@@ -1,7 +1,8 @@
 'use client';
 
-import { memo } from 'react';
+import { memo, useMemo } from 'react';
 import { useDeviceType } from '@/hooks/useDeviceType';
+import { sanitizeHTML } from '@/lib/sanitize';
 import type { BlockProps } from '@/types/pageBuilder';
 
 interface TextBlockProps {
@@ -11,6 +12,12 @@ interface TextBlockProps {
 function TextBlockComponent({ props }: TextBlockProps) {
   const deviceType = useDeviceType();
   const responsiveProps = props.responsive?.[deviceType] || {};
+  
+  // İçeriği sanitize et (XSS koruması)
+  const sanitizedContent = useMemo(() => 
+    sanitizeHTML(props.content || ''), 
+    [props.content]
+  );
   
   const style = {
     fontSize: responsiveProps.fontSize || props.fontSize || 16,
@@ -41,7 +48,7 @@ function TextBlockComponent({ props }: TextBlockProps) {
     <div 
       className="text-block"
       style={style}
-      dangerouslySetInnerHTML={{ __html: props.content || '' }}
+      dangerouslySetInnerHTML={{ __html: sanitizedContent }}
     />
   );
 }

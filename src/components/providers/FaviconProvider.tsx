@@ -7,6 +7,7 @@
 
 import { useEffect } from 'react';
 import { getSiteSettings } from '@/lib/firebase/firestore';
+import { logger } from '@/lib/logger';
 
 export function FaviconProvider() {
   useEffect(() => {
@@ -34,7 +35,7 @@ export function FaviconProvider() {
           document.head.appendChild(appleLink);
         }
       } catch (error) {
-        console.error('Favicon güncelleme hatası:', error);
+        logger.ui.error('Favicon güncelleme hatası', error);
       }
     }
     

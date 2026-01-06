@@ -20,6 +20,7 @@ import {
   createBlock,
   moveBlock,
 } from '@/lib/firebase/firestore';
+import { logger } from '@/lib/logger';
 import type { Page, BlockType, Section, Column, Block } from '@/types/pageBuilder';
 import { updateSection, updateColumn, updateBlock } from '@/lib/firebase/firestore';
 
@@ -69,7 +70,7 @@ export function PageBuilderEditor({ pageId }: PageBuilderEditorProps) {
       setPendingColumnUpdates({});
       setPendingBlockUpdates({});
     } catch (error) {
-      console.error('Sayfa yüklenirken hata:', error);
+      logger.pageBuilder.error('Sayfa yüklenirken hata', error);
     } finally {
       setLoading(false);
     }
@@ -181,7 +182,7 @@ export function PageBuilderEditor({ pageId }: PageBuilderEditorProps) {
           return;
         }
       } catch (error) {
-        console.error('Kolon ekleme hatası:', error);
+        logger.pageBuilder.error('Kolon ekleme hatası', error);
       }
       setActiveBlock(null);
       return;
@@ -224,7 +225,7 @@ export function PageBuilderEditor({ pageId }: PageBuilderEditorProps) {
         if (pageData) setPage(pageData);
         setHasChanges(true);
       } catch (error) {
-        console.error('Blok ekleme hatası:', error);
+        logger.pageBuilder.error('Blok ekleme hatası', error);
       }
     }
 
@@ -237,7 +238,7 @@ export function PageBuilderEditor({ pageId }: PageBuilderEditorProps) {
         if (pageData) setPage(pageData);
         setHasChanges(true);
       } catch (error) {
-        console.error('Blok taşıma hatası:', error);
+        logger.pageBuilder.error('Blok taşıma hatası', error);
       }
     }
 
@@ -266,7 +267,7 @@ export function PageBuilderEditor({ pageId }: PageBuilderEditorProps) {
           await updateSection(sectionId, updates);
           window.dispatchEvent(new CustomEvent('section-updated', { detail: { sectionId } }));
         } catch (error) {
-          console.error(`Section ${sectionId} güncelleme hatası:`, error);
+          logger.pageBuilder.error(`Section ${sectionId} güncelleme hatası`, error);
         }
       }
       
@@ -276,7 +277,7 @@ export function PageBuilderEditor({ pageId }: PageBuilderEditorProps) {
           await updateColumn(columnId, updates);
           window.dispatchEvent(new CustomEvent('section-updated', { detail: { sectionId: 'any' } }));
         } catch (error) {
-          console.error(`Column ${columnId} güncelleme hatası:`, error);
+          logger.pageBuilder.error(`Column ${columnId} güncelleme hatası`, error);
         }
       }
       
@@ -286,7 +287,7 @@ export function PageBuilderEditor({ pageId }: PageBuilderEditorProps) {
           await updateBlock(blockId, updates);
           window.dispatchEvent(new CustomEvent('section-updated', { detail: { sectionId: 'any' } }));
         } catch (error) {
-          console.error(`Block ${blockId} güncelleme hatası:`, error);
+          logger.pageBuilder.error(`Block ${blockId} güncelleme hatası`, error);
         }
       }
       
@@ -311,7 +312,7 @@ export function PageBuilderEditor({ pageId }: PageBuilderEditorProps) {
       // Sayfayı yeniden yükle
       await loadPage();
     } catch (error) {
-      console.error('Kaydetme hatası:', error);
+      logger.pageBuilder.error('Kaydetme hatası', error);
     } finally {
       setIsSaving(false);
     }
@@ -342,7 +343,7 @@ export function PageBuilderEditor({ pageId }: PageBuilderEditorProps) {
         if (pageData) setPage(pageData);
         setHasChanges(true);
       } catch (error) {
-        console.error('Section ekleme hatası:', error);
+        logger.pageBuilder.error('Section ekleme hatası', error);
       }
     };
 
@@ -354,7 +355,7 @@ export function PageBuilderEditor({ pageId }: PageBuilderEditorProps) {
         if (pageData) setPage(pageData);
         setHasChanges(true);
       } catch (error) {
-        console.error('Sayfa yenileme hatası:', error);
+        logger.pageBuilder.error('Sayfa yenileme hatası', error);
       }
     };
 

@@ -1,6 +1,9 @@
 'use client';
 
 import { useState, memo } from 'react';
+import { toast } from 'sonner';
+import { sanitizeCSS } from '@/lib/sanitize';
+import { logger } from '@/lib/logger';
 import type { BlockProps, FormField } from '@/types/pageBuilder';
 
 interface FormBlockProps {
@@ -40,11 +43,11 @@ function FormBlockComponent({ props }: FormBlockProps) {
           setTimeout(() => setSubmitted(false), 3000);
           form.reset();
         } else {
-          alert(props.errorMessage || 'Form gönderilirken bir hata oluştu.');
+          toast.error(props.errorMessage || 'Form gönderilirken bir hata oluştu.');
         }
       } catch (error) {
-        console.error('Form gönderim hatası:', error);
-        alert(props.errorMessage || 'Form gönderilirken bir hata oluştu.');
+        logger.ui.error('Form gönderim hatası', error);
+        toast.error(props.errorMessage || 'Form gönderilirken bir hata oluştu.');
       }
     } else {
       // Action URL yoksa, sadece başarı mesajı göster (test için)
@@ -170,7 +173,7 @@ function FormBlockComponent({ props }: FormBlockProps) {
       )}
       
       {props.customCSS && (
-        <style dangerouslySetInnerHTML={{ __html: props.customCSS }} />
+        <style dangerouslySetInnerHTML={{ __html: sanitizeCSS(props.customCSS) }} />
       )}
     </div>
   );

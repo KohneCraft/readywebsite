@@ -1,6 +1,7 @@
 'use client';
 
 import { memo } from 'react';
+import { sanitizeCSS } from '@/lib/sanitize';
 import type { BlockProps } from '@/types/pageBuilder';
 
 interface SpacerBlockProps {
@@ -29,7 +30,7 @@ function SpacerBlockComponent({ props }: SpacerBlockProps) {
       {...(props.dataAttributes || {})}
     >
       {props.customCSS && (
-        <style dangerouslySetInnerHTML={{ __html: props.customCSS }} />
+        <style dangerouslySetInnerHTML={{ __html: sanitizeCSS(props.customCSS) }} />
       )}
     </div>
   );

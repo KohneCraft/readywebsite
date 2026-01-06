@@ -17,6 +17,7 @@ import { ThemeToggle } from '@/components/ui/ThemeToggle';
 import { LanguageSwitcher } from '@/components/ui/LanguageSwitcher';
 import { useTheme } from '@/contexts/ThemeContext';
 import { getSiteSettings } from '@/lib/firebase/firestore';
+import { logger } from '@/lib/logger';
 import type { Locale } from '@/i18n';
 import type { SiteSettings } from '@/types/settings';
 
@@ -41,7 +42,7 @@ export function Header() {
         const settings = await getSiteSettings();
         setSiteSettings(settings);
       } catch (error) {
-        console.error('Site settings yükleme hatası:', error);
+        logger.ui.error('Site settings yükleme hatası', error);
       }
     }
     loadSiteSettings();
@@ -58,14 +59,11 @@ export function Header() {
 
   // Tema ayarlarından navigation items'ı al
   const navItems: NavItem[] = useMemo(() => {
-    console.log('Header - themeSettings:', themeSettings);
-    console.log('Header - header navItems:', themeSettings?.header?.navItems);
+    logger.ui.debug('Header themeSettings', { header: themeSettings?.header?.navItems });
     if (themeSettings?.header?.navItems && themeSettings.header.navItems.length > 0) {
-      console.log('Header - navItems kullanılıyor:', themeSettings.header.navItems);
       return themeSettings.header.navItems;
     }
     // Varsayılan navigation
-    console.log('Header - varsayılan navItems kullanılıyor');
     return [
       { href: '/', label: t('home') },
     ];

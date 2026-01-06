@@ -1,6 +1,8 @@
 'use client';
 
 import { useEffect, useRef, memo } from 'react';
+import { sanitizeCSS } from '@/lib/sanitize';
+import { logger } from '@/lib/logger';
 import type { BlockProps } from '@/types/pageBuilder';
 
 interface HTMLBlockProps {
@@ -41,7 +43,7 @@ function HTMLBlockComponent({ props }: HTMLBlockProps) {
         // eslint-disable-next-line no-eval
         eval(props.javascript);
       } catch (error) {
-        console.error('HTML Block JavaScript hatası:', error);
+        logger.pageBuilder.error('HTML Block JavaScript hatası', error);
       }
     }
     
@@ -82,7 +84,7 @@ function HTMLBlockComponent({ props }: HTMLBlockProps) {
       {...(props.dataAttributes || {})}
     >
       {props.customCSS && (
-        <style dangerouslySetInnerHTML={{ __html: props.customCSS }} />
+        <style dangerouslySetInnerHTML={{ __html: sanitizeCSS(props.customCSS) }} />
       )}
     </div>
   );

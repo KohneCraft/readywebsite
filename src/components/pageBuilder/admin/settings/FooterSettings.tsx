@@ -9,8 +9,10 @@ import { useState, useEffect } from 'react';
 import { useTheme } from '@/contexts/ThemeContext';
 import { getCurrentUser } from '@/lib/firebase/auth';
 import { updateActiveThemeSettings } from '@/lib/firebase/firestore';
+import { logger } from '@/lib/logger';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
+import { toast } from '@/components/providers';
 import type { ThemeSettings } from '@/types/theme';
 
 interface FooterSettingsProps {
@@ -48,7 +50,7 @@ export function FooterSettings({ activeTab, onUpdate }: FooterSettingsProps) {
       setLoading(true);
       const user = getCurrentUser();
       if (!user) {
-        alert('Giriş yapmanız gerekiyor');
+        toast.error('Giriş yapmanız gerekiyor');
         return;
       }
 
@@ -84,10 +86,10 @@ export function FooterSettings({ activeTab, onUpdate }: FooterSettingsProps) {
           (onUpdate as (updates: any) => void)({});
         }
       }
-      alert('Footer ayarları kaydedildi. Sayfayı yenileyin.');
+      toast.success('Footer ayarları kaydedildi');
     } catch (error) {
-      console.error('Footer ayarları kaydedilirken hata:', error);
-      alert('Footer ayarları kaydedilemedi');
+      logger.theme.error('Footer ayarları kaydedilirken hata', error);
+      toast.error('Footer ayarları kaydedilemedi');
     } finally {
       setLoading(false);
     }

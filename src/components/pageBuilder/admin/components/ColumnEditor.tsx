@@ -6,9 +6,11 @@
 // ============================================
 
 import { useState, useEffect } from 'react';
+import { toast } from 'sonner';
 import { useDroppable } from '@dnd-kit/core';
 import { BlockEditor } from './BlockEditor';
 import { getBlockById, getColumnById, deleteColumn } from '@/lib/firebase/firestore';
+import { logger } from '@/lib/logger';
 import { GripVertical, Image as ImageIcon, Columns, Plus, Trash2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import type { Column, Block, BlockType } from '@/types/pageBuilder';
@@ -60,7 +62,7 @@ export function ColumnEditor({
         const loadedBlocks = await Promise.all(blockPromises);
         setBlocks(loadedBlocks.filter(Boolean) as Block[]);
       } catch (error) {
-        console.error('Block yükleme hatası:', error);
+        logger.pageBuilder.error('Block yükleme hatası', error);
         setBlocks([]);
       } finally {
         setLoading(false);
@@ -85,7 +87,7 @@ export function ColumnEditor({
         const loadedColumns = await Promise.all(columnPromises);
         setNestedColumns(loadedColumns.filter(Boolean) as Column[]);
       } catch (error) {
-        console.error('Nested column yükleme hatası:', error);
+        logger.pageBuilder.error('Nested column yükleme hatası', error);
         setNestedColumns([]);
       } finally {
         setNestedColumnsLoading(false);
@@ -150,8 +152,8 @@ export function ColumnEditor({
                   try {
                     await onAddColumn(column.id);
                   } catch (error) {
-                    console.error('Yeni kolon ekleme hatası:', error);
-                    alert('Yeni kolon eklenirken bir hata oluştu.');
+                    logger.pageBuilder.error('Yeni kolon ekleme hatası', error);
+                    toast.error('Yeni kolon eklenirken bir hata oluştu.');
                   }
                 }}
                 className="p-1 hover:bg-gray-700 rounded transition-colors"
@@ -185,8 +187,8 @@ export function ColumnEditor({
                   
                   window.dispatchEvent(new CustomEvent('section-updated', { detail: { sectionId: 'any' } }));
                 } catch (error) {
-                  console.error('İç kolon ekleme hatası:', error);
-                  alert('İç kolon eklenirken bir hata oluştu.');
+                  logger.pageBuilder.error('İç kolon ekleme hatası', error);
+                  toast.error('İç kolon eklenirken bir hata oluştu.');
                 }
               }}
               className="p-1 hover:bg-gray-700 rounded transition-colors"
@@ -209,8 +211,8 @@ export function ColumnEditor({
                       window.dispatchEvent(new CustomEvent('section-updated', { detail: { sectionId: 'any' } }));
                     }
                   } catch (error) {
-                    console.error('Kolon silme hatası:', error);
-                    alert('Kolon silinirken bir hata oluştu.');
+                    logger.pageBuilder.error('Kolon silme hatası', error);
+                    toast.error('Kolon silinirken bir hata oluştu.');
                   }
                 }}
                 className="p-1 hover:bg-red-600 rounded transition-colors"
@@ -282,8 +284,8 @@ export function ColumnEditor({
                     
                     window.dispatchEvent(new CustomEvent('section-updated', { detail: { sectionId: 'any' } }));
                   } catch (error) {
-                    console.error('Nested kolon ekleme hatası:', error);
-                    alert('Nested kolon eklenirken bir hata oluştu.');
+                    logger.pageBuilder.error('Nested kolon ekleme hatası', error);
+                    toast.error('Nested kolon eklenirken bir hata oluştu.');
                   }
                 }}
                 onDeleteColumn={async (nestedColumnId) => {
@@ -291,7 +293,7 @@ export function ColumnEditor({
                     await deleteColumn(nestedColumnId);
                     window.dispatchEvent(new CustomEvent('section-updated', { detail: { sectionId: 'any' } }));
                   } catch (error) {
-                    console.error('Nested kolon silme hatası:', error);
+                    logger.pageBuilder.error('Nested kolon silme hatası', error);
                     throw error;
                   }
                 }}
@@ -333,7 +335,7 @@ export function ColumnEditor({
                   const loadedBlocks = await Promise.all(blockPromises);
                   setBlocks(loadedBlocks.filter(Boolean) as Block[]);
                 } catch (error) {
-                  console.error('Block kopyalama hatası:', error);
+                  logger.pageBuilder.error('Block kopyalama hatası', error);
                   throw error;
                 }
               }}
@@ -352,7 +354,7 @@ export function ColumnEditor({
                 // Sayfayı yeniden yükle
                 window.dispatchEvent(new CustomEvent('section-updated', { detail: { sectionId: 'any' } }));
               } catch (error) {
-                console.error('Block ekleme hatası:', error);
+                logger.pageBuilder.error('Block ekleme hatası', error);
               }
             }}
             onAddNestedColumn={async () => {
@@ -379,8 +381,8 @@ export function ColumnEditor({
                 
                 window.dispatchEvent(new CustomEvent('section-updated', { detail: { sectionId: 'any' } }));
               } catch (error) {
-                console.error('İç kolon ekleme hatası:', error);
-                alert('İç kolon eklenirken bir hata oluştu.');
+                logger.pageBuilder.error('İç kolon ekleme hatası', error);
+                toast.error('İç kolon eklenirken bir hata oluştu.');
               }
             }}
           />
@@ -405,7 +407,7 @@ function EmptyColumn({ onAddBlock, onAddNestedColumn }: EmptyColumnProps) {
     try {
       await onAddBlock('image');
     } catch (error) {
-      console.error('Görsel ekleme hatası:', error);
+      logger.pageBuilder.error('Görsel ekleme hatası', error);
     } finally {
       setIsAdding(false);
     }
@@ -418,7 +420,7 @@ function EmptyColumn({ onAddBlock, onAddNestedColumn }: EmptyColumnProps) {
     try {
       await onAddNestedColumn();
     } catch (error) {
-      console.error('İç kolon ekleme hatası:', error);
+      logger.pageBuilder.error('İç kolon ekleme hatası', error);
     } finally {
       setIsAddingColumn(false);
     }

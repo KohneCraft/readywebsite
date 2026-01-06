@@ -7,6 +7,7 @@
 
 import { useState, useEffect } from 'react';
 import { getSectionById, getColumnById } from '@/lib/firebase/firestore';
+import { logger } from '@/lib/logger';
 import { SpacingControl } from '../controls/SpacingControl';
 import { ColorPicker } from '../controls/ColorPicker';
 import { Spinner } from '@/components/ui/Spinner';
@@ -35,7 +36,7 @@ export function SectionSettings({ sectionId, activeTab, onUpdate, onColumnUpdate
         const sectionData = await getSectionById(sectionId);
         setSection(sectionData);
       } catch (error) {
-        console.error('Section yükleme hatası:', error);
+        logger.pageBuilder.error('Section yükleme hatası', error);
       } finally {
         setLoading(false);
       }
@@ -69,7 +70,7 @@ export function SectionSettings({ sectionId, activeTab, onUpdate, onColumnUpdate
         }
         setNestedColumnsMap(nestedMap);
       } catch (error) {
-        console.error('Column yükleme hatası:', error);
+        logger.pageBuilder.error('Column yükleme hatası', error);
         setColumns([]);
         setNestedColumnsMap({});
       }
@@ -425,7 +426,7 @@ export function SectionSettings({ sectionId, activeTab, onUpdate, onColumnUpdate
                           );
                           window.dispatchEvent(new CustomEvent('section-updated', { detail: { sectionId: 'any' } }));
                         } catch (error) {
-                          console.error('Kolon genişlikleri güncelleme hatası:', error);
+                          logger.pageBuilder.error('Kolon genişlikleri güncelleme hatası', error);
                         }
                       }}
                       className="mt-2 text-xs text-primary-600 dark:text-primary-400 hover:underline"

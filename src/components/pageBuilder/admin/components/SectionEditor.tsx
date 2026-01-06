@@ -6,9 +6,11 @@
 // ============================================
 
 import { useState, useEffect } from 'react';
+import { toast } from 'sonner';
 import { useDroppable } from '@dnd-kit/core';
 import { ColumnEditor } from './ColumnEditor';
 import { getColumnById } from '@/lib/firebase/firestore';
+import { logger } from '@/lib/logger';
 import { ArrowUp, ArrowDown, Copy, Trash2, Settings, Plus } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import type { Section, Column } from '@/types/pageBuilder';
@@ -63,7 +65,7 @@ export function SectionEditor({
         const loadedColumns = await Promise.all(columnPromises);
         setColumns(loadedColumns.filter(Boolean) as Column[]);
       } catch (error) {
-        console.error('Column yükleme hatası:', error);
+        logger.pageBuilder.error('Column yükleme hatası', error);
         setColumns([]);
       } finally {
         setLoading(false);
@@ -125,8 +127,8 @@ export function SectionEditor({
                     await onMove(section.id, 'up');
                     window.dispatchEvent(new CustomEvent('section-updated', { detail: { sectionId: 'any' } }));
                   } catch (error) {
-                    console.error('Section taşıma hatası:', error);
-                    alert('Section taşınırken bir hata oluştu.');
+                    logger.pageBuilder.error('Section taşıma hatası', error);
+                    toast.error('Section taşınırken bir hata oluştu.');
                   } finally {
                     setIsMoving(false);
                   }
@@ -150,8 +152,8 @@ export function SectionEditor({
                     await onMove(section.id, 'down');
                     window.dispatchEvent(new CustomEvent('section-updated', { detail: { sectionId: 'any' } }));
                   } catch (error) {
-                    console.error('Section taşıma hatası:', error);
-                    alert('Section taşınırken bir hata oluştu.');
+                    logger.pageBuilder.error('Section taşıma hatası', error);
+                    toast.error('Section taşınırken bir hata oluştu.');
                   } finally {
                     setIsMoving(false);
                   }
@@ -175,8 +177,8 @@ export function SectionEditor({
                     await onDuplicate(section.id);
                     window.dispatchEvent(new CustomEvent('section-updated', { detail: { sectionId: 'any' } }));
                   } catch (error) {
-                    console.error('Section kopyalama hatası:', error);
-                    alert('Section kopyalanırken bir hata oluştu.');
+                    logger.pageBuilder.error('Section kopyalama hatası', error);
+                    toast.error('Section kopyalanırken bir hata oluştu.');
                   } finally {
                     setIsDuplicating(false);
                   }
@@ -210,8 +212,8 @@ export function SectionEditor({
                     await onDelete(section.id);
                     window.dispatchEvent(new CustomEvent('section-updated', { detail: { sectionId: 'any' } }));
                   } catch (error) {
-                    console.error('Section silme hatası:', error);
-                    alert('Section silinirken bir hata oluştu.');
+                    logger.pageBuilder.error('Section silme hatası', error);
+                    toast.error('Section silinirken bir hata oluştu.');
                   } finally {
                     setIsDeleting(false);
                   }
@@ -302,8 +304,8 @@ export function SectionEditor({
                     
                     window.dispatchEvent(new CustomEvent('section-updated', { detail: { sectionId: section.id } }));
                   } catch (error) {
-                    console.error('Yeni kolon ekleme hatası:', error);
-                    alert('Yeni kolon eklenirken bir hata oluştu.');
+                    logger.pageBuilder.error('Yeni kolon ekleme hatası', error);
+                    toast.error('Yeni kolon eklenirken bir hata oluştu.');
                   }
                 }}
                 onDeleteColumn={async (columnId) => {
@@ -312,7 +314,7 @@ export function SectionEditor({
                     await deleteColumn(columnId);
                     window.dispatchEvent(new CustomEvent('section-updated', { detail: { sectionId: section.id } }));
                   } catch (error) {
-                    console.error('Kolon silme hatası:', error);
+                    logger.pageBuilder.error('Kolon silme hatası', error);
                     throw error;
                   }
                 }}
@@ -338,7 +340,7 @@ export function SectionEditor({
                       window.dispatchEvent(new CustomEvent('section-updated', { detail: { sectionId: section.id } }));
                     }
                   } catch (error) {
-                    console.error('Column ekleme hatası:', error);
+                    logger.pageBuilder.error('Column ekleme hatası', error);
                   }
                 }}
               />

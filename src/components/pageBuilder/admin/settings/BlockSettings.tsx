@@ -7,6 +7,7 @@
 
 import { useState, useEffect } from 'react';
 import { getBlockById } from '@/lib/firebase/firestore';
+import { logger } from '@/lib/logger';
 import { TextBlockSettings } from './blocks/TextBlockSettings';
 import { HeadingBlockSettings } from './blocks/HeadingBlockSettings';
 import { ImageBlockSettings } from './blocks/ImageBlockSettings';
@@ -37,7 +38,7 @@ export function BlockSettings({ blockId, activeTab, onUpdate }: BlockSettingsPro
         const blockData = await getBlockById(blockId);
         setBlock(blockData);
       } catch (error) {
-        console.error('Block yükleme hatası:', error);
+        logger.pageBuilder.error('Block yükleme hatası', error);
       } finally {
         setLoading(false);
       }

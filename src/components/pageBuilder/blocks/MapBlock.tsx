@@ -1,6 +1,8 @@
 'use client';
 
 import { useEffect, useRef, memo } from 'react';
+import { sanitizeCSS } from '@/lib/sanitize';
+import { logger } from '@/lib/logger';
 import type { BlockProps } from '@/types/pageBuilder';
 
 interface MapBlockProps {
@@ -34,9 +36,9 @@ function MapBlockComponent({ props }: MapBlockProps) {
     // Google Maps veya OpenStreetMap entegrasyonu
     if (props.mapProvider === 'google') {
       // Google Maps API key'i environment variable'dan al
-      const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || '';
+const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || '';
       if (!apiKey) {
-        console.warn('Google Maps API key bulunamadı. Lütfen NEXT_PUBLIC_GOOGLE_MAPS_API_KEY environment variable\'ını ayarlayın.');
+        logger.pageBuilder.warn('Google Maps API key bulunamadı. Lütfen NEXT_PUBLIC_GOOGLE_MAPS_API_KEY environment variable\'\u0131nı ayarlayın.');
         if (mapRef.current) {
           mapRef.current.innerHTML = '<div class="flex items-center justify-center h-full bg-gray-100 dark:bg-gray-800 rounded-lg"><span class="text-gray-400">Google Maps API key gerekli</span></div>';
         }
@@ -91,7 +93,7 @@ function MapBlockComponent({ props }: MapBlockProps) {
     >
       <div ref={mapRef} style={mapStyle} />
       {props.customCSS && (
-        <style dangerouslySetInnerHTML={{ __html: props.customCSS }} />
+        <style dangerouslySetInnerHTML={{ __html: sanitizeCSS(props.customCSS) }} />
       )}
     </div>
   );

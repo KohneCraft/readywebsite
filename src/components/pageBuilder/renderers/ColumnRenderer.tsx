@@ -3,6 +3,7 @@
 import { useState, useEffect, useMemo, useRef } from 'react';
 import { BlockRenderer } from './BlockRenderer';
 import { getColumnById } from '@/lib/firebase/firestore';
+import { logger } from '@/lib/logger';
 import type { Column } from '@/types/pageBuilder';
 import { useDeviceType } from '@/hooks/useDeviceType';
 
@@ -42,20 +43,14 @@ export function ColumnRenderer({ columnId, index, isNested: _isNested = false, i
         const columnData = await getColumnById(columnId);
         if (!isMounted) return;
         
-        if (process.env.NODE_ENV === 'development') {
-          console.log(`ColumnRenderer - Column yüklendi (${columnId}):`, columnData);
-        }
+        logger.pageBuilder.debug(`Column yüklendi (${columnId})`, columnData);
         if (!columnData) {
-          if (process.env.NODE_ENV === 'development') {
-            console.warn(`Column bulunamadı: ${columnId}`);
-          }
+          logger.pageBuilder.warn(`Column bulunamadı: ${columnId}`);
         }
         setColumn(columnData);
       } catch (error) {
         if (!isMounted) return;
-        if (process.env.NODE_ENV === 'development') {
-          console.error(`Column yükleme hatası (${columnId}):`, error);
-        }
+        logger.pageBuilder.error(`Column yükleme hatası (${columnId})`, error);
       } finally {
         if (isMounted) {
           setLoading(false);
@@ -91,9 +86,7 @@ export function ColumnRenderer({ columnId, index, isNested: _isNested = false, i
         }
       } catch (error) {
         if (!isMounted) return;
-        if (process.env.NODE_ENV === 'development') {
-          console.error(`Nested column yükleme hatası (${columnId}):`, error);
-        }
+        logger.pageBuilder.error(`Nested column yükleme hatası (${columnId})`, error);
         setNestedColumns([]);
       } finally {
         if (isMounted) {
@@ -209,9 +202,7 @@ export function ColumnRenderer({ columnId, index, isNested: _isNested = false, i
   
   // Güvenlik kilidi: Maksimum iç içe kolon derinliği (hook'lardan sonra kontrol et)
   if (depth > 5) {
-    if (process.env.NODE_ENV === 'development') {
-      console.warn(`ColumnRenderer - Maksimum iç içe kolon derinliğine ulaşıldı (${depth}). Sonsuz döngü önlendi.`);
-    }
+    logger.pageBuilder.warn(`Maksimum iç içe kolon derinliğine ulaşıldı (${depth}). Sonsuz döngü önlendi.`);
     return null;
   }
   
@@ -226,9 +217,7 @@ export function ColumnRenderer({ columnId, index, isNested: _isNested = false, i
   
   // Error state - column not found
   if (!column) {
-    if (process.env.NODE_ENV === 'development') {
-      console.warn(`ColumnRenderer - Column bulunamadı (${columnId})`);
-    }
+    logger.pageBuilder.warn(`Column bulunamadı (${columnId})`);
     return (
       <div className="column-renderer-error text-center py-4 text-gray-500 dark:text-gray-400 text-sm">
         Kolon yüklenemedi
@@ -236,12 +225,10 @@ export function ColumnRenderer({ columnId, index, isNested: _isNested = false, i
     );
   }
   
-  if (process.env.NODE_ENV === 'development') {
-    console.log(`ColumnRenderer - Column render ediliyor (${columnId}):`, {
-      width: column.width,
-      blocksCount: column.blocks?.length || 0,
-    });
-  }
+  logger.pageBuilder.debug(`Column render ediliyor (${columnId})`, {
+    width: column.width,
+    blocksCount: column.blocks?.length || 0,
+  });
   
   return (
     <div 
