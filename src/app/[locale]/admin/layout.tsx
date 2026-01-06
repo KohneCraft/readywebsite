@@ -7,6 +7,7 @@
 
 import { useState, useEffect, createContext, useContext } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { useLocale, useTranslations } from 'next-intl';
 import { 
   LayoutDashboard, 
@@ -251,10 +252,9 @@ export default function AdminLayout({
           {/* Logo */}
           <div className="h-16 flex items-center justify-between px-4 border-b border-gray-200 dark:border-gray-700">
             {isSidebarOpen && (
-              <button
-                onClick={() => {
-                  router.push(getLocalizedHref('/admin'));
-                }}
+              <Link
+                href={getLocalizedHref('/admin')}
+                prefetch={false}
                 className="flex items-center gap-2 w-full text-left"
               >
                 {adminIcon ? (
@@ -274,7 +274,7 @@ export default function AdminLayout({
                   </div>
                 )}
                 <span className="font-bold text-gray-900 dark:text-white">{adminTitle}</span>
-              </button>
+              </Link>
             )}
             <button
               onClick={() => setIsSidebarOpen(!isSidebarOpen)}
@@ -293,11 +293,10 @@ export default function AdminLayout({
           {/* Navigation */}
           <nav className="p-4 space-y-2">
             {navItems.map((item) => (
-              <button
+              <Link
                 key={item.href}
-                onClick={() => {
-                  router.push(getLocalizedHref(item.href));
-                }}
+                href={getLocalizedHref(item.href)}
+                prefetch={false}
                 className={cn(
                   'flex items-center gap-3 px-4 py-3 rounded-lg transition-colors w-full text-left',
                   isActive(item.href)
@@ -307,7 +306,7 @@ export default function AdminLayout({
               >
                 <item.icon className="w-5 h-5 flex-shrink-0" />
                 {isSidebarOpen && <span>{item.label}</span>}
-              </button>
+              </Link>
             ))}
           </nav>
 

@@ -247,6 +247,7 @@ export function Header() {
                 <Link
                   key={item.href}
                   href={getLocalizedHref(item.href)}
+                  prefetch={false}
                   className={cn(
                     'relative font-medium transition-colors py-2',
                     isActive(item.href)
@@ -288,6 +289,7 @@ export function Header() {
               {pathname.includes('/admin') && (
                 <Link
                   href={getLocalizedHref('/admin')}
+                  prefetch={false}
                   className="hidden md:inline-flex btn btn-primary text-sm"
                 >
                   Dashboard
@@ -357,6 +359,7 @@ export function Header() {
                     <Link
                       key={item.href}
                       href={getLocalizedHref(item.href)}
+                      prefetch={false}
                       className={cn(
                         'px-4 py-3 rounded-lg font-medium transition-colors',
                         isActive(item.href)
