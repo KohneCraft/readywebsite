@@ -17,21 +17,27 @@ export function FaviconProvider() {
         const faviconUrl = settings?.logo?.favicon?.url;
         
         if (faviconUrl) {
-          // Mevcut favicon linklerini kaldır
-          const existingLinks = document.querySelectorAll('link[rel="icon"], link[rel="shortcut icon"]');
-          existingLinks.forEach(link => link.remove());
+          // Mevcut favicon linklerini kaldır (React-safe)
+          const existingLinks = document.querySelectorAll('link[rel="icon"], link[rel="shortcut icon"], link[rel="apple-touch-icon"]');
+          existingLinks.forEach(link => {
+            if (link.parentNode) {
+              link.parentNode.removeChild(link);
+            }
+          });
           
           // Yeni favicon ekle
           const link = document.createElement('link');
           link.rel = 'icon';
           link.type = 'image/x-icon';
           link.href = faviconUrl;
+          link.setAttribute('data-favicon-provider', 'true');
           document.head.appendChild(link);
           
           // Apple touch icon
           const appleLink = document.createElement('link');
           appleLink.rel = 'apple-touch-icon';
           appleLink.href = faviconUrl;
+          appleLink.setAttribute('data-favicon-provider', 'true');
           document.head.appendChild(appleLink);
         }
       } catch (error) {
@@ -50,6 +56,13 @@ export function FaviconProvider() {
     
     return () => {
       window.removeEventListener('theme-updated', handleThemeUpdate);
+      // Cleanup: Provider tarafından eklenen favicon'ları kaldır
+      const providerLinks = document.querySelectorAll('link[data-favicon-provider="true"]');
+      providerLinks.forEach(link => {
+        if (link.parentNode) {
+          link.parentNode.removeChild(link);
+        }
+      });
     };
   }, []);
   

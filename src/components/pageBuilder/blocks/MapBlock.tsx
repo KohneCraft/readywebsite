@@ -30,6 +30,29 @@ function MapBlockComponent({ props }: MapBlockProps) {
     overflow: 'hidden',
   };
   
+  // Custom CSS cleanup
+  useEffect(() => {
+    if (!props.customCSS) return;
+    
+    const styleId = `map-block-css-${props.id || 'default'}`;
+    let styleEl = document.getElementById(styleId) as HTMLStyleElement;
+    
+    if (!styleEl) {
+      styleEl = document.createElement('style');
+      styleEl.id = styleId;
+      document.head.appendChild(styleEl);
+    }
+    
+    styleEl.textContent = sanitizeCSS(props.customCSS);
+    
+    return () => {
+      const el = document.getElementById(styleId);
+      if (el && el.parentNode) {
+        el.parentNode.removeChild(el);
+      }
+    };
+  }, [props.customCSS, props.id]);
+
   useEffect(() => {
     if (!mapRef.current || !props.latitude || !props.longitude) return;
     
@@ -112,9 +135,6 @@ function MapBlockComponent({ props }: MapBlockProps) {
       {...(props.dataAttributes || {})}
     >
       <div ref={mapRef} style={mapStyle} />
-      {props.customCSS && (
-        <style dangerouslySetInnerHTML={{ __html: sanitizeCSS(props.customCSS) }} />
-      )}
     </div>
   );
 }

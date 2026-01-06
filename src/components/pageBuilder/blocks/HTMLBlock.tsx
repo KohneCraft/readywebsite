@@ -59,6 +59,29 @@ function HTMLBlockComponent({ props }: HTMLBlockProps) {
     };
   }, [props.css, props.javascript, props.id]);
   
+  // Custom CSS cleanup for customCSS prop (must be before early return)
+  useEffect(() => {
+    if (!props.customCSS) return;
+    
+    const styleId = `html-block-custom-css-${props.id || 'default'}`;
+    let styleEl = document.getElementById(styleId) as HTMLStyleElement;
+    
+    if (!styleEl) {
+      styleEl = document.createElement('style');
+      styleEl.id = styleId;
+      document.head.appendChild(styleEl);
+    }
+    
+    styleEl.textContent = sanitizeCSS(props.customCSS);
+    
+    return () => {
+      const el = document.getElementById(styleId);
+      if (el && el.parentNode) {
+        el.parentNode.removeChild(el);
+      }
+    };
+  }, [props.customCSS, props.id]);
+  
   if (!props.css && !props.javascript) {
     return (
       <div 
@@ -82,11 +105,7 @@ function HTMLBlockComponent({ props }: HTMLBlockProps) {
       style={containerStyle}
       id={props.id}
       {...(props.dataAttributes || {})}
-    >
-      {props.customCSS && (
-        <style dangerouslySetInnerHTML={{ __html: sanitizeCSS(props.customCSS) }} />
-      )}
-    </div>
+    />
   );
 }
 

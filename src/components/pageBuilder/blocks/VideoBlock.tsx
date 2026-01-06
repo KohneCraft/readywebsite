@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, memo } from 'react';
+import { useState, memo, useEffect } from 'react';
 import { sanitizeCSS } from '@/lib/sanitize';
 import type { BlockProps } from '@/types/pageBuilder';
 
@@ -30,6 +30,29 @@ function VideoBlockComponent({ props }: VideoBlockProps) {
     transition: 'opacity 0.3s ease',
     opacity: loaded ? 1 : 0,
   };
+  
+  // Custom CSS cleanup
+  useEffect(() => {
+    if (!props.customCSS) return;
+    
+    const styleId = `video-block-css-${props.id || 'default'}`;
+    let styleEl = document.getElementById(styleId) as HTMLStyleElement;
+    
+    if (!styleEl) {
+      styleEl = document.createElement('style');
+      styleEl.id = styleId;
+      document.head.appendChild(styleEl);
+    }
+    
+    styleEl.textContent = sanitizeCSS(props.customCSS);
+    
+    return () => {
+      const el = document.getElementById(styleId);
+      if (el && el.parentNode) {
+        el.parentNode.removeChild(el);
+      }
+    };
+  }, [props.customCSS, props.id]);
   
   if (!props.src) {
     return (
@@ -71,9 +94,6 @@ function VideoBlockComponent({ props }: VideoBlockProps) {
             id={props.id}
             {...(props.dataAttributes || {})}
           />
-        )}
-        {props.customCSS && (
-          <style dangerouslySetInnerHTML={{ __html: sanitizeCSS(props.customCSS) }} />
         )}
       </div>
     </div>

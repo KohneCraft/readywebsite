@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, memo } from 'react';
+import { useState, memo, useEffect } from 'react';
 import { toast } from 'sonner';
 import { sanitizeCSS } from '@/lib/sanitize';
 import { logger } from '@/lib/logger';
@@ -24,6 +24,29 @@ function FormBlockComponent({ props }: FormBlockProps) {
       : '20px',
   };
   
+  // Custom CSS cleanup
+  useEffect(() => {
+    if (!props.customCSS) return;
+    
+    const styleId = `form-block-css-${props.id || 'default'}`;
+    let styleEl = document.getElementById(styleId) as HTMLStyleElement;
+    
+    if (!styleEl) {
+      styleEl = document.createElement('style');
+      styleEl.id = styleId;
+      document.head.appendChild(styleEl);
+    }
+    
+    styleEl.textContent = sanitizeCSS(props.customCSS);
+    
+    return () => {
+      const el = document.getElementById(styleId);
+      if (el && el.parentNode) {
+        el.parentNode.removeChild(el);
+      }
+    };
+  }, [props.customCSS, props.id]);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     

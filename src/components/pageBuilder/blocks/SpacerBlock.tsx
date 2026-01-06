@@ -1,6 +1,6 @@
 'use client';
 
-import { memo } from 'react';
+import { memo, useEffect } from 'react';
 import { sanitizeCSS } from '@/lib/sanitize';
 import type { BlockProps } from '@/types/pageBuilder';
 
@@ -22,17 +22,36 @@ function SpacerBlockComponent({ props }: SpacerBlockProps) {
       : '0',
   };
   
+  // Custom CSS cleanup
+  useEffect(() => {
+    if (!props.customCSS) return;
+    
+    const styleId = `spacer-block-css-${props.id || 'default'}`;
+    let styleEl = document.getElementById(styleId) as HTMLStyleElement;
+    
+    if (!styleEl) {
+      styleEl = document.createElement('style');
+      styleEl.id = styleId;
+      document.head.appendChild(styleEl);
+    }
+    
+    styleEl.textContent = sanitizeCSS(props.customCSS);
+    
+    return () => {
+      const el = document.getElementById(styleId);
+      if (el && el.parentNode) {
+        el.parentNode.removeChild(el);
+      }
+    };
+  }, [props.customCSS, props.id]);
+  
   return (
     <div 
       className={`spacer-block ${props.className || ''}`}
       style={containerStyle}
       id={props.id}
       {...(props.dataAttributes || {})}
-    >
-      {props.customCSS && (
-        <style dangerouslySetInnerHTML={{ __html: sanitizeCSS(props.customCSS) }} />
-      )}
-    </div>
+    />
   );
 }
 
