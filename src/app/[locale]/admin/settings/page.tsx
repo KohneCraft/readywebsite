@@ -304,7 +304,7 @@ export default function AdminSettingsPage() {
           },
           allowedIPs: data.maintenance.allowedIPs ? data.maintenance.allowedIPs.split(',').map(ip => ip.trim()) : [],
         },
-      }, user.uid);
+      } as any, user.uid);
       
       setSaved(true);
       setTimeout(() => setSaved(false), 3000);
