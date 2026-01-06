@@ -27,6 +27,7 @@ import {
   CheckCircle,
   AlertTriangle,
   Shield,
+  X,
 } from 'lucide-react';
 import Image from 'next/image';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/Card';
@@ -126,7 +127,14 @@ export default function AdminSettingsPage() {
   const [saved, setSaved] = useState(false);
   const [activeTab, setActiveTab] = useState<TabKey>('company');
   const [logoPreview, setLogoPreview] = useState<string | null>(null);
+  const [faviconPreview, setFaviconPreview] = useState<string | null>(null);
   const [isMediaSelectorOpen, setIsMediaSelectorOpen] = useState(false);
+  const [isFaviconSelectorOpen, setIsFaviconSelectorOpen] = useState(false);
+  
+  // Admin Panel ayarları
+  const [adminTitle, setAdminTitle] = useState<string>('Modern');
+  const [adminIconUrl, setAdminIconUrl] = useState<string>('');
+  const [isAdminIconSelectorOpen, setIsAdminIconSelectorOpen] = useState(false);
 
   const {
     register,
@@ -154,10 +162,11 @@ export default function AdminSettingsPage() {
             name: settings.siteName?.tr || defaultSettings.company.name,
             slogan: settings.siteSlogan?.tr || defaultSettings.company.slogan,
             logo: settings.logo?.light?.url || defaultSettings.company.logo,
-            nameColor: (settings as any).companyNameStyle?.color || defaultSettings.company.nameColor,
-            nameFontSize: (settings as any).companyNameStyle?.fontSize || defaultSettings.company.nameFontSize,
-            sloganColor: (settings as any).sloganStyle?.color || defaultSettings.company.sloganColor,
-            sloganFontSize: (settings as any).sloganStyle?.fontSize || defaultSettings.company.sloganFontSize,
+            // Renk ve font ayarları - undefined ise boş bırak (tema varsayılanları kullanılsın)
+            nameColor: (settings as any).companyNameStyle?.color || '',
+            nameFontSize: (settings as any).companyNameStyle?.fontSize || undefined,
+            sloganColor: (settings as any).sloganStyle?.color || '',
+            sloganFontSize: (settings as any).sloganStyle?.fontSize || undefined,
           },
           contact: {
             email: settings.contact?.email || defaultSettings.contact.email,
@@ -187,6 +196,14 @@ export default function AdminSettingsPage() {
         
         reset(formData);
         setLogoPreview(formData.company.logo || null);
+        // Favicon'u da yükle
+        const faviconUrl = settings.logo?.favicon?.url;
+        setFaviconPreview(faviconUrl || null);
+        // Admin panel ayarlarını yükle
+        const adminTitleValue = (settings as any).adminTitle || 'Modern';
+        const adminIconValue = (settings as any).adminIcon || '';
+        setAdminTitle(adminTitleValue);
+        setAdminIconUrl(adminIconValue);
       } catch (error) {
         logger.api.error('Ayarlar yüklenirken hata', error);
         reset(defaultSettings);
@@ -253,7 +270,14 @@ export default function AdminSettingsPage() {
             ...currentSettings.logo.dark,
             url: data.company.logo || '',
           },
+          favicon: {
+            url: faviconPreview || '',
+            path: currentSettings.logo.favicon?.path || '',
+          },
         },
+        // Admin panel ayarları
+        adminTitle: adminTitle || 'Modern',
+        adminIcon: adminIconUrl || '',
         // İletişim bilgileri
         contact: {
           ...currentSettings.contact,
@@ -323,8 +347,67 @@ export default function AdminSettingsPage() {
     }
   };
 
+  const handleAdminIconSelect = async (mediaUrl: string) => {
+    setAdminIconUrl(mediaUrl);
+    setIsAdminIconSelectorOpen(false);
+  };
+
+  const handleAdminIconFileUpload = async (file: File) => {
+    try {
+      setIsSaving(true);
+      const user = await getCurrentUser();
+      if (!user) {
+        toast.error('Lütfen giriş yapın');
+        return;
+      }
+
+      if (file.size > 100 * 1024) {
+        toast.error('Dosya boyutu 100KB\'dan büyük olamaz');
+        return;
+      }
+
+      const uploadedMedia = await uploadMedia(file, 'image', user.uid);
+      setAdminIconUrl(uploadedMedia.url);
+      toast.success('Admin icon yüklendi');
+    } catch (error) {
+      logger.ui.error('Admin icon yükleme hatası', error);
+      toast.error('Icon yüklenirken bir hata oluştu');
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
   const handleLogoUpload = async () => {
     setIsMediaSelectorOpen(true);
+  };
+
+  const handleFaviconUpload = async () => {
+    setIsFaviconSelectorOpen(true);
+  };
+
+  const handleFaviconSelect = async (mediaUrl: string) => {
+    setFaviconPreview(mediaUrl);
+    setIsFaviconSelectorOpen(false);
+  };
+
+  const handleFaviconFileUpload = async (file: File) => {
+    try {
+      setIsSaving(true);
+      const user = await getCurrentUser();
+      if (!user) {
+        toast.error('Lütfen giriş yapın');
+        return;
+      }
+
+      const uploadedMedia = await uploadMedia(file, 'image', user.uid);
+      setFaviconPreview(uploadedMedia.url);
+      toast.success('Favicon yüklendi');
+    } catch (error) {
+      logger.ui.error('Favicon yükleme hatası', error);
+      toast.error('Favicon yüklenirken bir hata oluştu');
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   const handleLogoSelect = async (mediaUrl: string) => {
@@ -501,6 +584,113 @@ export default function AdminSettingsPage() {
                       </div>
                     </div>
 
+                    {/* Favicon */}
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        Favicon (Sekme İkonu)
+                      </label>
+                      <p className="text-xs text-gray-500 dark:text-gray-400 mb-3">
+                        Tarayıcı sekmesinde görünen küçük ikon (önerilen: 32x32px veya 64x64px)
+                      </p>
+                      <div className="flex items-center gap-4">
+                        {faviconPreview ? (
+                          <div className="w-16 h-16 rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden bg-white dark:bg-gray-800">
+                            <Image
+                              src={faviconPreview}
+                              alt="Favicon"
+                              width={64}
+                              height={64}
+                              className="w-full h-full object-contain p-2"
+                            />
+                          </div>
+                        ) : (
+                          <div className="w-16 h-16 rounded-lg border-2 border-dashed border-gray-300 dark:border-gray-700 flex items-center justify-center bg-gray-50 dark:bg-gray-800">
+                            <Building2 className="w-6 h-6 text-gray-400" />
+                          </div>
+                        )}
+                        <div className="flex gap-2">
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            onClick={handleFaviconUpload}
+                          >
+                            <Upload className="w-4 h-4 mr-2" />
+                            Medyadan Seç
+                          </Button>
+                          <label className="cursor-pointer">
+                            <input
+                              type="file"
+                              accept="image/*"
+                              onChange={(e) => {
+                                const file = e.target.files?.[0];
+                                if (file) {
+                                  handleFaviconFileUpload(file);
+                                }
+                              }}
+                              className="hidden"
+                            />
+                            <div className="px-3 py-1.5 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors text-sm font-medium text-gray-700 dark:text-gray-300">
+                              Dosya Yükle
+                            </div>
+                          </label>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Icon/Favicon Bilgilendirme */}
+                    <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
+                      <div className="flex items-start gap-3">
+                        <div className="w-5 h-5 text-blue-600 dark:text-blue-400 mt-0.5 flex-shrink-0">
+                          <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                          </svg>
+                        </div>
+                        <div className="flex-1">
+                          <h4 className="text-sm font-medium text-blue-900 dark:text-blue-200 mb-1">
+                            Icon/Favicon Bilgileri
+                          </h4>
+                          <ul className="text-xs text-blue-700 dark:text-blue-300 space-y-1">
+                            <li>• <strong>Önerilen boyut:</strong> 32x32px veya 16x16px</li>
+                            <li>• <strong>Desteklenen formatlar:</strong> .ico, .png, .svg</li>
+                            <li>• <strong>Maksimum boyut:</strong> 100KB</li>
+                            <li>• <strong>Kare format:</strong> Icon'lar genellikle kare olmalıdır</li>
+                          </ul>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Favicon URL Input */}
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        Veya Favicon URL Gir
+                      </label>
+                      <div className="flex gap-2">
+                        <Input
+                          type="url"
+                          value={faviconPreview || ''}
+                          onChange={(e) => setFaviconPreview(e.target.value)}
+                          placeholder="https://example.com/favicon.ico"
+                          className="flex-1"
+                        />
+                        <Button
+                          type="button"
+                          variant="primary"
+                          onClick={() => {
+                            if (faviconPreview?.trim()) {
+                              toast.success('Favicon URL kaydedildi');
+                            }
+                          }}
+                          disabled={!faviconPreview?.trim()}
+                        >
+                          Kaydet
+                        </Button>
+                      </div>
+                      <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                        Harici bir URL'den icon yüklemek için kullanın
+                      </p>
+                    </div>
+
                     {/* Company Name */}
                     <div>
                       <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
@@ -608,6 +798,110 @@ export default function AdminSettingsPage() {
                             max="48"
                           />
                         </div>
+                      </div>
+                    </div>
+
+                    {/* Admin Panel Ayarları */}
+                    <div className="border-t border-gray-200 dark:border-gray-700 pt-6 mt-6">
+                      <h3 className="text-sm font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
+                        <Building2 className="w-4 h-4" />
+                        Admin Panel Ayarları
+                      </h3>
+                      
+                      {/* Admin Panel Başlık */}
+                      <div className="space-y-2 mb-4">
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                          Admin Panel Başlığı
+                        </label>
+                        <Input
+                          type="text"
+                          value={adminTitle}
+                          onChange={(e) => setAdminTitle(e.target.value)}
+                          placeholder="Modern"
+                          className="w-full"
+                        />
+                        <p className="text-xs text-gray-500 dark:text-gray-400">
+                          Sidebar'da görünen admin panel başlığı
+                        </p>
+                      </div>
+
+                      {/* Admin Panel Icon */}
+                      <div className="space-y-2">
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                          Admin Panel Icon
+                        </label>
+                        
+                        {adminIconUrl && (
+                          <div className="flex items-center gap-4 mb-3">
+                            <div className="w-16 h-16 rounded-lg border-2 border-gray-200 dark:border-gray-700 overflow-hidden bg-white dark:bg-gray-900 flex items-center justify-center">
+                              <Image
+                                src={adminIconUrl}
+                                alt="Admin Icon"
+                                width={64}
+                                height={64}
+                                className="w-full h-full object-contain"
+                                unoptimized
+                              />
+                            </div>
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="sm"
+                              onClick={() => {
+                                if (confirm('Admin icon\'u kaldırmak istediğinize emin misiniz?')) {
+                                  setAdminIconUrl('');
+                                  toast.success('Admin icon kaldırıldı');
+                                }
+                              }}
+                              className="text-red-600 hover:text-red-700 hover:border-red-300"
+                            >
+                              <X className="w-4 h-4 mr-2" />
+                              Kaldır
+                            </Button>
+                          </div>
+                        )}
+                        
+                        <div className="grid grid-cols-2 gap-3">
+                          <Button
+                            type="button"
+                            variant="outline"
+                            onClick={() => setIsAdminIconSelectorOpen(true)}
+                            className="w-full"
+                          >
+                            <Upload className="w-4 h-4 mr-2" />
+                            Medyadan Seç
+                          </Button>
+
+                          <label className="cursor-pointer">
+                            <input
+                              type="file"
+                              accept=".ico,.png,.svg,image/x-icon,image/png,image/svg+xml"
+                              onChange={(e) => {
+                                const file = e.target.files?.[0];
+                                if (file) {
+                                  handleAdminIconFileUpload(file);
+                                }
+                              }}
+                              className="hidden"
+                            />
+                            <div className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors flex items-center justify-center text-sm font-medium text-gray-700 dark:text-gray-300">
+                              {isSaving ? (
+                                <>
+                                  <Spinner size="sm" className="mr-2" />
+                                  Yükleniyor...
+                                </>
+                              ) : (
+                                <>
+                                  <Upload className="w-4 h-4 mr-2" />
+                                  Dosya Yükle
+                                </>
+                              )}
+                            </div>
+                          </label>
+                        </div>
+                        <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
+                          Admin panelinde görünecek icon (max 100KB, .ico, .png, .svg)
+                        </p>
                       </div>
                     </div>
                   </CardContent>
@@ -917,6 +1211,26 @@ export default function AdminSettingsPage() {
           isOpen={isMediaSelectorOpen}
           onClose={() => setIsMediaSelectorOpen(false)}
           onSelect={(media) => handleLogoSelect(media.url)}
+          type="image"
+        />
+      )}
+      
+      {/* Favicon Selector Modal */}
+      {isFaviconSelectorOpen && (
+        <MediaSelector
+          isOpen={isFaviconSelectorOpen}
+          onClose={() => setIsFaviconSelectorOpen(false)}
+          onSelect={(media) => handleFaviconSelect(media.url)}
+          type="image"
+        />
+      )}
+      
+      {/* Admin Icon Selector Modal */}
+      {isAdminIconSelectorOpen && (
+        <MediaSelector
+          isOpen={isAdminIconSelectorOpen}
+          onClose={() => setIsAdminIconSelectorOpen(false)}
+          onSelect={(media) => handleAdminIconSelect(media.url)}
           type="image"
         />
       )}
