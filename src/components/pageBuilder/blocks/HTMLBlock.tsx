@@ -28,13 +28,13 @@ function HTMLBlockComponent({ props }: HTMLBlockProps) {
     // Custom CSS ekle
     if (props.css) {
       const styleId = `html-block-css-${props.id || 'default'}`;
-      let styleEl = document.getElementById(styleId);
+      let styleEl = document.getElementById(styleId) as HTMLStyleElement;
       if (!styleEl) {
         styleEl = document.createElement('style');
         styleEl.id = styleId;
         document.head.appendChild(styleEl);
       }
-      styleEl.innerHTML = props.css;
+      styleEl.textContent = props.css;
     }
     
     // Custom JavaScript çalıştır
@@ -52,8 +52,8 @@ function HTMLBlockComponent({ props }: HTMLBlockProps) {
       if (props.css) {
         const styleId = `html-block-css-${props.id || 'default'}`;
         const styleEl = document.getElementById(styleId);
-        if (styleEl) {
-          styleEl.remove();
+        if (styleEl && styleEl.parentNode) {
+          styleEl.parentNode.removeChild(styleEl);
         }
       }
     };

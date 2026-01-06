@@ -33,15 +33,22 @@ function MapBlockComponent({ props }: MapBlockProps) {
   useEffect(() => {
     if (!mapRef.current || !props.latitude || !props.longitude) return;
     
+    const currentRef = mapRef.current;
+    
     // Google Maps veya OpenStreetMap entegrasyonu
     if (props.mapProvider === 'google') {
       // Google Maps API key'i environment variable'dan al
-const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || '';
+      const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || '';
       if (!apiKey) {
-        logger.pageBuilder.warn('Google Maps API key bulunamadı. Lütfen NEXT_PUBLIC_GOOGLE_MAPS_API_KEY environment variable\'\u0131nı ayarlayın.');
-        if (mapRef.current) {
-          mapRef.current.innerHTML = '<div class="flex items-center justify-center h-full bg-gray-100 dark:bg-gray-800 rounded-lg"><span class="text-gray-400">Google Maps API key gerekli</span></div>';
+        logger.pageBuilder.warn('Google Maps API key bulunamadı. Lütfen NEXT_PUBLIC_GOOGLE_MAPS_API_KEY environment variable\'ını ayarlayın.');
+        // React-safe DOM manipulation
+        while (currentRef.firstChild) {
+          currentRef.removeChild(currentRef.firstChild);
         }
+        const placeholder = document.createElement('div');
+        placeholder.className = 'flex items-center justify-center h-full bg-gray-100 dark:bg-gray-800 rounded-lg';
+        placeholder.innerHTML = '<span class="text-gray-400">Google Maps API key gerekli</span>';
+        currentRef.appendChild(placeholder);
         return;
       }
       
@@ -53,8 +60,11 @@ const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || '';
       iframe.style.border = '0';
       iframe.setAttribute('allowfullscreen', 'true');
       
-      mapRef.current.innerHTML = '';
-      mapRef.current.appendChild(iframe);
+      // React-safe DOM manipulation
+      while (currentRef.firstChild) {
+        currentRef.removeChild(currentRef.firstChild);
+      }
+      currentRef.appendChild(iframe);
     } else {
       // OpenStreetMap
       const iframe = document.createElement('iframe');
@@ -64,9 +74,19 @@ const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || '';
       iframe.setAttribute('frameborder', '0');
       iframe.style.border = '0';
       
-      mapRef.current.innerHTML = '';
-      mapRef.current.appendChild(iframe);
+      // React-safe DOM manipulation
+      while (currentRef.firstChild) {
+        currentRef.removeChild(currentRef.firstChild);
+      }
+      currentRef.appendChild(iframe);
     }
+    
+    return () => {
+      // Cleanup: Remove all children safely
+      while (currentRef.firstChild) {
+        currentRef.removeChild(currentRef.firstChild);
+      }
+    };
   }, [props.latitude, props.longitude, props.zoom, props.mapProvider]);
   
   if (!props.latitude || !props.longitude) {

@@ -133,6 +133,8 @@ export default function AdminSettingsPage() {
     handleSubmit,
     reset,
     getValues,
+    watch,
+    setValue,
     formState: { errors, isDirty },
   } = useForm<SettingsFormData>({
     resolver: zodResolver(settingsSchema),
@@ -535,7 +537,10 @@ export default function AdminSettingsPage() {
                           <div className="flex items-center gap-2">
                             <Input
                               type="color"
-                              {...register('company.nameColor')}
+                              value={watch('company.nameColor') || '#000000'}
+                              onChange={(e) => {
+                                setValue('company.nameColor', e.target.value, { shouldDirty: true });
+                              }}
                               className="w-16 h-10"
                             />
                             <Input
@@ -576,7 +581,10 @@ export default function AdminSettingsPage() {
                           <div className="flex items-center gap-2">
                             <Input
                               type="color"
-                              {...register('company.sloganColor')}
+                              value={watch('company.sloganColor') || '#666666'}
+                              onChange={(e) => {
+                                setValue('company.sloganColor', e.target.value, { shouldDirty: true });
+                              }}
                               className="w-16 h-10"
                             />
                             <Input

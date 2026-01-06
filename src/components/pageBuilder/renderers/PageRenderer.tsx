@@ -115,25 +115,42 @@ export function PageRenderer({ pageId, slug, allowDraft = false }: PageRendererP
     return () => {
       document.title = originalTitle;
       // Önce eklenen tag'leri kaldır
-      addedMetaTags.forEach(tag => tag.remove());
+      addedMetaTags.forEach(tag => {
+        if (tag.parentNode) {
+          tag.parentNode.removeChild(tag);
+        }
+      });
       // Sonra data attribute ile işaretlenmiş tüm tag'leri kaldır (güvenlik için)
-      document.querySelectorAll('meta[data-generated-by-page-renderer]').forEach(el => el.remove());
+      document.querySelectorAll('meta[data-generated-by-page-renderer]').forEach(el => {
+        if (el.parentNode) {
+          el.parentNode.removeChild(el);
+        }
+      });
     };
   }, [page]);
   
   // Custom CSS/JS injection
   useEffect(() => {
-    if (page?.settings?.customCSS) {
-      const styleEl = document.createElement('style');
-      styleEl.innerHTML = page.settings.customCSS;
-      styleEl.id = 'custom-page-css';
+    if (!page?.settings?.customCSS) return;
+    
+    const styleId = `custom-page-css-${page.id}`;
+    let styleEl = document.getElementById(styleId) as HTMLStyleElement;
+    
+    if (!styleEl) {
+      styleEl = document.createElement('style');
+      styleEl.id = styleId;
       document.head.appendChild(styleEl);
-      
-      return () => {
-        document.getElementById('custom-page-css')?.remove();
-      };
     }
-  }, [page?.settings?.customCSS]);
+    
+    styleEl.textContent = page.settings.customCSS;
+    
+    return () => {
+      const el = document.getElementById(styleId);
+      if (el && el.parentNode) {
+        el.parentNode.removeChild(el);
+      }
+    };
+  }, [page?.settings?.customCSS, page?.id]);
   
   if (loading) {
     return (

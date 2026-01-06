@@ -8,7 +8,7 @@
 import { useState, useEffect } from 'react';
 import { useTheme } from '@/contexts/ThemeContext';
 import { getCurrentUser } from '@/lib/firebase/auth';
-import { updateActiveThemeSettings } from '@/lib/firebase/firestore';
+import { updateActiveThemeSettings, getSiteSettings, updateSiteSettings } from '@/lib/firebase/firestore';
 import { logger } from '@/lib/logger';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
@@ -38,9 +38,55 @@ export function FooterSettings({ activeTab, onUpdate }: FooterSettingsProps) {
   });
 
   useEffect(() => {
-    if (themeSettings?.footer) {
-      setFooterConfig(themeSettings.footer);
+    async function loadFooterData() {
+      try {
+        // Site settings'ten sosyal medya bilgilerini çek
+        const siteSettings = await getSiteSettings();
+        
+        // Sosyal medya linklerini dönüştür
+        const socialLinks: { platform: string; url: string }[] = [];
+        if (siteSettings.socialLinks) {
+          if (siteSettings.socialLinks.facebook) {
+            socialLinks.push({ platform: 'facebook', url: siteSettings.socialLinks.facebook });
+          }
+          if (siteSettings.socialLinks.instagram) {
+            socialLinks.push({ platform: 'instagram', url: siteSettings.socialLinks.instagram });
+          }
+          if (siteSettings.socialLinks.twitter) {
+            socialLinks.push({ platform: 'twitter', url: siteSettings.socialLinks.twitter });
+          }
+          if (siteSettings.socialLinks.linkedin) {
+            socialLinks.push({ platform: 'linkedin', url: siteSettings.socialLinks.linkedin });
+          }
+          if (siteSettings.socialLinks.youtube) {
+            socialLinks.push({ platform: 'youtube', url: siteSettings.socialLinks.youtube });
+          }
+        }
+        
+        // Theme settings ile birleştir
+        if (themeSettings?.footer) {
+          setFooterConfig({
+            ...themeSettings.footer,
+            socialLinks: socialLinks.length > 0 ? socialLinks : themeSettings.footer.socialLinks,
+          });
+        } else {
+          setFooterConfig({
+            logo: '',
+            logoText: 'Page Builder',
+            description: 'Kod bilgisi olmadan profesyonel web sayfaları oluşturun.',
+            quickLinks: [{ href: '/', label: 'Ana Sayfa' }],
+            socialLinks,
+            copyright: '© 2026 Page Builder. Tüm hakları saklıdır.',
+            backgroundColor: '#1a1a1a',
+            textColor: '#ffffff',
+          });
+        }
+      } catch (error) {
+        logger.theme.error('Footer ayarları yüklenirken hata', error);
+      }
     }
+    
+    loadFooterData();
   }, [themeSettings]);
 
   const handleSave = async () => {
@@ -53,6 +99,17 @@ export function FooterSettings({ activeTab, onUpdate }: FooterSettingsProps) {
         toast.error('Giriş yapmanız gerekiyor');
         return;
       }
+
+      // Sosyal medya linklerini siteSettings formatına dönüştür
+      const socialLinksObj: any = {};
+      footerConfig.socialLinks?.forEach(link => {
+        socialLinksObj[link.platform] = link.url;
+      });
+
+      // SiteSettings'i güncelle
+      await updateSiteSettings({
+        socialLinks: socialLinksObj,
+      }, user.uid);
 
       // Tema ayarlarını güncelle
       const updatedSettings: ThemeSettings = {
