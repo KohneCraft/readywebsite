@@ -1406,7 +1406,8 @@ export async function installTheme(themeData: ThemeData, createdBy: string): Pro
     const themeSocialInfo = themeSettings.social || {};
     const themeSeoInfo = themeSettings.seo || {};
     
-    await updateSiteSettings({
+    // Renk ve font stilleri varsa temizle (tema değiştiğinde sıfırlanmalı)
+    const settingsToUpdate: any = {
       ...currentSettings,
       // Aktif tema bilgisini kaydet
       activeThemeId: existingThemeId || metadata.id,
@@ -1437,6 +1438,9 @@ export async function installTheme(themeData: ThemeData, createdBy: string): Pro
               path: '',
             },
           },
+      // Renk ve font stillerini temizle (tema değiştiğinde sıfırlanmalı)
+      companyNameStyle: undefined,
+      sloganStyle: undefined,
       // İletişim bilgileri
       contact: {
         ...currentSettings.contact,
@@ -1489,9 +1493,19 @@ export async function installTheme(themeData: ThemeData, createdBy: string): Pro
           : currentSettings.seo.keywords,
         googleAnalyticsId: themeSeoInfo.googleAnalyticsId || currentSettings.seo.googleAnalyticsId,
       },
-    }, createdBy);
+    };
+    
+    // undefined değerleri temizle (Firestore'a gönderilmemeli)
+    Object.keys(settingsToUpdate).forEach(key => {
+      if (settingsToUpdate[key] === undefined) {
+        delete settingsToUpdate[key];
+      }
+    });
+    
+    await updateSiteSettings(settingsToUpdate, createdBy);
     logger.firestore.info(`✓ Site settings tema ayarlarıyla güncellendi (aktif tema: ${metadata.name})`);
     logger.firestore.debug('✓ Company, Contact, Social, SEO bilgileri temadan yüklendi');
+    logger.firestore.debug('✓ Renk ve font stilleri sıfırlandı (companyNameStyle, sloganStyle temizlendi)');
   } catch (error) {
     logger.firestore.warn('Site settings güncellenirken hata (normal olabilir):', error);
   }
