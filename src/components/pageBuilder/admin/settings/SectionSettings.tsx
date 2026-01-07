@@ -125,7 +125,7 @@ export function SectionSettings({ sectionId, activeTab, onUpdate, onColumnUpdate
             Arka Plan Rengi
           </label>
           <ColorPicker
-            color={settings.backgroundColor || '#ffffff'}
+            color={settings.backgroundColor || '#FFFFFF'}
             onChange={(color) => {
               const updated = {
                 ...section,

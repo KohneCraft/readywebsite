@@ -177,17 +177,17 @@ export function SectionRenderer({ sectionId }: SectionRendererProps) {
         // 100'den büyükse veya 0'dan küçükse px kabul et
         const isPx = width > 100 || width < 0;
         if (isPx) return `${width}px`;
-        // Px olmayanlar için kalan alanı paylaştır
-        return '1fr';
+        // Px olmayanlar için % değerini fr'a çevir (50% → 0.5fr)
+        return `${width / 100}fr`;
       }).join(' ');
       logger.pageBuilder.debug('px kolonlar tespit edildi', { gridTemplateColumns: result });
       return result;
     }
     
-    // Tüm kolonlar % ise, fr kullan
+    // Tüm kolonlar % ise, fr kullan (% → fr dönüşümü: 50% → 0.5fr)
     const result = columns.map(col => {
       const width = col.width || (100 / columns.length);
-      return `${width}fr`;
+      return `${width / 100}fr`;
     }).join(' ');
     logger.pageBuilder.debug('% kolonlar', { gridTemplateColumns: result });
     return result;

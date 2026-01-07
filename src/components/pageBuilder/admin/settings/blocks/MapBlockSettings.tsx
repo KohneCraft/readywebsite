@@ -18,6 +18,22 @@ export function MapBlockSettings({ block, activeTab, onUpdate }: MapBlockSetting
       <div className="space-y-4">
         <div>
           <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
+            Harita Genişliği (px)
+          </label>
+          <input
+            type="number"
+            value={props.mapWidth || 1200}
+            onChange={(e) => onUpdate({ mapWidth: parseInt(e.target.value) || 1200 })}
+            className="w-full px-3 py-2 text-sm border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-white"
+            min="100"
+          />
+          <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+            Desktop: Belirtilen px, Tablet: 90%, Mobil: 100%
+          </p>
+        </div>
+
+        <div>
+          <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
             Harita Yüksekliği (px)
           </label>
           <input

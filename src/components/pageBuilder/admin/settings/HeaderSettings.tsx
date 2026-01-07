@@ -27,7 +27,7 @@ export function HeaderSettings({ activeTab, onUpdate }: HeaderSettingsProps) {
     logo: '',
     logoText: 'Page Builder',
     navItems: [{ href: '/', label: 'Ana Sayfa' }],
-    backgroundColor: '#ffffff',
+    backgroundColor: '#FFFFFF',
     textColor: '#1a1a1a',
   });
 
@@ -148,15 +148,15 @@ export function HeaderSettings({ activeTab, onUpdate }: HeaderSettingsProps) {
           <div className="flex items-center gap-2">
             <Input
               type="color"
-              value={headerConfig.backgroundColor || '#ffffff'}
-              onChange={(e) => setHeaderConfig({ ...headerConfig, backgroundColor: e.target.value })}
+              value={headerConfig.backgroundColor || '#FFFFFF'}
+              onChange={(e) => setHeaderConfig({ ...headerConfig, backgroundColor: e.target.value.toUpperCase() })}
               className="w-16 h-10"
             />
             <Input
               type="text"
-              value={headerConfig.backgroundColor || '#ffffff'}
-              onChange={(e) => setHeaderConfig({ ...headerConfig, backgroundColor: e.target.value })}
-              placeholder="#ffffff"
+              value={headerConfig.backgroundColor || '#FFFFFF'}
+              onChange={(e) => setHeaderConfig({ ...headerConfig, backgroundColor: e.target.value.toUpperCase() })}
+              placeholder="#FFFFFF"
             />
           </div>
         </div>

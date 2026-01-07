@@ -224,7 +224,7 @@ export function ColumnSettings({ columnId, activeTab, onUpdate }: ColumnSettings
             Arka Plan Rengi
           </label>
           <ColorPicker
-            color={settings.backgroundColor || '#ffffff'}
+            color={settings.backgroundColor || '#FFFFFF'}
             onChange={async (color) => {
               const updated = {
                 ...column,

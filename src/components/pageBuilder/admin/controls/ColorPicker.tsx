@@ -39,8 +39,10 @@ export function ColorPicker({ color, onChange }: ColorPickerProps) {
   }, [isOpen]);
 
   const handleColorChange = (newColor: string) => {
-    setHexColor(newColor);
-    onChange(newColor);
+    // Hex renk kodlarını büyük harfe çevir
+    const upperCaseColor = newColor.toUpperCase();
+    setHexColor(upperCaseColor);
+    onChange(upperCaseColor);
   };
 
   return (

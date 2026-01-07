@@ -2,6 +2,7 @@
 
 import { Plus, Trash2 } from 'lucide-react';
 import { SpacingControl } from '../../controls/SpacingControl';
+import { ColorPicker } from '../../controls/ColorPicker';
 import type { Block, FormField } from '@/types/pageBuilder';
 
 interface FormBlockSettingsProps {
@@ -36,10 +37,10 @@ export function FormBlockSettings({ block, activeTab, onUpdate }: FormBlockSetti
           </label>
           <div className="space-y-2">
             {fields.map((field, index) => (
-              <div key={field.id} className="p-2 border border-gray-200 dark:border-gray-700 rounded-lg">
-                <div className="flex items-center justify-between mb-2">
+              <div key={field.id} className="p-3 border border-gray-200 dark:border-gray-700 rounded-lg space-y-2">
+                <div className="flex items-center justify-between">
                   <span className="text-xs font-medium text-gray-700 dark:text-gray-300">
-                    {field.label} ({field.type})
+                    Alan {index + 1}
                   </span>
                   <button
                     onClick={() => {
@@ -50,6 +51,91 @@ export function FormBlockSettings({ block, activeTab, onUpdate }: FormBlockSetti
                   >
                     <Trash2 className="w-3 h-3" />
                   </button>
+                </div>
+                
+                {/* Alan Tipi */}
+                <div>
+                  <label className="block text-xs text-gray-600 dark:text-gray-400 mb-1">Tip</label>
+                  <select
+                    value={field.type}
+                    onChange={(e) => {
+                      const newFields = [...fields];
+                      newFields[index] = { ...field, type: e.target.value as FormField['type'] };
+                      onUpdate({ fields: newFields });
+                    }}
+                    className="w-full px-2 py-1 text-xs border border-gray-200 dark:border-gray-700 rounded bg-white dark:bg-gray-900 text-gray-900 dark:text-white"
+                  >
+                    <option value="text">Metin</option>
+                    <option value="email">E-posta</option>
+                    <option value="tel">Telefon</option>
+                    <option value="textarea">Metin Alanı</option>
+                    <option value="select">Seçim</option>
+                    <option value="checkbox">Onay Kutusu</option>
+                    <option value="radio">Radio</option>
+                  </select>
+                </div>
+
+                {/* Alan Adı */}
+                <div>
+                  <label className="block text-xs text-gray-600 dark:text-gray-400 mb-1">Alan Adı</label>
+                  <input
+                    type="text"
+                    value={field.name}
+                    onChange={(e) => {
+                      const newFields = [...fields];
+                      newFields[index] = { ...field, name: e.target.value };
+                      onUpdate({ fields: newFields });
+                    }}
+                    className="w-full px-2 py-1 text-xs border border-gray-200 dark:border-gray-700 rounded bg-white dark:bg-gray-900 text-gray-900 dark:text-white"
+                  />
+                </div>
+
+                {/* Etiket */}
+                <div>
+                  <label className="block text-xs text-gray-600 dark:text-gray-400 mb-1">Etiket</label>
+                  <input
+                    type="text"
+                    value={field.label}
+                    onChange={(e) => {
+                      const newFields = [...fields];
+                      newFields[index] = { ...field, label: e.target.value };
+                      onUpdate({ fields: newFields });
+                    }}
+                    className="w-full px-2 py-1 text-xs border border-gray-200 dark:border-gray-700 rounded bg-white dark:bg-gray-900 text-gray-900 dark:text-white"
+                  />
+                </div>
+
+                {/* Placeholder */}
+                <div>
+                  <label className="block text-xs text-gray-600 dark:text-gray-400 mb-1">Placeholder</label>
+                  <input
+                    type="text"
+                    value={field.placeholder || ''}
+                    onChange={(e) => {
+                      const newFields = [...fields];
+                      newFields[index] = { ...field, placeholder: e.target.value };
+                      onUpdate({ fields: newFields });
+                    }}
+                    className="w-full px-2 py-1 text-xs border border-gray-200 dark:border-gray-700 rounded bg-white dark:bg-gray-900 text-gray-900 dark:text-white"
+                  />
+                </div>
+
+                {/* Zorunlu */}
+                <div className="flex items-center gap-2">
+                  <input
+                    type="checkbox"
+                    id={`required-${field.id}`}
+                    checked={field.required}
+                    onChange={(e) => {
+                      const newFields = [...fields];
+                      newFields[index] = { ...field, required: e.target.checked };
+                      onUpdate({ fields: newFields });
+                    }}
+                    className="w-4 h-4 rounded border-gray-300"
+                  />
+                  <label htmlFor={`required-${field.id}`} className="text-xs text-gray-600 dark:text-gray-400">
+                    Zorunlu alan
+                  </label>
                 </div>
               </div>
             ))}
@@ -113,6 +199,36 @@ export function FormBlockSettings({ block, activeTab, onUpdate }: FormBlockSetti
             onChange={(padding) => onUpdate({ padding })}
           />
         </div>
+
+        <div>
+          <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
+            Arkaplan Rengi
+          </label>
+          <ColorPicker
+            color={props.formBackgroundColor || '#FFFFFF'}
+            onChange={(color) => onUpdate({ formBackgroundColor: color })}
+          />
+        </div>
+
+        <div>
+          <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
+            Input Metin Rengi
+          </label>
+          <ColorPicker
+            color={props.formTextColor || '#000000'}
+            onChange={(color) => onUpdate({ formTextColor: color })}
+          />
+        </div>
+
+        <div>
+          <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
+            Label Metin Rengi
+          </label>
+          <ColorPicker
+            color={props.formLabelColor || '#333333'}
+            onChange={(color) => onUpdate({ formLabelColor: color })}
+          />
+        </div>
       </div>
     );
   }
@@ -170,6 +286,39 @@ export function FormBlockSettings({ block, activeTab, onUpdate }: FormBlockSetti
             onChange={(e) => onUpdate({ id: e.target.value })}
             className="w-full px-3 py-2 text-sm border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-white"
             placeholder="custom-id"
+          />
+        </div>
+
+        <div>
+          <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
+            Gönder Butonu Metni
+          </label>
+          <input
+            type="text"
+            value={props.buttonText || ''}
+            onChange={(e) => onUpdate({ buttonText: e.target.value })}
+            className="w-full px-3 py-2 text-sm border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-white"
+            placeholder="Gönder"
+          />
+        </div>
+
+        <div>
+          <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
+            Buton Rengi
+          </label>
+          <ColorPicker
+            color={props.buttonColor || '#2563EB'}
+            onChange={(color) => onUpdate({ buttonColor: color })}
+          />
+        </div>
+
+        <div>
+          <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
+            Buton Metin Rengi
+          </label>
+          <ColorPicker
+            color={props.buttonTextColor || '#FFFFFF'}
+            onChange={(color) => onUpdate({ buttonTextColor: color })}
           />
         </div>
       </div>

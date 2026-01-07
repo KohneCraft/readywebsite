@@ -12,12 +12,39 @@ interface MapBlockProps {
 function MapBlockComponent({ props }: MapBlockProps) {
   const mapRef = useRef<HTMLDivElement>(null);
   
+  // Harita genişliği responsive hesaplama
+  const getMapWidth = () => {
+    if (!props.mapWidth) return '100%';
+    
+    // Ekran genişliğine göre responsive değer
+    if (typeof window !== 'undefined') {
+      const screenWidth = window.innerWidth;
+      
+      // Mobil: 100%
+      if (screenWidth < 768) {
+        return '100%';
+      }
+      // Tablet: 90%
+      else if (screenWidth < 1024) {
+        return '90%';
+      }
+      // Desktop: belirtilen px değeri (max-width olarak)
+      else {
+        return `min(${props.mapWidth}px, 100%)`;
+      }
+    }
+    
+    // SSR için px değerini kullan
+    return `min(${props.mapWidth}px, 100%)`;
+  };
+  
   const containerStyle = {
-    width: '100%',
-    height: props.mapHeight ? `${props.mapHeight}px` : '400px',
+    width: getMapWidth(),
+    maxWidth: '100%',
     margin: props.margin
       ? `${props.margin.top || 0}px ${props.margin.right || 0}px ${props.margin.bottom || 0}px ${props.margin.left || 0}px`
-      : '0',
+      : '0 auto', // Center align
+    height: props.mapHeight ? `${props.mapHeight}px` : '400px',
     padding: props.padding
       ? `${props.padding.top || 0}px ${props.padding.right || 0}px ${props.padding.bottom || 0}px ${props.padding.left || 0}px`
       : '0',

@@ -40,7 +40,7 @@ function TextBlockComponent({ props }: TextBlockProps) {
     fontStyle: props.fontStyle || 'normal',
     color: props.color || '#333',
     backgroundColor: props.backgroundColor || 'transparent',
-    textAlign: props.textAlign || 'left',
+    textAlign: (props.textAlign as React.CSSProperties['textAlign']) || 'left',
     lineHeight: props.lineHeight || 1.6,
     letterSpacing: `${props.letterSpacing || 0}px`,
     textDecoration: props.textDecoration || 'none',

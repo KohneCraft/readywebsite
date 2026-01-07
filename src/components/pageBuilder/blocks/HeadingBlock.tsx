@@ -30,7 +30,7 @@ function HeadingBlockComponent({ props }: HeadingBlockProps) {
     fontFamily: props.fontFamily || 'inherit',
     fontWeight: props.fontWeight || 700,
     color: props.color || '#1a1a1a',
-    textAlign: props.textAlign || 'left',
+    textAlign: (props.textAlign as React.CSSProperties['textAlign']) || 'left',
     lineHeight: props.lineHeight || 1.2,
     textTransform: props.textTransform || 'none',
     margin: props.margin

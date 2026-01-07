@@ -22,6 +22,7 @@ function FormBlockComponent({ props }: FormBlockProps) {
     padding: props.padding
       ? `${props.padding.top || 0}px ${props.padding.right || 0}px ${props.padding.bottom || 0}px ${props.padding.left || 0}px`
       : '20px',
+    backgroundColor: props.formBackgroundColor || 'transparent',
   };
   
   // Custom CSS cleanup
@@ -106,7 +107,10 @@ function FormBlockComponent({ props }: FormBlockProps) {
       >
         {fields.map((field) => (
           <div key={field.id} style={{ width: field.width || '100%' }}>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+            <label 
+              className="block text-sm font-medium mb-1"
+              style={{ color: props.formLabelColor || '#4B5563' }}
+            >
               {field.label}
               {field.required && <span className="text-red-500 ml-1">*</span>}
             </label>
@@ -119,7 +123,11 @@ function FormBlockComponent({ props }: FormBlockProps) {
                 onChange={(e) => handleChange(field.name, e.target.value)}
                 placeholder={field.placeholder}
                 required={field.required}
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg"
+                style={{ 
+                  color: props.formTextColor || '#111827',
+                  backgroundColor: '#FFFFFF'
+                }}
               />
             ) : field.type === 'textarea' ? (
               <textarea
@@ -129,7 +137,11 @@ function FormBlockComponent({ props }: FormBlockProps) {
                 placeholder={field.placeholder}
                 required={field.required}
                 rows={field.rows || 4}
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg"
+                style={{ 
+                  color: props.formTextColor || '#111827',
+                  backgroundColor: '#FFFFFF'
+                }}
               />
             ) : field.type === 'select' ? (
               <select
@@ -137,7 +149,11 @@ function FormBlockComponent({ props }: FormBlockProps) {
                 value={formData[field.name] || ''}
                 onChange={(e) => handleChange(field.name, e.target.value)}
                 required={field.required}
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg"
+                style={{ 
+                  color: props.formTextColor || '#111827',
+                  backgroundColor: '#FFFFFF'
+                }}
               >
                 <option value="">Seçiniz</option>
                 {field.options?.map((option) => (
@@ -156,7 +172,7 @@ function FormBlockComponent({ props }: FormBlockProps) {
                   required={field.required}
                   className="mr-2"
                 />
-                <span className="text-sm text-gray-700 dark:text-gray-300">{field.label}</span>
+                <span style={{ color: props.formLabelColor || '#4B5563' }}>{field.label}</span>
               </label>
             ) : field.type === 'radio' && field.options ? (
               <div className="space-y-2">
@@ -171,7 +187,7 @@ function FormBlockComponent({ props }: FormBlockProps) {
                       required={field.required}
                       className="mr-2"
                     />
-                    <span className="text-sm text-gray-700 dark:text-gray-300">{option.label}</span>
+                    <span style={{ color: props.formLabelColor || '#4B5563' }}>{option.label}</span>
                   </label>
                 ))}
               </div>
@@ -179,14 +195,16 @@ function FormBlockComponent({ props }: FormBlockProps) {
           </div>
         ))}
         
-        {props.submitButton && (
-          <button
-            type="submit"
-            className="px-6 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors"
-          >
-            {props.submitButton.text || 'Gönder'}
-          </button>
-        )}
+        <button
+          type="submit"
+          className="px-6 py-2 rounded-lg transition-colors hover:opacity-90"
+          style={{
+            backgroundColor: props.buttonColor || '#2563EB',
+            color: props.buttonTextColor || '#FFFFFF'
+          }}
+        >
+          {props.buttonText || 'Gönder'}
+        </button>
       </form>
       
       {submitted && props.successMessage && (
