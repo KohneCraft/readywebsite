@@ -733,7 +733,17 @@ export async function getPageBySlug(slug: string): Promise<Page | null> {
  * Tüm sayfaları getir
  */
 /**
- * Tüm sayfaları getir
+ * Tüm sayfaları getir (Client-side için cache'siz)
+ */
+export async function getAllPagesClient(): Promise<Page[]> {
+  const snapshot = await getDocs(collection(db, COLLECTIONS.pages));
+  return snapshot.docs
+    .map(docItem => docToPage(docItem))
+    .filter((page): page is Page => page !== null);
+}
+
+/**
+ * Tüm sayfaları getir (Server-side için cache'li)
  */
 export const getAllPages = unstable_cache(
   async (): Promise<Page[]> => {

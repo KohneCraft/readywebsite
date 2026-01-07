@@ -19,7 +19,7 @@ import { Card, CardContent } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { toast } from '@/components/providers';
 import { cn } from '@/lib/utils';
-import { getAllPages, createPage } from '@/lib/firebase/firestore';
+import { getAllPagesClient, createPage } from '@/lib/firebase/firestore';
 import { getCurrentUser } from '@/lib/firebase/auth';
 import { logger } from '@/lib/logger';
 import type { Locale } from '@/i18n';
@@ -45,7 +45,7 @@ export default function PageBuilderListPage() {
     const loadPages = async () => {
       try {
         setIsLoading(true);
-        const pagesData = await getAllPages();
+        const pagesData = await getAllPagesClient();
         setPages(pagesData);
       } catch (error) {
         logger.api.error('Failed to load pages', error);
