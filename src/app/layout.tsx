@@ -66,15 +66,7 @@ export const metadata: Metadata = {
     // google: 'your-google-verification-code',
     // yandex: 'your-yandex-verification-code',
   },
-  icons: {
-    icon: [
-      { url: '/icons/icon-32x32.png', sizes: '32x32', type: 'image/png' },
-      { url: '/icons/icon-192x192.png', sizes: '192x192', type: 'image/png' },
-    ],
-    apple: [
-      { url: '/icons/icon-180x180.png', sizes: '180x180', type: 'image/png' },
-    ],
-  },
+  // Icons artık dinamik - /app/icon.tsx ve /app/apple-icon.tsx tarafından yönetiliyor
   alternates: {
     canonical: '/',
     languages: {
