@@ -44,6 +44,10 @@ import { uploadMedia } from '@/lib/firebase/media';
 
 // Form schema
 const settingsSchema = z.object({
+  browser: z.object({
+    title: z.string().optional(),
+    favicon: z.string().optional(),
+  }),
   company: z.object({
     name: z.string().min(1, 'Firma adı zorunludur'),
     slogan: z.string().optional(),
@@ -82,6 +86,10 @@ const settingsSchema = z.object({
 type SettingsFormData = z.infer<typeof settingsSchema>;
 
 const defaultSettings: SettingsFormData = {
+  browser: {
+    title: '',
+    favicon: '',
+  },
   company: {
     name: 'Vav Yapı',
     slogan: 'Güvenilir İnşaat Çözümleri',
@@ -129,6 +137,10 @@ export default function AdminSettingsPage() {
   const [logoPreview, setLogoPreview] = useState<string | null>(null);
   const [isMediaSelectorOpen, setIsMediaSelectorOpen] = useState(false);
   
+  // Browser tab ayarları
+  const [browserFaviconPreview, setBrowserFaviconPreview] = useState<string | null>(null);
+  const [isBrowserFaviconSelectorOpen, setIsBrowserFaviconSelectorOpen] = useState(false);
+  
   // Admin Panel ayarları
   const [adminTitle, setAdminTitle] = useState<string>('Modern');
   const [adminIconUrl, setAdminIconUrl] = useState<string>('');
@@ -156,6 +168,10 @@ export default function AdminSettingsPage() {
         
         // SiteSettings'i SettingsFormData formatına çevir
         const formData: SettingsFormData = {
+          browser: {
+            title: (settings as any).browserTitle || '',
+            favicon: (settings as any).browserFavicon || '',
+          },
           company: {
             name: settings.siteName?.tr || defaultSettings.company.name,
             slogan: settings.siteSlogan?.tr || defaultSettings.company.slogan,
@@ -194,6 +210,7 @@ export default function AdminSettingsPage() {
         
         reset(formData);
         setLogoPreview(formData.company.logo || null);
+        setBrowserFaviconPreview(formData.browser.favicon || null);
         // Admin panel ayarlarını yükle
         const adminTitleValue = (settings as any).adminTitle || 'Modern';
         const adminIconValue = (settings as any).adminIcon || '';
@@ -234,6 +251,9 @@ export default function AdminSettingsPage() {
       
       await updateSiteSettings({
         ...currentSettings,
+        // Browser tab ayarları
+        browserTitle: data.browser.title || '',
+        browserFavicon: data.browser.favicon || '',
         // Company bilgileri
         siteName: {
           tr: data.company.name,
@@ -376,6 +396,51 @@ export default function AdminSettingsPage() {
     setIsMediaSelectorOpen(true);
   };
 
+  const handleBrowserFaviconUpload = async () => {
+    setIsBrowserFaviconSelectorOpen(true);
+  };
+
+  const handleBrowserFaviconSelect = async (mediaUrl: string) => {
+    setBrowserFaviconPreview(mediaUrl);
+    const formValues = getValues();
+    reset({
+      ...formValues,
+      browser: {
+        ...formValues.browser,
+        favicon: mediaUrl,
+      },
+    });
+    setIsBrowserFaviconSelectorOpen(false);
+  };
+
+  const handleBrowserFaviconFileUpload = async (file: File) => {
+    try {
+      setIsSaving(true);
+      const user = await getCurrentUser();
+      if (!user) {
+        toast.error('Lütfen giriş yapın');
+        return;
+      }
+
+      const uploadedMedia = await uploadMedia(file, 'image', user.uid);
+      setBrowserFaviconPreview(uploadedMedia.url);
+      const formValues = getValues();
+      reset({
+        ...formValues,
+        browser: {
+          ...formValues.browser,
+          favicon: uploadedMedia.url,
+        },
+      });
+      toast.success('Tarayıcı ikonu yüklendi');
+    } catch (error) {
+      logger.ui.error('Tarayıcı ikonu yükleme hatası', error);
+      toast.error('Icon yüklenirken bir hata oluştu');
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
   const handleLogoSelect = async (mediaUrl: string) => {
     setLogoPreview(mediaUrl);
     // Form'u güncelle - mevcut form değerlerini al
@@ -500,6 +565,81 @@ export default function AdminSettingsPage() {
                     <CardDescription>Firma temel bilgileri</CardDescription>
                   </CardHeader>
                   <CardContent className="space-y-6">
+                    {/* Browser Tab Settings */}
+                    <div className="pb-6 border-b border-gray-200 dark:border-gray-700">
+                      <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-4">
+                        Tarayıcı Sekmesi Ayarları
+                      </h3>
+                      
+                      {/* Browser Title */}
+                      <div className="mb-4">
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                          Sekme Başlığı
+                        </label>
+                        <Input
+                          {...register('browser.title')}
+                          placeholder="Modern-X | İnşaat"
+                        />
+                        <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                          Tarayıcı sekmesinde görünecek başlık. Boş bırakılırsa sayfa başlığı kullanılır.
+                        </p>
+                      </div>
+
+                      {/* Browser Favicon */}
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                          Sekme İkonu (Favicon)
+                        </label>
+                        <div className="flex items-center gap-4">
+                          {browserFaviconPreview ? (
+                            <div className="w-16 h-16 rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden bg-white dark:bg-gray-800">
+                              <Image
+                                src={browserFaviconPreview}
+                                alt="Favicon"
+                                width={64}
+                                height={64}
+                                className="w-full h-full object-contain p-2"
+                              />
+                            </div>
+                          ) : (
+                            <div className="w-16 h-16 rounded-lg border-2 border-dashed border-gray-300 dark:border-gray-700 flex items-center justify-center bg-gray-50 dark:bg-gray-800">
+                              <Building2 className="w-6 h-6 text-gray-400" />
+                            </div>
+                          )}
+                          <div className="flex gap-2">
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="sm"
+                              onClick={handleBrowserFaviconUpload}
+                            >
+                              <Upload className="w-4 h-4 mr-2" />
+                              Medyadan Seç
+                            </Button>
+                            <label className="cursor-pointer">
+                              <input
+                                type="file"
+                                accept="image/*"
+                                onChange={(e) => {
+                                  const file = e.target.files?.[0];
+                                  if (file) {
+                                    handleBrowserFaviconFileUpload(file);
+                                  }
+                                }}
+                                className="hidden"
+                              />
+                              <div className="px-3 py-1.5 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors text-sm font-medium text-gray-700 dark:text-gray-300">
+                                Dosya Yükle
+                              </div>
+                            </label>
+                          </div>
+                        </div>
+                        <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
+                          Tarayıcı sekmesinde görünen küçük ikon (32x32px veya 64x64px önerilir). Boş bırakılırsa logo kullanılır.
+                        </p>
+                      </div>
+                    </div>
+
                     {/* Logo */}
                     <div>
                       <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
@@ -1070,6 +1210,16 @@ export default function AdminSettingsPage() {
           isOpen={isMediaSelectorOpen}
           onClose={() => setIsMediaSelectorOpen(false)}
           onSelect={(media) => handleLogoSelect(media.url)}
+          type="image"
+        />
+      )}
+      
+      {/* Browser Favicon Selector Modal */}
+      {isBrowserFaviconSelectorOpen && (
+        <MediaSelector
+          isOpen={isBrowserFaviconSelectorOpen}
+          onClose={() => setIsBrowserFaviconSelectorOpen(false)}
+          onSelect={(media) => handleBrowserFaviconSelect(media.url)}
           type="image"
         />
       )}

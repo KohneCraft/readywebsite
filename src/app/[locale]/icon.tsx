@@ -12,11 +12,11 @@ export const contentType = 'image/png';
 export default async function Icon() {
   try {
     const settings = await getSiteSettings();
-    // Logo URL'ini favicon olarak kullan
-    const logoUrl = settings?.logo?.light?.url;
+    // Önce browser favicon'u kontrol et, yoksa logo kullan
+    const iconUrl = (settings as any).browserFavicon || settings?.logo?.light?.url;
 
-    if (logoUrl) {
-      const response = await fetch(logoUrl);
+    if (iconUrl) {
+      const response = await fetch(iconUrl);
       const buffer = await response.arrayBuffer();
       return new Response(buffer, {
         headers: {

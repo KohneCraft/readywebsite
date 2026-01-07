@@ -249,6 +249,10 @@ export interface SiteSettings {
   adminTitle?: string;
   adminIcon?: string;
   
+  // Browser tab ayarları (temadan bağımsız)
+  browserTitle?: string; // Tarayıcı sekmesi başlığı
+  browserFavicon?: string; // Tarayıcı sekmesi ikonu URL
+  
   // Metadata
   updatedAt: Date;
   updatedBy: string;
