@@ -24,6 +24,7 @@ export default function MessagesPage() {
 
   const fetchMessages = async () => {
     try {
+      setLoading(true);
       const messagesRef = collection(db, 'contact-messages');
       const q = query(messagesRef, orderBy('createdAt', 'desc'));
       const snapshot = await getDocs(q);
@@ -34,9 +35,16 @@ export default function MessagesPage() {
       })) as Message[];
       
       setMessages(messagesData);
-    } catch (error) {
-      logger.ui.error('Mesajlar yüklenemedi', error);
-      toast.error('Mesajlar yüklenemedi');
+    } catch (error: any) {
+      // Firestore hatalarını kontrol et
+      if (error?.code === 'unavailable' || error?.code === 'permission-denied') {
+        logger.ui.warn('Firestore bağlantı hatası (offline/permission)', error);
+        // Offline modda veya permission yoksa boş göster
+        setMessages([]);
+      } else {
+        logger.ui.error('Mesajlar yüklenemedi', error);
+        toast.error('Mesajlar yüklenemedi');
+      }
     } finally {
       setLoading(false);
     }
