@@ -171,16 +171,6 @@ export function ColumnRenderer({ columnId, index, isNested: _isNested = false, i
       return mapping[align] || 'flex-start';
     };
 
-    const getHorizontalAlign = (align?: string): string => {
-      if (!align) return 'flex-start';
-      const mapping: Record<string, string> = {
-        'left': 'flex-start',
-        'center': 'center',
-        'right': 'flex-end',
-      };
-      return mapping[align] || 'flex-start';
-    };
-
     return {
       backgroundColor: settings.backgroundColor,
       backgroundImage: settings.backgroundImage ? `url(${settings.backgroundImage})` : 'none',
@@ -203,7 +193,7 @@ export function ColumnRenderer({ columnId, index, isNested: _isNested = false, i
       display: 'flex',
       flexDirection: 'column',
       justifyContent: getVerticalAlign(settings.verticalAlign),
-      alignItems: getHorizontalAlign(settings.horizontalAlign),
+      alignItems: 'stretch', // Stretch yap ki bloklar text-align kullanabilsin
       // gridColumn kaldırıldı - SectionRenderer'daki gridTemplateColumns zaten genişliği kontrol ediyor
       // Eğer px kullanılıyorsa ve grid içindeyse, flex-shrink: 0 ekle ki genişlik korunsun
       flexShrink: isWidthPercent ? undefined : 0,
