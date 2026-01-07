@@ -5,7 +5,6 @@ import { getMessages } from 'next-intl/server';
 import { ThemeProvider } from '@/components/providers/ThemeProvider';
 import { ThemeProvider as PageBuilderThemeProvider } from '@/contexts/ThemeContext';
 import { TitleProvider } from '@/components/providers/TitleProvider';
-import { FaviconProvider } from '@/components/providers/FaviconProvider';
 import { locales, type Locale } from '@/i18n';
 import { PublicLayout } from '@/components/layout/PublicLayout';
 
@@ -43,7 +42,6 @@ export default async function LocaleLayout({
       <ThemeProvider>
         <PageBuilderThemeProvider>
           <TitleProvider />
-          <FaviconProvider />
           <div className={`${inter.variable} font-sans antialiased`}>
             <PublicLayout>{children}</PublicLayout>
           </div>
