@@ -2,7 +2,7 @@
 
 // ============================================
 // Favicon Provider
-// Site favicon'unu dinamik olarak günceller
+// Logo'yu favicon olarak dinamik günceller
 // ============================================
 
 import { useEffect, useRef } from 'react';
@@ -10,72 +10,65 @@ import { getSiteSettings } from '@/lib/firebase/firestore';
 import { logger } from '@/lib/logger';
 
 export function FaviconProvider() {
-  const isInitializedRef = useRef(false);
   const currentFaviconRef = useRef<string>('');
   
   useEffect(() => {
-    // Sadece bir kez çalışsın
-    if (isInitializedRef.current) return;
-    isInitializedRef.current = true;
-    
     async function updateFavicon() {
       try {
         const settings = await getSiteSettings();
-        const faviconUrl = settings?.logo?.favicon?.url;
+        // Logo URL'ini favicon olarak kullan
+        const logoUrl = settings?.logo?.light?.url || settings?.logo?.favicon?.url;
         
-        // Eğer aynı favicon zaten yüklüyse, hiçbir şey yapma
-        if (faviconUrl === currentFaviconRef.current) {
+        // Eğer aynı logo zaten favicon olarak yüklüyse, hiçbir şey yapma
+        if (logoUrl === currentFaviconRef.current) {
           return;
         }
         
-        if (faviconUrl) {
-          currentFaviconRef.current = faviconUrl;
+        if (logoUrl) {
+          currentFaviconRef.current = logoUrl;
           
-          // Mevcut favicon linklerini kaldır (React-safe)
-          const existingLinks = Array.from(document.querySelectorAll('link[rel="icon"], link[rel="shortcut icon"], link[rel="apple-touch-icon"]'));
-          existingLinks.forEach(link => {
-            try {
-              if (link && link.parentNode && document.head.contains(link)) {
-                link.parentNode.removeChild(link);
-              }
-            } catch (error) {
-              // Sessizce yoksay
-            }
+          // Sadece bizim eklediğimiz favicon'ları güncelle
+          const existingFavicons = document.querySelectorAll('link[data-favicon-dynamic="true"]');
+          existingFavicons.forEach(link => {
+            link.setAttribute('href', logoUrl);
           });
           
-          // Yeni favicon ekle
-          const link = document.createElement('link');
-          link.rel = 'icon';
-          link.type = 'image/x-icon';
-          link.href = faviconUrl;
-          link.setAttribute('data-favicon-provider', 'true');
-          document.head.appendChild(link);
-          
-          // Apple touch icon
-          const appleLink = document.createElement('link');
-          appleLink.rel = 'apple-touch-icon';
-          appleLink.href = faviconUrl;
-          appleLink.setAttribute('data-favicon-provider', 'true');
-          document.head.appendChild(appleLink);
+          // Eğer hiç favicon yoksa, yeni ekle
+          if (existingFavicons.length === 0) {
+            // Standard favicon
+            const link = document.createElement('link');
+            link.rel = 'icon';
+            link.type = 'image/png';
+            link.href = logoUrl;
+            link.setAttribute('data-favicon-dynamic', 'true');
+            document.head.appendChild(link);
+            
+            // Apple touch icon
+            const appleLink = document.createElement('link');
+            appleLink.rel = 'apple-touch-icon';
+            appleLink.href = logoUrl;
+            appleLink.setAttribute('data-favicon-dynamic', 'true');
+            document.head.appendChild(appleLink);
+          }
         }
       } catch (error) {
         logger.ui.error('Favicon güncelleme hatası', error);
       }
     }
     
+    // İlk yükleme
     updateFavicon();
     
-    // Theme güncellemelerini dinle
-    const handleThemeUpdate = () => {
-      // Theme değiştiğinde favicon'u güncelle
-      currentFaviconRef.current = ''; // Reset cache
+    // Site settings güncellemelerini dinle
+    const handleSettingsUpdate = () => {
+      currentFaviconRef.current = ''; // Cache'i temizle
       updateFavicon();
     };
     
-    window.addEventListener('theme-updated', handleThemeUpdate);
+    window.addEventListener('site-settings-updated', handleSettingsUpdate);
     
     return () => {
-      window.removeEventListener('theme-updated', handleThemeUpdate);
+      window.removeEventListener('site-settings-updated', handleSettingsUpdate);
     };
   }, []); // Boş dependency array - sadece mount'ta çalış
   
