@@ -31,14 +31,22 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     const publishedPages = pages.filter(p => p.status === 'published');
     
     const pageEntries: MetadataRoute.Sitemap = publishedPages.flatMap((page) =>
-      LOCALES.map((locale) => ({
-        url: `${BASE_URL}/${locale}/${page.slug}`,
-        lastModified: page.updatedAt instanceof Date 
-          ? page.updatedAt 
-          : (page.updatedAt as any)?.toDate?.() || new Date(),
-        changeFrequency: 'weekly' as ChangeFrequency,
-        priority: page.slug === 'home' ? 1.0 : 0.8,
-      }))
+      LOCALES.map((locale) => {
+        // Safely handle Date vs Timestamp
+        let lastModified = new Date();
+        if (page.updatedAt instanceof Date) {
+          lastModified = page.updatedAt;
+        } else if (page.updatedAt && typeof (page.updatedAt as any).toDate === 'function') {
+           lastModified = (page.updatedAt as any).toDate();
+        }
+
+        return {
+          url: `${BASE_URL}/${locale}/${page.slug}`,
+          lastModified,
+          changeFrequency: 'weekly' as ChangeFrequency,
+          priority: page.slug === 'home' ? 1.0 : 0.8,
+        };
+      })
     );
 
     return [...staticEntries, ...pageEntries];

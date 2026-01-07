@@ -9,7 +9,7 @@ import type { Timestamp } from 'firebase/firestore';
 /**
  * Block türleri
  */
-export type BlockType = 
+export type BlockType =
   | 'text'
   | 'heading'
   | 'image'
@@ -128,7 +128,7 @@ export interface BlockProps {
   id?: string;
   customCSS?: string;
   dataAttributes?: Record<string, string>;
-  
+
   // Text Block
   content?: string;
   fontSize?: number;
@@ -142,10 +142,10 @@ export interface BlockProps {
   letterSpacing?: number;
   textDecoration?: 'none' | 'underline' | 'line-through';
   textTransform?: 'none' | 'uppercase' | 'lowercase' | 'capitalize';
-  
+
   // Heading Block
   level?: 'h1' | 'h2' | 'h3' | 'h4' | 'h5' | 'h6';
-  
+
   // Image Block
   src?: string;
   alt?: string;
@@ -158,7 +158,8 @@ export interface BlockProps {
   filter?: ImageFilter;
   hover?: HoverEffect;
   loading?: 'lazy' | 'eager';
-  
+  priority?: boolean;
+
   // Video Block
   videoProvider?: 'youtube' | 'vimeo' | 'custom';
   autoplay?: boolean;
@@ -167,7 +168,7 @@ export interface BlockProps {
   controls?: boolean;
   aspectRatio?: '16:9' | '4:3' | '1:1' | '21:9';
   playsInline?: boolean;
-  
+
   // Button Block
   text?: string;
   target?: '_self' | '_blank';
@@ -180,15 +181,15 @@ export interface BlockProps {
     name: string;
     position: 'left' | 'right';
   };
-  
+
   // Spacer Block
   spacerHeight?: number;
-  
+
   // Divider Block
   dividerHeight?: number;
   dividerColor?: string;
   dividerStyle?: 'solid' | 'dashed' | 'dotted';
-  
+
   // Form Block
   title?: string;
   fields?: FormField[];
@@ -207,7 +208,7 @@ export interface BlockProps {
   buttonColor?: string; // Submit button arka plan rengi
   buttonTextColor?: string; // Submit button text rengi
   buttonText?: string; // Submit button metni
-  
+
   // Map Block
   mapProvider?: 'google' | 'openstreetmap';
   latitude?: number;
@@ -220,7 +221,7 @@ export interface BlockProps {
   mapStyle?: 'default' | 'dark' | 'light' | 'custom';
   style?: 'default' | 'dark' | 'light' | 'custom';
   interactive?: boolean;
-  
+
   // HTML Block
   css?: string;
   javascript?: string;
@@ -306,7 +307,7 @@ export interface SectionSettings {
   columnGap?: number;
   columnDistribution?: 'equal' | 'custom';
   columnLayout?: 'row' | 'column'; // 'row' = yan yana, 'column' = alt alta
-  
+
   // Background
   backgroundColor?: string;
   backgroundImage?: string;
@@ -314,30 +315,30 @@ export interface SectionSettings {
   backgroundPosition?: 'top' | 'center' | 'bottom' | 'left' | 'right';
   backgroundRepeat?: 'repeat' | 'no-repeat' | 'repeat-x' | 'repeat-y';
   backgroundAttachment?: 'scroll' | 'fixed';
-  
+
   // Overlay
   overlay?: Overlay;
-  
+
   // Spacing
   padding?: Spacing;
   margin?: Spacing;
-  
+
   // Dimensions
   minHeight?: number;
   maxHeight?: number; // px
   height?: 'auto' | number;
-  
+
   // Borders
   borderTop?: Border;
   borderBottom?: Border;
   borderRadius?: number;
-  
+
   // Effects
   boxShadow?: string;
-  
+
   // Animation
   animation?: Animation;
-  
+
   // Responsive
   responsive?: Record<Breakpoint, ResponsiveSettings>;
 }
@@ -373,21 +374,21 @@ export interface PageSettings {
     ogDescription?: string;
     canonical?: string;
   };
-  
+
   // Custom Code
   customCSS?: string;
   customJS?: string;
   headCode?: string;
   footerCode?: string;
-  
+
   // Page Settings
   layout?: 'default' | 'fullwidth' | 'boxed';
   containerWidth?: number;
-  
+
   // Colors
   primaryColor?: string;
   secondaryColor?: string;
-  
+
   // Typography
   bodyFont?: string;
   headingFont?: string;
@@ -615,7 +616,7 @@ export function getDefaultBlockProps(type: BlockType): Partial<BlockProps> {
       javascript: '',
     },
   };
-  
+
   return defaults[type] || {};
 }
 

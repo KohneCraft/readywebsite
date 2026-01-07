@@ -22,6 +22,7 @@ import {
   Timestamp,
   writeBatch,
 } from 'firebase/firestore';
+import { unstable_cache } from 'next/cache';
 import { db } from './config';
 import type {
   SiteSettings,
@@ -103,22 +104,29 @@ function convertTimestamp(timestamp: Timestamp | Date | undefined): Date {
 const SITE_SETTINGS_DOC = 'site';
 
 /**
- * Site ayarlarını getir
+ * Site ayarlarını getir (Cached)
  */
-export async function getSiteSettings(): Promise<SiteSettings> {
-  const docSnap = await getDoc(doc(db, COLLECTIONS.settings, SITE_SETTINGS_DOC));
-  
-  if (docSnap.exists()) {
-    const data = docSnap.data();
-    return {
-      ...data,
-      updatedAt: convertTimestamp(data.updatedAt),
-    } as SiteSettings;
+export const getSiteSettings = unstable_cache(
+  async (): Promise<SiteSettings> => {
+    const docSnap = await getDoc(doc(db, COLLECTIONS.settings, SITE_SETTINGS_DOC));
+
+    if (docSnap.exists()) {
+      const data = docSnap.data();
+      return {
+        ...data,
+        updatedAt: convertTimestamp(data.updatedAt),
+      } as SiteSettings;
+    }
+
+    // Varsayılan ayarları döndür
+    return DEFAULT_SITE_SETTINGS as SiteSettings;
+  },
+  ['site-settings'],
+  {
+    revalidate: 3600, // 1 saat cache
+    tags: ['settings']
   }
-  
-  // Varsayılan ayarları döndür
-  return DEFAULT_SITE_SETTINGS as SiteSettings;
-}
+);
 
 /**
  * Site ayarlarını güncelle
@@ -129,7 +137,7 @@ export async function updateSiteSettings(
 ): Promise<void> {
   const docRef = doc(db, COLLECTIONS.settings, SITE_SETTINGS_DOC);
   const docSnap = await getDoc(docRef);
-  
+
   // Doküman yoksa varsayılan ayarlarla oluştur, varsa güncelle
   if (!docSnap.exists()) {
     await setDoc(docRef, {
@@ -145,7 +153,7 @@ export async function updateSiteSettings(
       updatedBy: userId,
     });
   }
-  
+
   // Site settings güncelleme eventi gönder (Header ve Footer için)
   if (typeof window !== 'undefined') {
     window.dispatchEvent(new CustomEvent('site-settings-updated'));
@@ -158,7 +166,7 @@ export async function updateSiteSettings(
 export async function initializeSiteSettings(userId: string): Promise<void> {
   const docRef = doc(db, COLLECTIONS.settings, SITE_SETTINGS_DOC);
   const docSnap = await getDoc(docRef);
-  
+
   if (!docSnap.exists()) {
     await setDoc(docRef, {
       ...DEFAULT_SITE_SETTINGS,
@@ -178,7 +186,7 @@ export async function initializeSiteSettings(userId: string): Promise<void> {
 function docToUser(docSnap: DocumentSnapshot): User | null {
   const data = docSnap.data();
   if (!data) return null;
-  
+
   return {
     ...data,
     id: docSnap.id,
@@ -205,7 +213,7 @@ export async function createUser(input: UserCreateInput): Promise<string> {
     createdAt: serverTimestamp(),
     updatedAt: serverTimestamp(),
   });
-  
+
   return docRef.id;
 }
 
@@ -250,7 +258,7 @@ export async function getUsers(): Promise<User[]> {
 function docToPageLayout(docSnap: DocumentSnapshot): PageLayout | null {
   const data = docSnap.data();
   if (!data) return null;
-  
+
   return {
     ...data,
     id: docSnap.id,
@@ -268,7 +276,7 @@ export async function createPageLayout(input: PageLayoutCreateInput): Promise<st
     createdAt: serverTimestamp(),
     updatedAt: serverTimestamp(),
   });
-  
+
   return docRef.id;
 }
 
@@ -290,10 +298,10 @@ export async function getActivePageLayout(pageId: PageType): Promise<PageLayout 
     where('isActive', '==', true),
     limit(1)
   );
-  
+
   const snapshot = await getDocs(q);
   if (snapshot.empty) return null;
-  
+
   return docToPageLayout(snapshot.docs[0]);
 }
 
@@ -306,7 +314,7 @@ export async function getOrCreateDefaultLayout(pageId: PageType, createdBy: stri
   if (activeLayout) {
     return activeLayout;
   }
-  
+
   // Varsayılan layout'u kontrol et
   const q = query(
     collection(db, COLLECTIONS.pageLayouts),
@@ -314,7 +322,7 @@ export async function getOrCreateDefaultLayout(pageId: PageType, createdBy: stri
     where('isDefault', '==', true),
     limit(1)
   );
-  
+
   const snapshot = await getDocs(q);
   if (!snapshot.empty) {
     const layout = docToPageLayout(snapshot.docs[0]);
@@ -324,10 +332,10 @@ export async function getOrCreateDefaultLayout(pageId: PageType, createdBy: stri
       return layout;
     }
   }
-  
+
   // Yeni varsayılan layout oluştur
   const defaultElements = getDefaultElementsForPage(pageId);
-  
+
   const layoutId = await createPageLayout({
     pageId,
     name: `${pageId} - Varsayılan`,
@@ -336,12 +344,12 @@ export async function getOrCreateDefaultLayout(pageId: PageType, createdBy: stri
     isDefault: true,
     isActive: true,
   });
-  
+
   const newLayout = await getPageLayoutById(layoutId);
   if (!newLayout) {
     throw new Error('Layout oluşturulamadı');
   }
-  
+
   return newLayout;
 }
 
@@ -382,7 +390,7 @@ export async function getPageLayoutsByType(pageId: PageType): Promise<PageLayout
     where('pageId', '==', pageId),
     orderBy('createdAt', 'desc')
   );
-  
+
   const snapshot = await getDocs(q);
   return snapshot.docs
     .map(docItem => docToPageLayout(docItem))
@@ -394,7 +402,7 @@ export async function getPageLayoutsByType(pageId: PageType): Promise<PageLayout
  */
 export async function setActivePageLayout(pageId: PageType, layoutId: string): Promise<void> {
   const batch = writeBatch(db);
-  
+
   // Önce tüm layout'ları pasif yap
   const layouts = await getPageLayoutsByType(pageId);
   for (const layout of layouts) {
@@ -405,13 +413,13 @@ export async function setActivePageLayout(pageId: PageType, layoutId: string): P
       });
     }
   }
-  
+
   // Yeni layout'u aktif yap
   batch.update(doc(db, COLLECTIONS.pageLayouts, layoutId), {
     isActive: true,
     updatedAt: serverTimestamp(),
   });
-  
+
   await batch.commit();
 }
 
@@ -422,19 +430,19 @@ export async function resetPageLayoutToDefault(pageId: PageType, createdBy: stri
   // Mevcut layout'ları sil
   const layouts = await getPageLayoutsByType(pageId);
   const batch = writeBatch(db);
-  
+
   for (const layout of layouts) {
     batch.delete(doc(db, COLLECTIONS.pageLayouts, layout.id));
   }
-  
+
   await batch.commit();
-  
+
   // Kısa bir bekleme süresi - Firebase'in silme işlemini tamamlaması için
   await new Promise(resolve => setTimeout(resolve, 100));
-  
+
   // Varsayılan elementleri al ve yeni layout oluştur
   const defaultElements = getDefaultElementsForPage(pageId);
-  
+
   const layoutId = await createPageLayout({
     pageId,
     name: `${pageId} - Varsayılan`,
@@ -443,16 +451,16 @@ export async function resetPageLayoutToDefault(pageId: PageType, createdBy: stri
     isDefault: true,
     isActive: true,
   });
-  
+
   // Yeni layout'u oku
   const resetLayout = await getPageLayoutById(layoutId);
   if (!resetLayout) throw new Error('Layout oluşturulamadı');
-  
+
   // Doğrulama: Oluşturulan layout'un elementleri doğru mu?
   if (!isValidLayoutForPage(resetLayout, pageId)) {
     throw new Error('Oluşturulan layout geçersiz elementler içeriyor');
   }
-  
+
   return resetLayout;
 }
 
@@ -472,7 +480,7 @@ function isValidLayoutForPage(layout: PageLayout, pageId: PageType): boolean {
 function docToPageContent(docSnap: DocumentSnapshot): PageContent | null {
   const data = docSnap.data();
   if (!data) return null;
-  
+
   return {
     ...data,
     id: docSnap.id,
@@ -490,7 +498,7 @@ export async function createPageContent(input: PageContentCreateInput): Promise<
     createdAt: serverTimestamp(),
     updatedAt: serverTimestamp(),
   });
-  
+
   return docRef.id;
 }
 
@@ -517,10 +525,10 @@ export async function getPageContent(
     where('locale', '==', locale),
     limit(1)
   );
-  
+
   const snapshot = await getDocs(q);
   if (snapshot.empty) return null;
-  
+
   return docToPageContent(snapshot.docs[0]);
 }
 
@@ -533,7 +541,7 @@ export async function getPageContents(pageId: PageType, locale: Locale): Promise
     where('pageId', '==', pageId),
     where('locale', '==', locale)
   );
-  
+
   const snapshot = await getDocs(q);
   return snapshot.docs
     .map(docItem => docToPageContent(docItem))
@@ -553,7 +561,7 @@ export async function upsertPageContent(
 ): Promise<string> {
   // Mevcut içeriği kontrol et
   const existing = await getPageContent(pageId, elementId, locale);
-  
+
   if (existing) {
     // Güncelle
     const docRef = doc(db, COLLECTIONS.pageContents, existing.id);
@@ -604,14 +612,14 @@ export async function deletePageContents(pageId: PageType): Promise<void> {
     collection(db, COLLECTIONS.pageContents),
     where('pageId', '==', pageId)
   );
-  
+
   const snapshot = await getDocs(q);
   const deleteBatch = writeBatch(db);
-  
+
   snapshot.docs.forEach(docSnap => {
     deleteBatch.delete(docSnap.ref);
   });
-  
+
   await deleteBatch.commit();
 }
 
@@ -625,7 +633,7 @@ export async function deletePageContents(pageId: PageType): Promise<void> {
 function docToPage(docSnap: DocumentSnapshot): Page | null {
   const data = docSnap.data();
   if (!data) return null;
-  
+
   return {
     ...data,
     id: docSnap.id,
@@ -642,7 +650,7 @@ function docToPage(docSnap: DocumentSnapshot): Page | null {
 function docToSection(docSnap: DocumentSnapshot): Section | null {
   const data = docSnap.data();
   if (!data) return null;
-  
+
   return {
     ...data,
     id: docSnap.id,
@@ -657,7 +665,7 @@ function docToSection(docSnap: DocumentSnapshot): Section | null {
 function docToColumn(docSnap: DocumentSnapshot): Column | null {
   const data = docSnap.data();
   if (!data) return null;
-  
+
   return {
     ...data,
     id: docSnap.id,
@@ -672,7 +680,7 @@ function docToColumn(docSnap: DocumentSnapshot): Column | null {
 function docToBlock(docSnap: DocumentSnapshot): Block | null {
   const data = docSnap.data();
   if (!data) return null;
-  
+
   return {
     ...data,
     id: docSnap.id,
@@ -693,7 +701,7 @@ export async function createPage(input: PageCreateInput): Promise<string> {
     updatedAt: serverTimestamp(),
     publishedAt: serverTimestamp(), // Yayınlanma tarihi
   });
-  
+
   return docRef.id;
 }
 
@@ -714,22 +722,32 @@ export async function getPageBySlug(slug: string): Promise<Page | null> {
     where('slug', '==', slug),
     limit(1)
   );
-  
+
   const snapshot = await getDocs(q);
   if (snapshot.empty) return null;
-  
+
   return docToPage(snapshot.docs[0]);
 }
 
 /**
  * Tüm sayfaları getir
  */
-export async function getAllPages(): Promise<Page[]> {
-  const snapshot = await getDocs(collection(db, COLLECTIONS.pages));
-  return snapshot.docs
-    .map(docItem => docToPage(docItem))
-    .filter((page): page is Page => page !== null);
-}
+/**
+ * Tüm sayfaları getir
+ */
+export const getAllPages = unstable_cache(
+  async (): Promise<Page[]> => {
+    const snapshot = await getDocs(collection(db, COLLECTIONS.pages));
+    return snapshot.docs
+      .map(docItem => docToPage(docItem))
+      .filter((page): page is Page => page !== null);
+  },
+  ['all-pages'],
+  {
+    revalidate: 3600, // 1 saat
+    tags: ['pages']
+  }
+);
 
 /**
  * Undefined değerleri temizle (Firestore undefined kabul etmez)
@@ -778,12 +796,12 @@ export async function updatePage(id: string, input: PageUpdateInput): Promise<vo
 export async function deletePage(id: string): Promise<void> {
   const page = await getPageById(id);
   if (!page) return;
-  
+
   // Section'ları sil
   for (const sectionId of page.sections || []) {
     await deleteSection(sectionId);
   }
-  
+
   // Sayfayı sil
   await deleteDoc(doc(db, COLLECTIONS.pages, id));
 }
@@ -798,7 +816,7 @@ export async function createSection(input: SectionCreateInput): Promise<string> 
     createdAt: serverTimestamp(),
     updatedAt: serverTimestamp(),
   });
-  
+
   // Page'e section ID'sini ekle (sadece pageId varsa)
   // Not: installTheme içinde toplu ekleme yapılıyor, burada sadece tek section eklerken kullanılır
   if (input.pageId) {
@@ -813,7 +831,7 @@ export async function createSection(input: SectionCreateInput): Promise<string> 
       logger.firestore.warn('Section page\'e eklenirken hata (normal olabilir)', error);
     }
   }
-  
+
   return docRef.id;
 }
 
@@ -834,14 +852,14 @@ export async function updateSection(id: string, input: SectionUpdateInput): Prom
   const updateData: Record<string, any> = {
     updatedAt: serverTimestamp(),
   };
-  
+
   Object.keys(input).forEach(key => {
     const value = (input as any)[key];
     if (value !== undefined) {
       updateData[key] = value;
     }
   });
-  
+
   await updateDoc(docRef, updateData);
 }
 
@@ -851,12 +869,12 @@ export async function updateSection(id: string, input: SectionUpdateInput): Prom
 export async function deleteSection(id: string): Promise<void> {
   const section = await getSectionById(id);
   if (!section) return;
-  
+
   // Column'ları sil
   for (const columnId of section.columns || []) {
     await deleteColumn(columnId);
   }
-  
+
   // Section'ı sil
   await deleteDoc(doc(db, COLLECTIONS.sections, id));
 }
@@ -867,13 +885,13 @@ export async function deleteSection(id: string): Promise<void> {
 export async function moveSection(sectionId: string, direction: 'up' | 'down'): Promise<void> {
   const section = await getSectionById(sectionId);
   if (!section) return;
-  
+
   const page = await getPageById(section.pageId);
   if (!page || !page.sections || page.sections.length < 2) return;
-  
+
   const currentIndex = page.sections.indexOf(sectionId);
   if (currentIndex === -1) return;
-  
+
   let newIndex: number;
   if (direction === 'up') {
     if (currentIndex === 0) return; // Zaten en üstte
@@ -882,18 +900,18 @@ export async function moveSection(sectionId: string, direction: 'up' | 'down'): 
     if (currentIndex === page.sections.length - 1) return; // Zaten en altta
     newIndex = currentIndex + 1;
   }
-  
+
   // Section'ları yeniden sırala
   const newSections = [...page.sections];
   [newSections[currentIndex], newSections[newIndex]] = [newSections[newIndex], newSections[currentIndex]];
-  
+
   // Her iki section'ın order'ını güncelle
   const batch = writeBatch(db);
   batch.update(doc(db, COLLECTIONS.sections, sectionId), {
     order: newIndex,
     updatedAt: serverTimestamp(),
   });
-  
+
   const swappedSection = await getSectionById(newSections[currentIndex]);
   if (swappedSection) {
     batch.update(doc(db, COLLECTIONS.sections, newSections[currentIndex]), {
@@ -901,13 +919,13 @@ export async function moveSection(sectionId: string, direction: 'up' | 'down'): 
       updatedAt: serverTimestamp(),
     });
   }
-  
+
   // Page'in sections array'ini güncelle
   batch.update(doc(db, COLLECTIONS.pages, section.pageId), {
     sections: newSections,
     updatedAt: serverTimestamp(),
   });
-  
+
   await batch.commit();
 }
 
@@ -919,12 +937,12 @@ export async function duplicateSection(sectionId: string): Promise<string> {
   if (!originalSection) {
     throw new Error('Section bulunamadı');
   }
-  
+
   const page = await getPageById(originalSection.pageId);
   if (!page) {
     throw new Error('Page bulunamadı');
   }
-  
+
   // Yeni section oluştur
   const newSectionId = await createSection({
     pageId: originalSection.pageId,
@@ -932,24 +950,24 @@ export async function duplicateSection(sectionId: string): Promise<string> {
     order: originalSection.order + 1,
     settings: { ...originalSection.settings },
   });
-  
+
   // Column'ları kopyala
   for (const columnId of originalSection.columns || []) {
     const originalColumn = await getColumnById(columnId);
     if (!originalColumn) continue;
-    
+
     const newColumnId = await createColumn({
       sectionId: newSectionId,
       width: originalColumn.width,
       order: originalColumn.order,
       settings: { ...originalColumn.settings },
     });
-    
+
     // Block'ları kopyala
     for (const blockId of originalColumn.blocks || []) {
       const originalBlock = await getBlockById(blockId);
       if (!originalBlock) continue;
-      
+
       await createBlock({
         columnId: newColumnId,
         type: originalBlock.type,
@@ -958,7 +976,7 @@ export async function duplicateSection(sectionId: string): Promise<string> {
       });
     }
   }
-  
+
   return newSectionId;
 }
 
@@ -973,7 +991,7 @@ export async function createColumn(input: ColumnCreateInput): Promise<string> {
     createdAt: serverTimestamp(),
     updatedAt: serverTimestamp(),
   });
-  
+
   // Eğer parent column varsa, parent column'a ekle
   if (input.parentColumnId) {
     const parentColumn = await getColumnById(input.parentColumnId);
@@ -991,7 +1009,7 @@ export async function createColumn(input: ColumnCreateInput): Promise<string> {
       });
     }
   }
-  
+
   return docRef.id;
 }
 
@@ -1020,36 +1038,36 @@ export async function updateColumn(id: string, input: ColumnUpdateInput): Promis
 export async function deleteColumn(id: string): Promise<void> {
   const column = await getColumnById(id);
   if (!column) return;
-  
+
   // Nested column'ları sil (recursive)
   for (const nestedColumnId of column.columns || []) {
     await deleteColumn(nestedColumnId);
   }
-  
+
   // Block'ları sil
   for (const blockId of column.blocks || []) {
     await deleteBlock(blockId);
   }
-  
+
   // Parent column'dan veya section'dan column ID'sini çıkar
   if (column.parentColumnId) {
-      const parentColumn = await getColumnById(column.parentColumnId);
-      if (parentColumn) {
-        const updatedColumns = (parentColumn.columns || []).filter(colId => colId !== id);
-        await updateColumn(column.parentColumnId, {
-          columns: updatedColumns,
-        });
-      }
+    const parentColumn = await getColumnById(column.parentColumnId);
+    if (parentColumn) {
+      const updatedColumns = (parentColumn.columns || []).filter(colId => colId !== id);
+      await updateColumn(column.parentColumnId, {
+        columns: updatedColumns,
+      });
+    }
   } else if (column.sectionId) {
-      const section = await getSectionById(column.sectionId);
-      if (section) {
-        const updatedColumns = (section.columns || []).filter(colId => colId !== id);
-        await updateSection(column.sectionId, {
-          columns: updatedColumns,
-        });
-      }
+    const section = await getSectionById(column.sectionId);
+    if (section) {
+      const updatedColumns = (section.columns || []).filter(colId => colId !== id);
+      await updateSection(column.sectionId, {
+        columns: updatedColumns,
+      });
+    }
   }
-  
+
   // Column'u sil
   await deleteDoc(doc(db, COLLECTIONS.columns, id));
 }
@@ -1063,7 +1081,7 @@ export async function createBlock(input: BlockCreateInput): Promise<string> {
     createdAt: serverTimestamp(),
     updatedAt: serverTimestamp(),
   });
-  
+
   // Column'a block ID'sini ekle
   if (input.columnId) {
     const column = await getColumnById(input.columnId);
@@ -1073,7 +1091,7 @@ export async function createBlock(input: BlockCreateInput): Promise<string> {
       });
     }
   }
-  
+
   return docRef.id;
 }
 
@@ -1127,17 +1145,17 @@ export async function deleteBlock(id: string): Promise<void> {
   // Block'u getir
   const blockDoc = await getDoc(doc(db, COLLECTIONS.blocks, id));
   const blockData = blockDoc.data();
-  
+
   if (!blockData) return;
-  
+
   const columnId = blockData.columnId;
-  
+
   // Column'dan block'u çıkar
   if (columnId) {
     const columnRef = doc(db, COLLECTIONS.columns, columnId);
     const columnDoc = await getDoc(columnRef);
     const columnData = columnDoc.data();
-    
+
     if (columnData) {
       const newBlocks = (columnData.blocks || []).filter((blockId: string) => blockId !== id);
       await updateDoc(columnRef, {
@@ -1146,7 +1164,7 @@ export async function deleteBlock(id: string): Promise<void> {
       });
     }
   }
-  
+
   // Block'u sil
   await deleteDoc(doc(db, COLLECTIONS.blocks, id));
 }
@@ -1158,11 +1176,11 @@ export async function moveBlock(blockId: string, targetColumnId: string, newOrde
   const batch = writeBatch(db);
   const blockDoc = await getDoc(doc(db, COLLECTIONS.blocks, blockId));
   const blockData = blockDoc.data();
-  
+
   if (!blockData) return;
-  
+
   const oldColumnId = blockData.columnId;
-  
+
   // Block'u güncelle
   const updateData: any = {
     columnId: targetColumnId,
@@ -1174,31 +1192,31 @@ export async function moveBlock(blockId: string, targetColumnId: string, newOrde
     updateData.order = blockData.order;
   }
   batch.update(doc(db, COLLECTIONS.blocks, blockId), updateData);
-  
+
   // Eski column'dan çıkar
   if (oldColumnId) {
     const oldColumnRef = doc(db, COLLECTIONS.columns, oldColumnId);
     const oldColumnDoc = await getDoc(oldColumnRef);
     const oldColumnData = oldColumnDoc.data();
     const newBlocks = (oldColumnData?.blocks || []).filter((id: string) => id !== blockId);
-    
+
     batch.update(oldColumnRef, {
       blocks: newBlocks,
       updatedAt: serverTimestamp(),
     });
   }
-  
+
   // Yeni column'a ekle
   const newColumnRef = doc(db, COLLECTIONS.columns, targetColumnId);
   const newColumnDoc = await getDoc(newColumnRef);
   const newColumnData = newColumnDoc.data();
   const newBlocks = [...(newColumnData?.blocks || []), blockId];
-  
+
   batch.update(newColumnRef, {
     blocks: newBlocks,
     updatedAt: serverTimestamp(),
   });
-  
+
   await batch.commit();
 }
 
@@ -1212,44 +1230,44 @@ export async function moveBlock(blockId: string, targetColumnId: string, newOrde
  */
 export async function deleteCurrentTheme(): Promise<void> {
   const batch = writeBatch(db);
-  
+
   // 1. Tüm page'leri getir
   const pagesSnapshot = await getDocs(collection(db, COLLECTIONS.pages));
-  
+
   for (const pageDoc of pagesSnapshot.docs) {
     const page = pageDoc.data();
-    
+
     // 2. Her page'in section'larını sil
     for (const sectionId of page.sections || []) {
       const sectionDoc = await getDoc(doc(db, COLLECTIONS.sections, sectionId));
-      
+
       if (sectionDoc.exists()) {
         const section = sectionDoc.data();
-        
+
         // 3. Section'ın column'larını sil
         for (const columnId of section.columns || []) {
           const columnDoc = await getDoc(doc(db, COLLECTIONS.columns, columnId));
-          
+
           if (columnDoc.exists()) {
             const column = columnDoc.data();
-            
+
             // 4. Column'un block'larını sil
             for (const blockId of column.blocks || []) {
               batch.delete(doc(db, COLLECTIONS.blocks, blockId));
             }
-            
+
             batch.delete(doc(db, COLLECTIONS.columns, columnId));
           }
         }
-        
+
         batch.delete(doc(db, COLLECTIONS.sections, sectionId));
       }
     }
-    
+
     // 5. Page'i sil
     batch.delete(doc(db, COLLECTIONS.pages, pageDoc.id));
   }
-  
+
   await batch.commit();
   logger.firestore.debug('Mevcut tema tamamen silindi');
 }
@@ -1262,14 +1280,14 @@ export async function deleteCurrentTheme(): Promise<void> {
  */
 export async function installTheme(themeData: ThemeData, createdBy: string): Promise<void> {
   const { metadata, pages } = themeData;
-  
+
   if (!metadata || !pages) {
     throw new Error('Geçersiz tema formatı');
   }
-  
+
   logger.firestore.info(`Tema yükleniyor: ${metadata.name} (${metadata.pages.length} sayfa)`);
   logger.firestore.debug(`Tema pages keys:`, Object.keys(pages));
-  
+
   // Mevcut temayı kontrol et ve varsa metadata'sını orijinal ayarlarla güncelle
   // Bu sayede header/footer ayarları sıfırlanır
   let existingTheme: { id: string } | null = null;
@@ -1279,7 +1297,7 @@ export async function installTheme(themeData: ThemeData, createdBy: string): Pro
       const data = doc.data();
       return data.name === metadata.name || data.id === metadata.id;
     }) || null;
-    
+
     if (existingTheme) {
       logger.firestore.debug('Mevcut tema bulundu, metadata orijinal ayarlarla güncelleniyor...');
       logger.firestore.debug('Metadata settings:', metadata.settings);
@@ -1307,21 +1325,21 @@ export async function installTheme(themeData: ThemeData, createdBy: string): Pro
     // Hata durumunda yeni tema oluştur
     await createTheme(metadata);
   }
-  
+
   // Her sayfa için işlem yap
   for (const pageConfig of metadata.pages) {
     const pageData = pages[pageConfig.slug];
-    
+
     if (!pageData) {
       logger.firestore.warn(`Sayfa bulunamadı: ${pageConfig.slug}`, { mevcutSayfalar: Object.keys(pages) });
       continue;
     }
-    
+
     logger.firestore.debug(`Sayfa oluşturuluyor: ${pageConfig.title} (${pageConfig.slug})`);
     logger.firestore.debug(`Sayfa verileri:`, pageData);
     logger.firestore.debug(`Section sayısı:`, pageData.sections?.length || 0);
     logger.firestore.debug(`Section'lar:`, pageData.sections);
-    
+
     // Yeni sayfa oluştur
     const pageId = await createPage({
       title: pageConfig.title,
@@ -1329,30 +1347,30 @@ export async function installTheme(themeData: ThemeData, createdBy: string): Pro
       settings: {}, // PageSettings boş olarak başlatılır, tema ayarları siteSettings'te tutulur
       author: createdBy,
     });
-    
+
     // Sayfayı published olarak işaretle (tema sayfaları otomatik yayınlanır)
     await updatePage(pageId, { status: 'published' });
-    
+
     // Section'ları oluştur
     const sectionIds: string[] = [];
-    
+
     if (!pageData.sections || pageData.sections.length === 0) {
       logger.firestore.warn(`Sayfa ${pageConfig.slug} için section verisi yok!`);
       // Section yoksa bile sayfayı oluştur (boş sayfa)
       continue;
     }
-    
+
     logger.firestore.debug(`Section'lar oluşturuluyor (${pageData.sections.length} adet)...`);
 
     for (let sectionIndex = 0; sectionIndex < pageData.sections.length; sectionIndex++) {
       const sectionData = pageData.sections[sectionIndex];
-      logger.firestore.debug(`Section ${sectionIndex + 1}/${pageData.sections.length} oluşturuluyor: ${sectionData.name}`);      const sectionId = await createSection({
+      logger.firestore.debug(`Section ${sectionIndex + 1}/${pageData.sections.length} oluşturuluyor: ${sectionData.name}`); const sectionId = await createSection({
         pageId,
         name: sectionData.name,
         order: sectionIndex,
         settings: sectionData.settings || {},
       });
-      
+
       logger.firestore.debug(`✓ Section oluşturuldu: ${sectionId} (${sectionData.name})`);
       sectionIds.push(sectionId);
 
@@ -1392,20 +1410,20 @@ export async function installTheme(themeData: ThemeData, createdBy: string): Pro
     logger.firestore.info(`✓ Sayfa oluşturuldu: ${pageConfig.title} (${sectionIds.length} section)`);
     logger.firestore.debug(`  Section ID'leri:`, sectionIds);
   }
-  
+
   // Site settings'i tema ayarlarıyla güncelle (Header/Footer özelleştirmeleri + Company/Contact/Social/SEO)
   // Aktif tema bilgisini kaydet ve tema bilgilerini siteSettings'e uygula
   try {
     const currentSettings = await getSiteSettings();
     const existingThemeId = existingTheme ? existingTheme.id : null;
     const themeSettings = metadata.settings || {};
-    
+
     // Tema bilgilerini siteSettings formatına çevir
     const themeCompanyInfo = themeSettings.company || {};
     const themeContactInfo = themeSettings.contact || {};
     const themeSocialInfo = themeSettings.social || {};
     const themeSeoInfo = themeSettings.seo || {};
-    
+
     // Renk ve font stilleri varsa temizle (tema değiştiğinde sıfırlanmalı)
     const settingsToUpdate: any = {
       ...currentSettings,
@@ -1413,7 +1431,7 @@ export async function installTheme(themeData: ThemeData, createdBy: string): Pro
       activeThemeId: existingThemeId || metadata.id,
       activeThemeName: metadata.name,
       // Company bilgileri (tema'dan gelen bilgilerle güncelle, yoksa mevcut değerleri koru)
-      siteName: themeCompanyInfo.name 
+      siteName: themeCompanyInfo.name
         ? { tr: themeCompanyInfo.name, en: themeCompanyInfo.name, de: themeCompanyInfo.name, fr: themeCompanyInfo.name }
         : currentSettings.siteName,
       siteSlogan: themeCompanyInfo.slogan
@@ -1421,23 +1439,23 @@ export async function installTheme(themeData: ThemeData, createdBy: string): Pro
         : currentSettings.siteSlogan,
       logo: themeCompanyInfo.logo
         ? {
-            ...currentSettings.logo,
-            light: { ...currentSettings.logo.light, url: themeCompanyInfo.logo },
-            dark: { ...currentSettings.logo.dark, url: themeCompanyInfo.logo },
-            // Favicon'u sıfırla (tema değiştiğinde favicon da sıfırlanır)
-            favicon: {
-              url: '',
-              path: '',
-            },
-          }
-        : {
-            ...currentSettings.logo,
-            // Favicon'u sıfırla (tema değiştiğinde favicon da sıfırlanır)
-            favicon: {
-              url: '',
-              path: '',
-            },
+          ...currentSettings.logo,
+          light: { ...currentSettings.logo.light, url: themeCompanyInfo.logo },
+          dark: { ...currentSettings.logo.dark, url: themeCompanyInfo.logo },
+          // Favicon'u sıfırla (tema değiştiğinde favicon da sıfırlanır)
+          favicon: {
+            url: '',
+            path: '',
           },
+        }
+        : {
+          ...currentSettings.logo,
+          // Favicon'u sıfırla (tema değiştiğinde favicon da sıfırlanır)
+          favicon: {
+            url: '',
+            path: '',
+          },
+        },
       // Renk ve font stillerini temizle (tema değiştiğinde sıfırlanmalı)
       companyNameStyle: undefined,
       sloganStyle: undefined,
@@ -1446,13 +1464,13 @@ export async function installTheme(themeData: ThemeData, createdBy: string): Pro
         ...currentSettings.contact,
         email: themeContactInfo.email || currentSettings.contact.email,
         phones: themeContactInfo.phone ? [themeContactInfo.phone] : currentSettings.contact.phones,
-        address: themeContactInfo.address 
+        address: themeContactInfo.address
           ? {
-              tr: themeContactInfo.address,
-              en: themeContactInfo.address,
-              de: themeContactInfo.address,
-              fr: themeContactInfo.address,
-            }
+            tr: themeContactInfo.address,
+            en: themeContactInfo.address,
+            de: themeContactInfo.address,
+            fr: themeContactInfo.address,
+          }
           : currentSettings.contact.address,
       },
       // Sosyal medya linkleri
@@ -1469,39 +1487,39 @@ export async function installTheme(themeData: ThemeData, createdBy: string): Pro
         ...currentSettings.seo,
         titleTemplate: themeSeoInfo.metaTitle
           ? {
-              tr: themeSeoInfo.metaTitle,
-              en: themeSeoInfo.metaTitle,
-              de: themeSeoInfo.metaTitle,
-              fr: themeSeoInfo.metaTitle,
-            }
+            tr: themeSeoInfo.metaTitle,
+            en: themeSeoInfo.metaTitle,
+            de: themeSeoInfo.metaTitle,
+            fr: themeSeoInfo.metaTitle,
+          }
           : currentSettings.seo.titleTemplate,
         defaultDescription: themeSeoInfo.metaDescription
           ? {
-              tr: themeSeoInfo.metaDescription,
-              en: themeSeoInfo.metaDescription,
-              de: themeSeoInfo.metaDescription,
-              fr: themeSeoInfo.metaDescription,
-            }
+            tr: themeSeoInfo.metaDescription,
+            en: themeSeoInfo.metaDescription,
+            de: themeSeoInfo.metaDescription,
+            fr: themeSeoInfo.metaDescription,
+          }
           : currentSettings.seo.defaultDescription,
         keywords: themeSeoInfo.metaKeywords
           ? {
-              tr: themeSeoInfo.metaKeywords.split(',').map(k => k.trim()),
-              en: themeSeoInfo.metaKeywords.split(',').map(k => k.trim()),
-              de: themeSeoInfo.metaKeywords.split(',').map(k => k.trim()),
-              fr: themeSeoInfo.metaKeywords.split(',').map(k => k.trim()),
-            }
+            tr: themeSeoInfo.metaKeywords.split(',').map(k => k.trim()),
+            en: themeSeoInfo.metaKeywords.split(',').map(k => k.trim()),
+            de: themeSeoInfo.metaKeywords.split(',').map(k => k.trim()),
+            fr: themeSeoInfo.metaKeywords.split(',').map(k => k.trim()),
+          }
           : currentSettings.seo.keywords,
         googleAnalyticsId: themeSeoInfo.googleAnalyticsId || currentSettings.seo.googleAnalyticsId,
       },
     };
-    
+
     // undefined değerleri temizle (Firestore'a gönderilmemeli)
     Object.keys(settingsToUpdate).forEach(key => {
       if (settingsToUpdate[key] === undefined) {
         delete settingsToUpdate[key];
       }
     });
-    
+
     await updateSiteSettings(settingsToUpdate, createdBy);
     logger.firestore.info(`✓ Site settings tema ayarlarıyla güncellendi (aktif tema: ${metadata.name})`);
     logger.firestore.debug('✓ Company, Contact, Social, SEO bilgileri temadan yüklendi');
@@ -1509,7 +1527,7 @@ export async function installTheme(themeData: ThemeData, createdBy: string): Pro
   } catch (error) {
     logger.firestore.warn('Site settings güncellenirken hata (normal olabilir):', error);
   }
-  
+
   logger.firestore.info(`✓ Tema başarıyla yüklendi: ${metadata.name}`);
 
   // ThemeContext'e tema güncellemesi bildir
@@ -1525,7 +1543,7 @@ export async function installTheme(themeData: ThemeData, createdBy: string): Pro
 export async function getAvailableThemes(): Promise<ThemePreview[]> {
   try {
     const themesSnapshot = await getDocs(collection(db, COLLECTIONS.themes));
-    
+
     return themesSnapshot.docs.map(doc => {
       const data = doc.data();
       return {
@@ -1549,11 +1567,11 @@ export async function getAvailableThemes(): Promise<ThemePreview[]> {
  */
 export async function getThemeMetadata(themeId: string): Promise<ThemeMetadata | null> {
   const themeDoc = await getDoc(doc(db, COLLECTIONS.themes, themeId));
-  
+
   if (!themeDoc.exists()) {
     return null;
   }
-  
+
   return themeDoc.data() as ThemeMetadata;
 }
 
@@ -1562,15 +1580,15 @@ export async function getThemeMetadata(themeId: string): Promise<ThemeMetadata |
  */
 export async function getThemeData(themeId: string): Promise<ThemeData | null> {
   const metadata = await getThemeMetadata(themeId);
-  
+
   if (!metadata) {
     return null;
   }
-  
+
   // Pages'i metadata'dan al (şimdilik metadata içinde tutuyoruz)
   // İleride ayrı collection'a taşınabilir
   const pages: Record<string, ThemePageData> = {};
-  
+
   // Metadata içindeki pages array'inden sayfa verilerini oluştur
   // Gerçek uygulamada bu veriler ayrı bir collection'da veya storage'da olabilir
   for (const pageConfig of metadata.pages) {
@@ -1581,7 +1599,7 @@ export async function getThemeData(themeId: string): Promise<ThemeData | null> {
       sections: [],
     };
   }
-  
+
   return {
     metadata,
     pages,
@@ -1597,7 +1615,7 @@ export async function createTheme(metadata: ThemeMetadata): Promise<string> {
     createdAt: serverTimestamp(),
     updatedAt: serverTimestamp(),
   });
-  
+
   return docRef.id;
 }
 
@@ -1617,30 +1635,30 @@ export async function updateTheme(themeId: string, updates: Partial<ThemeMetadat
  * Her temanın kendi header/footer ayarları olmalı
  */
 export async function updateActiveThemeSettings(
-  themeName: string, 
+  themeName: string,
   settings: Partial<ThemeMetadata['settings']>
 ): Promise<void> {
   try {
     // Firestore'da yüklenmiş temaları bul
     const themesSnapshot = await getDocs(collection(db, COLLECTIONS.themes));
-    
+
     if (themesSnapshot.empty) {
       logger.firestore.warn('Firestore\'da tema bulunamadı');
       throw new Error('Firestore\'da tema bulunamadı. Lütfen önce bir tema yükleyin.');
     }
-    
+
     // Tema adına göre aktif temayı bul
     const activeTheme = themesSnapshot.docs.find(doc => {
       const data = doc.data();
       return data.name === themeName || data.id === themeName;
     });
-    
+
     if (!activeTheme) {
       logger.firestore.warn(`Tema bulunamadı: ${themeName}, ilk temayı kullanıyoruz`);
       // Tema bulunamazsa ilk temayı kullan (fallback)
       const firstTheme = themesSnapshot.docs[0];
       const currentMetadata = firstTheme.data() as ThemeMetadata;
-      
+
       await updateTheme(firstTheme.id, {
         settings: {
           ...currentMetadata.settings,
@@ -1650,9 +1668,9 @@ export async function updateActiveThemeSettings(
       logger.firestore.info('✓ Tema ayarları güncellendi (fallback: ilk tema)');
       return;
     }
-    
+
     const currentMetadata = activeTheme.data() as ThemeMetadata;
-    
+
     // Settings'i güncelle (sadece settings kısmını güncelle, diğer metadata'yı koru)
     await updateTheme(activeTheme.id, {
       settings: {
@@ -1660,7 +1678,7 @@ export async function updateActiveThemeSettings(
         ...settings,
       },
     });
-    
+
     logger.firestore.info(`✓ Tema ayarları güncellendi: ${themeName}`);
   } catch (error) {
     logger.firestore.error('Tema ayarları güncellenirken hata:', error);
