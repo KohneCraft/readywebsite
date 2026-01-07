@@ -127,9 +127,7 @@ export default function AdminSettingsPage() {
   const [saved, setSaved] = useState(false);
   const [activeTab, setActiveTab] = useState<TabKey>('company');
   const [logoPreview, setLogoPreview] = useState<string | null>(null);
-  const [faviconPreview, setFaviconPreview] = useState<string | null>(null);
   const [isMediaSelectorOpen, setIsMediaSelectorOpen] = useState(false);
-  const [isFaviconSelectorOpen, setIsFaviconSelectorOpen] = useState(false);
   
   // Admin Panel ayarları
   const [adminTitle, setAdminTitle] = useState<string>('Modern');
@@ -196,9 +194,6 @@ export default function AdminSettingsPage() {
         
         reset(formData);
         setLogoPreview(formData.company.logo || null);
-        // Favicon'u da yükle
-        const faviconUrl = settings.logo?.favicon?.url;
-        setFaviconPreview(faviconUrl || null);
         // Admin panel ayarlarını yükle
         const adminTitleValue = (settings as any).adminTitle || 'Modern';
         const adminIconValue = (settings as any).adminIcon || '';
@@ -271,8 +266,8 @@ export default function AdminSettingsPage() {
             url: data.company.logo || '',
           },
           favicon: {
-            url: faviconPreview || '',
-            path: currentSettings.logo.favicon?.path || '',
+            url: data.company.logo || '',
+            path: data.company.logo || '',
           },
         },
         // Admin panel ayarları
@@ -379,35 +374,6 @@ export default function AdminSettingsPage() {
 
   const handleLogoUpload = async () => {
     setIsMediaSelectorOpen(true);
-  };
-
-  const handleFaviconUpload = async () => {
-    setIsFaviconSelectorOpen(true);
-  };
-
-  const handleFaviconSelect = async (mediaUrl: string) => {
-    setFaviconPreview(mediaUrl);
-    setIsFaviconSelectorOpen(false);
-  };
-
-  const handleFaviconFileUpload = async (file: File) => {
-    try {
-      setIsSaving(true);
-      const user = await getCurrentUser();
-      if (!user) {
-        toast.error('Lütfen giriş yapın');
-        return;
-      }
-
-      const uploadedMedia = await uploadMedia(file, 'image', user.uid);
-      setFaviconPreview(uploadedMedia.url);
-      toast.success('Favicon yüklendi');
-    } catch (error) {
-      logger.ui.error('Favicon yükleme hatası', error);
-      toast.error('Favicon yüklenirken bir hata oluştu');
-    } finally {
-      setIsSaving(false);
-    }
   };
 
   const handleLogoSelect = async (mediaUrl: string) => {
@@ -582,113 +548,6 @@ export default function AdminSettingsPage() {
                           </label>
                         </div>
                       </div>
-                    </div>
-
-                    {/* Favicon */}
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                        Favicon (Sekme İkonu)
-                      </label>
-                      <p className="text-xs text-gray-500 dark:text-gray-400 mb-3">
-                        Tarayıcı sekmesinde görünen küçük ikon (önerilen: 32x32px veya 64x64px)
-                      </p>
-                      <div className="flex items-center gap-4">
-                        {faviconPreview ? (
-                          <div className="w-16 h-16 rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden bg-white dark:bg-gray-800">
-                            <Image
-                              src={faviconPreview}
-                              alt="Favicon"
-                              width={64}
-                              height={64}
-                              className="w-full h-full object-contain p-2"
-                            />
-                          </div>
-                        ) : (
-                          <div className="w-16 h-16 rounded-lg border-2 border-dashed border-gray-300 dark:border-gray-700 flex items-center justify-center bg-gray-50 dark:bg-gray-800">
-                            <Building2 className="w-6 h-6 text-gray-400" />
-                          </div>
-                        )}
-                        <div className="flex gap-2">
-                          <Button
-                            type="button"
-                            variant="outline"
-                            size="sm"
-                            onClick={handleFaviconUpload}
-                          >
-                            <Upload className="w-4 h-4 mr-2" />
-                            Medyadan Seç
-                          </Button>
-                          <label className="cursor-pointer">
-                            <input
-                              type="file"
-                              accept="image/*"
-                              onChange={(e) => {
-                                const file = e.target.files?.[0];
-                                if (file) {
-                                  handleFaviconFileUpload(file);
-                                }
-                              }}
-                              className="hidden"
-                            />
-                            <div className="px-3 py-1.5 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors text-sm font-medium text-gray-700 dark:text-gray-300">
-                              Dosya Yükle
-                            </div>
-                          </label>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Icon/Favicon Bilgilendirme */}
-                    <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
-                      <div className="flex items-start gap-3">
-                        <div className="w-5 h-5 text-blue-600 dark:text-blue-400 mt-0.5 flex-shrink-0">
-                          <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                          </svg>
-                        </div>
-                        <div className="flex-1">
-                          <h4 className="text-sm font-medium text-blue-900 dark:text-blue-200 mb-1">
-                            Icon/Favicon Bilgileri
-                          </h4>
-                          <ul className="text-xs text-blue-700 dark:text-blue-300 space-y-1">
-                            <li>• <strong>Önerilen boyut:</strong> 32x32px veya 16x16px</li>
-                            <li>• <strong>Desteklenen formatlar:</strong> .ico, .png, .svg</li>
-                            <li>• <strong>Maksimum boyut:</strong> 100KB</li>
-                            <li>• <strong>Kare format:</strong> Icon'lar genellikle kare olmalıdır</li>
-                          </ul>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Favicon URL Input */}
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                        Veya Favicon URL Gir
-                      </label>
-                      <div className="flex gap-2">
-                        <Input
-                          type="url"
-                          value={faviconPreview || ''}
-                          onChange={(e) => setFaviconPreview(e.target.value)}
-                          placeholder="https://example.com/favicon.ico"
-                          className="flex-1"
-                        />
-                        <Button
-                          type="button"
-                          variant="primary"
-                          onClick={() => {
-                            if (faviconPreview?.trim()) {
-                              toast.success('Favicon URL kaydedildi');
-                            }
-                          }}
-                          disabled={!faviconPreview?.trim()}
-                        >
-                          Kaydet
-                        </Button>
-                      </div>
-                      <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                        Harici bir URL'den icon yüklemek için kullanın
-                      </p>
                     </div>
 
                     {/* Company Name */}
@@ -1211,16 +1070,6 @@ export default function AdminSettingsPage() {
           isOpen={isMediaSelectorOpen}
           onClose={() => setIsMediaSelectorOpen(false)}
           onSelect={(media) => handleLogoSelect(media.url)}
-          type="image"
-        />
-      )}
-      
-      {/* Favicon Selector Modal */}
-      {isFaviconSelectorOpen && (
-        <MediaSelector
-          isOpen={isFaviconSelectorOpen}
-          onClose={() => setIsFaviconSelectorOpen(false)}
-          onSelect={(media) => handleFaviconSelect(media.url)}
           type="image"
         />
       )}

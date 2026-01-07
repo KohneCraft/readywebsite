@@ -5,16 +5,17 @@ export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 
 /**
- * Favicon URL'ini Firebase'den döndürür
- * Edge runtime ile uyumlu değil, Node.js runtime kullanır
+ * Logo URL'ini favicon olarak döndürür
+ * Logo otomatik olarak favicon görevi görür
  */
 export async function GET() {
   try {
     const settings = await getSiteSettings();
-    const faviconUrl = settings?.logo?.favicon?.url;
+    // Logo URL'ini favicon olarak kullan
+    const logoUrl = settings?.logo?.light?.url || settings?.logo?.favicon?.url;
 
     return NextResponse.json({ 
-      faviconUrl: faviconUrl || null 
+      faviconUrl: logoUrl || null 
     }, {
       headers: {
         'Cache-Control': 'no-store, must-revalidate',
