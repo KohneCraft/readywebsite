@@ -12,14 +12,14 @@ interface ImageBlockProps {
 function ImageBlockComponent({ props }: ImageBlockProps) {
   const [loaded, setLoaded] = useState(false);
   const deviceType = useDeviceType();
-  
+
   // Responsive padding
   const getPadding = () => {
     if (!props.padding) return '0';
     const scale = deviceType === 'mobile' ? 0.5 : deviceType === 'tablet' ? 0.75 : 1;
     return `${(props.padding.top || 0) * scale}px ${(props.padding.right || 0) * scale}px ${(props.padding.bottom || 0) * scale}px ${(props.padding.left || 0) * scale}px`;
   };
-  
+
   const containerStyle = {
     width: '100%',
     maxWidth: props.maxWidth ? `${props.maxWidth}px` : '100%',
@@ -28,7 +28,7 @@ function ImageBlockComponent({ props }: ImageBlockProps) {
       : '0 auto',
     padding: getPadding(),
   };
-  
+
   const imageStyle = {
     width: '100%',
     height: props.imageHeight || 'auto',
@@ -40,14 +40,14 @@ function ImageBlockComponent({ props }: ImageBlockProps) {
     transition: 'transform 0.3s ease, opacity 0.3s ease',
     opacity: loaded ? 1 : 0,
   };
-  
+
   const ImageWrapper = props.link ? 'a' : 'div';
   const wrapperProps = props.link ? {
     href: props.link,
     target: props.linkTarget || '_self',
     rel: props.linkTarget === '_blank' ? 'noopener noreferrer' : undefined,
   } : {};
-  
+
   if (!props.src) {
     return (
       <div className="image-block" style={containerStyle}>
@@ -57,7 +57,7 @@ function ImageBlockComponent({ props }: ImageBlockProps) {
       </div>
     );
   }
-  
+
   return (
     <div className="image-block" style={containerStyle}>
       <ImageWrapper {...wrapperProps} className="image-wrapper block">
@@ -68,8 +68,11 @@ function ImageBlockComponent({ props }: ImageBlockProps) {
           height={600}
           style={imageStyle}
           onLoad={() => setLoaded(true)}
-          loading="lazy"
-          unoptimized
+          loading={props.priority ? "eager" : "lazy"}
+          priority={props.priority}
+          sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+          placeholder="blur"
+          blurDataURL="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mN8/+F9PQAI8wNPvd7POQAAAABJRU5ErkJggg=="
         />
       </ImageWrapper>
     </div>

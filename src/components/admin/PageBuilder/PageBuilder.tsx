@@ -1,6 +1,4 @@
-'use client';
-
-import { useState, useCallback } from 'react';
+import { useState, useEffect } from 'react';
 import {
   DndContext,
   closestCenter,
@@ -16,9 +14,9 @@ import {
   sortableKeyboardCoordinates,
   verticalListSortingStrategy,
 } from '@dnd-kit/sortable';
-import { 
-  Save, 
-  RotateCcw, 
+import {
+  Save,
+  RotateCcw,
   Plus,
   Undo2,
   Redo2,
@@ -30,6 +28,7 @@ import { PreviewPanel } from './PreviewPanel';
 import { Button } from '@/components/ui/Button';
 import { Spinner } from '@/components/ui/Spinner';
 import { cn } from '@/lib/utils';
+import { useHistory } from '@/hooks/useHistory';
 import type { PageElement, PageLayout, ElementType, PageType } from '@/types';
 import { DEFAULT_ELEMENT_SETTINGS, ELEMENT_TYPE_LABELS } from '@/types';
 
@@ -40,13 +39,50 @@ interface PageBuilderProps {
 }
 
 export function PageBuilder({ layout, onSave, onReset }: PageBuilderProps) {
-  const [elements, setElements] = useState<PageElement[]>(layout.elements);
+  const {
+    state: elements,
+    set: setElements,
+    undo,
+    redo,
+    canUndo,
+    canRedo,
+    reset: resetHistory
+  } = useHistory<PageElement[]>({
+    initialState: layout.elements,
+    maxHistory: 50
+  });
+
   const [selectedElement, setSelectedElement] = useState<PageElement | null>(null);
   const [settingsElement, setSettingsElement] = useState<PageElement | null>(null);
   const [isSaving, setIsSaving] = useState(false);
   const [showPreview, setShowPreview] = useState(false);
-  const [history, setHistory] = useState<PageElement[][]>([layout.elements]);
-  const [historyIndex, setHistoryIndex] = useState(0);
+
+  // Keyboard Shortcuts (Ctrl+Z, Ctrl+Y)
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Input/Textarea içinde çalışmasını engelle (kendi undo'ları var)
+      if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) {
+        return;
+      }
+
+      if (e.ctrlKey || e.metaKey) {
+        if (e.key === 'z') {
+          e.preventDefault();
+          if (e.shiftKey) {
+            redo();
+          } else {
+            undo();
+          }
+        } else if (e.key === 'y') {
+          e.preventDefault();
+          redo();
+        }
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [undo, redo]);
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -59,46 +95,18 @@ export function PageBuilder({ layout, onSave, onReset }: PageBuilderProps) {
     })
   );
 
-  // History yönetimi
-  const pushHistory = useCallback((newElements: PageElement[]) => {
-    const newHistory = history.slice(0, historyIndex + 1);
-    newHistory.push(newElements);
-    setHistory(newHistory);
-    setHistoryIndex(newHistory.length - 1);
-  }, [history, historyIndex]);
-
-  const undo = useCallback(() => {
-    if (historyIndex > 0) {
-      setHistoryIndex(historyIndex - 1);
-      setElements(history[historyIndex - 1]);
-    }
-  }, [history, historyIndex]);
-
-  const redo = useCallback(() => {
-    if (historyIndex < history.length - 1) {
-      setHistoryIndex(historyIndex + 1);
-      setElements(history[historyIndex + 1]);
-    }
-  }, [history, historyIndex]);
-
-  const canUndo = historyIndex > 0;
-  const canRedo = historyIndex < history.length - 1;
-
   // Sürükle-bırak
   const handleDragEnd = (event: DragEndEvent) => {
     const { active, over } = event;
 
     if (over && active.id !== over.id) {
-      setElements((items) => {
-        const oldIndex = items.findIndex((item) => item.id === active.id);
-        const newIndex = items.findIndex((item) => item.id === over.id);
-        const newItems = arrayMove(items, oldIndex, newIndex).map((item, index) => ({
-          ...item,
-          order: index,
-        }));
-        pushHistory(newItems);
-        return newItems;
-      });
+      const oldIndex = elements.findIndex((item) => item.id === active.id);
+      const newIndex = elements.findIndex((item) => item.id === over.id);
+      const newItems = arrayMove(elements, oldIndex, newIndex).map((item, index) => ({
+        ...item,
+        order: index,
+      }));
+      setElements(newItems);
     }
   };
 
@@ -108,7 +116,6 @@ export function PageBuilder({ layout, onSave, onReset }: PageBuilderProps) {
       el.id === id ? { ...el, visible: !el.visible } : el
     );
     setElements(newElements);
-    pushHistory(newElements);
   };
 
   const updateElement = (updatedElement: PageElement) => {
@@ -116,14 +123,12 @@ export function PageBuilder({ layout, onSave, onReset }: PageBuilderProps) {
       el.id === updatedElement.id ? updatedElement : el
     );
     setElements(newElements);
-    pushHistory(newElements);
     setSelectedElement(updatedElement);
   };
 
   const deleteElement = (id: string) => {
     const newElements = elements.filter((el) => el.id !== id);
     setElements(newElements);
-    pushHistory(newElements);
     if (selectedElement?.id === id) {
       setSelectedElement(null);
     }
@@ -140,7 +145,6 @@ export function PageBuilder({ layout, onSave, onReset }: PageBuilderProps) {
     };
     const newElements = [...elements, newElement];
     setElements(newElements);
-    pushHistory(newElements);
   };
 
   // Kaydet
@@ -156,9 +160,7 @@ export function PageBuilder({ layout, onSave, onReset }: PageBuilderProps) {
   // Sıfırla
   const handleReset = () => {
     if (confirm('Tüm değişiklikler kaybolacak. Devam etmek istiyor musunuz?')) {
-      setElements(layout.elements);
-      setHistory([layout.elements]);
-      setHistoryIndex(0);
+      resetHistory(layout.elements);
       onReset();
     }
   };
@@ -187,8 +189,8 @@ export function PageBuilder({ layout, onSave, onReset }: PageBuilderProps) {
             disabled={!canUndo}
             className={cn(
               'p-2 rounded-lg transition-colors',
-              canUndo 
-                ? 'hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-400' 
+              canUndo
+                ? 'hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-400'
                 : 'text-gray-300 dark:text-gray-600 cursor-not-allowed'
             )}
             title="Geri Al (Ctrl+Z)"
@@ -200,8 +202,8 @@ export function PageBuilder({ layout, onSave, onReset }: PageBuilderProps) {
             disabled={!canRedo}
             className={cn(
               'p-2 rounded-lg transition-colors',
-              canRedo 
-                ? 'hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-400' 
+              canRedo
+                ? 'hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-400'
                 : 'text-gray-300 dark:text-gray-600 cursor-not-allowed'
             )}
             title="İleri Al (Ctrl+Y)"
@@ -261,7 +263,7 @@ export function PageBuilder({ layout, onSave, onReset }: PageBuilderProps) {
               <h3 className="font-semibold text-gray-900 dark:text-white">
                 Sayfa Elementleri
               </h3>
-              
+
               {/* Add Element Dropdown */}
               <div className="relative group">
                 <Button variant="outline" size="sm">
