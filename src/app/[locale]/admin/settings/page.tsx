@@ -45,7 +45,6 @@ import { uploadMedia } from '@/lib/firebase/media';
 // Form schema
 const settingsSchema = z.object({
   browser: z.object({
-    title: z.string().optional(),
     favicon: z.string().optional(),
   }),
   company: z.object({
@@ -87,7 +86,6 @@ type SettingsFormData = z.infer<typeof settingsSchema>;
 
 const defaultSettings: SettingsFormData = {
   browser: {
-    title: '',
     favicon: '',
   },
   company: {
@@ -169,7 +167,6 @@ export default function AdminSettingsPage() {
         // SiteSettings'i SettingsFormData formatına çevir
         const formData: SettingsFormData = {
           browser: {
-            title: (settings as any).browserTitle || '',
             favicon: (settings as any).browserFavicon || '',
           },
           company: {
@@ -252,7 +249,6 @@ export default function AdminSettingsPage() {
       await updateSiteSettings({
         ...currentSettings,
         // Browser tab ayarları
-        browserTitle: data.browser.title || '',
         browserFavicon: data.browser.favicon || '',
         // Company bilgileri
         siteName: {
@@ -570,20 +566,9 @@ export default function AdminSettingsPage() {
                       <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-4">
                         Tarayıcı Sekmesi Ayarları
                       </h3>
-                      
-                      {/* Browser Title */}
-                      <div className="mb-4">
-                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                          Sekme Başlığı
-                        </label>
-                        <Input
-                          {...register('browser.title')}
-                          placeholder="Modern-X | İnşaat"
-                        />
-                        <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                          Tarayıcı sekmesinde görünecek başlık. Boş bırakılırsa sayfa başlığı kullanılır.
-                        </p>
-                      </div>
+                      <p className="text-xs text-gray-500 dark:text-gray-400 mb-4">
+                        Sekme başlığı olarak "Firma Adı | Slogan" kullanılır.
+                      </p>
 
                       {/* Browser Favicon */}
                       <div>

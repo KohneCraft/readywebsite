@@ -21,8 +21,14 @@ export async function generateMetadata(): Promise<Metadata> {
   
   try {
     const settings = await getSiteSettings();
-    if ((settings as any).browserTitle) {
-      browserTitle = (settings as any).browserTitle;
+    // Firma adı ve slogan birleşimi kullan
+    const siteName = settings.siteName?.tr || '';
+    const siteSlogan = settings.siteSlogan?.tr || '';
+    
+    if (siteName && siteSlogan) {
+      browserTitle = `${siteName} | ${siteSlogan}`;
+    } else if (siteName) {
+      browserTitle = siteName;
     }
   } catch (error) {
     console.error('Metadata fetch error:', error);

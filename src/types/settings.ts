@@ -250,7 +250,7 @@ export interface SiteSettings {
   adminIcon?: string;
   
   // Browser tab ayarları (temadan bağımsız)
-  browserTitle?: string; // Tarayıcı sekmesi başlığı
+  // Sekme başlığı otomatik: siteName | siteSlogan
   browserFavicon?: string; // Tarayıcı sekmesi ikonu URL
   
   // Metadata

@@ -201,12 +201,19 @@ export interface BlockProps {
   method?: 'GET' | 'POST';
   successMessage?: string;
   errorMessage?: string;
+  formBackgroundColor?: string; // Form arkaplan rengi
+  formTextColor?: string; // Input text rengi
+  formLabelColor?: string; // Label text rengi
+  buttonColor?: string; // Submit button arka plan rengi
+  buttonTextColor?: string; // Submit button text rengi
+  buttonText?: string; // Submit button metni
   
   // Map Block
   mapProvider?: 'google' | 'openstreetmap';
   latitude?: number;
   longitude?: number;
   zoom?: number;
+  mapWidth?: number; // px cinsinden - responsive'de tablet: 90%, mobil: 100%
   mapHeight?: number;
   marker?: boolean;
   markerTitle?: string;
@@ -595,6 +602,7 @@ export function getDefaultBlockProps(type: BlockType): Partial<BlockProps> {
       latitude: 39.9334,
       longitude: 32.8597,
       zoom: 15,
+      mapWidth: 1200, // px - varsayılan genişlik
       mapHeight: 400,
       marker: true,
       markerTitle: 'Konum',
