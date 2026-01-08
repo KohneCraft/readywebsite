@@ -26,7 +26,7 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     try {
       logger.theme.debug('loadCurrentTheme başlatıldı');
       // Önce siteSettings'ten aktif tema bilgisini al
-      const { getSiteSettings, getAvailableThemes, getThemeMetadata } = await import('@/lib/firebase/firestore');
+      const { getSiteSettings, getAvailableThemes } = await import('@/lib/firebase/firestore');
       
       let activeThemeName: string | null = null;
       let activeThemeId: string | null = null;
@@ -65,29 +65,53 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
           );
           
           if (matchedTheme) {
-            // Firestore'dan güncel metadata'yı al (header/footer ayarları için)
+            // Firestore'dan özel ayarları çek (kullanıcının yaptığı değişiklikler)
             try {
+              const { getThemeMetadata } = await import('@/lib/firebase/firestore');
               const firestoreMetadata = await getThemeMetadata(targetTheme.id);
-              if (firestoreMetadata && firestoreMetadata.settings) {
-                logger.theme.debug('Firestore metadata settings:', firestoreMetadata.settings);
-                logger.theme.debug('Firestore header navItems:', firestoreMetadata.settings?.header?.navItems);
-                logger.theme.debug('Firestore footer quickLinks:', firestoreMetadata.settings?.footer?.quickLinks);
-                // Firestore'daki güncel ayarları kullan
+              
+              if (firestoreMetadata?.settings) {
+                logger.theme.debug('Firestore\'dan özel ayarlar yüklendi');
+                
+                // Deep merge: Özel ayarları default ayarlar üzerine birleştir
+                const mergedSettings = { ...matchedTheme.metadata.settings };
+                
+                if (firestoreMetadata.settings.header) {
+                  mergedSettings.header = {
+                    ...mergedSettings.header,
+                    ...firestoreMetadata.settings.header,
+                  };
+                }
+                
+                if (firestoreMetadata.settings.footer) {
+                  mergedSettings.footer = {
+                    ...mergedSettings.footer,
+                    ...firestoreMetadata.settings.footer,
+                  };
+                }
+                
+                // Diğer ayarları da birleştir
+                Object.keys(firestoreMetadata.settings).forEach(key => {
+                  if (key !== 'header' && key !== 'footer') {
+                    mergedSettings[key] = firestoreMetadata.settings[key];
+                  }
+                });
+                
                 matchedTheme = {
                   ...matchedTheme,
                   metadata: {
                     ...matchedTheme.metadata,
-                    settings: {
-                      ...matchedTheme.metadata.settings,
-                      ...firestoreMetadata.settings,
-                    },
+                    settings: mergedSettings,
                   },
                 };
-                logger.theme.debug('Birleştirilmiş theme settings:', matchedTheme.metadata.settings);
+                logger.theme.info('Tema özel ayarlarla yüklendi:', matchedTheme.metadata.name);
+              } else {
+                logger.theme.info('Firestore\'da özel ayar yok, default ayarlar kullanılıyor');
               }
             } catch (metaError) {
-              logger.theme.warn('Tema metadata yüklenirken hata:', metaError);
+              logger.theme.warn('Özel ayarlar yüklenemedi, default ayarlar kullanılıyor:', metaError);
             }
+            
             setCurrentTheme(matchedTheme);
             return;
           }
