@@ -7,9 +7,10 @@ import type { BlockProps } from '@/types/pageBuilder';
 
 interface ImageBlockProps {
   props: BlockProps;
+  priority?: boolean; // LCP görselleri için öncelikli yükleme
 }
 
-function ImageBlockComponent({ props }: ImageBlockProps) {
+function ImageBlockComponent({ props, priority = false }: ImageBlockProps) {
   const [loaded, setLoaded] = useState(false);
   const deviceType = useDeviceType();
   
@@ -58,6 +59,14 @@ function ImageBlockComponent({ props }: ImageBlockProps) {
     );
   }
   
+  // Responsive sizes için dinamik hesaplama
+  const getSizes = () => {
+    if (props.maxWidth) {
+      return `(max-width: 768px) 100vw, (max-width: 1024px) 50vw, ${props.maxWidth}px`;
+    }
+    return '(max-width: 768px) 100vw, (max-width: 1024px) 75vw, 100vw';
+  };
+
   return (
     <div className="image-block" style={containerStyle}>
       <ImageWrapper {...wrapperProps} className="image-wrapper block">
@@ -68,7 +77,11 @@ function ImageBlockComponent({ props }: ImageBlockProps) {
           height={600}
           style={imageStyle}
           onLoad={() => setLoaded(true)}
-          loading="lazy"
+          loading={priority ? undefined : "lazy"}
+          priority={priority}
+          placeholder="blur"
+          blurDataURL="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iODAwIiBoZWlnaHQ9IjYwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iODAwIiBoZWlnaHQ9IjYwMCIgZmlsbD0iI2VlZSIvPjwvc3ZnPg=="
+          sizes={getSizes()}
           unoptimized
         />
       </ImageWrapper>
