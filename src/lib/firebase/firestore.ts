@@ -1457,13 +1457,20 @@ export async function installTheme(themeData: ThemeData, createdBy: string): Pro
     const themeSocialInfo = themeSettings.social || {};
     const themeSeoInfo = themeSettings.seo || {};
 
-    // Renk ve font stilleri varsa temizle (tema değiştiğinde sıfırlanmalı)
+    // Tema değiştiğinde SiteSettings'i TAMAMEN SIFIRLA
+    // ESKİ DEĞERLER SPREAD EDİLMEMELİ!
     const settingsToUpdate: any = {
-      ...currentSettings,
+      // Sadece değişmemesi gereken alanları koruyoruz
+      maintenance: currentSettings.maintenance,
+      homepage: currentSettings.homepage,
+      forms: currentSettings.forms,
+      redirects: currentSettings.redirects,
+      
       // Aktif tema bilgisini kaydet
       activeThemeId: existingThemeId || metadata.id,
       activeThemeName: metadata.name,
-      // Company bilgileri - TEMA'dan tamamen override et (eski değerleri koruma!)
+      
+      // Company bilgileri - TEMA'dan tamamen override et
       siteName: {
         tr: themeCompanyInfo.name || 'Page Builder',
         en: themeCompanyInfo.name || 'Page Builder',
@@ -1476,21 +1483,22 @@ export async function installTheme(themeData: ThemeData, createdBy: string): Pro
         de: themeCompanyInfo.slogan || 'Erstellen Sie moderne und flexible Webseiten',
         fr: themeCompanyInfo.slogan || 'Créez des pages Web modernes et flexibles',
       },
+      
+      // Logo'yu TAMAMEN sıfırla
       logo: {
-        ...currentSettings.logo,
-        light: { ...currentSettings.logo.light, url: themeCompanyInfo.logo || '' },
-        dark: { ...currentSettings.logo.dark, url: themeCompanyInfo.logo || '' },
-        // Favicon'u sıfırla (tema değiştiğinde favicon da sıfırlanır)
+        light: { url: themeCompanyInfo.logo || '', path: '', width: 0, height: 0 },
+        dark: { url: themeCompanyInfo.logo || '', path: '', width: 0, height: 0 },
         favicon: { url: '', path: '' },
+        mobile: { url: '', path: '' },
       },
-      // Renk ve font stillerini temizle (tema değiştiğinde sıfırlanmalı)
-      companyNameStyle: undefined,
-      sloganStyle: undefined,
-      // Browser favicon'u da sıfırla
-      browserFavicon: undefined,
+      
+      // Renk ve font stillerini TAMAMEN sil (tema değiştiğinde sıfırlanmalı)
+      companyNameStyle: null,
+      sloganStyle: null,
+      browserFavicon: null,
+      
       // İletişim bilgileri - TEMA'dan override et
       contact: {
-        ...currentSettings.contact,
         email: themeContactInfo.email || '',
         phones: themeContactInfo.phone ? [themeContactInfo.phone] : [],
         address: {
@@ -1499,8 +1507,19 @@ export async function installTheme(themeData: ThemeData, createdBy: string): Pro
           de: themeContactInfo.address || '',
           fr: themeContactInfo.address || '',
         },
+        workingHours: {
+          tr: '',
+          en: '',
+          de: '',
+          fr: '',
+        },
+        coordinates: {
+          lat: 0,
+          lng: 0,
+        },
       },
-      // Sosyal medya linkleri - TEMA'dan override et (eski değerleri koruma!)
+      
+      // Sosyal medya linkleri - TEMA'dan override et
       socialLinks: {
         facebook: themeSocialInfo.facebook || '',
         instagram: themeSocialInfo.instagram || '',
@@ -1508,9 +1527,9 @@ export async function installTheme(themeData: ThemeData, createdBy: string): Pro
         linkedin: themeSocialInfo.linkedin || '',
         youtube: themeSocialInfo.youtube || '',
       },
+      
       // SEO bilgileri - TEMA'dan override et
       seo: {
-        ...currentSettings.seo,
         titleTemplate: {
           tr: themeSeoInfo.metaTitle || '%s | Page Builder',
           en: themeSeoInfo.metaTitle || '%s | Page Builder',
@@ -1530,14 +1549,26 @@ export async function installTheme(themeData: ThemeData, createdBy: string): Pro
             de: themeSeoInfo.metaKeywords.split(',').map((k: string) => k.trim()),
             fr: themeSeoInfo.metaKeywords.split(',').map((k: string) => k.trim()),
           }
-          : currentSettings.seo.keywords,
+          : {
+            tr: ['page builder', 'web sayfası', 'tasarım'],
+            en: ['page builder', 'website', 'design'],
+            de: ['page builder', 'webseite', 'design'],
+            fr: ['page builder', 'site web', 'design'],
+          },
         googleAnalyticsId: themeSeoInfo.googleAnalyticsId || '',
+        googleTagManagerId: currentSettings.seo?.googleTagManagerId || '',
+        googleSearchConsoleVerification: currentSettings.seo?.googleSearchConsoleVerification || '',
+        facebookPixelId: currentSettings.seo?.facebookPixelId || '',
+        robotsTxt: currentSettings.seo?.robotsTxt || 'User-agent: *\nAllow: /',
+        sitemapEnabled: currentSettings.seo?.sitemapEnabled ?? true,
+        sitemapChangeFrequency: currentSettings.seo?.sitemapChangeFrequency || 'weekly',
+        sitemapPriority: currentSettings.seo?.sitemapPriority ?? 0.8,
       },
     };
 
-    // undefined değerleri temizle (Firestore'a gönderilmemeli)
+    // null değerleri temizle (Firestore'a gönderilmemeli)
     Object.keys(settingsToUpdate).forEach(key => {
-      if (settingsToUpdate[key] === undefined) {
+      if (settingsToUpdate[key] === null) {
         delete settingsToUpdate[key];
       }
     });
