@@ -1,7 +1,7 @@
 'use client';
 
 // ============================================
-// Vav Yapı - Admin Settings Page
+// Page Builder - Admin Settings Page
 // Site settings management
 // ============================================
 
@@ -89,8 +89,8 @@ const defaultSettings: SettingsFormData = {
     favicon: '',
   },
   company: {
-    name: 'Vav Yapı',
-    slogan: 'Güvenilir İnşaat Çözümleri',
+    name: 'X Şirketi',
+    slogan: 'X',
     logo: '',
     nameColor: '',
     nameFontSize: undefined,
@@ -98,22 +98,22 @@ const defaultSettings: SettingsFormData = {
     sloganFontSize: undefined,
   },
   contact: {
-    email: 'info@vavyapi.com',
+    email: 'info@x.com',
     phone: '+90 212 123 4567',
     address: 'Levent, İstanbul, Türkiye',
     mapUrl: '',
   },
   social: {
-    facebook: 'https://facebook.com/vavyapi',
-    instagram: 'https://instagram.com/vavyapi',
+    facebook: 'https://facebook.com/x',
+    instagram: 'https://instagram.com/x',
     twitter: '',
-    linkedin: 'https://linkedin.com/company/vavyapi',
+    linkedin: 'https://linkedin.com/company/x',
     youtube: '',
   },
   seo: {
-    metaTitle: 'Vav Yapı | İnşaat ve Müteahhitlik',
-    metaDescription: 'Güvenilir ve kaliteli inşaat hizmetleri. Konut, ticari ve endüstriyel projeleriniz için profesyonel çözümler.',
-    metaKeywords: 'inşaat, müteahhitlik, konut, ticari, endüstriyel',
+    metaTitle: 'X Şirketi | Y',
+    metaDescription: 'X açıklaması burada yer alır.',
+    metaKeywords: 'x, şirket, hizmetler',
     googleAnalyticsId: '',
   },
   maintenance: {
@@ -164,15 +164,117 @@ export default function AdminSettingsPage() {
         setIsLoading(true);
         const settings = await getSiteSettingsClient();
         
+        // Aktif temayı yükle
+        let themeSettings: any = null;
+        try {
+          const { getSiteSettings, getAvailableThemes, getThemeMetadata } = await import('@/lib/firebase/firestore');
+          const { getDefaultThemes } = await import('@/lib/themes/default/defaultThemes');
+          
+          const siteSettings = await getSiteSettings();
+          const activeThemeName = siteSettings.activeThemeName;
+          const activeThemeId = siteSettings.activeThemeId;
+          
+          if (activeThemeName || activeThemeId) {
+            const firestoreThemes = await getAvailableThemes();
+            const targetTheme = firestoreThemes.find(t => 
+              t.name === activeThemeName || 
+              t.id === activeThemeId ||
+              (activeThemeId && t.id.includes(activeThemeId.replace('theme-', '')))
+            );
+            
+            if (targetTheme) {
+              const defaultThemes = getDefaultThemes();
+              const matchedTheme = defaultThemes.find(t => 
+                t.metadata.name === targetTheme.name || 
+                t.metadata.id === targetTheme.id ||
+                targetTheme.id.includes(t.metadata.id.replace('theme-', ''))
+              );
+              
+              if (matchedTheme) {
+                // Firestore'dan özel ayarları al
+                const firestoreMetadata = await getThemeMetadata(targetTheme.id);
+                
+                if (firestoreMetadata?.settings) {
+                  // Deep merge
+                  themeSettings = { ...matchedTheme.metadata.settings };
+                  
+                  if (firestoreMetadata.settings.header) {
+                    themeSettings.header = {
+                      ...themeSettings.header,
+                      ...firestoreMetadata.settings.header,
+                    };
+                  }
+                  
+                  if (firestoreMetadata.settings.footer) {
+                    themeSettings.footer = {
+                      ...themeSettings.footer,
+                      ...firestoreMetadata.settings.footer,
+                    };
+                  }
+                  
+                  Object.keys(firestoreMetadata.settings).forEach(key => {
+                    if (key !== 'header' && key !== 'footer') {
+                      themeSettings[key] = firestoreMetadata.settings[key];
+                    }
+                  });
+                } else {
+                  themeSettings = matchedTheme.metadata.settings;
+                }
+              }
+            }
+          }
+        } catch (error) {
+          logger.api.warn('Tema ayarları yüklenirken hata:', error);
+        }
+        
+        // Tema ayarlarından default değerleri al
+        const themeDefaults = themeSettings ? {
+          company: {
+            name: themeSettings.company?.name || defaultSettings.company.name,
+            slogan: themeSettings.company?.slogan || defaultSettings.company.slogan,
+            logo: themeSettings.company?.logo || defaultSettings.company.logo,
+            favicon: themeSettings.company?.favicon || defaultSettings.browser.favicon || '',
+          },
+          social: themeSettings.footer?.socialLinks || defaultSettings.social,
+          contact: {
+            email: themeSettings.contact?.email || defaultSettings.contact.email,
+            phone: themeSettings.contact?.phone || defaultSettings.contact.phone,
+            address: themeSettings.contact?.address || defaultSettings.contact.address,
+            mapUrl: themeSettings.contact?.mapUrl || defaultSettings.contact.mapUrl,
+          },
+          seo: {
+            metaTitle: themeSettings.seo?.metaTitle || defaultSettings.seo.metaTitle,
+            metaDescription: themeSettings.seo?.metaDescription || defaultSettings.seo.metaDescription,
+            metaKeywords: themeSettings.seo?.metaKeywords || defaultSettings.seo.metaKeywords,
+            googleAnalyticsId: themeSettings.seo?.googleAnalyticsId || defaultSettings.seo.googleAnalyticsId,
+          },
+          maintenance: {
+            enabled: defaultSettings.maintenance.enabled,
+            message: defaultSettings.maintenance.message,
+            allowedIPs: defaultSettings.maintenance.allowedIPs,
+          },
+        } : {
+          company: {
+            name: defaultSettings.company.name,
+            slogan: defaultSettings.company.slogan,
+            logo: defaultSettings.company.logo,
+            favicon: defaultSettings.browser.favicon || '',
+          },
+          social: defaultSettings.social,
+          contact: defaultSettings.contact,
+          seo: defaultSettings.seo,
+          maintenance: defaultSettings.maintenance,
+        };
+        
         // SiteSettings'i SettingsFormData formatına çevir
         const formData: SettingsFormData = {
           browser: {
-            favicon: (settings as any).browserFavicon || '',
+            favicon: (settings as any).browserFavicon || themeDefaults.company.favicon,
           },
           company: {
-            name: settings.siteName?.tr || defaultSettings.company.name,
-            slogan: settings.siteSlogan?.tr || defaultSettings.company.slogan,
-            logo: settings.logo?.light?.url || defaultSettings.company.logo,
+            name: settings.siteName?.tr || themeDefaults.company.name,
+            slogan: settings.siteSlogan?.tr || themeDefaults.company.slogan,
+            logo: settings.logo?.light?.url || themeDefaults.company.logo,
             // Renk ve font ayarları - undefined ise boş bırak (tema varsayılanları kullanılsın)
             nameColor: (settings as any).companyNameStyle?.color || '',
             nameFontSize: (settings as any).companyNameStyle?.fontSize || undefined,
@@ -180,28 +282,28 @@ export default function AdminSettingsPage() {
             sloganFontSize: (settings as any).sloganStyle?.fontSize || undefined,
           },
           contact: {
-            email: settings.contact?.email || defaultSettings.contact.email,
-            phone: settings.contact?.phones?.[0] || defaultSettings.contact.phone,
-            address: settings.contact?.address?.tr || defaultSettings.contact.address,
-            mapUrl: defaultSettings.contact.mapUrl,
+            email: settings.contact?.email || themeDefaults.contact.email,
+            phone: settings.contact?.phones?.[0] || themeDefaults.contact.phone,
+            address: settings.contact?.address?.tr || themeDefaults.contact.address,
+            mapUrl: (settings as any).mapUrl || themeDefaults.contact.mapUrl,
           },
           social: {
-            facebook: settings.socialLinks?.facebook || defaultSettings.social.facebook,
-            instagram: settings.socialLinks?.instagram || defaultSettings.social.instagram,
-            twitter: settings.socialLinks?.twitter || defaultSettings.social.twitter,
-            linkedin: settings.socialLinks?.linkedin || defaultSettings.social.linkedin,
-            youtube: settings.socialLinks?.youtube || defaultSettings.social.youtube,
+            facebook: settings.socialLinks?.facebook || themeDefaults.social.facebook || '',
+            instagram: settings.socialLinks?.instagram || themeDefaults.social.instagram || '',
+            twitter: settings.socialLinks?.twitter || themeDefaults.social.twitter || '',
+            linkedin: settings.socialLinks?.linkedin || themeDefaults.social.linkedin || '',
+            youtube: settings.socialLinks?.youtube || themeDefaults.social.youtube || '',
           },
           seo: {
-            metaTitle: settings.seo?.titleTemplate?.tr || defaultSettings.seo.metaTitle,
-            metaDescription: settings.seo?.defaultDescription?.tr || defaultSettings.seo.metaDescription,
-            metaKeywords: settings.seo?.keywords?.tr?.join(', ') || defaultSettings.seo.metaKeywords,
-            googleAnalyticsId: settings.seo?.googleAnalyticsId || defaultSettings.seo.googleAnalyticsId,
+            metaTitle: settings.seo?.titleTemplate?.tr || themeDefaults.seo.metaTitle,
+            metaDescription: settings.seo?.defaultDescription?.tr || themeDefaults.seo.metaDescription,
+            metaKeywords: settings.seo?.keywords?.tr?.join(', ') || themeDefaults.seo.metaKeywords,
+            googleAnalyticsId: settings.seo?.googleAnalyticsId || themeDefaults.seo.googleAnalyticsId,
           },
           maintenance: {
-            enabled: settings.maintenance?.enabled || defaultSettings.maintenance.enabled,
-            message: settings.maintenance?.message?.tr || defaultSettings.maintenance.message,
-            allowedIPs: settings.maintenance?.allowedIPs?.join(', ') || defaultSettings.maintenance.allowedIPs,
+            enabled: settings.maintenance?.enabled || themeDefaults.maintenance.enabled,
+            message: settings.maintenance?.message?.tr || themeDefaults.maintenance.message,
+            allowedIPs: settings.maintenance?.allowedIPs?.join(', ') || themeDefaults.maintenance.allowedIPs,
           },
         };
         
