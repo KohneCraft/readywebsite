@@ -6,7 +6,7 @@
 // ============================================
 
 import { useEffect, useRef } from 'react';
-import { getSiteSettings } from '@/lib/firebase/firestore';
+import { getSiteSettingsClient } from '@/lib/firebase/firestore';
 import { logger } from '@/lib/logger';
 
 export function FaviconProvider() {
@@ -15,7 +15,7 @@ export function FaviconProvider() {
   useEffect(() => {
     async function updateFavicon() {
       try {
-        const settings = await getSiteSettings();
+        const settings = await getSiteSettingsClient();
         // Logo URL'ini favicon olarak kullan
         const logoUrl = settings?.logo?.light?.url || settings?.logo?.favicon?.url;
         

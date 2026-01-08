@@ -18,7 +18,7 @@ import {
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useTheme } from '@/contexts/ThemeContext';
-import { getSiteSettings } from '@/lib/firebase/firestore';
+import { getSiteSettingsClient } from '@/lib/firebase/firestore';
 import { logger } from '@/lib/logger';
 import type { Locale } from '@/i18n';
 import type { SiteSettings } from '@/types/settings';
@@ -40,19 +40,19 @@ export function Footer() {
 
   // Site settings'i yükle
   useEffect(() => {
-    async function loadSiteSettings() {
+    async function loadSettings() {
       try {
-        const settings = await getSiteSettings();
+        const settings = await getSiteSettingsClient();
         setSiteSettings(settings);
       } catch (error) {
         logger.ui.error('Site settings yükleme hatası', error);
       }
     }
-    loadSiteSettings();
+    loadSettings();
 
     // Site settings güncellendiğinde yeniden yükle
     const handleSettingsUpdate = () => {
-      loadSiteSettings();
+      loadSettings();
     };
     window.addEventListener('site-settings-updated', handleSettingsUpdate);
     return () => {

@@ -8,7 +8,7 @@
 import { useState, useEffect } from 'react';
 import { useTheme } from '@/contexts/ThemeContext';
 import { getCurrentUser } from '@/lib/firebase/auth';
-import { updateActiveThemeSettings, getSiteSettings, updateSiteSettings } from '@/lib/firebase/firestore';
+import { updateActiveThemeSettings, getSiteSettingsClient, updateSiteSettings } from '@/lib/firebase/firestore';
 import { logger } from '@/lib/logger';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
@@ -41,7 +41,7 @@ export function FooterSettings({ activeTab, onUpdate }: FooterSettingsProps) {
     async function loadFooterData() {
       try {
         // Site settings'ten sosyal medya bilgilerini çek
-        const siteSettings = await getSiteSettings();
+        const siteSettings = await getSiteSettingsClient();
         
         // Sosyal medya linklerini dönüştür
         const socialLinks: { platform: string; url: string }[] = [];

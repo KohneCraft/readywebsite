@@ -11,7 +11,7 @@ import { Image as ImageIcon, Upload, X, Info, Edit2 } from 'lucide-react';
 import Image from 'next/image';
 import { MediaSelector } from '../media/MediaSelector';
 import { uploadMedia } from '@/lib/firebase/media';
-import { getSiteSettings, updateSiteSettings } from '@/lib/firebase/firestore';
+import { getSiteSettingsClient, updateSiteSettings } from '@/lib/firebase/firestore';
 import { getCurrentUser } from '@/lib/firebase/auth';
 import { logger } from '@/lib/logger';
 import { Button } from '@/components/ui/Button';
@@ -42,7 +42,7 @@ export function IconSettings({ onUpdate }: IconSettingsProps) {
   const loadIcon = async () => {
     try {
       setIsLoading(true);
-      const settings = await getSiteSettings();
+      const settings = await getSiteSettingsClient();
       const favicon = settings?.logo?.favicon?.url || '';
       setIconUrl(favicon);
       setManualUrl(favicon);

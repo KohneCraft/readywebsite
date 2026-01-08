@@ -7,7 +7,7 @@
 
 import { useEffect, useRef } from 'react';
 import { useLocale } from 'next-intl';
-import { getSiteSettings } from '@/lib/firebase/firestore';
+import { getSiteSettingsClient } from '@/lib/firebase/firestore';
 import { logger } from '@/lib/logger';
 import type { Locale } from '@/i18n';
 
@@ -19,7 +19,7 @@ export function TitleProvider() {
   useEffect(() => {
     async function updateTitle() {
       try {
-        const settings = await getSiteSettings();
+        const settings = await getSiteSettingsClient();
         const siteName = settings?.siteName?.[locale] || settings?.siteName?.tr || 'Page Builder';
         const siteSlogan = settings?.siteSlogan?.[locale] || settings?.siteSlogan?.tr || '';
         

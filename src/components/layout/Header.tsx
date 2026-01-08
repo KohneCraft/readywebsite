@@ -16,7 +16,7 @@ import { cn } from '@/lib/utils';
 import { ThemeToggle } from '@/components/ui/ThemeToggle';
 import { LanguageSwitcher } from '@/components/ui/LanguageSwitcher';
 import { useTheme } from '@/contexts/ThemeContext';
-import { getSiteSettings } from '@/lib/firebase/firestore';
+import { getSiteSettingsClient } from '@/lib/firebase/firestore';
 import { logger } from '@/lib/logger';
 import type { Locale } from '@/i18n';
 import type { SiteSettings } from '@/types/settings';
@@ -39,7 +39,7 @@ export function Header() {
   useEffect(() => {
     async function loadSiteSettings() {
       try {
-        const settings = await getSiteSettings();
+        const settings = await getSiteSettingsClient();
         setSiteSettings(settings);
       } catch (error) {
         logger.ui.error('Site settings yükleme hatası', error);
