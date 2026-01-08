@@ -13,7 +13,6 @@ import { logger } from '@/lib/logger';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { toast } from '@/components/providers';
-import type { ThemeSettings } from '@/types/theme';
 
 interface HeaderSettingsProps {
   activeTab: 'style' | 'settings' | 'advanced';
@@ -21,7 +20,7 @@ interface HeaderSettingsProps {
 }
 
 export function HeaderSettings({ activeTab, onUpdate }: HeaderSettingsProps) {
-  const { themeSettings, currentTheme, setCurrentTheme } = useTheme();
+  const { themeSettings, currentTheme } = useTheme();
   const [loading, setLoading] = useState(false);
   const [headerConfig, setHeaderConfig] = useState(themeSettings?.header || {
     logo: '',
@@ -31,6 +30,7 @@ export function HeaderSettings({ activeTab, onUpdate }: HeaderSettingsProps) {
     textColor: '#1a1a1a',
   });
 
+  // ThemeSettings değiştiğinde formu güncelle
   useEffect(() => {
     if (themeSettings?.header) {
       setHeaderConfig(themeSettings.header);
@@ -48,29 +48,12 @@ export function HeaderSettings({ activeTab, onUpdate }: HeaderSettingsProps) {
         return;
       }
 
-      // Tema ayarlarını güncelle
-      const updatedSettings: ThemeSettings = {
-        ...currentTheme.metadata.settings,
-        header: headerConfig,
-      };
-
       // Firestore'a kaydet (aktif tema adına göre)
       await updateActiveThemeSettings(currentTheme.metadata.name, {
         header: headerConfig,
       });
 
-      // Context'i güncelle
-      if (setCurrentTheme) {
-        setCurrentTheme({
-          ...currentTheme,
-          metadata: {
-            ...currentTheme.metadata,
-            settings: updatedSettings,
-          },
-        });
-      }
-
-      // Tema güncelleme event'i gönder (diğer component'ler için)
+      // Tema yeniden yükle ki değişiklikler sayfada görünsün
       window.dispatchEvent(new CustomEvent('theme-updated'));
 
       if (onUpdate) {

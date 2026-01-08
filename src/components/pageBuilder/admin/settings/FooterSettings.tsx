@@ -13,7 +13,6 @@ import { logger } from '@/lib/logger';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { toast } from '@/components/providers';
-import type { ThemeSettings } from '@/types/theme';
 
 interface FooterSettingsProps {
   activeTab: 'style' | 'settings' | 'advanced';
@@ -21,7 +20,7 @@ interface FooterSettingsProps {
 }
 
 export function FooterSettings({ activeTab, onUpdate }: FooterSettingsProps) {
-  const { themeSettings, currentTheme, setCurrentTheme } = useTheme();
+  const { themeSettings, currentTheme } = useTheme();
   const [loading, setLoading] = useState(false);
   const [footerConfig, setFooterConfig] = useState(themeSettings?.footer || {
     logo: '',
@@ -37,6 +36,7 @@ export function FooterSettings({ activeTab, onUpdate }: FooterSettingsProps) {
     textColor: '#ffffff',
   });
 
+  // ThemeSettings değiştiğinde formu güncelle
   useEffect(() => {
     async function loadFooterData() {
       try {
@@ -63,26 +63,15 @@ export function FooterSettings({ activeTab, onUpdate }: FooterSettingsProps) {
           }
         }
         
-        // Theme settings ile birleştir
+        // ThemeSettings'ten footer ayarlarını al
         if (themeSettings?.footer) {
           setFooterConfig({
             ...themeSettings.footer,
             socialLinks: socialLinks.length > 0 ? socialLinks : themeSettings.footer.socialLinks,
           });
-        } else {
-          setFooterConfig({
-            logo: '',
-            logoText: 'Page Builder',
-            description: 'Kod bilgisi olmadan profesyonel web sayfaları oluşturun.',
-            quickLinks: [{ href: '/', label: 'Ana Sayfa' }],
-            socialLinks,
-            copyright: '© 2026 Page Builder. Tüm hakları saklıdır.',
-            backgroundColor: '#1a1a1a',
-            textColor: '#ffffff',
-          });
         }
       } catch (error) {
-        logger.theme.error('Footer ayarları yüklenirken hata', error);
+        logger.theme.error('Footer ayarları yüklenirken hata:', error);
       }
     }
     
@@ -111,29 +100,12 @@ export function FooterSettings({ activeTab, onUpdate }: FooterSettingsProps) {
         socialLinks: socialLinksObj,
       }, user.uid);
 
-      // Tema ayarlarını güncelle
-      const updatedSettings: ThemeSettings = {
-        ...currentTheme.metadata.settings,
-        footer: footerConfig,
-      };
-
       // Firestore'a kaydet (aktif tema adına göre)
       await updateActiveThemeSettings(currentTheme.metadata.name, {
         footer: footerConfig,
       });
 
-      // Context'i güncelle
-      if (setCurrentTheme) {
-        setCurrentTheme({
-          ...currentTheme,
-          metadata: {
-            ...currentTheme.metadata,
-            settings: updatedSettings,
-          },
-        });
-      }
-
-      // Tema güncelleme event'i gönder (diğer component'ler için)
+      // Tema yeniden yükle ki değişiklikler sayfada görünsün
       window.dispatchEvent(new CustomEvent('theme-updated'));
 
       if (onUpdate) {
