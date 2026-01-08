@@ -104,7 +104,25 @@ function convertTimestamp(timestamp: Timestamp | Date | undefined): Date {
 const SITE_SETTINGS_DOC = 'site';
 
 /**
- * Site ayarlarını getir (Cached)
+ * Site ayarlarını getir (Client-side için cache'siz)
+ */
+export async function getSiteSettingsClient(): Promise<SiteSettings> {
+  const docSnap = await getDoc(doc(db, COLLECTIONS.settings, SITE_SETTINGS_DOC));
+
+  if (docSnap.exists()) {
+    const data = docSnap.data();
+    return {
+      ...data,
+      updatedAt: convertTimestamp(data.updatedAt),
+    } as SiteSettings;
+  }
+
+  // Varsayılan ayarları döndür
+  return DEFAULT_SITE_SETTINGS as SiteSettings;
+}
+
+/**
+ * Site ayarlarını getir (Server-side için cached)
  */
 export const getSiteSettings = unstable_cache(
   async (): Promise<SiteSettings> => {
@@ -1681,12 +1699,32 @@ export async function updateActiveThemeSettings(
 
     const currentMetadata = activeTheme.data() as ThemeMetadata;
 
-    // Settings'i güncelle (sadece settings kısmını güncelle, diğer metadata'yı koru)
+    // Settings'i güncelle (nested objects için deep merge)
+    const updatedSettings = { ...currentMetadata.settings };
+    
+    // Header veya footer güncellemesi ise nested merge yap
+    if (settings.header) {
+      updatedSettings.header = {
+        ...updatedSettings.header,
+        ...settings.header,
+      };
+    }
+    if (settings.footer) {
+      updatedSettings.footer = {
+        ...updatedSettings.footer,
+        ...settings.footer,
+      };
+    }
+    
+    // Diğer ayarlar için shallow merge
+    Object.keys(settings).forEach(key => {
+      if (key !== 'header' && key !== 'footer') {
+        (updatedSettings as any)[key] = (settings as any)[key];
+      }
+    });
+
     await updateTheme(activeTheme.id, {
-      settings: {
-        ...currentMetadata.settings,
-        ...settings,
-      },
+      settings: updatedSettings,
     });
 
     logger.firestore.info(`✓ Tema ayarları güncellendi: ${themeName}`);

@@ -36,7 +36,7 @@ import { Input } from '@/components/ui/Input';
 import { Spinner } from '@/components/ui/Spinner';
 import { cn } from '@/lib/utils';
 import { toast } from '@/components/providers';
-import { getSiteSettings, updateSiteSettings } from '@/lib/firebase/firestore';
+import { getSiteSettingsClient, updateSiteSettings } from '@/lib/firebase/firestore';
 import { getCurrentUser } from '@/lib/firebase/auth';
 import { logger } from '@/lib/logger';
 import { MediaSelector } from '@/components/pageBuilder/admin/media/MediaSelector';
@@ -162,7 +162,7 @@ export default function AdminSettingsPage() {
     const loadSettings = async () => {
       try {
         setIsLoading(true);
-        const settings = await getSiteSettings();
+        const settings = await getSiteSettingsClient();
         
         // SiteSettings'i SettingsFormData formatına çevir
         const formData: SettingsFormData = {
@@ -244,7 +244,7 @@ export default function AdminSettingsPage() {
       }
       
       // SettingsFormData'yı SiteSettings formatına çevir
-      const currentSettings = await getSiteSettings();
+      const currentSettings = await getSiteSettingsClient();
       
       await updateSiteSettings({
         ...currentSettings,

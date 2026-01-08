@@ -24,7 +24,7 @@ import { Button, buttonVariants } from '@/components/ui/Button';
 import { Spinner } from '@/components/ui/Spinner';
 import { DashboardCharts } from '@/components/admin/DashboardCharts';
 import { cn } from '@/lib/utils';
-import { getAllPages } from '@/lib/firebase/firestore';
+import { getAllPagesClient } from '@/lib/firebase/firestore';
 import { logger } from '@/lib/logger';
 import type { Locale } from '@/i18n';
 
@@ -56,7 +56,7 @@ export default function AdminDashboard() {
     setIsLoading(true);
     try {
       // Load pages from Firestore
-      const pages = await getAllPages();
+      const pages = await getAllPagesClient();
 
       // Calculate stats
       const publishedCount = pages.filter(p => p.status === 'published').length;

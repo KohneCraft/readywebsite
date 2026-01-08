@@ -27,7 +27,7 @@ import { cn } from '@/lib/utils';
 import { Spinner } from '@/components/ui/Spinner';
 import { ToastProvider } from '@/components/providers';
 import { onAuthStateChanged, signOut as firebaseSignOut, getUserProfile } from '@/lib/firebase/auth';
-import { getSiteSettings } from '@/lib/firebase/firestore';
+import { getSiteSettingsClient } from '@/lib/firebase/firestore';
 import { logger } from '@/lib/logger';
 import Image from 'next/image';
 import type { Locale } from '@/i18n';
@@ -148,7 +148,7 @@ export default function AdminLayout({
   useEffect(() => {
     async function loadAdminSettings() {
       try {
-        const settings = await getSiteSettings();
+        const settings = await getSiteSettingsClient();
         if (settings?.adminTitle) {
           setAdminTitle(settings.adminTitle);
         }
