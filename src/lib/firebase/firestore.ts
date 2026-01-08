@@ -1331,14 +1331,19 @@ export async function installTheme(themeData: ThemeData, createdBy: string): Pro
       logger.firestore.debug('Metadata settings:', metadata.settings);
       logger.firestore.debug('Header navItems:', metadata.settings?.header?.navItems);
       logger.firestore.debug('Footer quickLinks:', metadata.settings?.footer?.quickLinks);
+      
       // Tema metadata'sını TAMAMEN orijinal tema dosyasındaki ayarlarla değiştir
       // setDoc kullanarak tüm metadata'yı değiştir (updateDoc değil, çünkü tüm alanları değiştirmek istiyoruz)
       const themeRef = doc(db, COLLECTIONS.themes, existingTheme.id);
       await setDoc(themeRef, {
         ...metadata, // Orijinal tema dosyasındaki tüm metadata (header/footer dahil)
         updatedAt: serverTimestamp(),
-      }, { merge: false }); // merge: false = tüm dokümanı değiştir
-      logger.firestore.info('✓ Tema metadata orijinal ayarlarla güncellendi (header/footer ayarları sıfırlandı)');
+        // settings alanını explicity olarak orijinal ayarlarla değiştir
+        // Bu sayede kullanıcının önceki customization'ları tamamen silinir
+        settings: metadata.settings,
+      }, { merge: false }); // merge: false = tüm dokümanı değiştir, önceki tüm ayarlar silinir
+      
+      logger.firestore.info('✓ Tema metadata orijinal ayarlarla güncellendi (TÜM özel ayarlar sıfırlandı)');
     } else {
       // Tema yoksa yeni oluştur
       logger.firestore.debug('Yeni tema oluşturuluyor...');
@@ -1458,86 +1463,75 @@ export async function installTheme(themeData: ThemeData, createdBy: string): Pro
       // Aktif tema bilgisini kaydet
       activeThemeId: existingThemeId || metadata.id,
       activeThemeName: metadata.name,
-      // Company bilgileri (tema'dan gelen bilgilerle güncelle, yoksa mevcut değerleri koru)
-      siteName: themeCompanyInfo.name
-        ? { tr: themeCompanyInfo.name, en: themeCompanyInfo.name, de: themeCompanyInfo.name, fr: themeCompanyInfo.name }
-        : currentSettings.siteName,
-      siteSlogan: themeCompanyInfo.slogan
-        ? { tr: themeCompanyInfo.slogan, en: themeCompanyInfo.slogan, de: themeCompanyInfo.slogan, fr: themeCompanyInfo.slogan }
-        : currentSettings.siteSlogan,
-      logo: themeCompanyInfo.logo
-        ? {
-          ...currentSettings.logo,
-          light: { ...currentSettings.logo.light, url: themeCompanyInfo.logo },
-          dark: { ...currentSettings.logo.dark, url: themeCompanyInfo.logo },
-          // Favicon'u sıfırla (tema değiştiğinde favicon da sıfırlanır)
-          favicon: {
-            url: '',
-            path: '',
-          },
-        }
-        : {
-          ...currentSettings.logo,
-          // Favicon'u sıfırla (tema değiştiğinde favicon da sıfırlanır)
-          favicon: {
-            url: '',
-            path: '',
-          },
-        },
+      // Company bilgileri - TEMA'dan tamamen override et (eski değerleri koruma!)
+      siteName: {
+        tr: themeCompanyInfo.name || 'Page Builder',
+        en: themeCompanyInfo.name || 'Page Builder',
+        de: themeCompanyInfo.name || 'Page Builder',
+        fr: themeCompanyInfo.name || 'Page Builder',
+      },
+      siteSlogan: {
+        tr: themeCompanyInfo.slogan || 'Modern ve Esnek Web Sayfaları',
+        en: themeCompanyInfo.slogan || 'Create Modern and Flexible Web Pages',
+        de: themeCompanyInfo.slogan || 'Erstellen Sie moderne und flexible Webseiten',
+        fr: themeCompanyInfo.slogan || 'Créez des pages Web modernes et flexibles',
+      },
+      logo: {
+        ...currentSettings.logo,
+        light: { ...currentSettings.logo.light, url: themeCompanyInfo.logo || '' },
+        dark: { ...currentSettings.logo.dark, url: themeCompanyInfo.logo || '' },
+        // Favicon'u sıfırla (tema değiştiğinde favicon da sıfırlanır)
+        favicon: { url: '', path: '' },
+      },
       // Renk ve font stillerini temizle (tema değiştiğinde sıfırlanmalı)
       companyNameStyle: undefined,
       sloganStyle: undefined,
-      // İletişim bilgileri
+      // Browser favicon'u da sıfırla
+      browserFavicon: undefined,
+      // İletişim bilgileri - TEMA'dan override et
       contact: {
         ...currentSettings.contact,
-        email: themeContactInfo.email || currentSettings.contact.email,
-        phones: themeContactInfo.phone ? [themeContactInfo.phone] : currentSettings.contact.phones,
-        address: themeContactInfo.address
-          ? {
-            tr: themeContactInfo.address,
-            en: themeContactInfo.address,
-            de: themeContactInfo.address,
-            fr: themeContactInfo.address,
-          }
-          : currentSettings.contact.address,
+        email: themeContactInfo.email || '',
+        phones: themeContactInfo.phone ? [themeContactInfo.phone] : [],
+        address: {
+          tr: themeContactInfo.address || '',
+          en: themeContactInfo.address || '',
+          de: themeContactInfo.address || '',
+          fr: themeContactInfo.address || '',
+        },
       },
-      // Sosyal medya linkleri
+      // Sosyal medya linkleri - TEMA'dan override et (eski değerleri koruma!)
       socialLinks: {
-        ...currentSettings.socialLinks,
-        facebook: themeSocialInfo.facebook || currentSettings.socialLinks.facebook,
-        instagram: themeSocialInfo.instagram || currentSettings.socialLinks.instagram,
-        twitter: themeSocialInfo.twitter || currentSettings.socialLinks.twitter,
-        linkedin: themeSocialInfo.linkedin || currentSettings.socialLinks.linkedin,
-        youtube: themeSocialInfo.youtube || currentSettings.socialLinks.youtube,
+        facebook: themeSocialInfo.facebook || '',
+        instagram: themeSocialInfo.instagram || '',
+        twitter: themeSocialInfo.twitter || '',
+        linkedin: themeSocialInfo.linkedin || '',
+        youtube: themeSocialInfo.youtube || '',
       },
-      // SEO bilgileri
+      // SEO bilgileri - TEMA'dan override et
       seo: {
         ...currentSettings.seo,
-        titleTemplate: themeSeoInfo.metaTitle
-          ? {
-            tr: themeSeoInfo.metaTitle,
-            en: themeSeoInfo.metaTitle,
-            de: themeSeoInfo.metaTitle,
-            fr: themeSeoInfo.metaTitle,
-          }
-          : currentSettings.seo.titleTemplate,
-        defaultDescription: themeSeoInfo.metaDescription
-          ? {
-            tr: themeSeoInfo.metaDescription,
-            en: themeSeoInfo.metaDescription,
-            de: themeSeoInfo.metaDescription,
-            fr: themeSeoInfo.metaDescription,
-          }
-          : currentSettings.seo.defaultDescription,
+        titleTemplate: {
+          tr: themeSeoInfo.metaTitle || '%s | Page Builder',
+          en: themeSeoInfo.metaTitle || '%s | Page Builder',
+          de: themeSeoInfo.metaTitle || '%s | Page Builder',
+          fr: themeSeoInfo.metaTitle || '%s | Page Builder',
+        },
+        defaultDescription: {
+          tr: themeSeoInfo.metaDescription || 'Page Builder - Modern ve esnek web sayfaları oluşturun.',
+          en: themeSeoInfo.metaDescription || 'Page Builder - Create modern and flexible web pages.',
+          de: themeSeoInfo.metaDescription || 'Page Builder - Erstellen Sie moderne und flexible Webseiten.',
+          fr: themeSeoInfo.metaDescription || 'Page Builder - Créez des pages Web modernes et flexibles.',
+        },
         keywords: themeSeoInfo.metaKeywords
           ? {
-            tr: themeSeoInfo.metaKeywords.split(',').map(k => k.trim()),
-            en: themeSeoInfo.metaKeywords.split(',').map(k => k.trim()),
-            de: themeSeoInfo.metaKeywords.split(',').map(k => k.trim()),
-            fr: themeSeoInfo.metaKeywords.split(',').map(k => k.trim()),
+            tr: themeSeoInfo.metaKeywords.split(',').map((k: string) => k.trim()),
+            en: themeSeoInfo.metaKeywords.split(',').map((k: string) => k.trim()),
+            de: themeSeoInfo.metaKeywords.split(',').map((k: string) => k.trim()),
+            fr: themeSeoInfo.metaKeywords.split(',').map((k: string) => k.trim()),
           }
           : currentSettings.seo.keywords,
-        googleAnalyticsId: themeSeoInfo.googleAnalyticsId || currentSettings.seo.googleAnalyticsId,
+        googleAnalyticsId: themeSeoInfo.googleAnalyticsId || '',
       },
     };
 

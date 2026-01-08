@@ -167,7 +167,7 @@ export default function AdminSettingsPage() {
         // Aktif temayı yükle
         let themeSettings: any = null;
         try {
-          const { getSiteSettings, getAvailableThemes, getThemeMetadata } = await import('@/lib/firebase/firestore');
+          const { getSiteSettings, getAvailableThemes } = await import('@/lib/firebase/firestore');
           const { getDefaultThemes } = await import('@/lib/themes/default/defaultThemes');
           
           const siteSettings = await getSiteSettings();
@@ -191,35 +191,11 @@ export default function AdminSettingsPage() {
               );
               
               if (matchedTheme) {
-                // Firestore'dan özel ayarları al
-                const firestoreMetadata = await getThemeMetadata(targetTheme.id);
-                
-                if (firestoreMetadata?.settings) {
-                  // Deep merge
-                  themeSettings = { ...matchedTheme.metadata.settings };
-                  
-                  if (firestoreMetadata.settings.header) {
-                    themeSettings.header = {
-                      ...themeSettings.header,
-                      ...firestoreMetadata.settings.header,
-                    };
-                  }
-                  
-                  if (firestoreMetadata.settings.footer) {
-                    themeSettings.footer = {
-                      ...themeSettings.footer,
-                      ...firestoreMetadata.settings.footer,
-                    };
-                  }
-                  
-                  Object.keys(firestoreMetadata.settings).forEach(key => {
-                    if (key !== 'header' && key !== 'footer') {
-                      themeSettings[key] = firestoreMetadata.settings[key];
-                    }
-                  });
-                } else {
-                  themeSettings = matchedTheme.metadata.settings;
-                }
+                // Admin settings sayfası SADECE default tema ayarlarını kullanmalı
+                // Firestore'daki özel ayarlar (navbar/footer customization) buraya dahil edilmemeli
+                // Çünkü bu sayfa tema bilgilerini göstermek için, özel ayarları değil
+                themeSettings = matchedTheme.metadata.settings;
+                logger.api.debug('Tema default ayarları yüklendi (özel ayarlar dahil edilmedi)');
               }
             }
           }
