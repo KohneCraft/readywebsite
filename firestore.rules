@@ -125,6 +125,22 @@ service cloud.firestore {
     }
     
     // ==========================================
+    // LOGS KOLEKSİYONU (Sistem Logları)
+    // ==========================================
+    
+    match /logs/{logId} {
+      // Okuma: Authenticated (admin panelden görüntüleme için)
+      allow read: if isAuthenticated();
+      
+      // Oluşturma: Herkes (client-side logging için)
+      // Client-side logger Firestore'a log kaydedebilir
+      allow create: if true;
+      
+      // Güncelleme/Silme: Yok (loglar değiştirilemez)
+      allow update, delete: if false;
+    }
+    
+    // ==========================================
     // PAGE LAYOUTS KOLEKSİYONU
     // ==========================================
     // Sayfa düzeni yönetimi için
