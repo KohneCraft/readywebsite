@@ -32,11 +32,11 @@ const LOG_LEVELS: Record<LogLevel, number> = {
 
 // Default configuration
 const defaultConfig: LoggerConfig = {
-  enabled: process.env.NODE_ENV !== 'production',
-  minLevel: process.env.NODE_ENV === 'production' ? 'warn' : 'debug',
+  enabled: true, // Her zaman açık - production'da da loglar görünsün
+  minLevel: 'debug', // Tüm logları göster (production'da da debug yapabilelim)
   showTimestamp: true,
   showContext: true,
-  persistToFirestore: process.env.NODE_ENV === 'production', // Production'da kaydet
+  persistToFirestore: false, // Firestore'a kaydetme kapalı (performans için)
 };
 
 let config: LoggerConfig = { ...defaultConfig };

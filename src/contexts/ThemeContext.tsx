@@ -24,29 +24,28 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
   // Firestore'dan aktif temayı yükle
   const loadCurrentTheme = async () => {
     try {
-      logger.theme.debug('loadCurrentTheme başlatıldı');
-      // Önce siteSettings'ten aktif tema bilgisini al
-      const { getSiteSettings, getAvailableThemes } = await import('@/lib/firebase/firestore');
+      logger.theme.info('loadCurrentTheme başlatıldı');
+      // Önce siteSettings'ten aktif tema bilgisini al - CLIENT-SAFE fonksiyon kullan!
+      const { getSiteSettingsClient, getAvailableThemes } = await import('@/lib/firebase/firestore');
       
       let activeThemeName: string | null = null;
       let activeThemeId: string | null = null;
       
       try {
-        const siteSettings = await getSiteSettings();
+        const siteSettings = await getSiteSettingsClient(); // CLIENT-SAFE!
         activeThemeName = siteSettings.activeThemeName || null;
         activeThemeId = siteSettings.activeThemeId || null;
-        logger.theme.debug(`SiteSettings'ten aktif tema: ${activeThemeName} (ID: ${activeThemeId})`);
+        logger.theme.info(`SiteSettings'ten aktif tema: ${activeThemeName} (ID: ${activeThemeId})`);
       } catch (error) {
-        // incrementalCache hatası normal (client-side limitasyon), sadece debug log
-        logger.theme.debug('SiteSettings client-side erişim limitasyonu (normal):', error instanceof Error ? error.message : error);
+        logger.theme.warn('SiteSettings yüklenemedi:', error instanceof Error ? error.message : error);
       }
       
       // Firestore'dan yüklenmiş temaları kontrol et
       const firestoreThemes = await getAvailableThemes();
-      logger.theme.debug('Firestore temaları:', firestoreThemes.map(t => ({ id: t.id, name: t.name })));
+      logger.theme.info('Firestore temaları:', firestoreThemes.map(t => ({ id: t.id, name: t.name })));
       
       const defaultThemes = getDefaultThemes();
-      logger.theme.debug('Varsayılan temalar:', defaultThemes.map(t => t.metadata.name));
+      logger.theme.info('Varsayılan temalar:', defaultThemes.map(t => t.metadata.name));
       
       // Aktif tema bilgisi varsa, o temayı bul
       if (activeThemeName || activeThemeId) {
