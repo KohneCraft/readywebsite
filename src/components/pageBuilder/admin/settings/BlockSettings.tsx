@@ -18,6 +18,7 @@ import { DividerBlockSettings } from './blocks/DividerBlockSettings';
 import { FormBlockSettings } from './blocks/FormBlockSettings';
 import { MapBlockSettings } from './blocks/MapBlockSettings';
 import { HTMLBlockSettings } from './blocks/HTMLBlockSettings';
+import { SliderBlockSettings } from './blocks/SliderBlockSettings';
 import { Spinner } from '@/components/ui/Spinner';
 import type { Block } from '@/types/pageBuilder';
 
@@ -178,6 +179,17 @@ export function BlockSettings({ blockId, activeTab, onUpdate }: BlockSettingsPro
           <HTMLBlockSettings
             block={block}
             activeTab={activeTab}
+            onUpdate={(updates) => {
+              const updated = { ...block, props: { ...block.props, ...updates } };
+              setBlock(updated);
+              onUpdate(updated);
+            }}
+          />
+        );
+      case 'slider':
+        return (
+          <SliderBlockSettings
+            block={block}
             onUpdate={(updates) => {
               const updated = { ...block, props: { ...block.props, ...updates } };
               setBlock(updated);

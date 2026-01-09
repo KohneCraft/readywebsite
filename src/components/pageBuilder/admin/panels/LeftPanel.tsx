@@ -7,20 +7,21 @@
 
 import { useState } from 'react';
 import { useDraggable } from '@dnd-kit/core';
-import { 
-  Type, 
-  Heading, 
-  Image, 
-  Video, 
-  MousePointer, 
-  Minus, 
-  Divide, 
-  Mail, 
-  MapPin, 
+import {
+  Type,
+  Heading,
+  Image,
+  Video,
+  MousePointer,
+  Minus,
+  Divide,
+  Mail,
+  MapPin,
   Code,
   Search,
   Plus,
   Columns,
+  SlidersHorizontal,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import type { BlockType } from '@/types/pageBuilder';
@@ -41,14 +42,15 @@ const blockLibrary: BlockLibraryItem[] = [
   { type: 'spacer', icon: Minus, label: 'Boşluk', description: 'Dikey boşluk ekle', category: 'basic' },
   { type: 'divider', icon: Divide, label: 'Ayırıcı', description: 'Yatay çizgi', category: 'basic' },
   { type: 'column', icon: Columns, label: 'Kolon', description: 'Yeni kolon ekle', category: 'basic' },
-  
+
   // Medya Blokları
   { type: 'image', icon: Image, label: 'Görsel', description: 'Resim ekle', category: 'media' },
   { type: 'video', icon: Video, label: 'Video', description: 'Video ekle', category: 'media' },
-  
+  { type: 'slider', icon: SlidersHorizontal, label: 'Slider', description: 'Resim/Video slider', category: 'media' },
+
   // Form Blokları
   { type: 'form', icon: Mail, label: 'Form', description: 'İletişim formu', category: 'form' },
-  
+
   // Gelişmiş Bloklar
   { type: 'map', icon: MapPin, label: 'Harita', description: 'Google Maps', category: 'advanced' },
   { type: 'html', icon: Code, label: 'HTML', description: 'Özel HTML kodu', category: 'advanced' },
@@ -109,7 +111,7 @@ export function LeftPanel() {
   // Filtreleme
   const filteredBlocks = blockLibrary.filter(block => {
     const matchesSearch = block.label.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         block.description.toLowerCase().includes(searchQuery.toLowerCase());
+      block.description.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesCategory = selectedCategory === 'all' || block.category === selectedCategory;
     return matchesSearch && matchesCategory;
   });
@@ -121,7 +123,7 @@ export function LeftPanel() {
         <h3 className="text-sm font-semibold text-gray-900 dark:text-white mb-3">
           Bloklar
         </h3>
-        
+
         {/* Arama */}
         <div className="relative">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
@@ -170,7 +172,7 @@ export function LeftPanel() {
 
       {/* Footer - Yeni Section Ekle */}
       <div className="p-4 border-t border-gray-200 dark:border-gray-700">
-        <button 
+        <button
           onClick={() => {
             // Bu fonksiyon PageBuilderEditor'dan prop olarak gelecek
             if (typeof window !== 'undefined') {

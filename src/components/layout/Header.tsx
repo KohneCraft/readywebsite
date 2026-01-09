@@ -17,6 +17,8 @@ import { ThemeToggle } from '@/components/ui/ThemeToggle';
 import { LanguageSwitcher } from '@/components/ui/LanguageSwitcher';
 import { useTheme } from '@/contexts/ThemeContext';
 import { getSiteSettingsClient } from '@/lib/firebase/firestore';
+import { getEffectiveColor } from '@/lib/themeColors';
+import { useTheme as useNextTheme } from 'next-themes';
 import { logger } from '@/lib/logger';
 import type { Locale } from '@/i18n';
 import type { SiteSettings } from '@/types/settings';
@@ -99,6 +101,23 @@ export function Header() {
   const isTransparent = useMemo(() => {
     return themeSettings?.header?.transparent === true;
   }, [themeSettings]);
+
+  // next-themes'den koyu tema durumunu al
+  const { resolvedTheme } = useNextTheme();
+  const isDarkMode = resolvedTheme === 'dark';
+
+  // Firma adı ve slogan renkleri - tema desteği ile
+  const effectiveNameColor = useMemo(() => {
+    const lightColor = siteSettings?.companyNameStyle?.color || headerTextColor;
+    const darkColor = siteSettings?.companyNameStyle?.colorDark;
+    return getEffectiveColor(lightColor, darkColor, isDarkMode);
+  }, [siteSettings?.companyNameStyle?.color, siteSettings?.companyNameStyle?.colorDark, headerTextColor, isDarkMode]);
+
+  const effectiveSloganColor = useMemo(() => {
+    const lightColor = siteSettings?.sloganStyle?.color || (headerTextColor ? `${headerTextColor}CC` : undefined);
+    const darkColor = siteSettings?.sloganStyle?.colorDark;
+    return getEffectiveColor(lightColor, darkColor, isDarkMode);
+  }, [siteSettings?.sloganStyle?.color, siteSettings?.sloganStyle?.colorDark, headerTextColor, isDarkMode]);
 
   // Generate localized href
   const getLocalizedHref = useCallback((href: string) => {
@@ -208,7 +227,7 @@ export function Header() {
                 <span
                   className="font-bold leading-tight"
                   style={{
-                    color: siteSettings?.companyNameStyle?.color || headerTextColor || undefined,
+                    color: effectiveNameColor || undefined,
                     fontSize: siteSettings?.companyNameStyle?.fontSize ? `${siteSettings.companyNameStyle.fontSize}px` : undefined,
                   }}
                 >
@@ -218,7 +237,7 @@ export function Header() {
                   <span
                     className="hidden sm:block"
                     style={{
-                      color: siteSettings?.sloganStyle?.color || (headerTextColor ? `${headerTextColor}CC` : undefined),
+                      color: effectiveSloganColor || undefined,
                       fontSize: siteSettings?.sloganStyle?.fontSize ? `${siteSettings.sloganStyle.fontSize}px` : undefined,
                     }}
                   >

@@ -1,17 +1,18 @@
 'use client';
 
 import { useState, useEffect, useMemo, useRef } from 'react';
-import { 
-  TextBlock, 
-  HeadingBlock, 
-  ImageBlock, 
-  VideoBlock, 
+import {
+  TextBlock,
+  HeadingBlock,
+  ImageBlock,
+  VideoBlock,
   ButtonBlock,
   SpacerBlock,
   DividerBlock,
   FormBlock,
   MapBlock,
-  HTMLBlock
+  HTMLBlock,
+  SliderBlock
 } from '../blocks';
 import { getBlockById } from '@/lib/firebase/firestore';
 import { logger } from '@/lib/logger';
@@ -33,6 +34,7 @@ const blockComponents: Record<BlockType, React.ComponentType<{ props: Block['pro
   form: FormBlock,
   map: MapBlock,
   html: HTMLBlock,
+  slider: SliderBlock,
 };
 
 export function BlockRenderer({ blockId, index }: BlockRendererProps) {
@@ -40,7 +42,7 @@ export function BlockRenderer({ blockId, index }: BlockRendererProps) {
   const [block, setBlock] = useState<Block | null>(null);
   const [isVisible, setIsVisible] = useState(false);
   const [loading, setLoading] = useState(true);
-  
+
   useEffect(() => {
     let isMounted = true;
 
@@ -49,7 +51,7 @@ export function BlockRenderer({ blockId, index }: BlockRendererProps) {
         setLoading(true);
         const blockData = await getBlockById(blockId);
         if (!isMounted) return;
-        
+
         logger.pageBuilder.debug(`Block yüklendi (${blockId})`, blockData);
         if (!blockData) {
           logger.pageBuilder.warn(`Block bulunamadı: ${blockId}`);
@@ -70,24 +72,24 @@ export function BlockRenderer({ blockId, index }: BlockRendererProps) {
       isMounted = false;
     };
   }, [blockId]);
-  
+
   // Animation hesaplamaları - early return'lerden önce
   const animation = block?.props?.animation;
-  const animationClass = useMemo(() => 
-    animation?.enabled && isVisible 
-      ? `animate-${animation.type || 'fadeIn'}` 
+  const animationClass = useMemo(() =>
+    animation?.enabled && isVisible
+      ? `animate-${animation.type || 'fadeIn'}`
       : ''
-  , [animation, isVisible]);
-  
+    , [animation, isVisible]);
+
   const animationStyle = useMemo(() => animation?.enabled ? {
     '--animation-duration': `${animation.duration || 0.5}s`,
     '--animation-delay': `${animation.delay || 0}s`
   } : {}, [animation]);
-  
+
   // Intersection Observer for animations
   useEffect(() => {
     if (!animation || !animation.enabled) return;
-    
+
     const observer = new IntersectionObserver(
       ([entry]) => {
         if (entry.isIntersecting) {
@@ -96,15 +98,15 @@ export function BlockRenderer({ blockId, index }: BlockRendererProps) {
       },
       { threshold: 0.1 }
     );
-    
+
     const element = blockRef.current;
     if (element) {
       observer.observe(element);
     }
-    
+
     return () => observer.disconnect();
   }, [animation]);
-  
+
   // Loading state - skeleton placeholder
   if (loading) {
     return (
@@ -113,7 +115,7 @@ export function BlockRenderer({ blockId, index }: BlockRendererProps) {
       </div>
     );
   }
-  
+
   // Error state - block not found
   if (!block) {
     logger.pageBuilder.warn(`Block bulunamadı (${blockId})`);
@@ -123,9 +125,9 @@ export function BlockRenderer({ blockId, index }: BlockRendererProps) {
       </div>
     );
   }
-  
+
   const BlockComponent = blockComponents[block.type];
-  
+
   // Error state - unknown block type
   if (!BlockComponent) {
     logger.pageBuilder.warn(`Unknown block type: ${block.type}`);
@@ -135,9 +137,9 @@ export function BlockRenderer({ blockId, index }: BlockRendererProps) {
       </div>
     );
   }
-  
+
   return (
-    <div 
+    <div
       ref={blockRef}
       id={`block-${blockId}`}
       className={`block-renderer block-${block.type} ${animationClass}`}

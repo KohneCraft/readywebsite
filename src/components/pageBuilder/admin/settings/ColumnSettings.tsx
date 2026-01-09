@@ -9,7 +9,7 @@ import { useState, useEffect } from 'react';
 import { getColumnById } from '@/lib/firebase/firestore';
 import { logger } from '@/lib/logger';
 import { SpacingControl } from '../controls/SpacingControl';
-import { ColorPicker } from '../controls/ColorPicker';
+import { DualColorPicker } from '../controls/DualColorPicker';
 import { Spinner } from '@/components/ui/Spinner';
 import { Input } from '@/components/ui/Input';
 import { cn } from '@/lib/utils';
@@ -80,7 +80,7 @@ export function ColumnSettings({ columnId, activeTab, onUpdate }: ColumnSettings
       }
     }
   }, [column?.width]);
-  
+
 
   if (loading) {
     return (
@@ -132,11 +132,11 @@ export function ColumnSettings({ columnId, activeTab, onUpdate }: ColumnSettings
               step={widthUnit === 'percent' ? 0.1 : 1}
               value={widthValue}
               onChange={(e) => {
-                const newValue = widthUnit === 'percent' 
+                const newValue = widthUnit === 'percent'
                   ? parseFloat(e.target.value) || 0
                   : parseInt(e.target.value) || 0;
                 setWidthValue(newValue);
-                
+
                 // UI'ı hemen güncelle (anlık görünüm için)
                 const updated = { ...column, width: newValue };
                 setColumn(updated);
@@ -166,12 +166,12 @@ export function ColumnSettings({ columnId, activeTab, onUpdate }: ColumnSettings
                 };
                 setColumn(updated);
                 onUpdate(updated);
-                
+
                 // Firestore'da güncelle
                 (async () => {
                   try {
                     const { updateColumn } = await import('@/lib/firebase/firestore');
-                    await updateColumn(column.id, { 
+                    await updateColumn(column.id, {
                       settings: { ...settings, height: heightValue },
                     });
                     window.dispatchEvent(new CustomEvent('section-updated', { detail: { sectionId: 'any' } }));
@@ -201,11 +201,11 @@ export function ColumnSettings({ columnId, activeTab, onUpdate }: ColumnSettings
                   };
                   setColumn(updated);
                   onUpdate(updated);
-                  
+
                   // Firestore'da güncelle
                   try {
                     const { updateColumn } = await import('@/lib/firebase/firestore');
-                    await updateColumn(column.id, { 
+                    await updateColumn(column.id, {
                       settings: { ...settings, height: heightValue },
                     });
                     window.dispatchEvent(new CustomEvent('section-updated', { detail: { sectionId: 'any' } }));
@@ -220,23 +220,24 @@ export function ColumnSettings({ columnId, activeTab, onUpdate }: ColumnSettings
         </div>
 
         <div>
-          <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
+          <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-2">
             Arka Plan Rengi
           </label>
-          <ColorPicker
-            color={settings.backgroundColor || '#FFFFFF'}
-            onChange={async (color) => {
+          <DualColorPicker
+            lightColor={settings.backgroundColor || 'transparent'}
+            darkColor={settings.backgroundColorDark || 'auto'}
+            onLightChange={async (color) => {
               const updated = {
                 ...column,
                 settings: { ...settings, backgroundColor: color },
               };
               setColumn(updated);
               onUpdate(updated);
-              
+
               // Firestore'da güncelle
               try {
                 const { updateColumn } = await import('@/lib/firebase/firestore');
-                await updateColumn(column.id, { 
+                await updateColumn(column.id, {
                   settings: { ...settings, backgroundColor: color },
                 });
                 window.dispatchEvent(new CustomEvent('section-updated', { detail: { sectionId: 'any' } }));
@@ -244,8 +245,171 @@ export function ColumnSettings({ columnId, activeTab, onUpdate }: ColumnSettings
                 logger.pageBuilder.error('Kolon arka plan rengi güncelleme hatası', error);
               }
             }}
+            onDarkChange={async (colorDark) => {
+              const updated = {
+                ...column,
+                settings: { ...settings, backgroundColorDark: colorDark },
+              };
+              setColumn(updated);
+              onUpdate(updated);
+
+              // Firestore'da güncelle
+              try {
+                const { updateColumn } = await import('@/lib/firebase/firestore');
+                await updateColumn(column.id, {
+                  settings: { ...settings, backgroundColorDark: colorDark },
+                });
+                window.dispatchEvent(new CustomEvent('section-updated', { detail: { sectionId: 'any' } }));
+              } catch (error) {
+                logger.pageBuilder.error('Kolon koyu tema arka plan rengi güncelleme hatası', error);
+              }
+            }}
           />
         </div>
+
+        {/* Arka Plan Resmi */}
+        <div className="border-t border-gray-200 dark:border-gray-700 pt-4 mt-4">
+          <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-2">
+            Arka Plan Resmi
+          </label>
+          <input
+            type="text"
+            value={settings.backgroundImage || ''}
+            onChange={async (e) => {
+              const imageUrl = e.target.value || undefined;
+              const updated = {
+                ...column,
+                settings: { ...settings, backgroundImage: imageUrl },
+              };
+              setColumn(updated);
+              onUpdate(updated);
+
+              try {
+                const { updateColumn } = await import('@/lib/firebase/firestore');
+                await updateColumn(column.id, {
+                  settings: { ...settings, backgroundImage: imageUrl },
+                });
+                window.dispatchEvent(new CustomEvent('section-updated', { detail: { sectionId: 'any' } }));
+              } catch (error) {
+                logger.pageBuilder.error('Kolon arka plan resmi güncelleme hatası', error);
+              }
+            }}
+            placeholder="https://... veya /images/..."
+            className="w-full px-3 py-2 text-sm border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-white"
+          />
+        </div>
+
+        {/* Resim Boyutu */}
+        {settings.backgroundImage && (
+          <>
+            <div>
+              <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
+                Resim Boyutu
+              </label>
+              <select
+                value={settings.backgroundSize || 'cover'}
+                onChange={async (e) => {
+                  const bgSize = e.target.value;
+                  const updated = {
+                    ...column,
+                    settings: { ...settings, backgroundSize: bgSize },
+                  };
+                  setColumn(updated);
+                  onUpdate(updated);
+
+                  try {
+                    const { updateColumn } = await import('@/lib/firebase/firestore');
+                    await updateColumn(column.id, {
+                      settings: { ...settings, backgroundSize: bgSize },
+                    });
+                    window.dispatchEvent(new CustomEvent('section-updated', { detail: { sectionId: 'any' } }));
+                  } catch (error) {
+                    logger.pageBuilder.error('Kolon resim boyutu güncelleme hatası', error);
+                  }
+                }}
+                className="w-full px-3 py-2 text-sm border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-white"
+              >
+                <option value="cover">Kapla (Cover)</option>
+                <option value="contain">Sığdır (Contain)</option>
+                <option value="auto">Gerçek Boyut (Auto)</option>
+                <option value="100% 100%">Esnet</option>
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
+                Resim Pozisyonu
+              </label>
+              <select
+                value={settings.backgroundPosition || 'center center'}
+                onChange={async (e) => {
+                  const bgPosition = e.target.value;
+                  const updated = {
+                    ...column,
+                    settings: { ...settings, backgroundPosition: bgPosition },
+                  };
+                  setColumn(updated);
+                  onUpdate(updated);
+
+                  try {
+                    const { updateColumn } = await import('@/lib/firebase/firestore');
+                    await updateColumn(column.id, {
+                      settings: { ...settings, backgroundPosition: bgPosition },
+                    });
+                    window.dispatchEvent(new CustomEvent('section-updated', { detail: { sectionId: 'any' } }));
+                  } catch (error) {
+                    logger.pageBuilder.error('Kolon resim pozisyonu güncelleme hatası', error);
+                  }
+                }}
+                className="w-full px-3 py-2 text-sm border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-white"
+              >
+                <option value="center center">Orta</option>
+                <option value="top center">Üst</option>
+                <option value="bottom center">Alt</option>
+                <option value="left center">Sol</option>
+                <option value="right center">Sağ</option>
+                <option value="top left">Üst Sol</option>
+                <option value="top right">Üst Sağ</option>
+                <option value="bottom left">Alt Sol</option>
+                <option value="bottom right">Alt Sağ</option>
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
+                Resim Tekrarı
+              </label>
+              <select
+                value={settings.backgroundRepeat || 'no-repeat'}
+                onChange={async (e) => {
+                  const bgRepeat = e.target.value;
+                  const updated = {
+                    ...column,
+                    settings: { ...settings, backgroundRepeat: bgRepeat },
+                  };
+                  setColumn(updated);
+                  onUpdate(updated);
+
+                  try {
+                    const { updateColumn } = await import('@/lib/firebase/firestore');
+                    await updateColumn(column.id, {
+                      settings: { ...settings, backgroundRepeat: bgRepeat },
+                    });
+                    window.dispatchEvent(new CustomEvent('section-updated', { detail: { sectionId: 'any' } }));
+                  } catch (error) {
+                    logger.pageBuilder.error('Kolon resim tekrarı güncelleme hatası', error);
+                  }
+                }}
+                className="w-full px-3 py-2 text-sm border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-white"
+              >
+                <option value="no-repeat">Tekrar Etme</option>
+                <option value="repeat">Tekrar Et</option>
+                <option value="repeat-x">Yatay Tekrar</option>
+                <option value="repeat-y">Dikey Tekrar</option>
+              </select>
+            </div>
+          </>
+        )}
 
         <div>
           <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
@@ -265,11 +429,11 @@ export function ColumnSettings({ columnId, activeTab, onUpdate }: ColumnSettings
               };
               setColumn(updated);
               onUpdate(updated);
-              
+
               // Firestore'da güncelle
               try {
                 const { updateColumn } = await import('@/lib/firebase/firestore');
-                await updateColumn(column.id, { 
+                await updateColumn(column.id, {
                   settings: { ...settings, maxWidth: maxWidthValue },
                 });
                 window.dispatchEvent(new CustomEvent('section-updated', { detail: { sectionId: 'any' } }));
@@ -299,11 +463,11 @@ export function ColumnSettings({ columnId, activeTab, onUpdate }: ColumnSettings
               };
               setColumn(updated);
               onUpdate(updated);
-              
+
               // Firestore'da güncelle
               try {
                 const { updateColumn } = await import('@/lib/firebase/firestore');
-                await updateColumn(column.id, { 
+                await updateColumn(column.id, {
                   settings: { ...settings, maxHeight: maxHeightValue },
                 });
                 window.dispatchEvent(new CustomEvent('section-updated', { detail: { sectionId: 'any' } }));
@@ -358,9 +522,9 @@ export function ColumnSettings({ columnId, activeTab, onUpdate }: ColumnSettings
                     value={nestedCol.width || 0}
                     onChange={(e) => {
                       const newWidth = parseFloat(e.target.value) || 0;
-                      
+
                       // UI'ı hemen güncelle (anlık görünüm için)
-                      const updatedNestedColumns = nestedColumns.map(c => 
+                      const updatedNestedColumns = nestedColumns.map(c =>
                         c.id === nestedCol.id ? { ...c, width: newWidth } : c
                       );
                       setNestedColumns(updatedNestedColumns);
@@ -391,7 +555,7 @@ export function ColumnSettings({ columnId, activeTab, onUpdate }: ColumnSettings
                       const equalWidth = 100 / nestedColumns.length;
                       const updatedNestedColumns = nestedColumns.map(c => ({ ...c, width: equalWidth }));
                       setNestedColumns(updatedNestedColumns);
-                      
+
                       try {
                         const { updateColumn } = await import('@/lib/firebase/firestore');
                         await Promise.all(

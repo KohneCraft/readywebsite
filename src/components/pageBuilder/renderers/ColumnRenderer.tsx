@@ -4,6 +4,7 @@ import { useState, useEffect, useMemo, useRef } from 'react';
 import { BlockRenderer } from './BlockRenderer';
 import { getColumnById } from '@/lib/firebase/firestore';
 import { logger } from '@/lib/logger';
+import { useThemeColor } from '@/hooks/useThemeColor';
 import type { Column } from '@/types/pageBuilder';
 import { useDeviceType } from '@/hooks/useDeviceType';
 
@@ -26,7 +27,7 @@ export function ColumnRenderer({ columnId, index, isNested: _isNested = false, i
   // Eğer initialData geldiyse loading false başlasın
   const [loading, setLoading] = useState(!initialData);
   const [nestedColumnsLoading, setNestedColumnsLoading] = useState(false);
-  
+
   useEffect(() => {
     let isMounted = true;
 
@@ -42,7 +43,7 @@ export function ColumnRenderer({ columnId, index, isNested: _isNested = false, i
         setLoading(true);
         const columnData = await getColumnById(columnId);
         if (!isMounted) return;
-        
+
         logger.pageBuilder.debug(`Column yüklendi (${columnId})`, columnData);
         if (!columnData) {
           logger.pageBuilder.warn(`Column bulunamadı: ${columnId}`);
@@ -103,12 +104,12 @@ export function ColumnRenderer({ columnId, index, isNested: _isNested = false, i
       isMounted = false;
     };
   }, [column, columnId]);
-  
+
   // Settings ve hesaplamalar - TÜM hook'lar en üstte olmalı (early return'lerden önce)
   const settings = useMemo(() => column?.settings || {}, [column?.settings]);
   const responsiveSettings = useMemo(() => settings.responsive?.[deviceType] || {}, [settings.responsive, deviceType]);
   const columnWidth = useMemo(() => responsiveSettings.width || column?.width || 100, [responsiveSettings.width, column?.width]);
-  
+
   // Responsive padding: mobil ve tablette daha az padding
   const padding = useMemo(() => {
     const basePadding = responsiveSettings.padding || settings.padding || { top: 0, right: 0, bottom: 0, left: 0 };
@@ -120,25 +121,25 @@ export function ColumnRenderer({ columnId, index, isNested: _isNested = false, i
       left: basePadding.left * scale,
     };
   }, [responsiveSettings.padding, settings.padding, deviceType]);
-  
+
   // Width birim kontrolü: 0-100 arası % olarak, değilse px olarak
   const isWidthPercent = useMemo(() => columnWidth <= 100 && columnWidth >= 0, [columnWidth]);
   // gridColumnSpan kaldırıldı - SectionRenderer'daki gridTemplateColumns zaten genişliği kontrol ediyor
-  
+
   // Nested columns için grid template - useMemo ile optimize et
   const nestedGridTemplate = useMemo(() => {
     // Eğer parent section Flex (Column) düzenindeyse, 
     // nested kolonları yan yana değil, alt alta (tek sütun) olarak zorla.
     if (isFlexLayout) return '1fr';
-    
+
     if (nestedColumns.length === 0) return '1fr';
-    
+
     // Tüm nested kolonların birimlerini kontrol et
     const hasPxColumns = nestedColumns.some(col => {
       const width = col.width || (100 / nestedColumns.length);
       return width > 100 || width < 0;
     });
-    
+
     // Eğer px kolonlar varsa, her kolon için doğru değeri kullan (fixed + fluid düzen)
     if (hasPxColumns) {
       return nestedColumns.map(col => {
@@ -150,14 +151,20 @@ export function ColumnRenderer({ columnId, index, isNested: _isNested = false, i
         return '1fr';
       }).join(' ');
     }
-    
+
     // Tüm kolonlar % ise, fr kullan
     return nestedColumns.map(col => {
       const width = col.width || (100 / nestedColumns.length);
       return `${width}fr`;
     }).join(' ');
   }, [nestedColumns, isFlexLayout]);
-  
+
+  // Koyu tema arka plan rengi
+  const effectiveBgColor = useThemeColor({
+    lightColor: settings.backgroundColor,
+    darkColor: settings.backgroundColorDark || 'auto',
+  });
+
   // Column style - useMemo ile optimize et
   const columnStyle: React.CSSProperties = useMemo(() => {
     // Hizalama değerlerini CSS değerlerine dönüştür
@@ -172,22 +179,25 @@ export function ColumnRenderer({ columnId, index, isNested: _isNested = false, i
     };
 
     return {
-      backgroundColor: settings.backgroundColor,
+      backgroundColor: effectiveBgColor,
       backgroundImage: settings.backgroundImage ? `url(${settings.backgroundImage})` : 'none',
+      backgroundSize: settings.backgroundSize || 'cover',
+      backgroundPosition: settings.backgroundPosition || 'center center',
+      backgroundRepeat: settings.backgroundRepeat || 'no-repeat',
       padding: `${padding.top}px ${padding.right}px ${padding.bottom}px ${padding.left}px`,
       margin: settings.margin
         ? `${settings.margin.top || 0}px ${settings.margin.right || 0}px ${settings.margin.bottom || 0}px ${settings.margin.left || 0}px`
         : '0',
       borderRadius: settings.borderRadius ? `${settings.borderRadius}px` : '0',
-      border: settings.border?.width 
-        ? `${settings.border.width}px ${settings.border.style} ${settings.border.color}` 
+      border: settings.border?.width
+        ? `${settings.border.width}px ${settings.border.style} ${settings.border.color}`
         : 'none',
       boxShadow: settings.boxShadow || 'none',
       minHeight: settings.minHeight ? `${settings.minHeight}px` : 'auto',
       maxHeight: settings.maxHeight ? `${settings.maxHeight}px` : 'none',
       maxWidth: settings.maxWidth ? `${settings.maxWidth}px` : 'none',
       width: isWidthPercent ? undefined : `${columnWidth}px`, // px ise width kullan
-      height: settings.height 
+      height: settings.height
         ? (typeof settings.height === 'number' ? `${settings.height}px` : settings.height)
         : 'auto',
       display: 'flex',
@@ -200,14 +210,14 @@ export function ColumnRenderer({ columnId, index, isNested: _isNested = false, i
       // Eğer px kullanılıyorsa, min-width de ekle ki küçülmesin
       minWidth: isWidthPercent ? undefined : `${columnWidth}px`,
     };
-  }, [settings, padding, isWidthPercent, columnWidth]);
-  
+  }, [settings, padding, isWidthPercent, columnWidth, effectiveBgColor]);
+
   // Güvenlik kilidi: Maksimum iç içe kolon derinliği (hook'lardan sonra kontrol et)
   if (depth > 5) {
     logger.pageBuilder.warn(`Maksimum iç içe kolon derinliğine ulaşıldı (${depth}). Sonsuz döngü önlendi.`);
     return null;
   }
-  
+
   // Loading state - skeleton placeholder
   if (loading) {
     return (
@@ -216,7 +226,7 @@ export function ColumnRenderer({ columnId, index, isNested: _isNested = false, i
       </div>
     );
   }
-  
+
   // Error state - column not found
   if (!column) {
     logger.pageBuilder.warn(`Column bulunamadı (${columnId})`);
@@ -226,14 +236,14 @@ export function ColumnRenderer({ columnId, index, isNested: _isNested = false, i
       </div>
     );
   }
-  
+
   logger.pageBuilder.debug(`Column render ediliyor (${columnId})`, {
     width: column.width,
     blocksCount: column.blocks?.length || 0,
   });
-  
+
   return (
-    <div 
+    <div
       ref={columnRef}
       className="column-renderer"
       style={columnStyle}
@@ -264,18 +274,18 @@ export function ColumnRenderer({ columnId, index, isNested: _isNested = false, i
           ))}
         </div>
       ) : null}
-      
+
       {/* Blocks render et (nested column'ların altında veya yanında) */}
       {!nestedColumnsLoading && (
         <>
           {column.blocks?.map((blockId, blockIndex) => (
-            <BlockRenderer 
-              key={blockId} 
+            <BlockRenderer
+              key={blockId}
               blockId={blockId}
               index={blockIndex}
             />
           ))}
-          
+
           {column.blocks?.length === 0 && nestedColumns.length === 0 && (
             <div className="empty-column-placeholder">
               {/* Boş kolon - sadece admin görür */}

@@ -8,6 +8,7 @@
 import { Save, Eye, Monitor, Tablet, Smartphone, ZoomIn, ZoomOut, ArrowLeft, Undo2, Redo2 } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { Spinner } from '@/components/ui/Spinner';
+import { ThemeToggle } from '@/components/ui/ThemeToggle';
 import { cn } from '@/lib/utils';
 import { useRouter } from 'next/navigation';
 import { useLocale } from 'next-intl';
@@ -185,6 +186,9 @@ export function TopBar({
         </div>
 
         <div className="w-px h-6 bg-gray-200 dark:bg-gray-700" />
+
+        {/* Tema Değiştir */}
+        <ThemeToggle className="text-gray-600 dark:text-gray-400" />
 
         {/* Önizleme */}
         <Button

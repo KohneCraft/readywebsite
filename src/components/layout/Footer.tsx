@@ -9,7 +9,7 @@ import { useMemo, useCallback, useEffect, useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useLocale, useTranslations } from 'next-intl';
-import { 
+import {
   Facebook,
   Instagram,
   Linkedin,
@@ -19,6 +19,8 @@ import {
 import { cn } from '@/lib/utils';
 import { useTheme } from '@/contexts/ThemeContext';
 import { getSiteSettingsClient } from '@/lib/firebase/firestore';
+import { getEffectiveColor } from '@/lib/themeColors';
+import { useTheme as useNextTheme } from 'next-themes';
 import { logger } from '@/lib/logger';
 import type { Locale } from '@/i18n';
 import type { SiteSettings } from '@/types/settings';
@@ -80,7 +82,7 @@ export function Footer() {
   // Site settings'ten social links'i al, yoksa tema ayarlarından
   const socialLinks = useMemo(() => {
     const links: Array<{ icon: React.ComponentType<{ className?: string }>; href: string; label: string }> = [];
-    
+
     // Site settings'ten sosyal medya linklerini al
     if (siteSettings?.socialLinks) {
       if (siteSettings.socialLinks.facebook) {
@@ -96,7 +98,7 @@ export function Footer() {
         links.push({ icon: Youtube, href: siteSettings.socialLinks.youtube, label: 'YouTube' });
       }
     }
-    
+
     // Eğer site settings'te link yoksa, tema ayarlarından al
     if (links.length === 0 && themeSettings?.footer?.socialLinks && themeSettings.footer.socialLinks.length > 0) {
       return themeSettings.footer.socialLinks.map(social => {
@@ -108,7 +110,7 @@ export function Footer() {
         };
       });
     }
-    
+
     // Eğer hiç link yoksa varsayılan linkler
     if (links.length === 0) {
       return [
@@ -118,7 +120,7 @@ export function Footer() {
         { icon: Youtube, href: 'https://youtube.com', label: 'YouTube' },
       ];
     }
-    
+
     return links;
   }, [siteSettings, themeSettings]);
 
@@ -153,8 +155,25 @@ export function Footer() {
     return themeSettings?.footer?.textColor || undefined;
   }, [themeSettings]);
 
+  // next-themes'den koyu tema durumunu al
+  const { resolvedTheme } = useNextTheme();
+  const isDarkMode = resolvedTheme === 'dark';
+
+  // Firma adı ve slogan renkleri - tema desteği ile
+  const effectiveNameColor = useMemo(() => {
+    const lightColor = siteSettings?.companyNameStyle?.color || footerTextColor || '#ffffff';
+    const darkColor = siteSettings?.companyNameStyle?.colorDark;
+    return getEffectiveColor(lightColor, darkColor, isDarkMode);
+  }, [siteSettings?.companyNameStyle?.color, siteSettings?.companyNameStyle?.colorDark, footerTextColor, isDarkMode]);
+
+  const effectiveSloganColor = useMemo(() => {
+    const lightColor = siteSettings?.sloganStyle?.color || (footerTextColor ? `${footerTextColor}CC` : '#9ca3af');
+    const darkColor = siteSettings?.sloganStyle?.colorDark;
+    return getEffectiveColor(lightColor, darkColor, isDarkMode);
+  }, [siteSettings?.sloganStyle?.color, siteSettings?.sloganStyle?.colorDark, footerTextColor, isDarkMode]);
+
   return (
-    <footer 
+    <footer
       className="text-gray-300"
       style={{
         backgroundColor: footerBgColor || undefined,
@@ -169,7 +188,7 @@ export function Footer() {
             <Link href={getLocalizedHref('/')} className="flex items-center gap-2 mb-4">
               {footerLogoUrl ? (
                 <Image
-                  src={footerLogoUrl} 
+                  src={footerLogoUrl}
                   alt={footerLogoText}
                   width={160}
                   height={40}
@@ -182,19 +201,19 @@ export function Footer() {
                 </div>
               )}
               <div className="flex flex-col">
-                <span 
+                <span
                   className="font-bold leading-tight"
-                  style={{ 
-                    color: siteSettings?.companyNameStyle?.color || footerTextColor || '#ffffff',
+                  style={{
+                    color: effectiveNameColor || '#ffffff',
                     fontSize: siteSettings?.companyNameStyle?.fontSize ? `${siteSettings.companyNameStyle.fontSize}px` : undefined,
                   }}
                 >
                   {footerLogoText}
                 </span>
                 {siteSettings?.siteSlogan?.[locale as keyof typeof siteSettings.siteSlogan] && (
-                  <span 
-                    style={{ 
-                      color: siteSettings?.sloganStyle?.color || (footerTextColor ? `${footerTextColor}CC` : '#9ca3af'),
+                  <span
+                    style={{
+                      color: effectiveSloganColor || '#9ca3af',
                       fontSize: siteSettings?.sloganStyle?.fontSize ? `${siteSettings.sloganStyle.fontSize}px` : undefined,
                     }}
                   >
@@ -203,7 +222,7 @@ export function Footer() {
                 )}
               </div>
             </Link>
-            <p 
+            <p
               className="text-sm mb-6"
               style={{ color: footerTextColor ? `${footerTextColor}DD` : '#9ca3af' }}
             >
@@ -231,7 +250,7 @@ export function Footer() {
 
           {/* Quick links */}
           <div>
-            <h3 
+            <h3
               className="font-semibold mb-4"
               style={{ color: footerTextColor || '#ffffff' }}
             >
@@ -243,7 +262,7 @@ export function Footer() {
                   <Link
                     href={getLocalizedHref(link.href)}
                     className="flex items-center gap-2 transition-colors group"
-                    style={{ 
+                    style={{
                       color: footerTextColor ? `${footerTextColor}DD` : '#9ca3af',
                     }}
                     onMouseEnter={(e) => {
@@ -257,8 +276,8 @@ export function Footer() {
                       }
                     }}
                   >
-                    <ChevronRight 
-                      className="w-4 h-4 group-hover:translate-x-1 transition-transform" 
+                    <ChevronRight
+                      className="w-4 h-4 group-hover:translate-x-1 transition-transform"
                       style={{ color: footerTextColor ? `${footerTextColor}AA` : undefined }}
                     />
                     {link.label}
@@ -272,13 +291,13 @@ export function Footer() {
       </div>
 
       {/* Bottom bar */}
-      <div 
+      <div
         className="border-t"
         style={{ borderColor: footerTextColor ? `${footerTextColor}33` : '#1f2937' }}
       >
         <div className="container py-6">
           <div className="flex flex-col md:flex-row items-center justify-between gap-4">
-            <p 
+            <p
               className="text-sm"
               style={{ color: footerTextColor ? `${footerTextColor}DD` : '#9ca3af' }}
             >
@@ -288,7 +307,7 @@ export function Footer() {
               <Link
                 href={getLocalizedHref('/privacy')}
                 className="transition-colors"
-                style={{ 
+                style={{
                   color: footerTextColor ? `${footerTextColor}DD` : '#9ca3af',
                 }}
                 onMouseEnter={(e) => {
@@ -307,7 +326,7 @@ export function Footer() {
               <Link
                 href={getLocalizedHref('/terms')}
                 className="transition-colors"
-                style={{ 
+                style={{
                   color: footerTextColor ? `${footerTextColor}DD` : '#9ca3af',
                 }}
                 onMouseEnter={(e) => {

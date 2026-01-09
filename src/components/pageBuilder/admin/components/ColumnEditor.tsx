@@ -11,7 +11,7 @@ import { useDroppable } from '@dnd-kit/core';
 import { BlockEditor } from './BlockEditor';
 import { getBlockById, getColumnById, deleteColumn } from '@/lib/firebase/firestore';
 import { logger } from '@/lib/logger';
-import { GripVertical, Image as ImageIcon, Columns, Plus, Trash2 } from 'lucide-react';
+import { GripVertical, Image as ImageIcon, Columns, Plus, Trash2, Settings } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import type { Column, Block, BlockType } from '@/types/pageBuilder';
 
@@ -98,7 +98,7 @@ export function ColumnEditor({
   }, [column.columns]);
 
   const settings = column.settings || {};
-  
+
   // Nested columns için grid template
   const nestedGridTemplate = nestedColumns.length > 0
     ? nestedColumns.map(col => `${col.width || 100 / nestedColumns.length}fr`).join(' ')
@@ -112,8 +112,8 @@ export function ColumnEditor({
         isSelected
           ? 'border-primary-500 shadow-lg'
           : isOver
-          ? 'border-primary-300 dark:border-primary-600 bg-primary-50/50 dark:bg-primary-900/10'
-          : 'border-transparent hover:border-gray-300 dark:hover:border-gray-600',
+            ? 'border-primary-300 dark:border-primary-600 bg-primary-50/50 dark:bg-primary-900/10'
+            : 'border-transparent hover:border-gray-300 dark:hover:border-gray-600',
         isHovered && 'bg-gray-50/50 dark:bg-gray-800/50'
       )}
       onClick={onSelect}
@@ -127,7 +127,7 @@ export function ColumnEditor({
         margin: settings.margin
           ? `${settings.margin.top || 0}px ${settings.margin.right || 0}px ${settings.margin.bottom || 0}px ${settings.margin.left || 0}px`
           : '0',
-        height: settings.height 
+        height: settings.height
           ? (typeof settings.height === 'number' ? `${settings.height}px` : settings.height)
           : 'auto',
         minHeight: settings.height === '100%' ? '100%' : undefined,
@@ -145,6 +145,20 @@ export function ColumnEditor({
           </div>
           <div className="flex items-center gap-2">
             <span className="text-gray-400">{Math.round(column.width || 0)}%</span>
+            {/* Ayar butonu - kolonu seçmek için */}
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                // Kolonu seç - bu sayede sağ panelde ayarlar açılır
+                if (onSelectElement) {
+                  onSelectElement({ type: 'column', id: column.id });
+                }
+              }}
+              className="p-1 hover:bg-gray-700 rounded transition-colors"
+              title="Kolon Ayarları"
+            >
+              <Settings className="w-3 h-3" />
+            </button>
             {onAddColumn && (
               <button
                 onClick={async (e) => {
@@ -169,7 +183,7 @@ export function ColumnEditor({
                   const { createColumn } = await import('@/lib/firebase/firestore');
                   const numColumns = nestedColumns.length || 1;
                   const defaultWidth = 100 / (numColumns + 1);
-                  
+
                   // Yeni nested column oluştur
                   await createColumn({
                     sectionId: column.sectionId,
@@ -177,14 +191,14 @@ export function ColumnEditor({
                     width: defaultWidth,
                     order: nestedColumns.length,
                   });
-                  
+
                   // Mevcut nested column'ların width'lerini güncelle
                   for (const nestedCol of nestedColumns) {
-                    await import('@/lib/firebase/firestore').then(({ updateColumn }) => 
+                    await import('@/lib/firebase/firestore').then(({ updateColumn }) =>
                       updateColumn(nestedCol.id, { width: defaultWidth })
                     );
                   }
-                  
+
                   window.dispatchEvent(new CustomEvent('section-updated', { detail: { sectionId: 'any' } }));
                 } catch (error) {
                   logger.pageBuilder.error('İç kolon ekleme hatası', error);
@@ -257,15 +271,15 @@ export function ColumnEditor({
                     const { createColumn, getColumnById, updateColumn } = await import('@/lib/firebase/firestore');
                     const parentColumn = await getColumnById(column.id);
                     if (!parentColumn) return;
-                    
+
                     // Mevcut nested kolon sayısını al
                     const currentNestedColumns = parentColumn.columns || [];
                     const afterIndex = currentNestedColumns.indexOf(afterColumnId);
-                    
+
                     // Yeni nested kolon genişliğini hesapla (mevcut nested kolonların genişliklerini eşit dağıt)
                     const numColumns = currentNestedColumns.length + 1;
                     const equalWidth = 100 / numColumns;
-                    
+
                     // Yeni nested kolon oluştur
                     await createColumn({
                       sectionId: column.sectionId,
@@ -273,7 +287,7 @@ export function ColumnEditor({
                       width: equalWidth,
                       order: afterIndex + 1,
                     });
-                    
+
                     // Mevcut nested kolonların genişliklerini güncelle
                     for (const nestedColId of currentNestedColumns) {
                       const nestedCol = await getColumnById(nestedColId);
@@ -281,7 +295,7 @@ export function ColumnEditor({
                         await updateColumn(nestedColId, { width: equalWidth });
                       }
                     }
-                    
+
                     window.dispatchEvent(new CustomEvent('section-updated', { detail: { sectionId: 'any' } }));
                   } catch (error) {
                     logger.pageBuilder.error('Nested kolon ekleme hatası', error);
@@ -342,7 +356,7 @@ export function ColumnEditor({
             />
           ))
         ) : (
-          <EmptyColumn 
+          <EmptyColumn
             onAddBlock={async (blockType) => {
               try {
                 const { createBlock } = await import('@/lib/firebase/firestore');
@@ -362,7 +376,7 @@ export function ColumnEditor({
                 const { createColumn } = await import('@/lib/firebase/firestore');
                 const numColumns = nestedColumns.length || 0;
                 const defaultWidth = numColumns > 0 ? 100 / (numColumns + 1) : 100;
-                
+
                 // Yeni nested column oluştur
                 await createColumn({
                   sectionId: column.sectionId,
@@ -370,7 +384,7 @@ export function ColumnEditor({
                   width: defaultWidth,
                   order: nestedColumns.length,
                 });
-                
+
                 // Mevcut nested column'ların width'lerini güncelle
                 if (nestedColumns.length > 0) {
                   const { updateColumn } = await import('@/lib/firebase/firestore');
@@ -378,7 +392,7 @@ export function ColumnEditor({
                     await updateColumn(nestedCol.id, { width: defaultWidth });
                   }
                 }
-                
+
                 window.dispatchEvent(new CustomEvent('section-updated', { detail: { sectionId: 'any' } }));
               } catch (error) {
                 logger.pageBuilder.error('İç kolon ekleme hatası', error);
