@@ -9,7 +9,7 @@ import type { Timestamp } from 'firebase/firestore';
 /**
  * Block türleri
  */
-export type BlockType = 
+export type BlockType =
   | 'text'
   | 'heading'
   | 'image'
@@ -128,7 +128,7 @@ export interface BlockProps {
   id?: string;
   customCSS?: string;
   dataAttributes?: Record<string, string>;
-  
+
   // Text Block
   content?: string;
   fontSize?: number;
@@ -136,16 +136,18 @@ export interface BlockProps {
   fontWeight?: number;
   fontStyle?: 'normal' | 'italic';
   color?: string;
+  colorDark?: string | 'auto'; // Koyu tema rengi
   backgroundColor?: string;
+  backgroundColorDark?: string | 'auto'; // Koyu tema arka plan
   textAlign?: 'left' | 'center' | 'right' | 'justify';
   lineHeight?: number;
   letterSpacing?: number;
   textDecoration?: 'none' | 'underline' | 'line-through';
   textTransform?: 'none' | 'uppercase' | 'lowercase' | 'capitalize';
-  
+
   // Heading Block
   level?: 'h1' | 'h2' | 'h3' | 'h4' | 'h5' | 'h6';
-  
+
   // Image Block
   src?: string;
   alt?: string;
@@ -158,7 +160,7 @@ export interface BlockProps {
   filter?: ImageFilter;
   hover?: HoverEffect;
   loading?: 'lazy' | 'eager';
-  
+
   // Video Block
   videoProvider?: 'youtube' | 'vimeo' | 'custom';
   autoplay?: boolean;
@@ -167,7 +169,7 @@ export interface BlockProps {
   controls?: boolean;
   aspectRatio?: '16:9' | '4:3' | '1:1' | '21:9';
   playsInline?: boolean;
-  
+
   // Button Block
   text?: string;
   target?: '_self' | '_blank';
@@ -175,20 +177,22 @@ export interface BlockProps {
   size?: 'small' | 'medium' | 'large';
   buttonWidth?: 'auto' | 'full';
   textColor?: string;
+  textColorDark?: string | 'auto'; // Koyu tema buton metin rengi
   icon?: {
     enabled: boolean;
     name: string;
     position: 'left' | 'right';
   };
-  
+
   // Spacer Block
   spacerHeight?: number;
-  
+
   // Divider Block
   dividerHeight?: number;
   dividerColor?: string;
+  dividerColorDark?: string | 'auto'; // Koyu tema ayırıcı rengi
   dividerStyle?: 'solid' | 'dashed' | 'dotted';
-  
+
   // Form Block
   title?: string;
   fields?: FormField[];
@@ -202,12 +206,17 @@ export interface BlockProps {
   successMessage?: string;
   errorMessage?: string;
   formBackgroundColor?: string; // Form arkaplan rengi
+  formBackgroundColorDark?: string | 'auto'; // Koyu tema form arkaplan
   formTextColor?: string; // Input text rengi
+  formTextColorDark?: string | 'auto'; // Koyu tema input text
   formLabelColor?: string; // Label text rengi
+  formLabelColorDark?: string | 'auto'; // Koyu tema label
   buttonColor?: string; // Submit button arka plan rengi
+  buttonColorDark?: string | 'auto'; // Koyu tema buton arka plan
   buttonTextColor?: string; // Submit button text rengi
+  buttonTextColorDark?: string | 'auto'; // Koyu tema buton text
   buttonText?: string; // Submit button metni
-  
+
   // Map Block
   mapProvider?: 'google' | 'openstreetmap';
   latitude?: number;
@@ -220,7 +229,7 @@ export interface BlockProps {
   mapStyle?: 'default' | 'dark' | 'light' | 'custom';
   style?: 'default' | 'dark' | 'light' | 'custom';
   interactive?: boolean;
-  
+
   // HTML Block
   css?: string;
   javascript?: string;
@@ -262,6 +271,7 @@ export interface Column {
  */
 export interface ColumnSettings {
   backgroundColor?: string;
+  backgroundColorDark?: string | 'auto'; // Koyu tema arka plan
   height?: number | string; // px veya 'auto' veya '100%'
   maxHeight?: number; // px
   maxWidth?: number; // px
@@ -306,38 +316,39 @@ export interface SectionSettings {
   columnGap?: number;
   columnDistribution?: 'equal' | 'custom';
   columnLayout?: 'row' | 'column'; // 'row' = yan yana, 'column' = alt alta
-  
+
   // Background
   backgroundColor?: string;
+  backgroundColorDark?: string | 'auto'; // Koyu tema arka plan
   backgroundImage?: string;
   backgroundSize?: 'cover' | 'contain' | 'auto';
   backgroundPosition?: 'top' | 'center' | 'bottom' | 'left' | 'right';
   backgroundRepeat?: 'repeat' | 'no-repeat' | 'repeat-x' | 'repeat-y';
   backgroundAttachment?: 'scroll' | 'fixed';
-  
+
   // Overlay
   overlay?: Overlay;
-  
+
   // Spacing
   padding?: Spacing;
   margin?: Spacing;
-  
+
   // Dimensions
   minHeight?: number;
   maxHeight?: number; // px
   height?: 'auto' | number;
-  
+
   // Borders
   borderTop?: Border;
   borderBottom?: Border;
   borderRadius?: number;
-  
+
   // Effects
   boxShadow?: string;
-  
+
   // Animation
   animation?: Animation;
-  
+
   // Responsive
   responsive?: Record<Breakpoint, ResponsiveSettings>;
 }
@@ -373,21 +384,21 @@ export interface PageSettings {
     ogDescription?: string;
     canonical?: string;
   };
-  
+
   // Custom Code
   customCSS?: string;
   customJS?: string;
   headCode?: string;
   footerCode?: string;
-  
+
   // Page Settings
   layout?: 'default' | 'fullwidth' | 'boxed';
   containerWidth?: number;
-  
+
   // Colors
   primaryColor?: string;
   secondaryColor?: string;
-  
+
   // Typography
   bodyFont?: string;
   headingFont?: string;
@@ -615,7 +626,7 @@ export function getDefaultBlockProps(type: BlockType): Partial<BlockProps> {
       javascript: '',
     },
   };
-  
+
   return defaults[type] || {};
 }
 
