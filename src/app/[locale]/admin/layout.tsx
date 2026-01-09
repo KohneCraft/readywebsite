@@ -30,6 +30,7 @@ import {
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Spinner } from '@/components/ui/Spinner';
+import { ThemeToggle } from '@/components/ui/ThemeToggle';
 import { ToastProvider } from '@/components/providers';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { onAuthStateChanged, signOut as firebaseSignOut, getUserProfile } from '@/lib/firebase/auth';
@@ -198,6 +199,16 @@ export default function AdminLayout({
   useEffect(() => {
     if (isLoginPage || !user) return;
 
+    // localStorage'dan okunmuş bildirim ID'lerini al
+    const getReadNotificationIds = (): string[] => {
+      try {
+        const stored = localStorage.getItem('readNotificationIds');
+        return stored ? JSON.parse(stored) : [];
+      } catch {
+        return [];
+      }
+    };
+
     // Unread messages listener
     const messagesRef = collection(db, 'contact-messages');
     const messagesQuery = query(
@@ -208,15 +219,18 @@ export default function AdminLayout({
     );
 
     const unsubMessages = onSnapshot(messagesQuery, (snapshot) => {
+      const readIds = getReadNotificationIds();
+
       const messageNotifications: Notification[] = snapshot.docs.map(doc => {
         const data = doc.data();
+        const notifId = `msg-${doc.id}`;
         return {
-          id: `msg-${doc.id}`,
+          id: notifId,
           type: 'message' as const,
           title: 'Yeni Mesaj',
           description: data.name || data.email || 'İletişim formu',
           timestamp: data.createdAt?.toDate() || new Date(),
-          read: false,
+          read: readIds.includes(notifId) || data.read === true,
           link: `/${locale}/admin/messages`,
         };
       });
@@ -234,15 +248,18 @@ export default function AdminLayout({
       );
 
       onSnapshot(logsQuery, (logSnapshot) => {
+        const currentReadIds = getReadNotificationIds();
+
         const errorNotifications: Notification[] = logSnapshot.docs.map(doc => {
           const data = doc.data();
+          const notifId = `log-${doc.id}`;
           return {
-            id: `log-${doc.id}`,
+            id: notifId,
             type: 'error' as const,
             title: 'Sistem Hatası',
             description: data.message?.substring(0, 50) || 'Hata oluştu',
             timestamp: data.timestamp?.toDate() || new Date(),
-            read: false,
+            read: currentReadIds.includes(notifId), // localStorage'dan kontrol et
             link: `/${locale}/admin/logs`,
           };
         });
@@ -266,6 +283,22 @@ export default function AdminLayout({
 
   // Bildirimi okundu olarak işaretle
   const markAsRead = useCallback(async (notification: Notification) => {
+    // localStorage'a kaydet
+    const saveToLocalStorage = (id: string) => {
+      try {
+        const stored = localStorage.getItem('readNotificationIds');
+        const ids: string[] = stored ? JSON.parse(stored) : [];
+        if (!ids.includes(id)) {
+          ids.push(id);
+          // Son 100 ID'yi tut (çok fazla büyümesin)
+          const trimmed = ids.slice(-100);
+          localStorage.setItem('readNotificationIds', JSON.stringify(trimmed));
+        }
+      } catch (error) {
+        logger.ui.error('localStorage kayıt hatası', error);
+      }
+    };
+
     if (notification.type === 'message' && notification.id.startsWith('msg-')) {
       const docId = notification.id.replace('msg-', '');
       try {
@@ -274,7 +307,11 @@ export default function AdminLayout({
         logger.ui.error('Bildirim okundu işaretleme hatası', error);
       }
     }
-    // Diğer bildirim türleri için local state güncelle
+
+    // Tüm bildirim türleri için localStorage'a kaydet
+    saveToLocalStorage(notification.id);
+
+    // Local state güncelle
     setNotifications(prev => prev.map(n =>
       n.id === notification.id ? { ...n, read: true } : n
     ));
@@ -283,6 +320,17 @@ export default function AdminLayout({
   // Tüm bildirimleri okundu olarak işaretle
   const markAllAsRead = useCallback(async () => {
     const unreadNotifications = notifications.filter(n => !n.read);
+
+    // localStorage'a tüm ID'leri kaydet
+    try {
+      const stored = localStorage.getItem('readNotificationIds');
+      const ids: string[] = stored ? JSON.parse(stored) : [];
+      const newIds = unreadNotifications.map(n => n.id);
+      const allIds = [...new Set([...ids, ...newIds])].slice(-100);
+      localStorage.setItem('readNotificationIds', JSON.stringify(allIds));
+    } catch (error) {
+      logger.ui.error('localStorage kayıt hatası', error);
+    }
 
     for (const notification of unreadNotifications) {
       if (notification.type === 'message' && notification.id.startsWith('msg-')) {
@@ -491,6 +539,9 @@ export default function AdminLayout({
 
             {/* Right side */}
             <div className="flex items-center gap-4">
+              {/* Theme Toggle */}
+              <ThemeToggle className="text-gray-600 dark:text-gray-400" />
+
               {/* Notifications */}
               <div className="relative" data-notification-dropdown>
                 <button

@@ -89,13 +89,13 @@ export interface SEOSettings {
     de: string[];
     fr: string[];
   };
-  
+
   // Analytics & Tracking
   googleAnalyticsId?: string;
   googleTagManagerId?: string;
   googleSearchConsoleVerification?: string;
   facebookPixelId?: string;
-  
+
   // Robots & Sitemap
   robotsTxt: string;
   sitemapEnabled: boolean;
@@ -205,10 +205,12 @@ export interface SiteSettings {
   };
   companyNameStyle?: {
     color?: string;
+    colorDark?: string; // Koyu tema rengi
     fontSize?: number; // px
   };
   sloganStyle?: {
     color?: string;
+    colorDark?: string; // Koyu tema rengi
     fontSize?: number; // px
   };
   footerText: {
@@ -218,41 +220,41 @@ export interface SiteSettings {
     fr: string;
   };
   defaultLocale: Locale;
-  
+
   // Görsel
   logo: Logo;
-  
+
   // İletişim
   contact: ContactInfo;
   socialLinks: SocialLinks;
-  
+
   // SEO
   seo: SEOSettings;
-  
+
   // Bakım modu
   maintenance: MaintenanceMode;
-  
+
   // Sayfa ayarları
   homepage: HomepageSettings;
-  
+
   // Form ayarları
   forms: FormSettings;
-  
+
   // Yönlendirmeler
   redirects: Redirect[];
-  
+
   // Aktif tema
   activeThemeId?: string;
   activeThemeName?: string;
-  
+
   // Admin panel ayarları
   adminTitle?: string;
   adminIcon?: string;
-  
+
   // Browser tab ayarları (temadan bağımsız)
   // Sekme başlığı otomatik: siteName | siteSlogan
   browserFavicon?: string; // Tarayıcı sekmesi ikonu URL
-  
+
   // Metadata
   updatedAt: Date;
   updatedBy: string;

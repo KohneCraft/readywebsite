@@ -19,7 +19,8 @@ export type BlockType =
   | 'divider'
   | 'form'
   | 'map'
-  | 'html';
+  | 'html'
+  | 'slider';
 
 /**
  * Responsive breakpoint
@@ -233,11 +234,39 @@ export interface BlockProps {
   // HTML Block
   css?: string;
   javascript?: string;
+
+  // Slider Block
+  slides?: SliderSlide[];
+  autoPlay?: boolean; // Otomatik oynatma
+  autoPlaySpeed?: number; // Oynatma hızı (ms)
+  sliderLoop?: boolean; // Döngü (loop Video block'ta zaten var)
+  showArrows?: boolean; // İleri/geri butonları
+  showDots?: boolean; // Sayfa göstergeleri
+  pauseOnHover?: boolean; // Fare üzerinde duraklat
+  direction?: 'ltr' | 'rtl'; // Döngü yönü
+  sliderHeight?: number | 'auto'; // Slider yükseakliği
+  transitionSpeed?: number; // Geçiş hızı (ms)
+  transitionEffect?: 'slide' | 'fade'; // Geçiş efekti
 }
 
 /**
- * Form Field
+ * Slider Slide
  */
+export interface SliderSlide {
+  id: string;
+  type: 'image' | 'video';
+  src: string;
+  alt?: string;
+  title?: string;
+  titleColor?: string;
+  titleColorDark?: string | 'auto';
+  description?: string;
+  descriptionColor?: string;
+  descriptionColorDark?: string | 'auto';
+  link?: string;
+  linkTarget?: '_self' | '_blank';
+  order: number;
+}
 export interface FormField {
   id: string;
   type: 'text' | 'email' | 'tel' | 'textarea' | 'select' | 'checkbox' | 'radio';
@@ -276,6 +305,9 @@ export interface ColumnSettings {
   maxHeight?: number; // px
   maxWidth?: number; // px
   backgroundImage?: string;
+  backgroundSize?: string; // 'cover' | 'contain' | 'auto' | '100% 100%'
+  backgroundPosition?: string; // 'center center' | 'top center' vb.
+  backgroundRepeat?: string; // 'no-repeat' | 'repeat' | 'repeat-x' | 'repeat-y'
   padding?: Spacing;
   margin?: Spacing;
   borderRadius?: number;
@@ -519,6 +551,7 @@ export const BLOCK_TYPE_LABELS: Record<BlockType, string> = {
   form: 'Form',
   map: 'Harita',
   html: 'HTML',
+  slider: 'Slider',
 };
 
 /**
@@ -624,6 +657,19 @@ export function getDefaultBlockProps(type: BlockType): Partial<BlockProps> {
       content: '<div class="custom">Özel HTML kodu</div>',
       css: '',
       javascript: '',
+    },
+    slider: {
+      slides: [],
+      autoPlay: true,
+      autoPlaySpeed: 5000,
+      sliderLoop: true,
+      showArrows: true,
+      showDots: true,
+      pauseOnHover: true,
+      direction: 'ltr',
+      sliderHeight: 400,
+      transitionSpeed: 500,
+      transitionEffect: 'slide',
     },
   };
 

@@ -52,8 +52,10 @@ const settingsSchema = z.object({
     slogan: z.string().optional(),
     logo: z.string().optional(),
     nameColor: z.string().optional(),
+    nameColorDark: z.string().optional(), // Koyu tema rengi
     nameFontSize: z.number().optional(),
     sloganColor: z.string().optional(),
+    sloganColorDark: z.string().optional(), // Koyu tema rengi
     sloganFontSize: z.number().optional(),
   }),
   contact: z.object({
@@ -93,8 +95,10 @@ const defaultSettings: SettingsFormData = {
     slogan: 'X',
     logo: '',
     nameColor: '',
+    nameColorDark: '', // Koyu tema
     nameFontSize: undefined,
     sloganColor: '',
+    sloganColorDark: '', // Koyu tema
     sloganFontSize: undefined,
   },
   contact: {
@@ -793,7 +797,7 @@ export default function AdminSettingsPage() {
                       <div className="space-y-4">
                         <div>
                           <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
-                            Firma Adı Rengi
+                            ☀️ Firma Adı Rengi (Açık Tema)
                           </label>
                           <div className="flex items-center gap-2">
                             <Input
@@ -811,6 +815,29 @@ export default function AdminSettingsPage() {
                               className="flex-1"
                             />
                           </div>
+                        </div>
+
+                        <div>
+                          <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
+                            🌙 Firma Adı Rengi (Koyu Tema)
+                          </label>
+                          <div className="flex items-center gap-2">
+                            <Input
+                              type="color"
+                              value={watch('company.nameColorDark') || '#ffffff'}
+                              onChange={(e) => {
+                                setValue('company.nameColorDark', e.target.value, { shouldDirty: true });
+                              }}
+                              className="w-16 h-10"
+                            />
+                            <Input
+                              type="text"
+                              {...register('company.nameColorDark')}
+                              placeholder="#ffffff"
+                              className="flex-1"
+                            />
+                          </div>
+                          <p className="text-xs text-gray-500 mt-1">Boş bırakılırsa otomatik hesaplanır</p>
                         </div>
 
                         <div>
@@ -837,7 +864,7 @@ export default function AdminSettingsPage() {
                       <div className="space-y-4">
                         <div>
                           <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
-                            Slogan Rengi
+                            ☀️ Slogan Rengi (Açık Tema)
                           </label>
                           <div className="flex items-center gap-2">
                             <Input
@@ -855,6 +882,29 @@ export default function AdminSettingsPage() {
                               className="flex-1"
                             />
                           </div>
+                        </div>
+
+                        <div>
+                          <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
+                            🌙 Slogan Rengi (Koyu Tema)
+                          </label>
+                          <div className="flex items-center gap-2">
+                            <Input
+                              type="color"
+                              value={watch('company.sloganColorDark') || '#aaaaaa'}
+                              onChange={(e) => {
+                                setValue('company.sloganColorDark', e.target.value, { shouldDirty: true });
+                              }}
+                              className="w-16 h-10"
+                            />
+                            <Input
+                              type="text"
+                              {...register('company.sloganColorDark')}
+                              placeholder="#aaaaaa"
+                              className="flex-1"
+                            />
+                          </div>
+                          <p className="text-xs text-gray-500 mt-1">Boş bırakılırsa otomatik hesaplanır</p>
                         </div>
 
                         <div>
