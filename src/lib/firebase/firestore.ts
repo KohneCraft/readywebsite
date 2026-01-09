@@ -1453,9 +1453,12 @@ export async function installTheme(themeData: ThemeData, createdBy: string): Pro
   // Site settings'i tema ayarlarıyla güncelle (Header/Footer özelleştirmeleri + Company/Contact/Social/SEO)
   // Aktif tema bilgisini kaydet ve tema bilgilerini siteSettings'e uygula
   try {
-    const currentSettings = await getSiteSettings();
+    // Client-safe fonksiyon kullan (unstable_cache client'ta çalışmaz)
+    const currentSettings = await getSiteSettingsClient();
     const existingThemeId = existingTheme ? existingTheme.id : null;
     const themeSettings = metadata.settings || {};
+    
+    logger.firestore.info(`Aktif tema ayarlanıyor: ${metadata.name} (ID: ${existingThemeId || metadata.id})`);
 
     // Tema bilgilerini siteSettings formatına çevir
     const themeCompanyInfo = themeSettings.company || {};
