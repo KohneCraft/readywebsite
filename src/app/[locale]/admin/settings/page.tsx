@@ -261,8 +261,10 @@ export default function AdminSettingsPage() {
             logo: settings.logo?.light?.url || themeDefaults.company.logo,
             // Renk ve font ayarları - undefined ise boş bırak (tema varsayılanları kullanılsın)
             nameColor: (settings as any).companyNameStyle?.color || '',
+            nameColorDark: (settings as any).companyNameStyle?.colorDark || '',
             nameFontSize: (settings as any).companyNameStyle?.fontSize || undefined,
             sloganColor: (settings as any).sloganStyle?.color || '',
+            sloganColorDark: (settings as any).sloganStyle?.colorDark || '',
             sloganFontSize: (settings as any).sloganStyle?.fontSize || undefined,
           },
           contact: {
@@ -349,12 +351,14 @@ export default function AdminSettingsPage() {
           de: data.company.slogan || '',
           fr: data.company.slogan || '',
         },
-        companyNameStyle: data.company.nameColor || data.company.nameFontSize ? {
+        companyNameStyle: data.company.nameColor || data.company.nameColorDark || data.company.nameFontSize ? {
           color: data.company.nameColor || undefined,
+          colorDark: data.company.nameColorDark || undefined,
           fontSize: data.company.nameFontSize || undefined,
         } : undefined,
-        sloganStyle: data.company.sloganColor || data.company.sloganFontSize ? {
+        sloganStyle: data.company.sloganColor || data.company.sloganColorDark || data.company.sloganFontSize ? {
           color: data.company.sloganColor || undefined,
+          colorDark: data.company.sloganColorDark || undefined,
           fontSize: data.company.sloganFontSize || undefined,
         } : undefined,
         logo: {

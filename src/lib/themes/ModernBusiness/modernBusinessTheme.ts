@@ -16,7 +16,7 @@ export const modernBusinessTheme: ThemeData = {
     name: 'Modern Business',
     description: 'Modern ve minimal iş web sitesi teması',
     version: '1.0.0',
-    thumbnail: '/themes/modern/preview.jpg',
+    thumbnail: '/themes/modern-business.png',
     author: 'Page Builder',
     category: 'business',
     pages: [

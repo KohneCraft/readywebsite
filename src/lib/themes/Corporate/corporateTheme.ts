@@ -14,7 +14,7 @@ export const corporateTheme: ThemeData = {
     name: 'Corporate',
     description: 'Kurumsal işletmeler için profesyonel tema',
     version: '1.0.0',
-    thumbnail: '/themes/corporate/preview.jpg',
+    thumbnail: '/themes/corporate.png',
     author: 'Page Builder',
     category: 'corporate',
     pages: [

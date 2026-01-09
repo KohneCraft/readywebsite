@@ -134,12 +134,14 @@ export interface BlockProps {
   content?: string;
   fontSize?: number;
   fontFamily?: string;
-  fontWeight?: number;
+  fontWeight?: 'normal' | 'bold' | number;
   fontStyle?: 'normal' | 'italic';
   color?: string;
   colorDark?: string | 'auto'; // Koyu tema rengi
   backgroundColor?: string;
   backgroundColorDark?: string | 'auto'; // Koyu tema arka plan
+  backgroundBlur?: number; // Cam efekti blur değeri (px)
+  backgroundPadding?: number; // Arka plan iç dolgu
   textAlign?: 'left' | 'center' | 'right' | 'justify';
   lineHeight?: number;
   letterSpacing?: number;
@@ -246,7 +248,7 @@ export interface BlockProps {
   direction?: 'ltr' | 'rtl'; // Döngü yönü
   sliderHeight?: number | 'auto'; // Slider yükseakliği
   transitionSpeed?: number; // Geçiş hızı (ms)
-  transitionEffect?: 'slide' | 'fade'; // Geçiş efekti
+  transitionEffect?: 'slide' | 'fade' | 'zoom' | 'flip'; // Geçiş efekti
 }
 
 /**

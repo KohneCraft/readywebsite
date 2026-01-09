@@ -14,7 +14,7 @@ export const minimalTheme: ThemeData = {
     name: 'Minimal',
     description: 'Sade ve şık minimal tema',
     version: '1.0.0',
-    thumbnail: '/themes/minimal/preview.jpg',
+    thumbnail: '/themes/minimal.png',
     author: 'Page Builder',
     category: 'portfolio',
     pages: [
