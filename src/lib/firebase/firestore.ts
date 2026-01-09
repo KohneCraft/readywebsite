@@ -1327,10 +1327,9 @@ export async function installTheme(themeData: ThemeData, createdBy: string): Pro
     }) || null;
 
     if (existingTheme) {
-      logger.firestore.debug('Mevcut tema bulundu, metadata orijinal ayarlarla güncelleniyor...');
-      logger.firestore.debug('Metadata settings:', metadata.settings);
-      logger.firestore.debug('Header navItems:', metadata.settings?.header?.navItems);
-      logger.firestore.debug('Footer quickLinks:', metadata.settings?.footer?.quickLinks);
+      logger.firestore.info('Mevcut tema bulundu, metadata orijinal ayarlarla güncelleniyor...');
+      logger.firestore.info('Header navItems (önceki):', metadata.settings?.header?.navItems);
+      logger.firestore.info('Footer quickLinks (önceki):', metadata.settings?.footer?.quickLinks);
       
       // Tema metadata'sını TAMAMEN orijinal tema dosyasındaki ayarlarla değiştir
       // setDoc ile merge: false kullanarak tüm dokümanı değiştir
@@ -1346,14 +1345,13 @@ export async function installTheme(themeData: ThemeData, createdBy: string): Pro
       }, { merge: false }); // merge: false = doküman tamamen değiştirilir
       
       logger.firestore.info('✓ Tema metadata TAMAMEN orijinal ayarlarla güncellendi');
-      logger.firestore.debug('✓ Header navItems sıfırlandı:', cleanMetadata.settings?.header?.navItems);
-      logger.firestore.debug('✓ Footer quickLinks sıfırlandı:', cleanMetadata.settings?.footer?.quickLinks);
+      logger.firestore.info('✓ Header navItems (sonrası):', cleanMetadata.settings?.header?.navItems);
+      logger.firestore.info('✓ Footer quickLinks (sonrası):', cleanMetadata.settings?.footer?.quickLinks);
     } else {
       // Tema yoksa yeni oluştur
-      logger.firestore.debug('Yeni tema oluşturuluyor...');
-      logger.firestore.debug('Metadata settings:', metadata.settings);
-      logger.firestore.debug('Header navItems:', metadata.settings?.header?.navItems);
-      logger.firestore.debug('Footer quickLinks:', metadata.settings?.footer?.quickLinks);
+      logger.firestore.info('Yeni tema oluşturuluyor...');
+      logger.firestore.info('Header navItems:', metadata.settings?.header?.navItems);
+      logger.firestore.info('Footer quickLinks:', metadata.settings?.footer?.quickLinks);
       await createTheme(metadata);
       logger.firestore.info('✓ Yeni tema oluşturuldu');
     }

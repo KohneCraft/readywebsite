@@ -22,6 +22,7 @@ import {
   Palette,
   Image as ImageIcon,
   Mail,
+  ScrollText,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Spinner } from '@/components/ui/Spinner';
@@ -201,6 +202,7 @@ export default function AdminLayout({
     { href: '/admin/themes', icon: Palette, label: t('themes.title') },
     { href: '/admin/media', icon: ImageIcon, label: 'Medya Yönetimi' },
     { href: '/admin/messages', icon: Mail, label: 'İletişim Mesajları' },
+    { href: '/admin/logs', icon: ScrollText, label: 'Sistem Logları' },
     { href: '/admin/settings', icon: Settings, label: t('settings.title') },
   ];
 

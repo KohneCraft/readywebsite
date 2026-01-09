@@ -20,6 +20,7 @@ interface LoggerConfig {
   minLevel: LogLevel;
   showTimestamp: boolean;
   showContext: boolean;
+  persistToFirestore: boolean; // Firestore'a kaydetme
 }
 
 const LOG_LEVELS: Record<LogLevel, number> = {
@@ -35,6 +36,7 @@ const defaultConfig: LoggerConfig = {
   minLevel: process.env.NODE_ENV === 'production' ? 'warn' : 'debug',
   showTimestamp: true,
   showContext: true,
+  persistToFirestore: process.env.NODE_ENV === 'production', // Production'da kaydet
 };
 
 let config: LoggerConfig = { ...defaultConfig };
@@ -73,6 +75,28 @@ const formatLogEntry = (entry: LogEntry): string => {
   parts.push(entry.message);
   
   return parts.join(' ');
+};
+
+/**
+ * Firestore'a log kaydet (async, await etmeden fire-and-forget)
+ */
+const persistLog = async (entry: LogEntry): Promise<void> => {
+  if (!config.persistToFirestore) return;
+  
+  try {
+    // Dinamik import ile circular dependency'den kaçın
+    const { collection, addDoc } = await import('firebase/firestore');
+    const { db } = await import('./firebase/config');
+    
+    await addDoc(collection(db, 'logs'), {
+      ...entry,
+      timestamp: new Date(entry.timestamp),
+      data: entry.data ? JSON.stringify(entry.data) : undefined,
+    });
+  } catch (error) {
+    // Log kaydetme başarısız olursa sessizce devam et
+    console.error('Log persist hatası:', error);
+  }
 };
 
 /**
@@ -121,6 +145,11 @@ const log = (level: LogLevel, message: string, data?: unknown, context?: string)
       }
       break;
   }
+  
+  // Firestore'a kaydet (fire-and-forget, await etmiyoruz)
+  persistLog(entry).catch(() => {
+    // Sessizce hata yut
+  });
 };
 
 /**
