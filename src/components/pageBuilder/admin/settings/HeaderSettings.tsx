@@ -13,6 +13,7 @@ import { logger } from '@/lib/logger';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { toast } from '@/components/providers';
+import { DualColorPicker } from '../controls/DualColorPicker';
 
 interface HeaderSettingsProps {
   activeTab: 'style' | 'settings' | 'advanced';
@@ -22,12 +23,24 @@ interface HeaderSettingsProps {
 export function HeaderSettings({ activeTab, onUpdate }: HeaderSettingsProps) {
   const { themeSettings, currentTheme } = useTheme();
   const [loading, setLoading] = useState(false);
-  const [headerConfig, setHeaderConfig] = useState(themeSettings?.header || {
+  const [headerConfig, setHeaderConfig] = useState<{
+    logo?: string;
+    logoText?: string;
+    navItems?: { href: string; label: string }[];
+    backgroundColor?: string;
+    backgroundColorDark?: string | 'auto';
+    textColor?: string;
+    textColorDark?: string | 'auto';
+    sticky?: boolean;
+    transparent?: boolean;
+  }>(themeSettings?.header || {
     logo: '',
     logoText: 'Page Builder',
     navItems: [{ href: '/', label: 'Ana Sayfa' }],
     backgroundColor: '#FFFFFF',
+    backgroundColorDark: 'auto',
     textColor: '#1a1a1a',
+    textColorDark: 'auto',
   });
 
   // ThemeSettings değiştiğinde formu güncelle
@@ -43,7 +56,7 @@ export function HeaderSettings({ activeTab, onUpdate }: HeaderSettingsProps) {
       logger.theme.error('currentTheme undefined - tema yüklenmemiş');
       return;
     }
-    
+
     try {
       setLoading(true);
       const user = getCurrentUser();
@@ -136,43 +149,27 @@ export function HeaderSettings({ activeTab, onUpdate }: HeaderSettingsProps) {
         </div>
 
         <div>
-          <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
+          <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-2">
             Arka Plan Rengi
           </label>
-          <div className="flex items-center gap-2">
-            <Input
-              type="color"
-              value={headerConfig.backgroundColor || '#FFFFFF'}
-              onChange={(e) => setHeaderConfig({ ...headerConfig, backgroundColor: e.target.value.toUpperCase() })}
-              className="w-16 h-10"
-            />
-            <Input
-              type="text"
-              value={headerConfig.backgroundColor || '#FFFFFF'}
-              onChange={(e) => setHeaderConfig({ ...headerConfig, backgroundColor: e.target.value.toUpperCase() })}
-              placeholder="#FFFFFF"
-            />
-          </div>
+          <DualColorPicker
+            lightColor={headerConfig.backgroundColor || '#FFFFFF'}
+            darkColor={headerConfig.backgroundColorDark || 'auto'}
+            onLightChange={(color) => setHeaderConfig({ ...headerConfig, backgroundColor: color })}
+            onDarkChange={(colorDark) => setHeaderConfig({ ...headerConfig, backgroundColorDark: colorDark })}
+          />
         </div>
 
         <div>
-          <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
+          <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-2">
             Metin Rengi
           </label>
-          <div className="flex items-center gap-2">
-            <Input
-              type="color"
-              value={headerConfig.textColor || '#1a1a1a'}
-              onChange={(e) => setHeaderConfig({ ...headerConfig, textColor: e.target.value })}
-              className="w-16 h-10"
-            />
-            <Input
-              type="text"
-              value={headerConfig.textColor || '#1a1a1a'}
-              onChange={(e) => setHeaderConfig({ ...headerConfig, textColor: e.target.value })}
-              placeholder="#1a1a1a"
-            />
-          </div>
+          <DualColorPicker
+            lightColor={headerConfig.textColor || '#1a1a1a'}
+            darkColor={headerConfig.textColorDark || 'auto'}
+            onLightChange={(color) => setHeaderConfig({ ...headerConfig, textColor: color })}
+            onDarkChange={(colorDark) => setHeaderConfig({ ...headerConfig, textColorDark: colorDark })}
+          />
         </div>
       </div>
     );

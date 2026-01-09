@@ -13,6 +13,7 @@ import { logger } from '@/lib/logger';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { toast } from '@/components/providers';
+import { DualColorPicker } from '../controls/DualColorPicker';
 
 interface FooterSettingsProps {
   activeTab: 'style' | 'settings' | 'advanced';
@@ -22,7 +23,18 @@ interface FooterSettingsProps {
 export function FooterSettings({ activeTab, onUpdate }: FooterSettingsProps) {
   const { themeSettings, currentTheme } = useTheme();
   const [loading, setLoading] = useState(false);
-  const [footerConfig, setFooterConfig] = useState(themeSettings?.footer || {
+  const [footerConfig, setFooterConfig] = useState<{
+    logo?: string;
+    logoText?: string;
+    description?: string;
+    quickLinks?: { href: string; label: string }[];
+    socialLinks?: { platform: string; url: string }[];
+    copyright?: string;
+    backgroundColor?: string;
+    backgroundColorDark?: string | 'auto';
+    textColor?: string;
+    textColorDark?: string | 'auto';
+  }>(themeSettings?.footer || {
     logo: '',
     logoText: 'Page Builder',
     description: 'Kod bilgisi olmadan profesyonel web sayfaları oluşturun.',
@@ -33,7 +45,9 @@ export function FooterSettings({ activeTab, onUpdate }: FooterSettingsProps) {
     ],
     copyright: '© 2026 Page Builder. Tüm hakları saklıdır.',
     backgroundColor: '#1a1a1a',
+    backgroundColorDark: 'auto',
     textColor: '#ffffff',
+    textColorDark: 'auto',
   });
 
   // ThemeSettings değiştiğinde formu güncelle
@@ -42,7 +56,7 @@ export function FooterSettings({ activeTab, onUpdate }: FooterSettingsProps) {
       try {
         // Site settings'ten sosyal medya bilgilerini çek
         const siteSettings = await getSiteSettingsClient();
-        
+
         // Sosyal medya linklerini dönüştür
         const socialLinks: { platform: string; url: string }[] = [];
         if (siteSettings.socialLinks) {
@@ -62,7 +76,7 @@ export function FooterSettings({ activeTab, onUpdate }: FooterSettingsProps) {
             socialLinks.push({ platform: 'youtube', url: siteSettings.socialLinks.youtube });
           }
         }
-        
+
         // ThemeSettings'ten footer ayarlarını al
         if (themeSettings?.footer) {
           setFooterConfig({
@@ -74,7 +88,7 @@ export function FooterSettings({ activeTab, onUpdate }: FooterSettingsProps) {
         logger.theme.error('Footer ayarları yüklenirken hata:', error);
       }
     }
-    
+
     loadFooterData();
   }, [themeSettings]);
 
@@ -84,7 +98,7 @@ export function FooterSettings({ activeTab, onUpdate }: FooterSettingsProps) {
       logger.theme.error('currentTheme undefined - tema yüklenmemiş');
       return;
     }
-    
+
     try {
       setLoading(true);
       const user = getCurrentUser();
@@ -226,43 +240,27 @@ export function FooterSettings({ activeTab, onUpdate }: FooterSettingsProps) {
         </div>
 
         <div>
-          <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
+          <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-2">
             Arka Plan Rengi
           </label>
-          <div className="flex items-center gap-2">
-            <Input
-              type="color"
-              value={footerConfig.backgroundColor || '#1a1a1a'}
-              onChange={(e) => setFooterConfig({ ...footerConfig, backgroundColor: e.target.value })}
-              className="w-16 h-10"
-            />
-            <Input
-              type="text"
-              value={footerConfig.backgroundColor || '#1a1a1a'}
-              onChange={(e) => setFooterConfig({ ...footerConfig, backgroundColor: e.target.value })}
-              placeholder="#1a1a1a"
-            />
-          </div>
+          <DualColorPicker
+            lightColor={footerConfig.backgroundColor || '#1a1a1a'}
+            darkColor={footerConfig.backgroundColorDark || 'auto'}
+            onLightChange={(color) => setFooterConfig({ ...footerConfig, backgroundColor: color })}
+            onDarkChange={(colorDark) => setFooterConfig({ ...footerConfig, backgroundColorDark: colorDark })}
+          />
         </div>
 
         <div>
-          <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
+          <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-2">
             Metin Rengi
           </label>
-          <div className="flex items-center gap-2">
-            <Input
-              type="color"
-              value={footerConfig.textColor || '#ffffff'}
-              onChange={(e) => setFooterConfig({ ...footerConfig, textColor: e.target.value })}
-              className="w-16 h-10"
-            />
-            <Input
-              type="text"
-              value={footerConfig.textColor || '#ffffff'}
-              onChange={(e) => setFooterConfig({ ...footerConfig, textColor: e.target.value })}
-              placeholder="#ffffff"
-            />
-          </div>
+          <DualColorPicker
+            lightColor={footerConfig.textColor || '#ffffff'}
+            darkColor={footerConfig.textColorDark || 'auto'}
+            onLightChange={(color) => setFooterConfig({ ...footerConfig, textColor: color })}
+            onDarkChange={(colorDark) => setFooterConfig({ ...footerConfig, textColorDark: colorDark })}
+          />
         </div>
       </div>
     );
