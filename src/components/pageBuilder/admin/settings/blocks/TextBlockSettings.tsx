@@ -5,7 +5,7 @@
 // Metin bloğu ayarları
 // ============================================
 
-import { ColorPicker } from '../../controls/ColorPicker';
+import { DualColorPicker } from '../../controls/DualColorPicker';
 import { SpacingControl } from '../../controls/SpacingControl';
 import { cn } from '@/lib/utils';
 import type { Block } from '@/types/pageBuilder';
@@ -48,12 +48,14 @@ export function TextBlockSettings({ block, activeTab, onUpdate }: TextBlockSetti
         </div>
 
         <div>
-          <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
-            Renk
+          <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-2">
+            Metin Rengi
           </label>
-          <ColorPicker
-            color={props.color || '#333333'}
-            onChange={(color) => onUpdate({ color })}
+          <DualColorPicker
+            lightColor={props.color || '#333333'}
+            darkColor={props.colorDark || 'auto'}
+            onLightChange={(color) => onUpdate({ color })}
+            onDarkChange={(colorDark) => onUpdate({ colorDark })}
           />
         </div>
 

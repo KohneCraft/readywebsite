@@ -1,6 +1,6 @@
 'use client';
 
-import { ColorPicker } from '../../controls/ColorPicker';
+import { DualColorPicker } from '../../controls/DualColorPicker';
 import { SpacingControl } from '../../controls/SpacingControl';
 import { cn } from '@/lib/utils';
 import type { Block } from '@/types/pageBuilder';
@@ -31,12 +31,14 @@ export function DividerBlockSettings({ block, activeTab, onUpdate }: DividerBloc
         </div>
 
         <div>
-          <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
-            Renk
+          <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-2">
+            Çizgi Rengi
           </label>
-          <ColorPicker
-            color={props.dividerColor || '#e5e7eb'}
-            onChange={(color) => onUpdate({ dividerColor: color })}
+          <DualColorPicker
+            lightColor={props.dividerColor || '#e5e7eb'}
+            darkColor={props.dividerColorDark || 'auto'}
+            onLightChange={(color) => onUpdate({ dividerColor: color })}
+            onDarkChange={(colorDark) => onUpdate({ dividerColorDark: colorDark })}
           />
         </div>
 

@@ -2,7 +2,7 @@
 
 import { Plus, Trash2 } from 'lucide-react';
 import { SpacingControl } from '../../controls/SpacingControl';
-import { ColorPicker } from '../../controls/ColorPicker';
+import { DualColorPicker } from '../../controls/DualColorPicker';
 import type { Block, FormField } from '@/types/pageBuilder';
 
 interface FormBlockSettingsProps {
@@ -52,7 +52,7 @@ export function FormBlockSettings({ block, activeTab, onUpdate }: FormBlockSetti
                     <Trash2 className="w-3 h-3" />
                   </button>
                 </div>
-                
+
                 {/* Alan Tipi */}
                 <div>
                   <label className="block text-xs text-gray-600 dark:text-gray-400 mb-1">Tip</label>
@@ -165,13 +165,13 @@ export function FormBlockSettings({ block, activeTab, onUpdate }: FormBlockSetti
           <input
             type="text"
             value={props.submitButton?.text || 'Gönder'}
-            onChange={(e) => onUpdate({ 
-              submitButton: { 
-                ...props.submitButton, 
+            onChange={(e) => onUpdate({
+              submitButton: {
+                ...props.submitButton,
                 text: e.target.value,
                 style: props.submitButton?.style || 'primary',
                 size: props.submitButton?.size || 'medium'
-              } 
+              }
             })}
             className="w-full px-3 py-2 text-sm border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-white"
           />
@@ -201,32 +201,38 @@ export function FormBlockSettings({ block, activeTab, onUpdate }: FormBlockSetti
         </div>
 
         <div>
-          <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
+          <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-2">
             Arkaplan Rengi
           </label>
-          <ColorPicker
-            color={props.formBackgroundColor || '#FFFFFF'}
-            onChange={(color) => onUpdate({ formBackgroundColor: color })}
+          <DualColorPicker
+            lightColor={props.formBackgroundColor || '#FFFFFF'}
+            darkColor={props.formBackgroundColorDark || 'auto'}
+            onLightChange={(color) => onUpdate({ formBackgroundColor: color })}
+            onDarkChange={(colorDark) => onUpdate({ formBackgroundColorDark: colorDark })}
           />
         </div>
 
         <div>
-          <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
+          <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-2">
             Input Metin Rengi
           </label>
-          <ColorPicker
-            color={props.formTextColor || '#000000'}
-            onChange={(color) => onUpdate({ formTextColor: color })}
+          <DualColorPicker
+            lightColor={props.formTextColor || '#000000'}
+            darkColor={props.formTextColorDark || 'auto'}
+            onLightChange={(color) => onUpdate({ formTextColor: color })}
+            onDarkChange={(colorDark) => onUpdate({ formTextColorDark: colorDark })}
           />
         </div>
 
         <div>
-          <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
+          <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-2">
             Label Metin Rengi
           </label>
-          <ColorPicker
-            color={props.formLabelColor || '#333333'}
-            onChange={(color) => onUpdate({ formLabelColor: color })}
+          <DualColorPicker
+            lightColor={props.formLabelColor || '#333333'}
+            darkColor={props.formLabelColorDark || 'auto'}
+            onLightChange={(color) => onUpdate({ formLabelColor: color })}
+            onDarkChange={(colorDark) => onUpdate({ formLabelColorDark: colorDark })}
           />
         </div>
       </div>
@@ -303,22 +309,26 @@ export function FormBlockSettings({ block, activeTab, onUpdate }: FormBlockSetti
         </div>
 
         <div>
-          <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
+          <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-2">
             Buton Rengi
           </label>
-          <ColorPicker
-            color={props.buttonColor || '#2563EB'}
-            onChange={(color) => onUpdate({ buttonColor: color })}
+          <DualColorPicker
+            lightColor={props.buttonColor || '#2563EB'}
+            darkColor={props.buttonColorDark || 'auto'}
+            onLightChange={(color) => onUpdate({ buttonColor: color })}
+            onDarkChange={(colorDark) => onUpdate({ buttonColorDark: colorDark })}
           />
         </div>
 
         <div>
-          <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
+          <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-2">
             Buton Metin Rengi
           </label>
-          <ColorPicker
-            color={props.buttonTextColor || '#FFFFFF'}
-            onChange={(color) => onUpdate({ buttonTextColor: color })}
+          <DualColorPicker
+            lightColor={props.buttonTextColor || '#FFFFFF'}
+            darkColor={props.buttonTextColorDark || 'auto'}
+            onLightChange={(color) => onUpdate({ buttonTextColor: color })}
+            onDarkChange={(colorDark) => onUpdate({ buttonTextColorDark: colorDark })}
           />
         </div>
       </div>

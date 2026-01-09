@@ -9,7 +9,7 @@ import { useState, useEffect } from 'react';
 import { getSectionById, getColumnById } from '@/lib/firebase/firestore';
 import { logger } from '@/lib/logger';
 import { SpacingControl } from '../controls/SpacingControl';
-import { ColorPicker } from '../controls/ColorPicker';
+import { DualColorPicker } from '../controls/DualColorPicker';
 import { Spinner } from '@/components/ui/Spinner';
 import { Input } from '@/components/ui/Input';
 import { cn } from '@/lib/utils';
@@ -58,7 +58,7 @@ export function SectionSettings({ sectionId, activeTab, onUpdate, onColumnUpdate
         const loadedColumns = await Promise.all(columnPromises);
         const validColumns = loadedColumns.filter(Boolean) as Column[];
         setColumns(validColumns);
-        
+
         // Her kolonun iç kolonlarını yükle
         const nestedMap: Record<string, Column[]> = {};
         for (const col of validColumns) {
@@ -121,15 +121,24 @@ export function SectionSettings({ sectionId, activeTab, onUpdate, onColumnUpdate
         </div>
 
         <div>
-          <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
+          <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-2">
             Arka Plan Rengi
           </label>
-          <ColorPicker
-            color={settings.backgroundColor || '#FFFFFF'}
-            onChange={(color) => {
+          <DualColorPicker
+            lightColor={settings.backgroundColor || '#FFFFFF'}
+            darkColor={settings.backgroundColorDark || 'auto'}
+            onLightChange={(color) => {
               const updated = {
                 ...section,
                 settings: { ...settings, backgroundColor: color },
+              };
+              setSection(updated);
+              onUpdate(updated);
+            }}
+            onDarkChange={(colorDark) => {
+              const updated = {
+                ...section,
+                settings: { ...settings, backgroundColorDark: colorDark },
               };
               setSection(updated);
               onUpdate(updated);
@@ -328,7 +337,7 @@ export function SectionSettings({ sectionId, activeTab, onUpdate, onColumnUpdate
                           const newWidth = columnWidthUnit === 'percent'
                             ? parseFloat(e.target.value) || 0
                             : parseInt(e.target.value) || 0;
-                          const updatedColumns = columns.map(c => 
+                          const updatedColumns = columns.map(c =>
                             c.id === col.id ? { ...c, width: newWidth } : c
                           );
                           setColumns(updatedColumns);
@@ -364,9 +373,9 @@ export function SectionSettings({ sectionId, activeTab, onUpdate, onColumnUpdate
                               value={nestedCol.width || 0}
                               onChange={(e) => {
                                 const newWidth = parseFloat(e.target.value) || 0;
-                                
+
                                 // UI'ı hemen güncelle (anlık görünüm için)
-                                const updatedNestedColumns = nestedColumns.map(nc => 
+                                const updatedNestedColumns = nestedColumns.map(nc =>
                                   nc.id === nestedCol.id ? { ...nc, width: newWidth } : nc
                                 );
                                 setNestedColumnsMap(prev => ({
@@ -412,28 +421,28 @@ export function SectionSettings({ sectionId, activeTab, onUpdate, onColumnUpdate
                     const width = col.width || 0;
                     return (width <= 100 && width >= 0) ? sum + width : sum;
                   }, 0) !== 100 && (
-                    <button
-                      onClick={async () => {
-                        // Eşit dağıt
-                        const equalWidth = 100 / columns.length;
-                        const updatedColumns = columns.map(c => ({ ...c, width: equalWidth }));
-                        setColumns(updatedColumns);
-                        
-                        try {
-                          const { updateColumn } = await import('@/lib/firebase/firestore');
-                          await Promise.all(
-                            updatedColumns.map(col => updateColumn(col.id, { width: col.width }))
-                          );
-                          window.dispatchEvent(new CustomEvent('section-updated', { detail: { sectionId: 'any' } }));
-                        } catch (error) {
-                          logger.pageBuilder.error('Kolon genişlikleri güncelleme hatası', error);
-                        }
-                      }}
-                      className="mt-2 text-xs text-primary-600 dark:text-primary-400 hover:underline"
-                    >
-                      Eşit Dağıt ({columns.length > 0 ? (100 / columns.length).toFixed(1) : 0}%)
-                    </button>
-                  )}
+                      <button
+                        onClick={async () => {
+                          // Eşit dağıt
+                          const equalWidth = 100 / columns.length;
+                          const updatedColumns = columns.map(c => ({ ...c, width: equalWidth }));
+                          setColumns(updatedColumns);
+
+                          try {
+                            const { updateColumn } = await import('@/lib/firebase/firestore');
+                            await Promise.all(
+                              updatedColumns.map(col => updateColumn(col.id, { width: col.width }))
+                            );
+                            window.dispatchEvent(new CustomEvent('section-updated', { detail: { sectionId: 'any' } }));
+                          } catch (error) {
+                            logger.pageBuilder.error('Kolon genişlikleri güncelleme hatası', error);
+                          }
+                        }}
+                        className="mt-2 text-xs text-primary-600 dark:text-primary-400 hover:underline"
+                      >
+                        Eşit Dağıt ({columns.length > 0 ? (100 / columns.length).toFixed(1) : 0}%)
+                      </button>
+                    )}
                 </div>
               )}
             </div>

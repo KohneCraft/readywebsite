@@ -2,6 +2,7 @@
 
 import { memo } from 'react';
 import { useDeviceType } from '@/hooks/useDeviceType';
+import { useThemeColor } from '@/hooks/useThemeColor';
 import type { BlockProps } from '@/types/pageBuilder';
 
 interface HeadingBlockProps {
@@ -11,25 +12,31 @@ interface HeadingBlockProps {
 function HeadingBlockComponent({ props }: HeadingBlockProps) {
   const Tag = (props.level || 'h2') as keyof JSX.IntrinsicElements;
   const deviceType = useDeviceType();
-  
+
+  // Tema rengi
+  const effectiveColor = useThemeColor({
+    lightColor: props.color || '#1a1a1a',
+    darkColor: props.colorDark || 'auto',
+  });
+
   // Responsive font size: mobilde %70, tablette %85
   const baseFontSize = props.fontSize || 32;
-  const responsiveFontSize = deviceType === 'mobile' ? baseFontSize * 0.7 : 
-                             deviceType === 'tablet' ? baseFontSize * 0.85 : 
-                             baseFontSize;
-  
+  const responsiveFontSize = deviceType === 'mobile' ? baseFontSize * 0.7 :
+    deviceType === 'tablet' ? baseFontSize * 0.85 :
+      baseFontSize;
+
   // Responsive padding
   const getPadding = () => {
     if (!props.padding) return '0';
     const scale = deviceType === 'mobile' ? 0.6 : deviceType === 'tablet' ? 0.8 : 1;
     return `${(props.padding.top || 0) * scale}px ${(props.padding.right || 0) * scale}px ${(props.padding.bottom || 0) * scale}px ${(props.padding.left || 0) * scale}px`;
   };
-  
+
   const style: React.CSSProperties = {
     fontSize: responsiveFontSize,
     fontFamily: props.fontFamily || 'inherit',
     fontWeight: props.fontWeight || 700,
-    color: props.color || '#1a1a1a',
+    color: effectiveColor || '#1a1a1a',
     textAlign: (props.textAlign as React.CSSProperties['textAlign']) || 'left',
     lineHeight: props.lineHeight || 1.2,
     textTransform: props.textTransform || 'none',
@@ -41,7 +48,7 @@ function HeadingBlockComponent({ props }: HeadingBlockProps) {
     overflowWrap: 'break-word',
     maxWidth: '100%',
   };
-  
+
   return (
     <Tag className="heading-block" style={style}>
       {props.content}
@@ -51,4 +58,3 @@ function HeadingBlockComponent({ props }: HeadingBlockProps) {
 
 const HeadingBlock = memo(HeadingBlockComponent);
 export { HeadingBlock };
-

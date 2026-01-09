@@ -161,8 +161,8 @@ export function TopBar({
             disabled={!canUndo}
             className={cn(
               'p-1.5 rounded transition-colors',
-              canUndo 
-                ? 'hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-400' 
+              canUndo
+                ? 'hover:bg-green-100 dark:hover:bg-green-900/30 text-green-600 dark:text-green-400'
                 : 'text-gray-300 dark:text-gray-600 cursor-not-allowed'
             )}
             title="Geri Al (Ctrl+Z)"
@@ -174,8 +174,8 @@ export function TopBar({
             disabled={!canRedo}
             className={cn(
               'p-1.5 rounded transition-colors',
-              canRedo 
-                ? 'hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-400' 
+              canRedo
+                ? 'hover:bg-green-100 dark:hover:bg-green-900/30 text-green-600 dark:text-green-400'
                 : 'text-gray-300 dark:text-gray-600 cursor-not-allowed'
             )}
             title="İleri Al (Ctrl+Y)"

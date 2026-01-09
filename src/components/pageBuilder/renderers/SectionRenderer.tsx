@@ -6,6 +6,7 @@ import { getSectionById, getColumnById } from '@/lib/firebase/firestore';
 import { logger } from '@/lib/logger';
 import type { Section, Column } from '@/types/pageBuilder';
 import { useDeviceType } from '@/hooks/useDeviceType';
+import { useThemeColor } from '@/hooks/useThemeColor';
 
 interface SectionRendererProps {
   sectionId: string;
@@ -17,7 +18,7 @@ export function SectionRenderer({ sectionId }: SectionRendererProps) {
   const [columns, setColumns] = useState<Column[]>([]);
   const [isVisible, setIsVisible] = useState(false);
   const [loading, setLoading] = useState(true);
-  
+
   useEffect(() => {
     let isMounted = true;
 
@@ -26,7 +27,7 @@ export function SectionRenderer({ sectionId }: SectionRendererProps) {
         setLoading(true);
         const sectionData = await getSectionById(sectionId);
         if (!isMounted) return;
-        
+
         logger.pageBuilder.debug(`Section yüklendi (${sectionId})`, sectionData);
         if (!sectionData) {
           logger.pageBuilder.warn(`Section bulunamadı: ${sectionId}`);
@@ -81,10 +82,10 @@ export function SectionRenderer({ sectionId }: SectionRendererProps) {
       isMounted = false;
     };
   }, [section?.columns, section]);
-  
+
   // TÜM hook'lar en üstte olmalı - early return'lerden ÖNCE
   const deviceType = useDeviceType();
-  
+
   // Settings ve hesaplamalar - useMemo ile optimize et
   const settings = useMemo(() => {
     const s = section?.settings || {};
@@ -96,10 +97,16 @@ export function SectionRenderer({ sectionId }: SectionRendererProps) {
     return s;
   }, [section?.settings]);
   const animation = useMemo(() => settings.animation, [settings]);
-  
+
   // Section style - useMemo ile optimize et
+  // Tema rengini al
+  const effectiveBgColor = useThemeColor({
+    lightColor: settings.backgroundColor || 'transparent',
+    darkColor: settings.backgroundColorDark || 'auto',
+  });
+
   const sectionStyle: React.CSSProperties = useMemo(() => ({
-    backgroundColor: settings.backgroundColor,
+    backgroundColor: effectiveBgColor,
     backgroundImage: settings.backgroundImage ? `url(${settings.backgroundImage})` : 'none',
     backgroundSize: settings.backgroundSize || 'cover',
     backgroundPosition: settings.backgroundPosition || 'center',
@@ -114,53 +121,53 @@ export function SectionRenderer({ sectionId }: SectionRendererProps) {
     minHeight: settings.minHeight ? `${settings.minHeight}px` : (settings.maxHeight !== undefined && settings.maxHeight !== null ? `${settings.maxHeight}px` : 'auto'),
     maxHeight: settings.maxHeight !== undefined && settings.maxHeight !== null ? `${settings.maxHeight}px` : undefined,
     height: settings.maxHeight !== undefined && settings.maxHeight !== null ? `${settings.maxHeight}px` : undefined,
-    borderTop: settings.borderTop?.width 
-      ? `${settings.borderTop.width}px ${settings.borderTop.style} ${settings.borderTop.color}` 
+    borderTop: settings.borderTop?.width
+      ? `${settings.borderTop.width}px ${settings.borderTop.style} ${settings.borderTop.color}`
       : 'none',
-    borderBottom: settings.borderBottom?.width 
-      ? `${settings.borderBottom.width}px ${settings.borderBottom.style} ${settings.borderBottom.color}` 
+    borderBottom: settings.borderBottom?.width
+      ? `${settings.borderBottom.width}px ${settings.borderBottom.style} ${settings.borderBottom.color}`
       : 'none',
     borderRadius: settings.borderRadius ? `${settings.borderRadius}px` : '0',
     boxShadow: settings.boxShadow || 'none',
     position: 'relative',
     overflow: 'hidden',
-  }), [settings]);
-  
+  }), [settings, effectiveBgColor]);
+
   // Animation class ve style - useMemo ile optimize et
-  const animationClass = useMemo(() => 
-    animation?.enabled && isVisible 
-      ? `animate-${animation.type || 'fadeIn'}` 
+  const animationClass = useMemo(() =>
+    animation?.enabled && isVisible
+      ? `animate-${animation.type || 'fadeIn'}`
       : ''
-  , [animation, isVisible]);
-  
+    , [animation, isVisible]);
+
   const animationStyle = useMemo(() => animation?.enabled ? {
     '--animation-duration': `${animation.duration || 0.8}s`,
     '--animation-delay': `${animation.delay || 0}s`
   } : {}, [animation]);
-  
+
   // Grid template columns - useMemo ile optimize et
   const gridTemplateColumns = useMemo(() => {
     // Alt Alta (column) düzeni için grid kullanma, flex kullanılacak
     if (settings.columnLayout === 'column') return undefined;
     if (columns.length === 0) return '1fr';
-    
+
     // Mobil cihazlarda her zaman tek sütun (tüm kolonlar alt alta)
     if (deviceType === 'mobile') {
       return '1fr';
     }
-    
+
     // Tablet için 2 sütun (2'den fazla kolon varsa)
     if (deviceType === 'tablet' && columns.length > 2) {
       return 'repeat(2, 1fr)';
     }
-    
+
     // Tüm kolonların birimlerini kontrol et
     const hasPxColumns = columns.some(col => {
       const width = col.width || (100 / columns.length);
       // 0-100 arası % olarak kabul et, değilse px
       return width > 100 || width < 0;
     });
-    
+
     if (process.env.NODE_ENV === 'development') {
       logger.pageBuilder.debug('gridTemplateColumns hesaplanıyor', {
         columnsCount: columns.length,
@@ -169,7 +176,7 @@ export function SectionRenderer({ sectionId }: SectionRendererProps) {
         deviceType,
       });
     }
-    
+
     // Eğer px kolonlar varsa, her kolon için doğru değeri kullan (fixed + fluid düzen)
     if (hasPxColumns) {
       const result = columns.map(col => {
@@ -183,7 +190,7 @@ export function SectionRenderer({ sectionId }: SectionRendererProps) {
       logger.pageBuilder.debug('px kolonlar tespit edildi', { gridTemplateColumns: result });
       return result;
     }
-    
+
     // Tüm kolonlar % ise, fr kullan (% → fr dönüşümü: 50% → 0.5fr)
     const result = columns.map(col => {
       const width = col.width || (100 / columns.length);
@@ -192,11 +199,11 @@ export function SectionRenderer({ sectionId }: SectionRendererProps) {
     logger.pageBuilder.debug('% kolonlar', { gridTemplateColumns: result });
     return result;
   }, [settings.columnLayout, columns, deviceType]);
-  
+
   // Intersection Observer for animations - TÜM hook'lar en üstte
   useEffect(() => {
     if (!animation || !animation.enabled) return;
-    
+
     const observer = new IntersectionObserver(
       ([entry]) => {
         if (entry.isIntersecting) {
@@ -205,15 +212,15 @@ export function SectionRenderer({ sectionId }: SectionRendererProps) {
       },
       { threshold: 0.1 }
     );
-    
+
     const element = sectionRef.current;
     if (element) {
       observer.observe(element);
     }
-    
+
     return () => observer.disconnect();
   }, [animation]);
-  
+
   // Loading state - skeleton placeholder
   if (loading) {
     return (
@@ -224,7 +231,7 @@ export function SectionRenderer({ sectionId }: SectionRendererProps) {
       </section>
     );
   }
-  
+
   // Error state - section not found
   if (!section) {
     logger.pageBuilder.warn(`Section bulunamadı (${sectionId})`);
@@ -234,13 +241,13 @@ export function SectionRenderer({ sectionId }: SectionRendererProps) {
       </section>
     );
   }
-  
+
   // Responsive visibility check
   if (section.visibility && !section.visibility[deviceType]) {
     logger.pageBuilder.debug(`Section görünür değil (${sectionId}, device: ${deviceType})`);
     return null;
   }
-  
+
   // Column kontrolü - empty state
   if (!section.columns || section.columns.length === 0) {
     logger.pageBuilder.warn(`Section'da column yok (${sectionId})`);
@@ -250,14 +257,14 @@ export function SectionRenderer({ sectionId }: SectionRendererProps) {
       </section>
     );
   }
-  
+
   logger.pageBuilder.debug(`Section render ediliyor (${sectionId})`, {
     name: section.name,
     columnsCount: section.columns.length,
   });
-  
+
   return (
-    <section 
+    <section
       ref={sectionRef}
       id={`section-${sectionId}`}
       className={`section-renderer ${animationClass}`}
@@ -266,7 +273,7 @@ export function SectionRenderer({ sectionId }: SectionRendererProps) {
     >
       {/* Overlay */}
       {settings.overlay?.enabled && (
-        <div 
+        <div
           className="section-overlay absolute inset-0 z-0"
           style={{
             backgroundColor: settings.overlay.color,
@@ -274,9 +281,9 @@ export function SectionRenderer({ sectionId }: SectionRendererProps) {
           }}
         />
       )}
-      
+
       {/* Content Container */}
-      <div 
+      <div
         className={`section-container ${settings.fullWidth ? 'w-full' : 'container mx-auto'}`}
         style={{
           maxWidth: settings.fullWidth ? '100%' : `${settings.maxWidth || 1200}px`,
@@ -287,15 +294,15 @@ export function SectionRenderer({ sectionId }: SectionRendererProps) {
           paddingRight: deviceType === 'mobile' ? '16px' : deviceType === 'tablet' ? '24px' : undefined,
         }}
       >
-        <div 
+        <div
           className="columns-wrapper"
           style={{
             display: settings.columnLayout === 'column' ? 'flex' : 'grid',
             flexDirection: settings.columnLayout === 'column' ? 'column' : undefined,
             gridTemplateColumns: settings.columnLayout === 'column' ? undefined : gridTemplateColumns,
-            gap: settings.columnGap !== undefined && settings.columnGap !== null 
-              ? deviceType === 'mobile' 
-                ? `${Math.max(15, (settings.columnGap || 30) * 0.5)}px` 
+            gap: settings.columnGap !== undefined && settings.columnGap !== null
+              ? deviceType === 'mobile'
+                ? `${Math.max(15, (settings.columnGap || 30) * 0.5)}px`
                 : deviceType === 'tablet'
                   ? `${Math.max(20, (settings.columnGap || 30) * 0.75)}px`
                   : `${settings.columnGap}px`
@@ -306,10 +313,10 @@ export function SectionRenderer({ sectionId }: SectionRendererProps) {
             section.columns.map((columnId, colIndex) => {
               // Section içinde yüklenen columns state'inden ilgili objeyi bul
               const columnData = columns.find(c => c.id === columnId);
-              
+
               return (
-                <ColumnRenderer 
-                  key={columnId} 
+                <ColumnRenderer
+                  key={columnId}
                   columnId={columnId}
                   index={colIndex}
                   isFlexLayout={settings.columnLayout === 'column'}

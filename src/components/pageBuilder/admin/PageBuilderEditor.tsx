@@ -13,10 +13,10 @@ import { LeftPanel } from './panels/LeftPanel';
 import { CenterCanvas } from './panels/CenterCanvas';
 import { RightPanel } from './panels/RightPanel';
 import { TopBar } from './TopBar';
-import { 
-  getPageById, 
-  updatePage, 
-  createSection, 
+import {
+  getPageById,
+  updatePage,
+  createSection,
   createBlock,
   moveBlock,
 } from '@/lib/firebase/firestore';
@@ -49,7 +49,7 @@ export function PageBuilderEditor({ pageId }: PageBuilderEditorProps) {
   const [isResizingLeft, setIsResizingLeft] = useState(false);
   const [isResizingRight, setIsResizingRight] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
-  
+
   // Pending değişiklikleri tutmak için state'ler
   const [pendingSectionUpdates, setPendingSectionUpdates] = useState<Record<string, Partial<Section>>>({});
   const [pendingColumnUpdates, setPendingColumnUpdates] = useState<Record<string, Partial<Column>>>({});
@@ -76,7 +76,7 @@ export function PageBuilderEditor({ pageId }: PageBuilderEditorProps) {
   // History'ye mevcut state'i ekle
   const saveToHistory = useCallback(() => {
     if (isUndoRedoRef.current) return; // Undo/Redo sırasında kaydetme
-    
+
     const snapshot = getCurrentSnapshot();
     historyRef.current = [...historyRef.current.slice(-MAX_HISTORY + 1), snapshot];
     futureRef.current = []; // Yeni değişiklik yapıldığında future'ı temizle
@@ -90,13 +90,13 @@ export function PageBuilderEditor({ pageId }: PageBuilderEditorProps) {
     if (historyRef.current.length === 0) return;
 
     isUndoRedoRef.current = true;
-    
+
     // Mevcut state'i future'a kaydet
     futureRef.current = [getCurrentSnapshot(), ...futureRef.current];
-    
+
     // Son history'yi al
     const previousState = historyRef.current.pop()!;
-    
+
     // State'i geri yükle
     if (previousState.page) {
       setPage(previousState.page);
@@ -105,15 +105,15 @@ export function PageBuilderEditor({ pageId }: PageBuilderEditorProps) {
     setPendingColumnUpdates(previousState.pendingColumnUpdates);
     setPendingBlockUpdates(previousState.pendingBlockUpdates);
     setHasChanges(true);
-    
+
     setCanUndo(historyRef.current.length > 0);
     setCanRedo(true);
-    
-    logger.pageBuilder.info('Undo yapıldı', { 
-      historyLength: historyRef.current.length, 
-      futureLength: futureRef.current.length 
+
+    logger.pageBuilder.info('Undo yapıldı', {
+      historyLength: historyRef.current.length,
+      futureLength: futureRef.current.length
     });
-    
+
     // Bir sonraki tick'te flag'i sıfırla
     setTimeout(() => { isUndoRedoRef.current = false; }, 0);
   }, [getCurrentSnapshot]);
@@ -123,13 +123,13 @@ export function PageBuilderEditor({ pageId }: PageBuilderEditorProps) {
     if (futureRef.current.length === 0) return;
 
     isUndoRedoRef.current = true;
-    
+
     // Mevcut state'i history'ye kaydet
     historyRef.current = [...historyRef.current, getCurrentSnapshot()];
-    
+
     // İlk future'ı al
     const nextState = futureRef.current.shift()!;
-    
+
     // State'i yükle
     if (nextState.page) {
       setPage(nextState.page);
@@ -138,15 +138,15 @@ export function PageBuilderEditor({ pageId }: PageBuilderEditorProps) {
     setPendingColumnUpdates(nextState.pendingColumnUpdates);
     setPendingBlockUpdates(nextState.pendingBlockUpdates);
     setHasChanges(true);
-    
+
     setCanUndo(true);
     setCanRedo(futureRef.current.length > 0);
-    
-    logger.pageBuilder.info('Redo yapıldı', { 
-      historyLength: historyRef.current.length, 
-      futureLength: futureRef.current.length 
+
+    logger.pageBuilder.info('Redo yapıldı', {
+      historyLength: historyRef.current.length,
+      futureLength: futureRef.current.length
     });
-    
+
     // Bir sonraki tick'te flag'i sıfırla
     setTimeout(() => { isUndoRedoRef.current = false; }, 0);
   }, [getCurrentSnapshot]);
@@ -182,7 +182,7 @@ export function PageBuilderEditor({ pageId }: PageBuilderEditorProps) {
   );
 
   // Sayfa yükleme
-  const loadPage = useCallback(async () => {
+  const loadPage = useCallback(async (preserveHistory = false) => {
     try {
       setLoading(true);
       const pageData = await getPageById(pageId);
@@ -192,11 +192,13 @@ export function PageBuilderEditor({ pageId }: PageBuilderEditorProps) {
       setPendingSectionUpdates({});
       setPendingColumnUpdates({});
       setPendingBlockUpdates({});
-      // History'yi temizle
-      historyRef.current = [];
-      futureRef.current = [];
-      setCanUndo(false);
-      setCanRedo(false);
+      // History'yi preserveHistory false ise temizle
+      if (!preserveHistory) {
+        historyRef.current = [];
+        futureRef.current = [];
+        setCanUndo(false);
+        setCanRedo(false);
+      }
     } catch (error) {
       logger.pageBuilder.error('Sayfa yüklenirken hata', error);
     } finally {
@@ -216,7 +218,7 @@ export function PageBuilderEditor({ pageId }: PageBuilderEditorProps) {
       prevPageRef.current = page;
       return;
     }
-    
+
     // Sayfa değiştiğinde önceki state'i kaydet
     if (page && JSON.stringify(page) !== JSON.stringify(prevPageRef.current)) {
       saveToHistory();
@@ -239,7 +241,7 @@ export function PageBuilderEditor({ pageId }: PageBuilderEditorProps) {
   // Drag end
   const handleDragEnd = useCallback(async (event: DragEndEvent) => {
     const { active, over } = event;
-    
+
     if (!over || !page) {
       setActiveBlock(null);
       return;
@@ -252,7 +254,7 @@ export function PageBuilderEditor({ pageId }: PageBuilderEditorProps) {
     if (activeData?.source === 'library' && activeData?.type === 'column') {
       try {
         const { createColumn, getSectionById, getColumnById, updateColumn } = await import('@/lib/firebase/firestore');
-        
+
         // Eğer section'a bırakıldıysa
         if (overData?.type === 'section') {
           const sectionId = over.id as string;
@@ -261,19 +263,19 @@ export function PageBuilderEditor({ pageId }: PageBuilderEditorProps) {
             setActiveBlock(null);
             return;
           }
-          
+
           // Mevcut kolon sayısını al
           const currentColumns = section.columns || [];
           const numColumns = currentColumns.length + 1;
           const equalWidth = 100 / numColumns;
-          
+
           // Yeni kolon oluştur
           await createColumn({
             sectionId: sectionId,
             width: equalWidth,
             order: currentColumns.length,
           });
-          
+
           // Mevcut kolonların genişliklerini güncelle
           for (const colId of currentColumns) {
             const col = await getColumnById(colId);
@@ -281,7 +283,7 @@ export function PageBuilderEditor({ pageId }: PageBuilderEditorProps) {
               await updateColumn(colId, { width: equalWidth });
             }
           }
-          
+
           // Sayfayı yeniden yükle
           const pageData = await getPageById(pageId);
           if (pageData) setPage(pageData);
@@ -295,12 +297,12 @@ export function PageBuilderEditor({ pageId }: PageBuilderEditorProps) {
             setActiveBlock(null);
             return;
           }
-          
+
           // Mevcut iç kolon sayısını al
           const currentNestedColumns = parentColumn.columns || [];
           const numColumns = currentNestedColumns.length + 1;
           const equalWidth = 100 / numColumns;
-          
+
           // Yeni iç kolon oluştur
           await createColumn({
             sectionId: parentColumn.sectionId,
@@ -308,7 +310,7 @@ export function PageBuilderEditor({ pageId }: PageBuilderEditorProps) {
             width: equalWidth,
             order: currentNestedColumns.length,
           });
-          
+
           // Mevcut iç kolonların genişliklerini güncelle
           for (const nestedColId of currentNestedColumns) {
             const nestedCol = await getColumnById(nestedColId);
@@ -316,7 +318,7 @@ export function PageBuilderEditor({ pageId }: PageBuilderEditorProps) {
               await updateColumn(nestedColId, { width: equalWidth });
             }
           }
-          
+
           // Sayfayı yeniden yükle
           const pageData = await getPageById(pageId);
           if (pageData) setPage(pageData);
@@ -340,7 +342,7 @@ export function PageBuilderEditor({ pageId }: PageBuilderEditorProps) {
         // Eğer column'a bırakıldıysa
         if (overData?.type === 'column') {
           targetColumnId = over.id as string;
-        } 
+        }
         // Eğer boş section'a bırakıldıysa, önce column oluştur
         else if (overData?.type === 'section') {
           const { createColumn } = await import('@/lib/firebase/firestore');
@@ -360,10 +362,10 @@ export function PageBuilderEditor({ pageId }: PageBuilderEditorProps) {
           type: activeData.type as BlockType,
           props: {},
         });
-        
+
         // Kısa bir bekleme - column güncellemesinin tamamlanması için
         await new Promise(resolve => setTimeout(resolve, 300));
-        
+
         // Sayfayı yeniden yükle
         const pageData = await getPageById(pageId);
         if (pageData) setPage(pageData);
@@ -392,9 +394,9 @@ export function PageBuilderEditor({ pageId }: PageBuilderEditorProps) {
   // Kaydet - Tüm pending değişiklikleri kaydet
   const handleSave = useCallback(async () => {
     if (!page) return;
-    
+
     // Eğer hiç pending değişiklik yoksa ve hasChanges false ise, sadece page'i kaydet
-    const hasPendingChanges = 
+    const hasPendingChanges =
       Object.keys(pendingSectionUpdates).length > 0 ||
       Object.keys(pendingColumnUpdates).length > 0 ||
       Object.keys(pendingBlockUpdates).length > 0 ||
@@ -404,7 +406,7 @@ export function PageBuilderEditor({ pageId }: PageBuilderEditorProps) {
 
     try {
       setIsSaving(true);
-      
+
       // Pending section değişikliklerini kaydet
       for (const [sectionId, updates] of Object.entries(pendingSectionUpdates)) {
         try {
@@ -414,7 +416,7 @@ export function PageBuilderEditor({ pageId }: PageBuilderEditorProps) {
           logger.pageBuilder.error(`Section ${sectionId} güncelleme hatası`, error);
         }
       }
-      
+
       // Pending column değişikliklerini kaydet
       for (const [columnId, updates] of Object.entries(pendingColumnUpdates)) {
         try {
@@ -424,7 +426,7 @@ export function PageBuilderEditor({ pageId }: PageBuilderEditorProps) {
           logger.pageBuilder.error(`Column ${columnId} güncelleme hatası`, error);
         }
       }
-      
+
       // Pending block değişikliklerini kaydet
       for (const [blockId, updates] of Object.entries(pendingBlockUpdates)) {
         try {
@@ -434,7 +436,7 @@ export function PageBuilderEditor({ pageId }: PageBuilderEditorProps) {
           logger.pageBuilder.error(`Block ${blockId} güncelleme hatası`, error);
         }
       }
-      
+
       // Page değişikliklerini kaydet (eğer varsa)
       if (hasChanges) {
         const updateData: Partial<Page> = {
@@ -446,15 +448,15 @@ export function PageBuilderEditor({ pageId }: PageBuilderEditorProps) {
         };
         await updatePage(pageId, updateData);
       }
-      
+
       // Pending değişiklikleri temizle
       setPendingSectionUpdates({});
       setPendingColumnUpdates({});
       setPendingBlockUpdates({});
       setHasChanges(false);
-      
-      // Sayfayı yeniden yükle
-      await loadPage();
+
+      // Sayfayı yeniden yükle - history'yi koru
+      await loadPage(true);
     } catch (error) {
       logger.pageBuilder.error('Kaydetme hatası', error);
     } finally {
@@ -473,7 +475,7 @@ export function PageBuilderEditor({ pageId }: PageBuilderEditorProps) {
   useEffect(() => {
     const handleAddSection = async () => {
       if (!page) return;
-      
+
       try {
         await createSection({
           pageId: page.id,
@@ -481,7 +483,7 @@ export function PageBuilderEditor({ pageId }: PageBuilderEditorProps) {
           order: page.sections?.length || 0,
           settings: {},
         });
-        
+
         // Sayfayı yeniden yükle
         const pageData = await getPageById(pageId);
         if (pageData) setPage(pageData);
@@ -595,7 +597,7 @@ export function PageBuilderEditor({ pageId }: PageBuilderEditorProps) {
         {/* Main Content */}
         <div className="flex-1 flex overflow-hidden relative">
           {/* Left Panel - Blok Kütüphanesi */}
-          <div 
+          <div
             className="bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 flex flex-col relative"
             style={{ width: `${leftPanelWidth}px`, minWidth: '200px', maxWidth: '600px' }}
           >
@@ -619,28 +621,34 @@ export function PageBuilderEditor({ pageId }: PageBuilderEditorProps) {
               selectedElement={selectedElement}
               onSelectElement={setSelectedElement}
               onMoveSection={async (sectionId, direction) => {
+                // Önce history'ye kaydet
+                saveToHistory();
                 const { moveSection } = await import('@/lib/firebase/firestore');
                 await moveSection(sectionId, direction);
-                await loadPage();
+                await loadPage(true); // History'yi koru
               }}
               onDuplicateSection={async (sectionId) => {
+                // Önce history'ye kaydet
+                saveToHistory();
                 const { duplicateSection } = await import('@/lib/firebase/firestore');
                 await duplicateSection(sectionId);
-                await loadPage();
+                await loadPage(true); // History'yi koru
               }}
               onDeleteSection={async (sectionId) => {
+                // Önce history'ye kaydet
+                saveToHistory();
                 const { deleteSection } = await import('@/lib/firebase/firestore');
                 await deleteSection(sectionId);
                 // Page'den section ID'sini çıkar
                 const updatedSections = page.sections?.filter(id => id !== sectionId) || [];
                 await updatePage(page.id, { sections: updatedSections });
-                await loadPage();
+                await loadPage(true); // History'yi koru
               }}
             />
           </div>
 
           {/* Right Panel - Ayarlar */}
-          <div 
+          <div
             className="bg-white dark:bg-gray-800 border-l border-gray-200 dark:border-gray-700 flex flex-col relative"
             style={{ width: `${rightPanelWidth}px`, minWidth: '200px', maxWidth: '600px' }}
           >

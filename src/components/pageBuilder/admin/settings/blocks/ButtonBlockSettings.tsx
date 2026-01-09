@@ -5,7 +5,7 @@
 // Buton bloğu ayarları
 // ============================================
 
-import { ColorPicker } from '../../controls/ColorPicker';
+import { DualColorPicker } from '../../controls/DualColorPicker';
 import { SpacingControl } from '../../controls/SpacingControl';
 import { cn } from '@/lib/utils';
 import type { Block } from '@/types/pageBuilder';
@@ -71,22 +71,26 @@ export function ButtonBlockSettings({ block, activeTab, onUpdate }: ButtonBlockS
         </div>
 
         <div>
-          <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
+          <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-2">
             Arka Plan Rengi
           </label>
-          <ColorPicker
-            color={props.backgroundColor || '#007bff'}
-            onChange={(color) => onUpdate({ backgroundColor: color })}
+          <DualColorPicker
+            lightColor={props.backgroundColor || '#007bff'}
+            darkColor={props.backgroundColorDark || 'auto'}
+            onLightChange={(color) => onUpdate({ backgroundColor: color })}
+            onDarkChange={(colorDark) => onUpdate({ backgroundColorDark: colorDark })}
           />
         </div>
 
         <div>
-          <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
+          <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-2">
             Metin Rengi
           </label>
-          <ColorPicker
-            color={props.textColor || '#ffffff'}
-            onChange={(color) => onUpdate({ textColor: color })}
+          <DualColorPicker
+            lightColor={props.textColor || '#ffffff'}
+            darkColor={props.textColorDark || 'auto'}
+            onLightChange={(color) => onUpdate({ textColor: color })}
+            onDarkChange={(colorDark) => onUpdate({ textColorDark: colorDark })}
           />
         </div>
 
