@@ -6,7 +6,7 @@
 // 3 panelli layout: LeftPanel, CenterCanvas, RightPanel
 // ============================================
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { DndContext, DragOverlay, useSensor, useSensors, PointerSensor, KeyboardSensor, DragStartEvent, DragEndEvent } from '@dnd-kit/core';
 import { sortableKeyboardCoordinates } from '@dnd-kit/sortable';
 import { LeftPanel } from './panels/LeftPanel';
@@ -23,6 +23,14 @@ import {
 import { logger } from '@/lib/logger';
 import type { Page, BlockType, Section, Column, Block } from '@/types/pageBuilder';
 import { updateSection, updateColumn, updateBlock } from '@/lib/firebase/firestore';
+
+// History State Type
+interface HistoryState {
+  page: Page | null;
+  pendingSectionUpdates: Record<string, Partial<Section>>;
+  pendingColumnUpdates: Record<string, Partial<Column>>;
+  pendingBlockUpdates: Record<string, Partial<Block>>;
+}
 
 interface PageBuilderEditorProps {
   pageId: string;
@@ -47,6 +55,121 @@ export function PageBuilderEditor({ pageId }: PageBuilderEditorProps) {
   const [pendingColumnUpdates, setPendingColumnUpdates] = useState<Record<string, Partial<Column>>>({});
   const [pendingBlockUpdates, setPendingBlockUpdates] = useState<Record<string, Partial<Block>>>({});
 
+  // History (Undo/Redo) State
+  const historyRef = useRef<HistoryState[]>([]);
+  const futureRef = useRef<HistoryState[]>([]);
+  const [canUndo, setCanUndo] = useState(false);
+  const [canRedo, setCanRedo] = useState(false);
+  const isUndoRedoRef = useRef(false); // Undo/Redo sırasında history kaydetmeyi önle
+  const MAX_HISTORY = 50;
+
+  // Current state'i snapshot olarak al
+  const getCurrentSnapshot = useCallback((): HistoryState => {
+    return {
+      page: page ? JSON.parse(JSON.stringify(page)) : null,
+      pendingSectionUpdates: JSON.parse(JSON.stringify(pendingSectionUpdates)),
+      pendingColumnUpdates: JSON.parse(JSON.stringify(pendingColumnUpdates)),
+      pendingBlockUpdates: JSON.parse(JSON.stringify(pendingBlockUpdates)),
+    };
+  }, [page, pendingSectionUpdates, pendingColumnUpdates, pendingBlockUpdates]);
+
+  // History'ye mevcut state'i ekle
+  const saveToHistory = useCallback(() => {
+    if (isUndoRedoRef.current) return; // Undo/Redo sırasında kaydetme
+    
+    const snapshot = getCurrentSnapshot();
+    historyRef.current = [...historyRef.current.slice(-MAX_HISTORY + 1), snapshot];
+    futureRef.current = []; // Yeni değişiklik yapıldığında future'ı temizle
+    setCanUndo(historyRef.current.length > 0);
+    setCanRedo(false);
+    logger.pageBuilder.debug('History kaydedildi', { historyLength: historyRef.current.length });
+  }, [getCurrentSnapshot]);
+
+  // Undo işlemi
+  const handleUndo = useCallback(() => {
+    if (historyRef.current.length === 0) return;
+
+    isUndoRedoRef.current = true;
+    
+    // Mevcut state'i future'a kaydet
+    futureRef.current = [getCurrentSnapshot(), ...futureRef.current];
+    
+    // Son history'yi al
+    const previousState = historyRef.current.pop()!;
+    
+    // State'i geri yükle
+    if (previousState.page) {
+      setPage(previousState.page);
+    }
+    setPendingSectionUpdates(previousState.pendingSectionUpdates);
+    setPendingColumnUpdates(previousState.pendingColumnUpdates);
+    setPendingBlockUpdates(previousState.pendingBlockUpdates);
+    setHasChanges(true);
+    
+    setCanUndo(historyRef.current.length > 0);
+    setCanRedo(true);
+    
+    logger.pageBuilder.info('Undo yapıldı', { 
+      historyLength: historyRef.current.length, 
+      futureLength: futureRef.current.length 
+    });
+    
+    // Bir sonraki tick'te flag'i sıfırla
+    setTimeout(() => { isUndoRedoRef.current = false; }, 0);
+  }, [getCurrentSnapshot]);
+
+  // Redo işlemi
+  const handleRedo = useCallback(() => {
+    if (futureRef.current.length === 0) return;
+
+    isUndoRedoRef.current = true;
+    
+    // Mevcut state'i history'ye kaydet
+    historyRef.current = [...historyRef.current, getCurrentSnapshot()];
+    
+    // İlk future'ı al
+    const nextState = futureRef.current.shift()!;
+    
+    // State'i yükle
+    if (nextState.page) {
+      setPage(nextState.page);
+    }
+    setPendingSectionUpdates(nextState.pendingSectionUpdates);
+    setPendingColumnUpdates(nextState.pendingColumnUpdates);
+    setPendingBlockUpdates(nextState.pendingBlockUpdates);
+    setHasChanges(true);
+    
+    setCanUndo(true);
+    setCanRedo(futureRef.current.length > 0);
+    
+    logger.pageBuilder.info('Redo yapıldı', { 
+      historyLength: historyRef.current.length, 
+      futureLength: futureRef.current.length 
+    });
+    
+    // Bir sonraki tick'te flag'i sıfırla
+    setTimeout(() => { isUndoRedoRef.current = false; }, 0);
+  }, [getCurrentSnapshot]);
+
+  // Ctrl+Z / Ctrl+Y klavye kısayolları
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Ctrl+Z (Undo)
+      if ((e.ctrlKey || e.metaKey) && e.key === 'z' && !e.shiftKey) {
+        e.preventDefault();
+        handleUndo();
+      }
+      // Ctrl+Y veya Ctrl+Shift+Z (Redo)
+      if ((e.ctrlKey || e.metaKey) && (e.key === 'y' || (e.key === 'z' && e.shiftKey))) {
+        e.preventDefault();
+        handleRedo();
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [handleUndo, handleRedo]);
+
   const sensors = useSensors(
     useSensor(PointerSensor, {
       activationConstraint: {
@@ -69,6 +192,11 @@ export function PageBuilderEditor({ pageId }: PageBuilderEditorProps) {
       setPendingSectionUpdates({});
       setPendingColumnUpdates({});
       setPendingBlockUpdates({});
+      // History'yi temizle
+      historyRef.current = [];
+      futureRef.current = [];
+      setCanUndo(false);
+      setCanRedo(false);
     } catch (error) {
       logger.pageBuilder.error('Sayfa yüklenirken hata', error);
     } finally {
@@ -79,6 +207,22 @@ export function PageBuilderEditor({ pageId }: PageBuilderEditorProps) {
   useEffect(() => {
     loadPage();
   }, [loadPage]);
+
+  // Page değiştiğinde önceki state'i history'ye kaydet
+  const prevPageRef = useRef<Page | null>(null);
+  useEffect(() => {
+    // İlk yükleme veya undo/redo sırasında kaydetme
+    if (!prevPageRef.current || isUndoRedoRef.current || !hasChanges) {
+      prevPageRef.current = page;
+      return;
+    }
+    
+    // Sayfa değiştiğinde önceki state'i kaydet
+    if (page && JSON.stringify(page) !== JSON.stringify(prevPageRef.current)) {
+      saveToHistory();
+      prevPageRef.current = page;
+    }
+  }, [page, hasChanges, saveToHistory]);
 
   // Drag start
   const handleDragStart = useCallback((event: DragStartEvent) => {
@@ -442,6 +586,10 @@ export function PageBuilderEditor({ pageId }: PageBuilderEditorProps) {
           hasChanges={hasChanges}
           isSaving={isSaving}
           onSave={handleSave}
+          canUndo={canUndo}
+          canRedo={canRedo}
+          onUndo={handleUndo}
+          onRedo={handleRedo}
         />
 
         {/* Main Content */}

@@ -5,7 +5,7 @@
 // Üst toolbar: sayfa bilgisi, cihaz seçici, zoom, kaydet
 // ============================================
 
-import { Save, Eye, Monitor, Tablet, Smartphone, ZoomIn, ZoomOut, ArrowLeft } from 'lucide-react';
+import { Save, Eye, Monitor, Tablet, Smartphone, ZoomIn, ZoomOut, ArrowLeft, Undo2, Redo2 } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { Spinner } from '@/components/ui/Spinner';
 import { cn } from '@/lib/utils';
@@ -22,6 +22,11 @@ interface TopBarProps {
   hasChanges: boolean;
   isSaving: boolean;
   onSave: () => void;
+  // Undo/Redo props
+  canUndo?: boolean;
+  canRedo?: boolean;
+  onUndo?: () => void;
+  onRedo?: () => void;
 }
 
 export function TopBar({
@@ -33,6 +38,10 @@ export function TopBar({
   hasChanges,
   isSaving,
   onSave,
+  canUndo = false,
+  canRedo = false,
+  onUndo,
+  onRedo,
 }: TopBarProps) {
   const router = useRouter();
   const locale = useLocale();
@@ -145,6 +154,38 @@ export function TopBar({
 
       {/* Sağ Taraf - Aksiyonlar */}
       <div className="flex items-center gap-2">
+        {/* Undo/Redo */}
+        <div className="flex items-center gap-0.5">
+          <button
+            onClick={onUndo}
+            disabled={!canUndo}
+            className={cn(
+              'p-1.5 rounded transition-colors',
+              canUndo 
+                ? 'hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-400' 
+                : 'text-gray-300 dark:text-gray-600 cursor-not-allowed'
+            )}
+            title="Geri Al (Ctrl+Z)"
+          >
+            <Undo2 className="w-4 h-4" />
+          </button>
+          <button
+            onClick={onRedo}
+            disabled={!canRedo}
+            className={cn(
+              'p-1.5 rounded transition-colors',
+              canRedo 
+                ? 'hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-400' 
+                : 'text-gray-300 dark:text-gray-600 cursor-not-allowed'
+            )}
+            title="İleri Al (Ctrl+Y)"
+          >
+            <Redo2 className="w-4 h-4" />
+          </button>
+        </div>
+
+        <div className="w-px h-6 bg-gray-200 dark:bg-gray-700" />
+
         {/* Önizleme */}
         <Button
           variant="outline"

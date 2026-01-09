@@ -51,32 +51,32 @@ function FormBlockComponent({ props }: FormBlockProps) {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (props.action) {
-      // Form action URL'i varsa, formu gönder
-      const form = e.currentTarget as HTMLFormElement;
-      const formData = new FormData(form);
+    const form = e.currentTarget as HTMLFormElement;
+    const submitData = new FormData(form);
+    
+    // Action URL belirle - yoksa varsayılan /api/contact kullan
+    const actionUrl = props.action || '/api/contact';
+    
+    try {
+      const response = await fetch(actionUrl, {
+        method: props.method || 'POST',
+        body: submitData,
+      });
       
-      try {
-        const response = await fetch(props.action, {
-          method: props.method || 'POST',
-          body: formData,
-        });
-        
-        if (response.ok) {
-          setSubmitted(true);
-          setTimeout(() => setSubmitted(false), 3000);
-          form.reset();
-        } else {
-          toast.error(props.errorMessage || 'Form gönderilirken bir hata oluştu.');
-        }
-      } catch (error) {
-        logger.ui.error('Form gönderim hatası', error);
-        toast.error(props.errorMessage || 'Form gönderilirken bir hata oluştu.');
+      const result = await response.json().catch(() => ({}));
+      
+      if (response.ok) {
+        setSubmitted(true);
+        toast.success(props.successMessage || result.message || 'Mesajınız başarıyla gönderildi!');
+        setTimeout(() => setSubmitted(false), 3000);
+        form.reset();
+        setFormData({});
+      } else {
+        toast.error(props.errorMessage || result.error || 'Form gönderilirken bir hata oluştu.');
       }
-    } else {
-      // Action URL yoksa, sadece başarı mesajı göster (test için)
-      setSubmitted(true);
-      setTimeout(() => setSubmitted(false), 3000);
+    } catch (error) {
+      logger.ui.error('Form gönderim hatası', error);
+      toast.error(props.errorMessage || 'Form gönderilirken bir hata oluştu.');
     }
   };
   
