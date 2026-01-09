@@ -167,10 +167,11 @@ export default function AdminSettingsPage() {
         // Aktif temayı yükle
         let themeSettings: any = null;
         try {
-          const { getSiteSettings, getAvailableThemes } = await import('@/lib/firebase/firestore');
+          const { getSiteSettingsClient: getSettings, getAvailableThemes } = await import('@/lib/firebase/firestore');
           const { getDefaultThemes } = await import('@/lib/themes/default/defaultThemes');
           
-          const siteSettings = await getSiteSettings();
+          // Client-safe fonksiyon kullan (getSiteSettings yerine getSiteSettingsClient)
+          const siteSettings = await getSettings();
           const activeThemeName = siteSettings.activeThemeName;
           const activeThemeId = siteSettings.activeThemeId;
           

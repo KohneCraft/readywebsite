@@ -21,6 +21,7 @@ interface LoggerConfig {
   showTimestamp: boolean;
   showContext: boolean;
   persistToFirestore: boolean; // Firestore'a kaydetme
+  persistMinLevel: LogLevel; // Firestore'a minimum hangi seviyeden itibaren kaydet
 }
 
 const LOG_LEVELS: Record<LogLevel, number> = {
@@ -30,13 +31,19 @@ const LOG_LEVELS: Record<LogLevel, number> = {
   error: 3,
 };
 
-// Default configuration
+// Environment check
+const isDevelopment = typeof window !== 'undefined' 
+  ? window.location.hostname === 'localhost' 
+  : process.env.NODE_ENV === 'development';
+
+// Default configuration - production'da info seviyesi, development'ta debug
 const defaultConfig: LoggerConfig = {
-  enabled: true, // Her zaman açık - production'da da loglar görünsün
-  minLevel: 'debug', // Tüm logları göster (production'da da debug yapabilelim)
+  enabled: true, // Her zaman açık
+  minLevel: isDevelopment ? 'debug' : 'info', // Production'da debug logları gizle
   showTimestamp: true,
   showContext: true,
-  persistToFirestore: false, // Firestore'a kaydetme kapalı (performans için)
+  persistToFirestore: true, // Warn ve error logları Firestore'a kaydet
+  persistMinLevel: 'warn', // Sadece warn ve error seviyesini kaydet (performans için)
 };
 
 let config: LoggerConfig = { ...defaultConfig };
@@ -82,6 +89,9 @@ const formatLogEntry = (entry: LogEntry): string => {
  */
 const persistLog = async (entry: LogEntry): Promise<void> => {
   if (!config.persistToFirestore) return;
+  
+  // Minimum seviye kontrolü - sadece belirli seviyeden itibaren kaydet
+  if (LOG_LEVELS[entry.level] < LOG_LEVELS[config.persistMinLevel]) return;
   
   try {
     // Dinamik import ile circular dependency'den kaçın

@@ -5,10 +5,12 @@
 // Protected layout for admin panel
 // ============================================
 
-import { useState, useEffect, createContext, useContext } from 'react';
+import { useState, useEffect, createContext, useContext, useCallback } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { useLocale, useTranslations } from 'next-intl';
+import { collection, query, where, orderBy, limit, onSnapshot, updateDoc, doc, Timestamp } from 'firebase/firestore';
+import { db } from '@/lib/firebase/config';
 import { 
   LayoutDashboard, 
   Settings, 
@@ -23,16 +25,30 @@ import {
   Image as ImageIcon,
   Mail,
   ScrollText,
+  AlertCircle,
+  CheckCircle,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Spinner } from '@/components/ui/Spinner';
 import { ToastProvider } from '@/components/providers';
+import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { onAuthStateChanged, signOut as firebaseSignOut, getUserProfile } from '@/lib/firebase/auth';
 import { getSiteSettingsClient } from '@/lib/firebase/firestore';
 import { logger } from '@/lib/logger';
 import Image from 'next/image';
 import type { Locale } from '@/i18n';
 import type { User as UserType } from '@/types';
+
+// Notification type
+interface Notification {
+  id: string;
+  type: 'message' | 'error' | 'warning' | 'info';
+  title: string;
+  description?: string;
+  timestamp: Date;
+  read: boolean;
+  link?: string;
+}
 
 // Auth context for admin
 interface AdminUser {
@@ -74,6 +90,11 @@ export default function AdminLayout({
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
   const [adminTitle, setAdminTitle] = useState<string>('Page Builder');
   const [adminIcon, setAdminIcon] = useState<string>('');
+  
+  // Notification state
+  const [notifications, setNotifications] = useState<Notification[]>([]);
+  const [isNotificationOpen, setIsNotificationOpen] = useState(false);
+  const unreadCount = notifications.filter(n => !n.read).length;
 
   // Check if on login page
   const isLoginPage = pathname?.includes('/admin/login');
@@ -171,6 +192,105 @@ export default function AdminLayout({
     return () => {
       window.removeEventListener('theme-updated', handleThemeUpdate);
     };
+  }, []);
+
+  // Notifications realtime listener
+  useEffect(() => {
+    if (isLoginPage || !user) return;
+
+    // Unread messages listener
+    const messagesRef = collection(db, 'contact-messages');
+    const messagesQuery = query(
+      messagesRef, 
+      where('read', '==', false),
+      orderBy('createdAt', 'desc'),
+      limit(10)
+    );
+
+    const unsubMessages = onSnapshot(messagesQuery, (snapshot) => {
+      const messageNotifications: Notification[] = snapshot.docs.map(doc => {
+        const data = doc.data();
+        return {
+          id: `msg-${doc.id}`,
+          type: 'message' as const,
+          title: 'Yeni Mesaj',
+          description: data.name || data.email || 'İletişim formu',
+          timestamp: data.createdAt?.toDate() || new Date(),
+          read: false,
+          link: `/${locale}/admin/messages`,
+        };
+      });
+      
+      // Error logs listener (son 24 saat)
+      const logsRef = collection(db, 'logs');
+      const yesterday = new Date();
+      yesterday.setDate(yesterday.getDate() - 1);
+      const logsQuery = query(
+        logsRef,
+        where('level', '==', 'error'),
+        where('timestamp', '>=', Timestamp.fromDate(yesterday)),
+        orderBy('timestamp', 'desc'),
+        limit(5)
+      );
+
+      onSnapshot(logsQuery, (logSnapshot) => {
+        const errorNotifications: Notification[] = logSnapshot.docs.map(doc => {
+          const data = doc.data();
+          return {
+            id: `log-${doc.id}`,
+            type: 'error' as const,
+            title: 'Sistem Hatası',
+            description: data.message?.substring(0, 50) || 'Hata oluştu',
+            timestamp: data.timestamp?.toDate() || new Date(),
+            read: false,
+            link: `/${locale}/admin/logs`,
+          };
+        });
+
+        setNotifications([...messageNotifications, ...errorNotifications].sort(
+          (a, b) => b.timestamp.getTime() - a.timestamp.getTime()
+        ).slice(0, 10));
+      }, (error) => {
+        // Log query hatası - sessizce geç
+        logger.ui.debug('Log notifications query error', error);
+        setNotifications(messageNotifications);
+      });
+    }, (error) => {
+      logger.ui.debug('Message notifications query error', error);
+    });
+
+    return () => {
+      unsubMessages();
+    };
+  }, [isLoginPage, user, locale]);
+
+  // Bildirimi okundu olarak işaretle
+  const markAsRead = useCallback(async (notification: Notification) => {
+    if (notification.type === 'message' && notification.id.startsWith('msg-')) {
+      const docId = notification.id.replace('msg-', '');
+      try {
+        await updateDoc(doc(db, 'contact-messages', docId), { read: true });
+      } catch (error) {
+        logger.ui.error('Bildirim okundu işaretleme hatası', error);
+      }
+    }
+    // Diğer bildirim türleri için local state güncelle
+    setNotifications(prev => prev.map(n => 
+      n.id === notification.id ? { ...n, read: true } : n
+    ));
+  }, []);
+
+  // Dropdown dışına tıklayınca kapat
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      const target = e.target as HTMLElement;
+      if (!target.closest('[data-notification-dropdown]') && !target.closest('[data-user-dropdown]')) {
+        setIsNotificationOpen(false);
+        setIsUserMenuOpen(false);
+      }
+    };
+    document.addEventListener('click', handleClickOutside);
+    return () => document.removeEventListener('click', handleClickOutside);
   }, []);
 
   const logout = async () => {
@@ -353,13 +473,95 @@ export default function AdminLayout({
             {/* Right side */}
             <div className="flex items-center gap-4">
               {/* Notifications */}
-              <button className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 relative">
-                <Bell className="w-5 h-5 text-gray-600 dark:text-gray-400" />
-                <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full" />
-              </button>
+              <div className="relative" data-notification-dropdown>
+                <button 
+                  onClick={() => setIsNotificationOpen(!isNotificationOpen)}
+                  className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 relative"
+                >
+                  <Bell className="w-5 h-5 text-gray-600 dark:text-gray-400" />
+                  {unreadCount > 0 && (
+                    <span className="absolute top-0.5 right-0.5 min-w-[18px] h-[18px] bg-red-500 text-white text-xs font-medium rounded-full flex items-center justify-center px-1">
+                      {unreadCount > 9 ? '9+' : unreadCount}
+                    </span>
+                  )}
+                </button>
+
+                {/* Notification Dropdown */}
+                {isNotificationOpen && (
+                  <div className="absolute right-0 top-full mt-2 w-80 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 overflow-hidden z-50">
+                    <div className="px-4 py-3 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between">
+                      <h3 className="font-medium text-gray-900 dark:text-white">Bildirimler</h3>
+                      {unreadCount > 0 && (
+                        <span className="text-xs text-gray-500 dark:text-gray-400">{unreadCount} okunmamış</span>
+                      )}
+                    </div>
+                    <div className="max-h-80 overflow-y-auto">
+                      {notifications.length === 0 ? (
+                        <div className="px-4 py-8 text-center text-gray-500 dark:text-gray-400">
+                          <Bell className="w-8 h-8 mx-auto mb-2 opacity-50" />
+                          <p className="text-sm">Bildirim yok</p>
+                        </div>
+                      ) : (
+                        notifications.map((notification) => (
+                          <Link
+                            key={notification.id}
+                            href={notification.link || '#'}
+                            onClick={() => {
+                              markAsRead(notification);
+                              setIsNotificationOpen(false);
+                            }}
+                            className={cn(
+                              'block px-4 py-3 hover:bg-gray-50 dark:hover:bg-gray-700 border-b border-gray-100 dark:border-gray-700 last:border-0',
+                              !notification.read && 'bg-blue-50 dark:bg-blue-900/20'
+                            )}
+                          >
+                            <div className="flex items-start gap-3">
+                              <div className={cn(
+                                'w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0',
+                                notification.type === 'message' && 'bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400',
+                                notification.type === 'error' && 'bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400',
+                                notification.type === 'warning' && 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-600 dark:text-yellow-400',
+                                notification.type === 'info' && 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400'
+                              )}>
+                                {notification.type === 'message' && <Mail className="w-4 h-4" />}
+                                {notification.type === 'error' && <AlertCircle className="w-4 h-4" />}
+                                {notification.type === 'warning' && <AlertCircle className="w-4 h-4" />}
+                                {notification.type === 'info' && <CheckCircle className="w-4 h-4" />}
+                              </div>
+                              <div className="flex-1 min-w-0">
+                                <p className="text-sm font-medium text-gray-900 dark:text-white">{notification.title}</p>
+                                {notification.description && (
+                                  <p className="text-xs text-gray-500 dark:text-gray-400 truncate">{notification.description}</p>
+                                )}
+                                <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">
+                                  {notification.timestamp.toLocaleString('tr-TR', { hour: '2-digit', minute: '2-digit' })}
+                                </p>
+                              </div>
+                              {!notification.read && (
+                                <div className="w-2 h-2 bg-blue-500 rounded-full flex-shrink-0 mt-2" />
+                              )}
+                            </div>
+                          </Link>
+                        ))
+                      )}
+                    </div>
+                    {notifications.length > 0 && (
+                      <div className="px-4 py-2 border-t border-gray-200 dark:border-gray-700">
+                        <Link
+                          href={`/${locale}/admin/messages`}
+                          onClick={() => setIsNotificationOpen(false)}
+                          className="text-sm text-primary-600 dark:text-primary-400 hover:underline"
+                        >
+                          Tüm mesajları gör
+                        </Link>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
 
               {/* User menu */}
-              <div className="relative">
+              <div className="relative" data-user-dropdown>
                 <button
                   onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
                   className="flex items-center gap-2 p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700"
@@ -398,7 +600,9 @@ export default function AdminLayout({
 
           {/* Page content */}
           <main className="p-6">
-            {children}
+            <ErrorBoundary>
+              {children}
+            </ErrorBoundary>
           </main>
         </div>
       </div>
