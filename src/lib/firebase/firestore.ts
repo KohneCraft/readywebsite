@@ -1333,17 +1333,21 @@ export async function installTheme(themeData: ThemeData, createdBy: string): Pro
       logger.firestore.debug('Footer quickLinks:', metadata.settings?.footer?.quickLinks);
       
       // Tema metadata'sını TAMAMEN orijinal tema dosyasındaki ayarlarla değiştir
-      // setDoc kullanarak tüm metadata'yı değiştir (updateDoc değil, çünkü tüm alanları değiştirmek istiyoruz)
+      // setDoc ile merge: false kullanarak tüm dokümanı değiştir
       const themeRef = doc(db, COLLECTIONS.themes, existingTheme.id);
-      await setDoc(themeRef, {
-        ...metadata, // Orijinal tema dosyasındaki tüm metadata (header/footer dahil)
-        updatedAt: serverTimestamp(),
-        // settings alanını explicity olarak orijinal ayarlarla değiştir
-        // Bu sayede kullanıcının önceki customization'ları tamamen silinir
-        settings: metadata.settings,
-      }, { merge: false }); // merge: false = tüm dokümanı değiştir, önceki tüm ayarlar silinir
       
-      logger.firestore.info('✓ Tema metadata orijinal ayarlarla güncellendi (TÜM özel ayarlar sıfırlandı)');
+      // ÖNEMLI: settings objesini JSON parse/stringify ile deep clone yap
+      // Böylece Firestore nested objeleri de tamamen değiştirir
+      const cleanMetadata = JSON.parse(JSON.stringify(metadata));
+      
+      await setDoc(themeRef, {
+        ...cleanMetadata,
+        updatedAt: serverTimestamp(),
+      }, { merge: false }); // merge: false = doküman tamamen değiştirilir
+      
+      logger.firestore.info('✓ Tema metadata TAMAMEN orijinal ayarlarla güncellendi');
+      logger.firestore.debug('✓ Header navItems sıfırlandı:', cleanMetadata.settings?.header?.navItems);
+      logger.firestore.debug('✓ Footer quickLinks sıfırlandı:', cleanMetadata.settings?.footer?.quickLinks);
     } else {
       // Tema yoksa yeni oluştur
       logger.firestore.debug('Yeni tema oluşturuluyor...');
