@@ -38,7 +38,11 @@ export function HeaderSettings({ activeTab, onUpdate }: HeaderSettingsProps) {
   }, [themeSettings]);
 
   const handleSave = async () => {
-    if (!currentTheme) return;
+    if (!currentTheme) {
+      toast.error('Tema yüklü değil. Lütfen önce bir tema yükleyin.');
+      logger.theme.error('currentTheme undefined - tema yüklenmemiş');
+      return;
+    }
     
     try {
       setLoading(true);
@@ -48,10 +52,17 @@ export function HeaderSettings({ activeTab, onUpdate }: HeaderSettingsProps) {
         return;
       }
 
+      logger.theme.debug('Header kaydediliyor...', {
+        themeName: currentTheme.metadata.name,
+        headerConfig,
+      });
+
       // Firestore'a kaydet (aktif tema adına göre)
       await updateActiveThemeSettings(currentTheme.metadata.name, {
         header: headerConfig,
       });
+
+      logger.theme.info('Header başarıyla kaydedildi');
 
       // Tema yeniden yükle ki değişiklikler sayfada görünsün
       window.dispatchEvent(new CustomEvent('theme-updated'));

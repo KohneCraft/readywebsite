@@ -79,7 +79,11 @@ export function FooterSettings({ activeTab, onUpdate }: FooterSettingsProps) {
   }, [themeSettings]);
 
   const handleSave = async () => {
-    if (!currentTheme) return;
+    if (!currentTheme) {
+      toast.error('Tema yüklü değil. Lütfen önce bir tema yükleyin.');
+      logger.theme.error('currentTheme undefined - tema yüklenmemiş');
+      return;
+    }
     
     try {
       setLoading(true);
@@ -88,6 +92,11 @@ export function FooterSettings({ activeTab, onUpdate }: FooterSettingsProps) {
         toast.error('Giriş yapmanız gerekiyor');
         return;
       }
+
+      logger.theme.debug('Footer kaydediliyor...', {
+        themeName: currentTheme.metadata.name,
+        footerConfig,
+      });
 
       // Sosyal medya linklerini siteSettings formatına dönüştür
       const socialLinksObj: any = {};
@@ -104,6 +113,8 @@ export function FooterSettings({ activeTab, onUpdate }: FooterSettingsProps) {
       await updateActiveThemeSettings(currentTheme.metadata.name, {
         footer: footerConfig,
       });
+
+      logger.theme.info('Footer başarıyla kaydedildi');
 
       // Tema yeniden yükle ki değişiklikler sayfada görünsün
       window.dispatchEvent(new CustomEvent('theme-updated'));
