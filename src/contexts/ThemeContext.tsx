@@ -37,7 +37,8 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
         activeThemeId = siteSettings.activeThemeId || null;
         logger.theme.debug(`SiteSettings'ten aktif tema: ${activeThemeName} (ID: ${activeThemeId})`);
       } catch (error) {
-        logger.theme.warn('SiteSettings yüklenirken hata:', error);
+        // incrementalCache hatası normal (client-side limitasyon), sadece debug log
+        logger.theme.debug('SiteSettings client-side erişim limitasyonu (normal):', error instanceof Error ? error.message : error);
       }
       
       // Firestore'dan yüklenmiş temaları kontrol et

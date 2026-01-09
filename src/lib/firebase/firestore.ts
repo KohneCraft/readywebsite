@@ -1318,13 +1318,17 @@ export async function installTheme(themeData: ThemeData, createdBy: string): Pro
 
   // Mevcut temayı kontrol et ve varsa metadata'sını orijinal ayarlarla güncelle
   // Bu sayede header/footer ayarları sıfırlanır
-  let existingTheme: { id: string } | null = null;
+  let existingTheme: { id: string; name: string } | null = null;
   try {
     const existingThemes = await getDocs(collection(db, COLLECTIONS.themes));
-    existingTheme = existingThemes.docs.find(doc => {
+    const foundDoc = existingThemes.docs.find(doc => {
       const data = doc.data();
       return data.name === metadata.name || data.id === metadata.id;
-    }) || null;
+    });
+    
+    if (foundDoc) {
+      existingTheme = { id: foundDoc.id, name: foundDoc.data().name };
+    }
 
     if (existingTheme) {
       logger.firestore.info('Mevcut tema bulundu, metadata orijinal ayarlarla güncelleniyor...');
