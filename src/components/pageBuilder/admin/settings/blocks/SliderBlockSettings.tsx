@@ -13,8 +13,6 @@ import {
     Video,
     ArrowUp,
     ArrowDown,
-    Settings,
-    Palette,
 } from 'lucide-react';
 import { Input } from '@/components/ui/Input';
 import { DualColorPicker } from '../../controls/DualColorPicker';
@@ -25,12 +23,12 @@ import type { BlockProps, SliderSlide, Spacing } from '@/types/pageBuilder';
 
 interface SliderBlockSettingsProps {
     block: { id: string; props: BlockProps };
+    activeTab: 'style' | 'settings' | 'advanced'; // dış tab sistemi
     onUpdate: (props: Partial<BlockProps>) => void;
 }
 
-export function SliderBlockSettings({ block, onUpdate }: SliderBlockSettingsProps) {
+export function SliderBlockSettings({ block, activeTab, onUpdate }: SliderBlockSettingsProps) {
     const props = block.props;
-    const [activeTab, setActiveTab] = useState<'slides' | 'settings' | 'style'>('slides');
     const [selectedSlideId, setSelectedSlideId] = useState<string | null>(null);
     const [isMediaSelectorOpen, setIsMediaSelectorOpen] = useState(false);
     const [mediaType, setMediaType] = useState<'image' | 'video'>('image');
@@ -85,35 +83,10 @@ export function SliderBlockSettings({ block, onUpdate }: SliderBlockSettingsProp
 
     const selectedSlide = slides.find(s => s.id === selectedSlideId);
 
-    const tabs = [
-        { id: 'slides', label: 'Slaytlar', icon: ImageIcon },
-        { id: 'settings', label: 'Ayarlar', icon: Settings },
-        { id: 'style', label: 'Stil', icon: Palette },
-    ];
-
     return (
         <div className="space-y-4">
-            {/* Tab Seçici */}
-            <div className="flex border-b border-gray-200 dark:border-gray-700">
-                {tabs.map(tab => (
-                    <button
-                        key={tab.id}
-                        onClick={() => setActiveTab(tab.id as typeof activeTab)}
-                        className={cn(
-                            'flex-1 flex items-center justify-center gap-1.5 px-3 py-2 text-xs font-medium transition-colors',
-                            activeTab === tab.id
-                                ? 'border-b-2 border-primary-500 text-primary-600 dark:text-primary-400'
-                                : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'
-                        )}
-                    >
-                        <tab.icon className="w-3.5 h-3.5" />
-                        {tab.label}
-                    </button>
-                ))}
-            </div>
-
-            {/* Slaytlar Sekmesi */}
-            {activeTab === 'slides' && (
+            {/* Stil sekmesi = Slaytlar yönetimi */}
+            {activeTab === 'style' && (
                 <div className="space-y-4">
                     {/* Slayt Ekle Butonları */}
                     <div className="flex gap-2">
@@ -454,11 +427,13 @@ export function SliderBlockSettings({ block, onUpdate }: SliderBlockSettingsProp
                         </label>
                         <select
                             value={props.transitionEffect || 'slide'}
-                            onChange={(e) => onUpdate({ transitionEffect: e.target.value as 'slide' | 'fade' })}
+                            onChange={(e) => onUpdate({ transitionEffect: e.target.value as 'slide' | 'fade' | 'zoom' | 'flip' })}
                             className="w-full px-3 py-2 text-sm border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-white"
                         >
                             <option value="slide">Kaydırma</option>
                             <option value="fade">Solma</option>
+                            <option value="zoom">Yakınlaştırma</option>
+                            <option value="flip">Çevirme</option>
                         </select>
                     </div>
 
@@ -479,8 +454,8 @@ export function SliderBlockSettings({ block, onUpdate }: SliderBlockSettingsProp
                 </div>
             )}
 
-            {/* Stil Sekmesi */}
-            {activeTab === 'style' && (
+            {/* Gelişmiş sekmesi = Stil ayarları */}
+            {activeTab === 'advanced' && (
                 <div className="space-y-4">
                     {/* Yükseklik */}
                     <div>

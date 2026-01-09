@@ -205,7 +205,7 @@ interface SlideItemProps {
     slide: SliderSlide;
     isActive: boolean;
     transitionSpeed: number;
-    transitionEffect: 'slide' | 'fade';
+    transitionEffect: 'slide' | 'fade' | 'zoom' | 'flip';
 }
 
 function SlideItem({ slide, isActive, transitionSpeed, transitionEffect }: SlideItemProps) {
@@ -220,15 +220,38 @@ function SlideItem({ slide, isActive, transitionSpeed, transitionEffect }: Slide
         darkColor: slide.descriptionColorDark || 'auto',
     });
 
-    const transitionStyle: React.CSSProperties = transitionEffect === 'fade'
-        ? {
-            opacity: isActive ? 1 : 0,
-            transition: `opacity ${transitionSpeed}ms ease-in-out`,
+    // Geçiş efektine göre stil oluştur
+    const getTransitionStyle = (): React.CSSProperties => {
+        switch (transitionEffect) {
+            case 'fade':
+                return {
+                    opacity: isActive ? 1 : 0,
+                    transition: `opacity ${transitionSpeed}ms ease-in-out`,
+                };
+            case 'zoom':
+                return {
+                    opacity: isActive ? 1 : 0,
+                    transform: isActive ? 'scale(1)' : 'scale(1.2)',
+                    transition: `opacity ${transitionSpeed}ms ease-in-out, transform ${transitionSpeed}ms ease-in-out`,
+                };
+            case 'flip':
+                return {
+                    opacity: isActive ? 1 : 0,
+                    transform: isActive ? 'rotateY(0deg)' : 'rotateY(90deg)',
+                    transition: `opacity ${transitionSpeed}ms ease-in-out, transform ${transitionSpeed}ms ease-in-out`,
+                    transformStyle: 'preserve-3d',
+                    backfaceVisibility: 'hidden',
+                };
+            case 'slide':
+            default:
+                return {
+                    transform: isActive ? 'translateX(0)' : 'translateX(100%)',
+                    transition: `transform ${transitionSpeed}ms ease-in-out`,
+                };
         }
-        : {
-            transform: isActive ? 'translateX(0)' : 'translateX(100%)',
-            transition: `transform ${transitionSpeed}ms ease-in-out`,
-        };
+    };
+
+    const transitionStyle = getTransitionStyle();
 
     const content = (
         <div

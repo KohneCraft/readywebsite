@@ -190,6 +190,7 @@ export function BlockSettings({ blockId, activeTab, onUpdate }: BlockSettingsPro
         return (
           <SliderBlockSettings
             block={block}
+            activeTab={activeTab}
             onUpdate={(updates) => {
               const updated = { ...block, props: { ...block.props, ...updates } };
               setBlock(updated);

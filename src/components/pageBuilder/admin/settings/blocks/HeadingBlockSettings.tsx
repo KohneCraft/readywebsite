@@ -82,6 +82,49 @@ export function HeadingBlockSettings({ block, activeTab, onUpdate }: HeadingBloc
         </div>
 
         <div>
+          <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-2">
+            Arka Plan Rengi
+          </label>
+          <DualColorPicker
+            lightColor={props.backgroundColor || 'transparent'}
+            darkColor={props.backgroundColorDark || 'auto'}
+            onLightChange={(color) => onUpdate({ backgroundColor: color })}
+            onDarkChange={(colorDark) => onUpdate({ backgroundColorDark: colorDark })}
+          />
+        </div>
+
+        <div>
+          <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
+            Arka Plan Blur (px)
+          </label>
+          <input
+            type="number"
+            value={props.backgroundBlur || 0}
+            onChange={(e) => onUpdate({ backgroundBlur: parseInt(e.target.value) || 0 })}
+            min={0}
+            max={50}
+            className="w-full px-3 py-2 text-sm border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-white"
+          />
+          <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+            Cam efekti için blur değeri (0 = kapalı)
+          </p>
+        </div>
+
+        <div>
+          <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
+            Arka Plan İç Dolgu (px)
+          </label>
+          <input
+            type="number"
+            value={props.backgroundPadding || 0}
+            onChange={(e) => onUpdate({ backgroundPadding: parseInt(e.target.value) || 0 })}
+            min={0}
+            max={100}
+            className="w-full px-3 py-2 text-sm border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-white"
+          />
+        </div>
+
+        <div>
           <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
             Hizalama
           </label>
@@ -151,6 +194,20 @@ export function HeadingBlockSettings({ block, activeTab, onUpdate }: HeadingBloc
   if (activeTab === 'advanced') {
     return (
       <div className="space-y-4">
+        <div>
+          <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
+            Köşe Yuvarlaklığı (px)
+          </label>
+          <input
+            type="number"
+            value={props.borderRadius || 0}
+            onChange={(e) => onUpdate({ borderRadius: parseInt(e.target.value) || 0 })}
+            min={0}
+            max={100}
+            className="w-full px-3 py-2 text-sm border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-white"
+          />
+        </div>
+
         <div>
           <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
             Özel CSS
