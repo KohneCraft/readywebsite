@@ -1,0 +1,199 @@
+/**
+ * Logger Service
+ * 
+ * Merkezi loglama servisi - console.log yerine kullanılacak
+ * Production'da logları kapatma veya harici servislere gönderme imkanı sağlar
+ */
+
+type LogLevel = 'debug' | 'info' | 'warn' | 'error';
+
+interface LogEntry {
+  level: LogLevel;
+  message: string;
+  timestamp: string;
+  data?: unknown;
+  context?: string;
+}
+
+interface LoggerConfig {
+  enabled: boolean;
+  minLevel: LogLevel;
+  showTimestamp: boolean;
+  showContext: boolean;
+  persistToFirestore: boolean; // Firestore'a kaydetme
+  persistMinLevel: LogLevel; // Firestore'a minimum hangi seviyeden itibaren kaydet
+}
+
+const LOG_LEVELS: Record<LogLevel, number> = {
+  debug: 0,
+  info: 1,
+  warn: 2,
+  error: 3,
+};
+
+// Environment check
+const isDevelopment = typeof window !== 'undefined' 
+  ? window.location.hostname === 'localhost' 
+  : process.env.NODE_ENV === 'development';
+
+// Default configuration - production'da info seviyesi, development'ta debug
+const defaultConfig: LoggerConfig = {
+  enabled: true, // Her zaman açık
+  minLevel: isDevelopment ? 'debug' : 'info', // Production'da debug logları gizle
+  showTimestamp: true,
+  showContext: true,
+  persistToFirestore: true, // Warn ve error logları Firestore'a kaydet
+  persistMinLevel: 'warn', // Sadece warn ve error seviyesini kaydet (performans için)
+};
+
+let config: LoggerConfig = { ...defaultConfig };
+
+/**
+ * Logger yapılandırmasını güncelle
+ */
+export const configureLogger = (newConfig: Partial<LoggerConfig>): void => {
+  config = { ...config, ...newConfig };
+};
+
+/**
+ * Log seviyesi kontrolü
+ */
+const shouldLog = (level: LogLevel): boolean => {
+  if (!config.enabled) return false;
+  return LOG_LEVELS[level] >= LOG_LEVELS[config.minLevel];
+};
+
+/**
+ * Log entry formatla
+ */
+const formatLogEntry = (entry: LogEntry): string => {
+  const parts: string[] = [];
+  
+  if (config.showTimestamp) {
+    parts.push(`[${entry.timestamp}]`);
+  }
+  
+  parts.push(`[${entry.level.toUpperCase()}]`);
+  
+  if (config.showContext && entry.context) {
+    parts.push(`[${entry.context}]`);
+  }
+  
+  parts.push(entry.message);
+  
+  return parts.join(' ');
+};
+
+/**
+ * Firestore'a log kaydet (async, await etmeden fire-and-forget)
+ */
+const persistLog = async (entry: LogEntry): Promise<void> => {
+  if (!config.persistToFirestore) return;
+  
+  // Minimum seviye kontrolü - sadece belirli seviyeden itibaren kaydet
+  if (LOG_LEVELS[entry.level] < LOG_LEVELS[config.persistMinLevel]) return;
+  
+  try {
+    // Dinamik import ile circular dependency'den kaçın
+    const { collection, addDoc } = await import('firebase/firestore');
+    const { db } = await import('./firebase/config');
+    
+    await addDoc(collection(db, 'logs'), {
+      ...entry,
+      timestamp: new Date(entry.timestamp),
+      data: entry.data ? JSON.stringify(entry.data) : undefined,
+    });
+  } catch (error) {
+    // Log kaydetme başarısız olursa sessizce devam et
+    console.error('Log persist hatası:', error);
+  }
+};
+
+/**
+ * Temel log fonksiyonu
+ */
+const log = (level: LogLevel, message: string, data?: unknown, context?: string): void => {
+  if (!shouldLog(level)) return;
+  
+  const entry: LogEntry = {
+    level,
+    message,
+    timestamp: new Date().toISOString(),
+    data,
+    context,
+  };
+  
+  const formattedMessage = formatLogEntry(entry);
+  
+  switch (level) {
+    case 'debug':
+      if (data !== undefined) {
+        console.debug(formattedMessage, data);
+      } else {
+        console.debug(formattedMessage);
+      }
+      break;
+    case 'info':
+      if (data !== undefined) {
+        console.info(formattedMessage, data);
+      } else {
+        console.info(formattedMessage);
+      }
+      break;
+    case 'warn':
+      if (data !== undefined) {
+        console.warn(formattedMessage, data);
+      } else {
+        console.warn(formattedMessage);
+      }
+      break;
+    case 'error':
+      if (data !== undefined) {
+        console.error(formattedMessage, data);
+      } else {
+        console.error(formattedMessage);
+      }
+      break;
+  }
+  
+  // Firestore'a kaydet (fire-and-forget, await etmiyoruz)
+  persistLog(entry).catch(() => {
+    // Sessizce hata yut
+  });
+};
+
+/**
+ * Context'li logger oluştur
+ */
+export const createLogger = (context: string) => ({
+  debug: (message: string, data?: unknown) => log('debug', message, data, context),
+  info: (message: string, data?: unknown) => log('info', message, data, context),
+  warn: (message: string, data?: unknown) => log('warn', message, data, context),
+  error: (message: string, data?: unknown) => log('error', message, data, context),
+});
+
+/**
+ * Global logger instance
+ */
+export const logger = {
+  debug: (message: string, data?: unknown, context?: string) => log('debug', message, data, context),
+  info: (message: string, data?: unknown, context?: string) => log('info', message, data, context),
+  warn: (message: string, data?: unknown, context?: string) => log('warn', message, data, context),
+  error: (message: string, data?: unknown, context?: string) => log('error', message, data, context),
+  
+  // Firebase işlemleri için özel loggerlar
+  firebase: createLogger('Firebase'),
+  firestore: createLogger('Firestore'),
+  storage: createLogger('Storage'),
+  auth: createLogger('Auth'),
+  
+  // UI işlemleri için
+  ui: createLogger('UI'),
+  theme: createLogger('Theme'),
+  pageBuilder: createLogger('PageBuilder'),
+  
+  // API işlemleri için
+  api: createLogger('API'),
+};
+
+export default logger;
