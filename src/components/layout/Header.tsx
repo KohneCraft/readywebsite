@@ -112,11 +112,11 @@ export function Header() {
     if (href === '/') {
       return pathname === '/' || pathname === `/${locale}` || pathname === `/${locale}/`;
     }
-    
+
     // Diğer sayfalar için slug karşılaştırması
     // href'den başlangıç "/" işaretini kaldır
     const hrefSlug = href.startsWith('/') ? href.slice(1) : href;
-    
+
     // pathname'den locale prefix'ini çıkar
     // Örnek: "/tr/about" -> "about", "/en/about" -> "about"
     let pathnameSlug = pathname;
@@ -130,12 +130,12 @@ export function Header() {
     } else if (pathname.startsWith('/')) {
       pathnameSlug = pathname.slice(1);
     }
-    
+
     // Trailing slash'i kaldır
     if (pathnameSlug.endsWith('/')) {
       pathnameSlug = pathnameSlug.slice(0, -1);
     }
-    
+
     // Slug'lar eşleşiyorsa aktif
     return pathnameSlug === hrefSlug;
   }, [pathname, locale]);
@@ -168,17 +168,6 @@ export function Header() {
 
   return (
     <>
-      {/* Top bar */}
-      <div className="hidden lg:block bg-gray-900 dark:bg-gray-950 text-white text-sm py-2">
-        <div className="container flex items-center justify-between">
-          <div className="flex items-center gap-6">
-          </div>
-          <div className="flex items-center gap-4">
-            <LanguageSwitcher variant="buttons" />
-          </div>
-        </div>
-      </div>
-
       {/* Main header */}
       <header
         className={cn(
@@ -189,9 +178,9 @@ export function Header() {
             : ''
         )}
         style={{
-          backgroundColor: isTransparent 
+          backgroundColor: isTransparent
             ? 'transparent'
-            : headerBgColor 
+            : headerBgColor
               ? (isScrolled ? `${headerBgColor}95` : headerBgColor)
               : undefined,
           color: headerTextColor || undefined,
@@ -203,7 +192,7 @@ export function Header() {
             <Link href={getLocalizedHref('/')} prefetch={false} className="flex items-center gap-2">
               {logoUrl ? (
                 <Image
-                  src={logoUrl} 
+                  src={logoUrl}
                   alt={logoText}
                   width={160}
                   height={40}
@@ -216,9 +205,9 @@ export function Header() {
                 </div>
               )}
               <div className="flex flex-col">
-                <span 
+                <span
                   className="font-bold leading-tight"
-                  style={{ 
+                  style={{
                     color: siteSettings?.companyNameStyle?.color || headerTextColor || undefined,
                     fontSize: siteSettings?.companyNameStyle?.fontSize ? `${siteSettings.companyNameStyle.fontSize}px` : undefined,
                   }}
@@ -226,9 +215,9 @@ export function Header() {
                   {logoText}
                 </span>
                 {siteSettings?.siteSlogan?.[locale as keyof typeof siteSettings.siteSlogan] && (
-                  <span 
+                  <span
                     className="hidden sm:block"
-                    style={{ 
+                    style={{
                       color: siteSettings?.sloganStyle?.color || (headerTextColor ? `${headerTextColor}CC` : undefined),
                       fontSize: siteSettings?.sloganStyle?.fontSize ? `${siteSettings.sloganStyle.fontSize}px` : undefined,
                     }}
@@ -249,7 +238,7 @@ export function Header() {
                   className={cn(
                     'relative font-medium transition-colors py-2',
                     isActive(item.href)
-                      ? headerTextColor 
+                      ? headerTextColor
                         ? ''
                         : 'text-primary-600 dark:text-primary-400'
                       : headerTextColor
@@ -257,7 +246,7 @@ export function Header() {
                         : 'text-gray-700 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400'
                   )}
                   style={{
-                    color: headerTextColor 
+                    color: headerTextColor
                       ? (isActive(item.href) ? headerTextColor : `${headerTextColor}DD`)
                       : undefined,
                   }}
