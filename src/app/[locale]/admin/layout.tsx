@@ -11,9 +11,9 @@ import Link from 'next/link';
 import { useLocale, useTranslations } from 'next-intl';
 import { collection, query, where, orderBy, limit, onSnapshot, updateDoc, doc, Timestamp } from 'firebase/firestore';
 import { db } from '@/lib/firebase/config';
-import { 
-  LayoutDashboard, 
-  Settings, 
+import {
+  LayoutDashboard,
+  Settings,
   LogOut,
   Menu,
   X,
@@ -68,7 +68,7 @@ interface AdminContextType {
 const AdminContext = createContext<AdminContextType>({
   user: null,
   isLoading: true,
-  logout: () => {},
+  logout: () => { },
 });
 
 export const useAdmin = () => useContext(AdminContext);
@@ -82,7 +82,7 @@ export default function AdminLayout({
   const locale = useLocale() as Locale;
   const pathname = usePathname();
   const router = useRouter();
-  
+
   const [user, setUser] = useState<AdminUser | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
@@ -90,7 +90,7 @@ export default function AdminLayout({
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
   const [adminTitle, setAdminTitle] = useState<string>('Page Builder');
   const [adminIcon, setAdminIcon] = useState<string>('');
-  
+
   // Notification state
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [isNotificationOpen, setIsNotificationOpen] = useState(false);
@@ -136,7 +136,7 @@ export default function AdminLayout({
         try {
           // Get user profile from Firestore
           const profile = await getUserProfile(firebaseUser.uid);
-          
+
           setUser({
             id: firebaseUser.uid,
             email: firebaseUser.email || '',
@@ -182,13 +182,13 @@ export default function AdminLayout({
       }
     }
     loadAdminSettings();
-    
+
     // Theme güncellemelerini dinle
     const handleThemeUpdate = () => {
       loadAdminSettings();
     };
     window.addEventListener('theme-updated', handleThemeUpdate);
-    
+
     return () => {
       window.removeEventListener('theme-updated', handleThemeUpdate);
     };
@@ -201,7 +201,7 @@ export default function AdminLayout({
     // Unread messages listener
     const messagesRef = collection(db, 'contact-messages');
     const messagesQuery = query(
-      messagesRef, 
+      messagesRef,
       where('read', '==', false),
       orderBy('createdAt', 'desc'),
       limit(10)
@@ -220,7 +220,7 @@ export default function AdminLayout({
           link: `/${locale}/admin/messages`,
         };
       });
-      
+
       // Error logs listener (son 24 saat)
       const logsRef = collection(db, 'logs');
       const yesterday = new Date();
@@ -275,10 +275,29 @@ export default function AdminLayout({
       }
     }
     // Diğer bildirim türleri için local state güncelle
-    setNotifications(prev => prev.map(n => 
+    setNotifications(prev => prev.map(n =>
       n.id === notification.id ? { ...n, read: true } : n
     ));
   }, []);
+
+  // Tüm bildirimleri okundu olarak işaretle
+  const markAllAsRead = useCallback(async () => {
+    const unreadNotifications = notifications.filter(n => !n.read);
+
+    for (const notification of unreadNotifications) {
+      if (notification.type === 'message' && notification.id.startsWith('msg-')) {
+        const docId = notification.id.replace('msg-', '');
+        try {
+          await updateDoc(doc(db, 'contact-messages', docId), { read: true });
+        } catch (error) {
+          logger.ui.error('Tümünü okundu işaretleme hatası', error);
+        }
+      }
+    }
+
+    // Local state güncelle
+    setNotifications(prev => prev.map(n => ({ ...n, read: true })));
+  }, [notifications]);
 
   // Dropdown dışına tıklayınca kapat
   useEffect(() => {
@@ -297,7 +316,7 @@ export default function AdminLayout({
     try {
       // Geçici session'ı temizle
       localStorage.removeItem('temp_admin_session');
-      
+
       // First sign out from Firebase
       await firebaseSignOut();
       // Clear local state
@@ -474,7 +493,7 @@ export default function AdminLayout({
             <div className="flex items-center gap-4">
               {/* Notifications */}
               <div className="relative" data-notification-dropdown>
-                <button 
+                <button
                   onClick={() => setIsNotificationOpen(!isNotificationOpen)}
                   className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 relative"
                 >
@@ -492,7 +511,15 @@ export default function AdminLayout({
                     <div className="px-4 py-3 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between">
                       <h3 className="font-medium text-gray-900 dark:text-white">Bildirimler</h3>
                       {unreadCount > 0 && (
-                        <span className="text-xs text-gray-500 dark:text-gray-400">{unreadCount} okunmamış</span>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            markAllAsRead();
+                          }}
+                          className="text-xs text-primary-600 dark:text-primary-400 hover:underline"
+                        >
+                          Tümünü okunmuş say
+                        </button>
                       )}
                     </div>
                     <div className="max-h-80 overflow-y-auto">

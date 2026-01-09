@@ -11,8 +11,8 @@ import { motion } from 'framer-motion';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { 
-  Save, 
+import {
+  Save,
   Building2,
   Mail,
   Phone,
@@ -127,22 +127,25 @@ type TabKey = 'company' | 'contact' | 'social' | 'seo' | 'maintenance';
 
 export default function AdminSettingsPage() {
   const t = useTranslations('admin.settings');
-  
+
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [saved, setSaved] = useState(false);
   const [activeTab, setActiveTab] = useState<TabKey>('company');
   const [logoPreview, setLogoPreview] = useState<string | null>(null);
   const [isMediaSelectorOpen, setIsMediaSelectorOpen] = useState(false);
-  
+
   // Browser tab ayarları
   const [browserFaviconPreview, setBrowserFaviconPreview] = useState<string | null>(null);
   const [isBrowserFaviconSelectorOpen, setIsBrowserFaviconSelectorOpen] = useState(false);
-  
+
   // Admin Panel ayarları
   const [adminTitle, setAdminTitle] = useState<string>('Modern');
   const [adminIconUrl, setAdminIconUrl] = useState<string>('');
   const [isAdminIconSelectorOpen, setIsAdminIconSelectorOpen] = useState(false);
+
+  // Form dışı değişiklik takibi (logo, favicon, admin panel ayarları vb.)
+  const [hasNonFormChanges, setHasNonFormChanges] = useState(false);
 
   const {
     register,
@@ -163,34 +166,34 @@ export default function AdminSettingsPage() {
       try {
         setIsLoading(true);
         const settings = await getSiteSettingsClient();
-        
+
         // Aktif temayı yükle
         let themeSettings: any = null;
         try {
           const { getSiteSettingsClient: getSettings, getAvailableThemes } = await import('@/lib/firebase/firestore');
           const { getDefaultThemes } = await import('@/lib/themes/default/defaultThemes');
-          
+
           // Client-safe fonksiyon kullan (getSiteSettings yerine getSiteSettingsClient)
           const siteSettings = await getSettings();
           const activeThemeName = siteSettings.activeThemeName;
           const activeThemeId = siteSettings.activeThemeId;
-          
+
           if (activeThemeName || activeThemeId) {
             const firestoreThemes = await getAvailableThemes();
-            const targetTheme = firestoreThemes.find(t => 
-              t.name === activeThemeName || 
+            const targetTheme = firestoreThemes.find(t =>
+              t.name === activeThemeName ||
               t.id === activeThemeId ||
               (activeThemeId && t.id.includes(activeThemeId.replace('theme-', '')))
             );
-            
+
             if (targetTheme) {
               const defaultThemes = getDefaultThemes();
-              const matchedTheme = defaultThemes.find(t => 
-                t.metadata.name === targetTheme.name || 
+              const matchedTheme = defaultThemes.find(t =>
+                t.metadata.name === targetTheme.name ||
                 t.metadata.id === targetTheme.id ||
                 targetTheme.id.includes(t.metadata.id.replace('theme-', ''))
               );
-              
+
               if (matchedTheme) {
                 // Admin settings sayfası SADECE default tema ayarlarını kullanmalı
                 // Firestore'daki özel ayarlar (navbar/footer customization) buraya dahil edilmemeli
@@ -203,7 +206,7 @@ export default function AdminSettingsPage() {
         } catch (error) {
           logger.api.warn('Tema ayarları yüklenirken hata:', error);
         }
-        
+
         // Tema ayarlarından default değerleri al
         const themeDefaults = themeSettings ? {
           company: {
@@ -242,7 +245,7 @@ export default function AdminSettingsPage() {
           seo: defaultSettings.seo,
           maintenance: defaultSettings.maintenance,
         };
-        
+
         // SiteSettings'i SettingsFormData formatına çevir
         const formData: SettingsFormData = {
           browser: {
@@ -283,7 +286,7 @@ export default function AdminSettingsPage() {
             allowedIPs: settings.maintenance?.allowedIPs?.join(', ') || themeDefaults.maintenance.allowedIPs,
           },
         };
-        
+
         reset(formData);
         setLogoPreview(formData.company.logo || null);
         setBrowserFaviconPreview(formData.browser.favicon || null);
@@ -299,15 +302,15 @@ export default function AdminSettingsPage() {
         setIsLoading(false);
       }
     };
-    
+
     loadSettings();
-    
+
     // Tema güncellemelerini dinle
     const handleThemeUpdate = () => {
       loadSettings();
     };
     window.addEventListener('theme-updated', handleThemeUpdate);
-    
+
     return () => {
       window.removeEventListener('theme-updated', handleThemeUpdate);
     };
@@ -321,10 +324,10 @@ export default function AdminSettingsPage() {
         toast.error('Lütfen giriş yapın');
         return;
       }
-      
+
       // SettingsFormData'yı SiteSettings formatına çevir
       const currentSettings = await getSiteSettingsClient();
-      
+
       await updateSiteSettings({
         ...currentSettings,
         // Browser tab ayarları
@@ -423,10 +426,10 @@ export default function AdminSettingsPage() {
           allowedIPs: data.maintenance.allowedIPs ? data.maintenance.allowedIPs.split(',').map(ip => ip.trim()) : [],
         },
       } as any, user.uid);
-      
+
       setSaved(true);
       setTimeout(() => setSaved(false), 3000);
-      
+
       // Theme güncellemesi bildir (header/footer güncellenebilir)
       window.dispatchEvent(new CustomEvent('theme-updated'));
     } catch (error) {
@@ -439,6 +442,7 @@ export default function AdminSettingsPage() {
 
   const handleAdminIconSelect = async (mediaUrl: string) => {
     setAdminIconUrl(mediaUrl);
+    setHasNonFormChanges(true);
     setIsAdminIconSelectorOpen(false);
   };
 
@@ -458,6 +462,7 @@ export default function AdminSettingsPage() {
 
       const uploadedMedia = await uploadMedia(file, 'image', user.uid);
       setAdminIconUrl(uploadedMedia.url);
+      setHasNonFormChanges(true);
       toast.success('Admin icon yüklendi');
     } catch (error) {
       logger.ui.error('Admin icon yükleme hatası', error);
@@ -485,6 +490,7 @@ export default function AdminSettingsPage() {
         favicon: mediaUrl,
       },
     });
+    setHasNonFormChanges(true);
     setIsBrowserFaviconSelectorOpen(false);
   };
 
@@ -507,6 +513,7 @@ export default function AdminSettingsPage() {
           favicon: uploadedMedia.url,
         },
       });
+      setHasNonFormChanges(true);
       toast.success('Tarayıcı ikonu yüklendi');
     } catch (error) {
       logger.ui.error('Tarayıcı ikonu yükleme hatası', error);
@@ -527,6 +534,7 @@ export default function AdminSettingsPage() {
         logo: mediaUrl,
       },
     });
+    setHasNonFormChanges(true);
     setIsMediaSelectorOpen(false);
   };
 
@@ -781,7 +789,7 @@ export default function AdminSettingsPage() {
                       <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">
                         Firma Adı Stil Ayarları
                       </h3>
-                      
+
                       <div className="space-y-4">
                         <div>
                           <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
@@ -825,7 +833,7 @@ export default function AdminSettingsPage() {
                       <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">
                         Slogan Stil Ayarları
                       </h3>
-                      
+
                       <div className="space-y-4">
                         <div>
                           <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
@@ -870,7 +878,7 @@ export default function AdminSettingsPage() {
                         <Building2 className="w-4 h-4" />
                         Admin Panel Ayarları
                       </h3>
-                      
+
                       {/* Admin Panel Başlık */}
                       <div className="space-y-2 mb-4">
                         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
@@ -893,7 +901,7 @@ export default function AdminSettingsPage() {
                         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
                           Admin Panel Icon
                         </label>
-                        
+
                         {adminIconUrl && (
                           <div className="flex items-center gap-4 mb-3">
                             <div className="w-16 h-16 rounded-lg border-2 border-gray-200 dark:border-gray-700 overflow-hidden bg-white dark:bg-gray-900 flex items-center justify-center">
@@ -923,7 +931,7 @@ export default function AdminSettingsPage() {
                             </Button>
                           </div>
                         )}
-                        
+
                         <div className="grid grid-cols-2 gap-3">
                           <Button
                             type="button"
@@ -1254,7 +1262,7 @@ export default function AdminSettingsPage() {
               <Button
                 type="submit"
                 variant="primary"
-                disabled={isSaving || !isDirty}
+                disabled={isSaving || (!isDirty && !hasNonFormChanges)}
               >
                 {isSaving ? (
                   <Spinner size="sm" className="mr-2" />
@@ -1277,7 +1285,7 @@ export default function AdminSettingsPage() {
           type="image"
         />
       )}
-      
+
       {/* Browser Favicon Selector Modal */}
       {isBrowserFaviconSelectorOpen && (
         <MediaSelector
@@ -1287,7 +1295,7 @@ export default function AdminSettingsPage() {
           type="image"
         />
       )}
-      
+
       {/* Admin Icon Selector Modal */}
       {isAdminIconSelectorOpen && (
         <MediaSelector

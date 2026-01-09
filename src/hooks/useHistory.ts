@@ -39,7 +39,8 @@ export function useHistory<T>(
   // Yeni state ekle ve geçmişe kaydet
   const set = useCallback(
     (newPresent: T) => {
-      if (newPresent === present) return;
+      // Değer karşılaştırması (referans değil) - array ve object için gerekli
+      if (JSON.stringify(newPresent) === JSON.stringify(present)) return;
 
       setPast((prevPast) => {
         const newPast = [...prevPast, present];
