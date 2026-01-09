@@ -70,6 +70,27 @@ service cloud.firestore {
     }
     
     // ==========================================
+    // CONTACT-MESSAGES KOLEKSİYONU
+    // ==========================================
+    // PageBuilder form mesajları için (esnek kurallar)
+    // ==========================================
+    
+    match /contact-messages/{messageId} {
+      // Okuma: Sadece authenticated kullanıcılar
+      allow read: if isAuthenticated();
+      
+      // Oluşturma: Herkes (public form - validasyon yok, esnek)
+      allow create: if true;
+      
+      // Güncelleme: Sadece authenticated (okundu işareti vb.)
+      allow update: if isAuthenticated();
+      
+      // Silme: Sadece authenticated
+      allow delete: if isAuthenticated();
+    }
+
+    
+    // ==========================================
     // SETTINGS KOLEKSİYONU
     // ==========================================
     // Public: Okuma (site ayarları gerekli)
