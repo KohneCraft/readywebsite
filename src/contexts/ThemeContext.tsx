@@ -103,8 +103,30 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
       if (firestoreThemes.length > 0) {
         logger.theme.warn('Aktif tema bulunamadı, ilk Firestore teması kullanılıyor');
         const firstTheme = firestoreThemes[0];
-        const matchedTheme = defaultThemes.find(t => t.metadata.name === firstTheme.name);
+        let matchedTheme = defaultThemes.find(t => t.metadata.name === firstTheme.name);
+        
         if (matchedTheme) {
+          // Firestore metadata'sını al (kullanıcının yaptığı değişiklikler)
+          try {
+            const { getThemeMetadata } = await import('@/lib/firebase/firestore');
+            const firestoreMetadata = await getThemeMetadata(firstTheme.id);
+            
+            if (firestoreMetadata?.settings) {
+              matchedTheme = {
+                ...matchedTheme,
+                metadata: {
+                  ...matchedTheme.metadata,
+                  settings: firestoreMetadata.settings, // Firestore ayarlarını kullan
+                },
+              };
+              logger.theme.info('✓ Fallback tema Firestore ayarlarıyla yüklendi:', matchedTheme.metadata.name);
+              logger.theme.info('✓ Header navItems:', firestoreMetadata.settings.header?.navItems?.length || 0);
+              logger.theme.info('✓ Footer quickLinks:', firestoreMetadata.settings.footer?.quickLinks?.length || 0);
+            }
+          } catch (metaError) {
+            logger.theme.warn('Fallback tema için Firestore metadata alınamadı:', metaError);
+          }
+          
           setCurrentTheme(matchedTheme);
           return;
         }
