@@ -71,40 +71,21 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
               const firestoreMetadata = await getThemeMetadata(targetTheme.id);
               
               if (firestoreMetadata?.settings) {
-                logger.theme.debug('Firestore\'dan özel ayarlar yüklendi');
+                logger.theme.info('Firestore\'dan özel ayarlar yüklendi');
                 
-                // Deep merge: Özel ayarları default ayarlar üzerine birleştir
-                const mergedSettings = { ...matchedTheme.metadata.settings };
-                
-                if (firestoreMetadata.settings.header) {
-                  mergedSettings.header = {
-                    ...mergedSettings.header,
-                    ...firestoreMetadata.settings.header,
-                  };
-                }
-                
-                if (firestoreMetadata.settings.footer) {
-                  mergedSettings.footer = {
-                    ...mergedSettings.footer,
-                    ...firestoreMetadata.settings.footer,
-                  };
-                }
-                
-                // Diğer ayarları da birleştir
-                Object.keys(firestoreMetadata.settings).forEach(key => {
-                  if (key !== 'header' && key !== 'footer') {
-                    mergedSettings[key] = firestoreMetadata.settings[key];
-                  }
-                });
-                
+                // Firestore ayarlarını TAMAMEN kullan (merge YOK)
+                // Tema yüklendiğinde Firestore'a orijinal ayarlar yazılıyor,
+                // dolayısıyla Firestore'daki veri zaten complete
                 matchedTheme = {
                   ...matchedTheme,
                   metadata: {
                     ...matchedTheme.metadata,
-                    settings: mergedSettings,
+                    settings: firestoreMetadata.settings, // Direkt Firestore'dan al, merge etme
                   },
                 };
-                logger.theme.info('Tema özel ayarlarla yüklendi:', matchedTheme.metadata.name);
+                logger.theme.info('✓ Tema Firestore ayarlarıyla yüklendi:', matchedTheme.metadata.name);
+                logger.theme.info('✓ Header navItems:', firestoreMetadata.settings.header?.navItems?.length || 0);
+                logger.theme.info('✓ Footer quickLinks:', firestoreMetadata.settings.footer?.quickLinks?.length || 0);
               } else {
                 logger.theme.info('Firestore\'da özel ayar yok, default ayarlar kullanılıyor');
               }
