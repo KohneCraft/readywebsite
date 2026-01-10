@@ -763,3 +763,26 @@
     color: black;
   }
 }
+
+/* ============================================
+   Mobil Responsive - Kolonlar tek sütun
+   ============================================ */
+@media (max-width: 767px) {
+  .columns-wrapper {
+    display: flex !important;
+    flex-direction: column !important;
+    grid-template-columns: unset !important;
+  }
+
+  .column-renderer {
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+}
+
+/* Tablet için 2 sütun max */
+@media (min-width: 768px) and (max-width: 1023px) {
+  .columns-wrapper {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+}
