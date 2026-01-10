@@ -40,10 +40,11 @@ function ImageBlockComponent({ props, priority = false }: ImageBlockProps) {
   };
 
   const containerStyle: React.CSSProperties = {
-    display: (props.textAlign || props.verticalAlign) ? 'flex' : 'block',
+    display: 'flex',
     justifyContent: getJustifyContent(),
     alignItems: getAlignItems(),
     width: '100%',
+    height: '100%',
     maxWidth: props.maxWidth ? `${props.maxWidth}px` : '100%',
     margin: props.margin
       ? `${props.margin.top || 0}px ${props.margin.right || 0}px ${props.margin.bottom || 0}px ${props.margin.left || 0}px`

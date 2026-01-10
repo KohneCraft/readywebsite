@@ -122,9 +122,10 @@ function ButtonBlockComponent({ props }: ButtonBlockProps) {
     margin: props.margin
       ? `${props.margin.top || 0}px ${props.margin.right || 0}px ${props.margin.bottom || 0}px ${props.margin.left || 0}px`
       : '0',
-    display: (props.textAlign || props.verticalAlign) ? 'flex' : 'block',
+    display: 'flex',
     justifyContent: getJustifyContent(),
     alignItems: getAlignItems(),
+    height: '100%',
   };
 
   const buttonContent = (

@@ -32,6 +32,33 @@ function HeadingBlockComponent({ props }: HeadingBlockProps) {
     return `${(props.padding.top || 0) * scale}px ${(props.padding.right || 0) * scale}px ${(props.padding.bottom || 0) * scale}px ${(props.padding.left || 0) * scale}px`;
   };
 
+  // Dikey hizalama
+  const getAlignItems = () => {
+    switch (props.verticalAlign) {
+      case 'center': return 'center';
+      case 'bottom': return 'flex-end';
+      default: return 'flex-start';
+    }
+  };
+
+  // Yatay hizalama
+  const getJustifyContent = () => {
+    switch (props.textAlign) {
+      case 'center': return 'center';
+      case 'right': return 'flex-end';
+      default: return 'flex-start';
+    }
+  };
+
+  const wrapperStyle: React.CSSProperties = {
+    display: 'flex',
+    flexDirection: 'column',
+    justifyContent: getAlignItems(),
+    alignItems: getJustifyContent(),
+    width: '100%',
+    height: '100%',
+  };
+
   const style: React.CSSProperties = {
     fontSize: responsiveFontSize,
     fontFamily: props.fontFamily || 'inherit',
@@ -53,15 +80,17 @@ function HeadingBlockComponent({ props }: HeadingBlockProps) {
     wordWrap: 'break-word',
     overflowWrap: 'break-word',
     maxWidth: '100%',
-    width: '100%',
   };
 
   return (
-    <Tag className="heading-block" style={style}>
-      {props.content}
-    </Tag>
+    <div className="heading-block-wrapper" style={wrapperStyle}>
+      <Tag className="heading-block" style={style}>
+        {props.content}
+      </Tag>
+    </div>
   );
 }
 
 const HeadingBlock = memo(HeadingBlockComponent);
 export { HeadingBlock };
+
