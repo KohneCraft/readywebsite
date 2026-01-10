@@ -4,10 +4,9 @@ import { memo } from 'react';
 import Link from 'next/link';
 import { useDeviceType } from '@/hooks/useDeviceType';
 import { useThemeColors } from '@/hooks/useThemeColor';
-import type { BlockProps } from '@/types/pageBuilder';
 
 interface ButtonBlockProps {
-  props: BlockProps;
+  props: Record<string, any>;
 }
 
 function ButtonBlockComponent({ props }: ButtonBlockProps) {
