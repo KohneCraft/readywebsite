@@ -179,6 +179,8 @@ export interface BlockProps {
   buttonStyle?: 'primary' | 'secondary' | 'outline' | 'ghost';
   size?: 'small' | 'medium' | 'large';
   buttonWidth?: 'auto' | 'full';
+  width?: number; // Buton genişliği (px)
+  height?: number; // Buton yüksekliği (px)
   textColor?: string;
   textColorDark?: string | 'auto'; // Koyu tema buton metin rengi
   verticalAlign?: 'top' | 'center' | 'bottom'; // Dikey hizalama
