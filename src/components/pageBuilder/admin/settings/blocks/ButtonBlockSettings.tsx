@@ -146,7 +146,7 @@ export function ButtonBlockSettings({ block, activeTab, onUpdate }: ButtonBlockS
             <input
               type="number"
               value={props.width || ''}
-              onChange={(e) => onUpdate({ width: e.target.value ? parseInt(e.target.value) : undefined })}
+              onChange={(e) => onUpdate({ width: e.target.value ? parseInt(e.target.value) : undefined } as any)}
               className="w-full px-3 py-2 text-sm border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-white"
               placeholder="Otomatik"
             />
@@ -158,7 +158,7 @@ export function ButtonBlockSettings({ block, activeTab, onUpdate }: ButtonBlockS
             <input
               type="number"
               value={props.height || ''}
-              onChange={(e) => onUpdate({ height: e.target.value ? parseInt(e.target.value) : undefined })}
+              onChange={(e) => onUpdate({ height: e.target.value ? parseInt(e.target.value) : undefined } as any)}
               className="w-full px-3 py-2 text-sm border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-white"
               placeholder="Otomatik"
             />
