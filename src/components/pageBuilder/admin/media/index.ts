@@ -1,2 +1,0 @@
-export { MediaSelector } from './MediaSelector';
-
