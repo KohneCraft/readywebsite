@@ -31,18 +31,67 @@ function ButtonBlockComponent({ props }: ButtonBlockProps) {
     return deviceType === 'mobile' ? '10px 18px' : '12px 24px';
   };
 
-  const buttonStyle = {
-    backgroundColor: colors.bg || '#007bff',
-    color: colors.text || '#ffffff',
+  // Buton stili farklılıkları
+  const getButtonStyleVariant = () => {
+    const style = props.buttonStyle || 'primary';
+
+    if (style === 'outline') {
+      return {
+        backgroundColor: 'transparent',
+        color: colors.bg || '#007bff',
+        border: `2px solid ${colors.bg || '#007bff'}`,
+      };
+    }
+
+    if (style === 'secondary') {
+      return {
+        backgroundColor: colors.text || '#ffffff',
+        color: colors.bg || '#007bff',
+        border: 'none',
+      };
+    }
+
+    // Primary (varsayılan)
+    return {
+      backgroundColor: colors.bg || '#007bff',
+      color: colors.text || '#ffffff',
+      border: props.border?.width
+        ? `${props.border.width}px ${props.border.style} ${props.border.color}`
+        : 'none',
+    };
+  };
+
+  const styleVariant = getButtonStyleVariant();
+
+  // Responsive boyut hesaplama
+  const getWidth = () => {
+    if (props.buttonWidth === 'full' || deviceType === 'mobile') {
+      return '100%';
+    }
+    // Pixel değeri varsa onu kullan
+    if (props.width) {
+      return `${props.width}px`;
+    }
+    return 'auto';
+  };
+
+  const getHeight = () => {
+    if (props.height) {
+      return `${props.height}px`;
+    }
+    return 'auto';
+  };
+
+  const buttonStyle: React.CSSProperties = {
+    ...styleVariant,
     fontSize: `${responsiveFontSize}px`,
     fontWeight: props.fontWeight || 600,
     fontFamily: props.fontFamily || 'inherit',
     padding: getPadding(),
     borderRadius: `${props.borderRadius || 6}px`,
-    border: props.border?.width
-      ? `${props.border.width}px ${props.border.style} ${props.border.color}`
-      : 'none',
-    width: props.buttonWidth === 'full' || deviceType === 'mobile' ? '100%' : 'auto',
+    width: getWidth(),
+    height: getHeight(),
+    minWidth: deviceType === 'mobile' ? '100%' : (props.width ? `${props.width}px` : 'auto'),
     display: 'inline-flex',
     alignItems: 'center',
     justifyContent: 'center',
@@ -50,7 +99,6 @@ function ButtonBlockComponent({ props }: ButtonBlockProps) {
     textDecoration: 'none',
     cursor: 'pointer',
     transition: 'all 0.3s ease',
-    minWidth: deviceType === 'mobile' ? '100%' : 'auto',
   };
 
   // Yatay hizalama: left, center, right -> flex-start, center, flex-end
@@ -75,7 +123,7 @@ function ButtonBlockComponent({ props }: ButtonBlockProps) {
     margin: props.margin
       ? `${props.margin.top || 0}px ${props.margin.right || 0}px ${props.margin.bottom || 0}px ${props.margin.left || 0}px`
       : '0',
-    display: 'flex',
+    display: (props.textAlign || props.verticalAlign) ? 'flex' : 'block',
     justifyContent: getJustifyContent(),
     alignItems: getAlignItems(),
   };
