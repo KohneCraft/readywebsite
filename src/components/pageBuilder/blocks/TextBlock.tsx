@@ -40,32 +40,6 @@ function TextBlockComponent({ props }: TextBlockProps) {
     return `${(props.padding.top || 0) * scale}px ${(props.padding.right || 0) * scale}px ${(props.padding.bottom || 0) * scale}px ${(props.padding.left || 0) * scale}px`;
   };
 
-  // Dikey hizalama
-  const getAlignItems = () => {
-    switch (props.verticalAlign) {
-      case 'center': return 'center';
-      case 'bottom': return 'flex-end';
-      default: return 'flex-start';
-    }
-  };
-
-  // Yatay hizalama
-  const getJustifyContent = () => {
-    switch (props.textAlign) {
-      case 'center': return 'center';
-      case 'right': return 'flex-end';
-      default: return 'flex-start';
-    }
-  };
-
-  const wrapperStyle: React.CSSProperties = {
-    display: props.verticalAlign ? 'flex' : 'block',
-    flexDirection: props.verticalAlign ? 'column' : undefined,
-    justifyContent: props.verticalAlign ? getAlignItems() : undefined,
-    alignItems: props.verticalAlign ? getJustifyContent() : undefined,
-    width: '100%',
-  };
-
   const style: React.CSSProperties = {
     fontSize: responsiveFontSize,
     fontFamily: props.fontFamily || 'inherit',
@@ -94,16 +68,15 @@ function TextBlockComponent({ props }: TextBlockProps) {
     wordWrap: 'break-word',
     overflowWrap: 'break-word',
     maxWidth: '100%',
+    width: '100%',
   };
 
   return (
-    <div className="text-block-wrapper" style={wrapperStyle}>
-      <div
-        className="text-block"
-        style={style}
-        dangerouslySetInnerHTML={{ __html: sanitizedContent }}
-      />
-    </div>
+    <div
+      className="text-block"
+      style={style}
+      dangerouslySetInnerHTML={{ __html: sanitizedContent }}
+    />
   );
 }
 

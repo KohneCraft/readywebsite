@@ -196,7 +196,8 @@ export function ColumnRenderer({ columnId, index, isNested: _isNested = false, i
       minHeight: settings.minHeight ? `${settings.minHeight}px` : 'auto',
       maxHeight: settings.maxHeight ? `${settings.maxHeight}px` : 'none',
       maxWidth: settings.maxWidth ? `${settings.maxWidth}px` : 'none',
-      width: isWidthPercent ? undefined : `${columnWidth}px`, // px ise width kullan
+      // Mobilde width tanımlarını kaldır - CSS medya sorguları devralacak
+      width: (deviceType === 'mobile') ? undefined : (isWidthPercent ? undefined : `${columnWidth}px`),
       height: settings.height
         ? (typeof settings.height === 'number' ? `${settings.height}px` : settings.height)
         : 'auto',
@@ -206,11 +207,11 @@ export function ColumnRenderer({ columnId, index, isNested: _isNested = false, i
       alignItems: 'stretch', // Stretch yap ki bloklar text-align kullanabilsin
       // gridColumn kaldırıldı - SectionRenderer'daki gridTemplateColumns zaten genişliği kontrol ediyor
       // Eğer px kullanılıyorsa ve grid içindeyse, flex-shrink: 0 ekle ki genişlik korunsun
-      flexShrink: isWidthPercent ? undefined : 0,
+      flexShrink: (deviceType === 'mobile') ? undefined : (isWidthPercent ? undefined : 0),
       // Eğer px kullanılıyorsa, min-width de ekle ki küçülmesin
-      minWidth: isWidthPercent ? undefined : `${columnWidth}px`,
+      minWidth: (deviceType === 'mobile') ? undefined : (isWidthPercent ? undefined : `${columnWidth}px`),
     };
-  }, [settings, padding, isWidthPercent, columnWidth, effectiveBgColor]);
+  }, [settings, padding, isWidthPercent, columnWidth, effectiveBgColor, deviceType]);
 
   // Güvenlik kilidi: Maksimum iç içe kolon derinliği (hook'lardan sonra kontrol et)
   if (depth > 5) {
