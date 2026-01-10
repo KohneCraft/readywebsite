@@ -181,6 +181,7 @@ export interface BlockProps {
   buttonWidth?: 'auto' | 'full';
   textColor?: string;
   textColorDark?: string | 'auto'; // Koyu tema buton metin rengi
+  verticalAlign?: 'top' | 'center' | 'bottom'; // Dikey hizalama
   icon?: {
     enabled: boolean;
     name: string;
