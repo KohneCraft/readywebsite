@@ -138,6 +138,33 @@ export function ButtonBlockSettings({ block, activeTab, onUpdate }: ButtonBlockS
           </div>
         </div>
 
+        <div className="grid grid-cols-2 gap-2">
+          <div>
+            <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
+              Genişlik (px)
+            </label>
+            <input
+              type="number"
+              value={props.width || ''}
+              onChange={(e) => onUpdate({ width: e.target.value ? parseInt(e.target.value) : undefined })}
+              className="w-full px-3 py-2 text-sm border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-white"
+              placeholder="Otomatik"
+            />
+          </div>
+          <div>
+            <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
+              Yükseklik (px)
+            </label>
+            <input
+              type="number"
+              value={props.height || ''}
+              onChange={(e) => onUpdate({ height: e.target.value ? parseInt(e.target.value) : undefined })}
+              className="w-full px-3 py-2 text-sm border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-white"
+              placeholder="Otomatik"
+            />
+          </div>
+        </div>
+
         <div>
           <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
             Padding
