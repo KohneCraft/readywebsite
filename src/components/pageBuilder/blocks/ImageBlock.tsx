@@ -13,15 +13,36 @@ interface ImageBlockProps {
 function ImageBlockComponent({ props, priority = false }: ImageBlockProps) {
   const [loaded, setLoaded] = useState(false);
   const deviceType = useDeviceType();
-  
+
   // Responsive padding
   const getPadding = () => {
     if (!props.padding) return '0';
     const scale = deviceType === 'mobile' ? 0.5 : deviceType === 'tablet' ? 0.75 : 1;
     return `${(props.padding.top || 0) * scale}px ${(props.padding.right || 0) * scale}px ${(props.padding.bottom || 0) * scale}px ${(props.padding.left || 0) * scale}px`;
   };
-  
-  const containerStyle = {
+
+  // Yatay hizalama
+  const getJustifyContent = () => {
+    switch (props.textAlign) {
+      case 'center': return 'center';
+      case 'right': return 'flex-end';
+      default: return 'flex-start';
+    }
+  };
+
+  // Dikey hizalama
+  const getAlignItems = () => {
+    switch (props.verticalAlign) {
+      case 'center': return 'center';
+      case 'bottom': return 'flex-end';
+      default: return 'flex-start';
+    }
+  };
+
+  const containerStyle: React.CSSProperties = {
+    display: 'flex',
+    justifyContent: getJustifyContent(),
+    alignItems: getAlignItems(),
     width: '100%',
     maxWidth: props.maxWidth ? `${props.maxWidth}px` : '100%',
     margin: props.margin
@@ -29,7 +50,7 @@ function ImageBlockComponent({ props, priority = false }: ImageBlockProps) {
       : '0 auto',
     padding: getPadding(),
   };
-  
+
   const imageStyle = {
     width: '100%',
     height: props.imageHeight || 'auto',
@@ -41,14 +62,14 @@ function ImageBlockComponent({ props, priority = false }: ImageBlockProps) {
     transition: 'transform 0.3s ease, opacity 0.3s ease',
     opacity: loaded ? 1 : 0,
   };
-  
+
   const ImageWrapper = props.link ? 'a' : 'div';
   const wrapperProps = props.link ? {
     href: props.link,
     target: props.linkTarget || '_self',
     rel: props.linkTarget === '_blank' ? 'noopener noreferrer' : undefined,
   } : {};
-  
+
   if (!props.src) {
     return (
       <div className="image-block" style={containerStyle}>
@@ -58,7 +79,7 @@ function ImageBlockComponent({ props, priority = false }: ImageBlockProps) {
       </div>
     );
   }
-  
+
   // Responsive sizes için dinamik hesaplama
   const getSizes = () => {
     if (props.maxWidth) {

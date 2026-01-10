@@ -96,6 +96,50 @@ export function ButtonBlockSettings({ block, activeTab, onUpdate }: ButtonBlockS
 
         <div>
           <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
+            Yatay Hizalama
+          </label>
+          <div className="flex gap-2">
+            {['left', 'center', 'right'].map((align) => (
+              <button
+                key={align}
+                onClick={() => onUpdate({ textAlign: align as any })}
+                className={cn(
+                  'flex-1 px-3 py-2 text-xs rounded-lg transition-colors',
+                  props.textAlign === align
+                    ? 'bg-primary-600 text-white'
+                    : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
+                )}
+              >
+                {align === 'left' ? 'Sol' : align === 'center' ? 'Orta' : 'Sağ'}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <div>
+          <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
+            Dikey Hizalama
+          </label>
+          <div className="flex gap-2">
+            {['top', 'center', 'bottom'].map((align) => (
+              <button
+                key={align}
+                onClick={() => onUpdate({ verticalAlign: align as any })}
+                className={cn(
+                  'flex-1 px-3 py-2 text-xs rounded-lg transition-colors',
+                  props.verticalAlign === align
+                    ? 'bg-primary-600 text-white'
+                    : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
+                )}
+              >
+                {align === 'top' ? 'Üst' : align === 'center' ? 'Orta' : 'Alt'}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <div>
+          <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
             Padding
           </label>
           <SpacingControl

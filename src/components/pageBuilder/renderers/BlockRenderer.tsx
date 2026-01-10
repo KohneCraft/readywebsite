@@ -138,16 +138,37 @@ export function BlockRenderer({ blockId, index }: BlockRendererProps) {
     );
   }
 
+  // Custom CSS ve Data Attributes
+  const customClassName = block.props?.className || '';
+  const customId = block.props?.id || `block-${blockId}`;
+  const dataAttributes = block.props?.dataAttributes || {};
+  const customCSS = block.props?.customCSS || '';
+
+  // Data attributes'ları obje olarak hazırla
+  const dataProps: Record<string, string> = {};
+  if (dataAttributes && typeof dataAttributes === 'object') {
+    Object.entries(dataAttributes).forEach(([key, value]) => {
+      dataProps[`data-${key.replace(/^data-/, '')}`] = String(value);
+    });
+  }
+
   return (
-    <div
-      ref={blockRef}
-      id={`block-${blockId}`}
-      className={`block-renderer block-${block.type} ${animationClass}`}
-      style={animationStyle as React.CSSProperties}
-      data-block-index={index ?? 0}
-    >
-      <BlockComponent props={block.props} />
-    </div>
+    <>
+      {/* Custom CSS - scoped to this block */}
+      {customCSS && (
+        <style dangerouslySetInnerHTML={{ __html: `#${customId} { ${customCSS} }` }} />
+      )}
+      <div
+        ref={blockRef}
+        id={customId}
+        className={`block-renderer block-${block.type} ${customClassName} ${animationClass}`.trim()}
+        style={animationStyle as React.CSSProperties}
+        data-block-index={index ?? 0}
+        {...dataProps}
+      >
+        <BlockComponent props={block.props} />
+      </div>
+    </>
   );
 }
 

@@ -53,11 +53,31 @@ function ButtonBlockComponent({ props }: ButtonBlockProps) {
     minWidth: deviceType === 'mobile' ? '100%' : 'auto',
   };
 
-  const containerStyle = {
+  // Yatay hizalama: left, center, right -> flex-start, center, flex-end
+  const getJustifyContent = () => {
+    switch (props.textAlign) {
+      case 'center': return 'center';
+      case 'right': return 'flex-end';
+      default: return 'flex-start';
+    }
+  };
+
+  // Dikey hizalama: top, center, bottom -> flex-start, center, flex-end
+  const getAlignItems = () => {
+    switch (props.verticalAlign) {
+      case 'center': return 'center';
+      case 'bottom': return 'flex-end';
+      default: return 'flex-start';
+    }
+  };
+
+  const containerStyle: React.CSSProperties = {
     margin: props.margin
       ? `${props.margin.top || 0}px ${props.margin.right || 0}px ${props.margin.bottom || 0}px ${props.margin.left || 0}px`
       : '0',
-    textAlign: props.textAlign || 'left',
+    display: 'flex',
+    justifyContent: getJustifyContent(),
+    alignItems: getAlignItems(),
   };
 
   const buttonContent = (

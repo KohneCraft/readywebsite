@@ -147,17 +147,21 @@ export function Footer() {
     return themeSettings?.footer?.copyright || `© ${new Date().getFullYear()} Page Builder. Tüm hakları saklıdır.`;
   }, [themeSettings]);
 
-  const footerBgColor = useMemo(() => {
-    return themeSettings?.footer?.backgroundColor || undefined;
-  }, [themeSettings]);
-
-  const footerTextColor = useMemo(() => {
-    return themeSettings?.footer?.textColor || undefined;
-  }, [themeSettings]);
-
   // next-themes'den koyu tema durumunu al
   const { resolvedTheme } = useNextTheme();
   const isDarkMode = resolvedTheme === 'dark';
+
+  const footerBgColor = useMemo(() => {
+    const lightColor = (themeSettings?.footer as any)?.backgroundColor;
+    const darkColor = (themeSettings?.footer as any)?.backgroundColorDark;
+    return getEffectiveColor(lightColor, darkColor, isDarkMode);
+  }, [themeSettings, isDarkMode]);
+
+  const footerTextColor = useMemo(() => {
+    const lightColor = (themeSettings?.footer as any)?.textColor;
+    const darkColor = (themeSettings?.footer as any)?.textColorDark;
+    return getEffectiveColor(lightColor, darkColor, isDarkMode);
+  }, [themeSettings, isDarkMode]);
 
   // Firma adı ve slogan renkleri - tema desteği ile
   const effectiveNameColor = useMemo(() => {

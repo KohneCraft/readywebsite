@@ -13,15 +13,37 @@ function VideoBlockComponent({ props }: VideoBlockProps) {
   const [loaded, setLoaded] = useState(false);
   const [error, setError] = useState(false);
   const deviceType = useDeviceType();
-  
+
   // Responsive padding
   const getPadding = () => {
     if (!props.padding) return '0';
     const scale = deviceType === 'mobile' ? 0.5 : deviceType === 'tablet' ? 0.75 : 1;
     return `${(props.padding.top || 0) * scale}px ${(props.padding.right || 0) * scale}px ${(props.padding.bottom || 0) * scale}px ${(props.padding.left || 0) * scale}px`;
   };
-  
-  const containerStyle = {
+
+  // Yatay hizalama
+  const getJustifyContent = () => {
+    switch (props.textAlign) {
+      case 'center': return 'center';
+      case 'right': return 'flex-end';
+      default: return 'flex-start';
+    }
+  };
+
+  // Dikey hizalama
+  const getAlignItems = () => {
+    switch (props.verticalAlign) {
+      case 'center': return 'center';
+      case 'bottom': return 'flex-end';
+      default: return 'flex-start';
+    }
+  };
+
+  const containerStyle: React.CSSProperties = {
+    display: 'flex',
+    flexDirection: 'column',
+    justifyContent: getJustifyContent(),
+    alignItems: getAlignItems(),
     width: '100%',
     maxWidth: props.maxWidth ? `${props.maxWidth}px` : '100%',
     margin: props.margin
@@ -29,7 +51,7 @@ function VideoBlockComponent({ props }: VideoBlockProps) {
       : '0 auto',
     padding: getPadding(),
   };
-  
+
   const videoStyle = {
     width: '100%',
     height: 'auto',
@@ -37,22 +59,22 @@ function VideoBlockComponent({ props }: VideoBlockProps) {
     transition: 'opacity 0.3s ease',
     opacity: loaded ? 1 : 0,
   };
-  
+
   // Custom CSS cleanup
   useEffect(() => {
     if (!props.customCSS) return;
-    
+
     const styleId = `video-block-css-${props.id || 'default'}`;
     let styleEl = document.getElementById(styleId) as HTMLStyleElement;
-    
+
     if (!styleEl) {
       styleEl = document.createElement('style');
       styleEl.id = styleId;
       document.head.appendChild(styleEl);
     }
-    
+
     styleEl.textContent = sanitizeCSS(props.customCSS);
-    
+
     return () => {
       const el = document.getElementById(styleId);
       try {
@@ -64,7 +86,7 @@ function VideoBlockComponent({ props }: VideoBlockProps) {
       }
     };
   }, [props.customCSS, props.id]);
-  
+
   if (!props.src) {
     return (
       <div className="video-block" style={containerStyle}>
@@ -74,10 +96,10 @@ function VideoBlockComponent({ props }: VideoBlockProps) {
       </div>
     );
   }
-  
+
   return (
     <div className="video-block" style={containerStyle}>
-      <div 
+      <div
         className="video-wrapper relative"
         style={{
           borderRadius: props.borderRadius ? `${props.borderRadius}px` : '0',

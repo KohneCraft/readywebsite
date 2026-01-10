@@ -37,13 +37,19 @@ function HeadingBlockComponent({ props }: HeadingBlockProps) {
     fontFamily: props.fontFamily || 'inherit',
     fontWeight: props.fontWeight || 700,
     color: effectiveColor || '#1a1a1a',
+    backgroundColor: props.backgroundColor || 'transparent',
+    backdropFilter: props.backgroundBlur ? `blur(${props.backgroundBlur}px)` : undefined,
+    WebkitBackdropFilter: props.backgroundBlur ? `blur(${props.backgroundBlur}px)` : undefined,
     textAlign: (props.textAlign as React.CSSProperties['textAlign']) || 'left',
     lineHeight: props.lineHeight || 1.2,
     textTransform: props.textTransform || 'none',
     margin: props.margin
       ? `${props.margin.top || 0}px ${props.margin.right || 0}px ${props.margin.bottom || 0}px ${props.margin.left || 0}px`
       : '0',
-    padding: getPadding(),
+    padding: props.backgroundPadding
+      ? `${props.backgroundPadding}px`
+      : getPadding(),
+    borderRadius: props.borderRadius ? `${props.borderRadius}px` : '0',
     wordWrap: 'break-word',
     overflowWrap: 'break-word',
     maxWidth: '100%',

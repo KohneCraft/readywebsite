@@ -47,12 +47,16 @@ function TextBlockComponent({ props }: TextBlockProps) {
     fontStyle: props.fontStyle || 'normal',
     color: colors.text || '#333',
     backgroundColor: colors.bg || 'transparent',
+    backdropFilter: props.backgroundBlur ? `blur(${props.backgroundBlur}px)` : undefined,
+    WebkitBackdropFilter: props.backgroundBlur ? `blur(${props.backgroundBlur}px)` : undefined,
     textAlign: (props.textAlign as React.CSSProperties['textAlign']) || 'left',
     lineHeight: props.lineHeight || 1.6,
     letterSpacing: `${props.letterSpacing || 0}px`,
     textDecoration: props.textDecoration || 'none',
     textTransform: props.textTransform || 'none',
-    padding: getPadding(),
+    padding: props.backgroundPadding
+      ? `${props.backgroundPadding}px`
+      : getPadding(),
     margin: props.margin
       ? `${props.margin.top || 0}px ${props.margin.right || 0}px ${props.margin.bottom || 0}px ${props.margin.left || 0}px`
       : '0',

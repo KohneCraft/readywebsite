@@ -86,13 +86,21 @@ export function Header() {
     return themeSettings?.header?.logo || '';
   }, [siteSettings, themeSettings]);
 
+  // next-themes'den koyu tema durumunu al
+  const { resolvedTheme } = useNextTheme();
+  const isDarkMode = resolvedTheme === 'dark';
+
   const headerBgColor = useMemo(() => {
-    return themeSettings?.header?.backgroundColor || undefined;
-  }, [themeSettings]);
+    const lightColor = (themeSettings?.header as any)?.backgroundColor;
+    const darkColor = (themeSettings?.header as any)?.backgroundColorDark;
+    return getEffectiveColor(lightColor, darkColor, isDarkMode);
+  }, [themeSettings, isDarkMode]);
 
   const headerTextColor = useMemo(() => {
-    return themeSettings?.header?.textColor || undefined;
-  }, [themeSettings]);
+    const lightColor = (themeSettings?.header as any)?.textColor;
+    const darkColor = (themeSettings?.header as any)?.textColorDark;
+    return getEffectiveColor(lightColor, darkColor, isDarkMode);
+  }, [themeSettings, isDarkMode]);
 
   const isSticky = useMemo(() => {
     return themeSettings?.header?.sticky !== false; // Default true
@@ -101,10 +109,6 @@ export function Header() {
   const isTransparent = useMemo(() => {
     return themeSettings?.header?.transparent === true;
   }, [themeSettings]);
-
-  // next-themes'den koyu tema durumunu al
-  const { resolvedTheme } = useNextTheme();
-  const isDarkMode = resolvedTheme === 'dark';
 
   // Firma adı ve slogan renkleri - tema desteği ile
   const effectiveNameColor = useMemo(() => {
