@@ -105,33 +105,49 @@ export function SectionRenderer({ sectionId }: SectionRendererProps) {
     darkColor: settings.backgroundColorDark || 'auto',
   });
 
-  const sectionStyle: React.CSSProperties = useMemo(() => ({
-    backgroundColor: effectiveBgColor,
-    backgroundImage: settings.backgroundImage ? `url(${settings.backgroundImage})` : 'none',
-    backgroundSize: settings.backgroundSize || 'cover',
-    backgroundPosition: settings.backgroundPosition || 'center',
-    backgroundRepeat: settings.backgroundRepeat || 'no-repeat',
-    backgroundAttachment: settings.backgroundAttachment || 'scroll',
-    padding: settings.padding
-      ? `${settings.padding.top || 0}px ${settings.padding.right || 0}px ${settings.padding.bottom || 0}px ${settings.padding.left || 0}px`
-      : '0',
-    margin: settings.margin
-      ? `${settings.margin.top || 0}px ${settings.margin.right || 0}px ${settings.margin.bottom || 0}px ${settings.margin.left || 0}px`
-      : '0',
-    minHeight: settings.minHeight ? `${settings.minHeight}px` : (settings.maxHeight !== undefined && settings.maxHeight !== null ? `${settings.maxHeight}px` : 'auto'),
-    maxHeight: settings.maxHeight !== undefined && settings.maxHeight !== null ? `${settings.maxHeight}px` : undefined,
-    height: settings.maxHeight !== undefined && settings.maxHeight !== null ? `${settings.maxHeight}px` : undefined,
-    borderTop: settings.borderTop?.width
-      ? `${settings.borderTop.width}px ${settings.borderTop.style} ${settings.borderTop.color}`
-      : 'none',
-    borderBottom: settings.borderBottom?.width
-      ? `${settings.borderBottom.width}px ${settings.borderBottom.style} ${settings.borderBottom.color}`
-      : 'none',
-    borderRadius: settings.borderRadius ? `${settings.borderRadius}px` : '0',
-    boxShadow: settings.boxShadow || 'none',
-    position: 'relative',
-    overflow: 'hidden',
-  }), [settings, effectiveBgColor]);
+  // Mobil cihazlarda sabit yükseklik sorunlarını önle
+  const isMobileDevice = deviceType === 'mobile';
+
+  const sectionStyle: React.CSSProperties = useMemo(() => {
+    // Mobil cihazlarda sabit yükseklik değerlerini kaldır (kolonlar alt alta yığılınca sığması için)
+    const hasFixedHeight = settings.maxHeight !== undefined && settings.maxHeight !== null;
+
+    return {
+      backgroundColor: effectiveBgColor,
+      backgroundImage: settings.backgroundImage ? `url(${settings.backgroundImage})` : 'none',
+      backgroundSize: settings.backgroundSize || 'cover',
+      backgroundPosition: settings.backgroundPosition || 'center',
+      backgroundRepeat: settings.backgroundRepeat || 'no-repeat',
+      backgroundAttachment: settings.backgroundAttachment || 'scroll',
+      padding: settings.padding
+        ? `${settings.padding.top || 0}px ${settings.padding.right || 0}px ${settings.padding.bottom || 0}px ${settings.padding.left || 0}px`
+        : '0',
+      margin: settings.margin
+        ? `${settings.margin.top || 0}px ${settings.margin.right || 0}px ${settings.margin.bottom || 0}px ${settings.margin.left || 0}px`
+        : '0',
+      // Mobil cihazlarda sabit yükseklik kullanma - içerik kadar genişlesin
+      minHeight: isMobileDevice
+        ? 'auto'
+        : (settings.minHeight ? `${settings.minHeight}px` : (hasFixedHeight ? `${settings.maxHeight}px` : 'auto')),
+      maxHeight: isMobileDevice
+        ? 'none'
+        : (hasFixedHeight ? `${settings.maxHeight}px` : undefined),
+      height: isMobileDevice
+        ? 'auto'
+        : (hasFixedHeight ? `${settings.maxHeight}px` : undefined),
+      borderTop: settings.borderTop?.width
+        ? `${settings.borderTop.width}px ${settings.borderTop.style} ${settings.borderTop.color}`
+        : 'none',
+      borderBottom: settings.borderBottom?.width
+        ? `${settings.borderBottom.width}px ${settings.borderBottom.style} ${settings.borderBottom.color}`
+        : 'none',
+      borderRadius: settings.borderRadius ? `${settings.borderRadius}px` : '0',
+      boxShadow: settings.boxShadow || 'none',
+      position: 'relative',
+      // Mobil cihazlarda overflow visible olsun - içerik taşmasın
+      overflow: isMobileDevice ? 'visible' : 'hidden',
+    };
+  }, [settings, effectiveBgColor, isMobileDevice]);
 
   // Animation class ve style - useMemo ile optimize et
   const animationClass = useMemo(() =>
