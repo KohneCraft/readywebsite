@@ -157,6 +157,9 @@ export function ColumnRenderer({ columnId, index, isNested: _isNested = false, i
     });
 
     // Column style - useMemo ile optimize et
+    // Mobil/tablet cihazlarda kolonlar tam genişlik almalı
+    const isMobileOrTablet = deviceType === 'mobile' || deviceType === 'tablet';
+
     const columnStyle: React.CSSProperties = useMemo(() => {
         const getVerticalAlign = (align?: string): string => {
             if (!align) return 'flex-start';
@@ -167,6 +170,9 @@ export function ColumnRenderer({ columnId, index, isNested: _isNested = false, i
             };
             return mapping[align] || 'flex-start';
         };
+
+        // Mobil/tablet'te sabit genişlik kullanma - kolonlar grid/flex ile kontrol edilecek
+        const shouldUseFixedWidth = !isMobileOrTablet && !isWidthPercent;
 
         return {
             backgroundColor: effectiveBgColor,
@@ -185,8 +191,10 @@ export function ColumnRenderer({ columnId, index, isNested: _isNested = false, i
             boxShadow: settings.boxShadow || 'none',
             minHeight: settings.minHeight ? `${settings.minHeight}px` : 'auto',
             maxHeight: settings.maxHeight ? `${settings.maxHeight}px` : 'none',
-            maxWidth: settings.maxWidth ? `${settings.maxWidth}px` : 'none',
-            width: isWidthPercent ? undefined : `${columnWidth}px`,
+            // Mobil/tablet'te maxWidth sınırlaması kaldır
+            maxWidth: isMobileOrTablet ? '100%' : (settings.maxWidth ? `${settings.maxWidth}px` : 'none'),
+            // Mobil/tablet'te sabit width kullanma, tam genişlik al
+            width: isMobileOrTablet ? '100%' : (shouldUseFixedWidth ? `${columnWidth}px` : undefined),
             height: settings.height
                 ? (typeof settings.height === 'number' ? `${settings.height}px` : settings.height)
                 : 'auto',
@@ -194,10 +202,12 @@ export function ColumnRenderer({ columnId, index, isNested: _isNested = false, i
             flexDirection: 'column',
             justifyContent: getVerticalAlign(settings.verticalAlign),
             alignItems: 'stretch',
-            flexShrink: isWidthPercent ? undefined : 0,
-            minWidth: isWidthPercent ? undefined : `${columnWidth}px`,
+            // Mobil/tablet'te flex-shrink aktif olsun
+            flexShrink: isMobileOrTablet ? 1 : (shouldUseFixedWidth ? 0 : undefined),
+            // Mobil/tablet'te minWidth kullanma
+            minWidth: isMobileOrTablet ? undefined : (shouldUseFixedWidth ? `${columnWidth}px` : undefined),
         };
-    }, [settings, padding, isWidthPercent, columnWidth, effectiveBgColor]);
+    }, [settings, padding, isWidthPercent, columnWidth, effectiveBgColor, isMobileOrTablet]);
 
     // Güvenlik kilidi: Maksimum iç içe kolon derinliği
     if (depth > 5) {
