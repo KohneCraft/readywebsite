@@ -214,21 +214,21 @@ export function Header() {
         }}
       >
         <div className="container">
-          <div className="flex items-center justify-between h-16 xl:h-20 gap-4">
+          <div className="flex items-center justify-between h-16 lg:h-20 gap-4">
             {/* Logo */}
-            <Link href={getLocalizedHref('/')} prefetch={false} className="flex items-center gap-2 flex-shrink-0 min-w-0 max-w-[280px] xl:max-w-none">
+            <Link href={getLocalizedHref('/')} prefetch={false} className="flex items-center gap-2 flex-shrink-0 min-w-0 max-w-[280px] lg:max-w-none">
               {logoUrl ? (
                 <Image
                   src={logoUrl}
                   alt={logoText}
                   width={160}
                   height={40}
-                  className="h-8 xl:h-10 w-auto flex-shrink-0"
+                  className="h-8 lg:h-10 w-auto flex-shrink-0"
                   unoptimized
                 />
               ) : (
-                <div className="w-8 h-8 xl:w-10 xl:h-10 bg-primary-600 rounded-lg flex items-center justify-center flex-shrink-0">
-                  <span className="text-white font-bold text-lg xl:text-xl">PB</span>
+                <div className="w-8 h-8 lg:w-10 lg:h-10 bg-primary-600 rounded-lg flex items-center justify-center flex-shrink-0">
+                  <span className="text-white font-bold text-lg lg:text-xl">PB</span>
                 </div>
               )}
               <div className="flex flex-col min-w-0">
@@ -243,7 +243,7 @@ export function Header() {
                 </span>
                 {siteSettings?.siteSlogan?.[locale as keyof typeof siteSettings.siteSlogan] && (
                   <span
-                    className="hidden sm:block text-xs xl:text-sm truncate"
+                    className="hidden sm:block text-xs lg:text-sm truncate"
                     style={{
                       color: effectiveSloganColor || undefined,
                       fontSize: siteSettings?.sloganStyle?.fontSize ? `${siteSettings.sloganStyle.fontSize}px` : undefined,
@@ -255,8 +255,8 @@ export function Header() {
               </div>
             </Link>
 
-            {/* Desktop Navigation - xl (1280px) ve üzerinde görünür */}
-            <nav className="hidden xl:flex items-center gap-4 2xl:gap-6 flex-shrink-0">
+            {/* Desktop Navigation - lg (1024px) ve üzerinde görünür */}
+            <nav className="hidden lg:flex items-center gap-4 2xl:gap-6 flex-shrink-0">
               {navItems.map((item) => {
                 const hasChildren = item.children && item.children.length > 0;
                 const isDropdownOpen = openDropdown === item.href;
@@ -361,7 +361,7 @@ export function Header() {
 
             {/* Right side */}
             <div className="flex items-center gap-2">
-              <div className="hidden xl:flex items-center gap-2">
+              <div className="hidden lg:flex items-center gap-2">
                 <LanguageSwitcher />
                 <ThemeToggle />
               </div>
@@ -380,7 +380,7 @@ export function Header() {
               {/* Mobile menu button - xl altında görünür */}
               <button
                 onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-                className="xl:hidden p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+                className="lg:hidden p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
                 aria-label={isMobileMenuOpen ? 'Close menu' : 'Open menu'}
                 aria-expanded={isMobileMenuOpen}
               >
@@ -404,7 +404,7 @@ export function Header() {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="fixed inset-0 bg-black/50 z-40 xl:hidden"
+              className="fixed inset-0 bg-black/50 z-40 lg:hidden"
               onClick={() => setIsMobileMenuOpen(false)}
             />
 
@@ -414,7 +414,7 @@ export function Header() {
               animate={{ x: 0 }}
               exit={{ x: '100%' }}
               transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-              className="fixed top-0 right-0 bottom-0 w-80 max-w-[90vw] bg-white dark:bg-gray-900 z-50 xl:hidden overflow-y-auto"
+              className="fixed top-0 right-0 bottom-0 w-80 max-w-[90vw] bg-white dark:bg-gray-900 z-50 lg:hidden overflow-y-auto"
             >
               <div className="p-6">
                 {/* Close button */}
