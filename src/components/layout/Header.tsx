@@ -20,13 +20,10 @@ import { getSiteSettingsClient } from '@/lib/firebase/firestore';
 import { getEffectiveColor } from '@/lib/themeColors';
 import { useTheme as useNextTheme } from 'next-themes';
 import { logger } from '@/lib/logger';
+import { ChevronDown } from 'lucide-react';
 import type { Locale } from '@/i18n';
 import type { SiteSettings } from '@/types/settings';
-
-interface NavItem {
-  href: string;
-  label: string;
-}
+import type { NavItem } from '@/types/theme';
 
 export function Header() {
   const t = useTranslations('nav');
@@ -36,6 +33,8 @@ export function Header() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [siteSettings, setSiteSettings] = useState<SiteSettings | null>(null);
+  const [openDropdown, setOpenDropdown] = useState<string | null>(null); // Açık dropdown menu
+  const [mobileExpandedItems, setMobileExpandedItems] = useState<string[]>([]); // Mobilde açık alt menüler
 
   // Site settings'i yükle
   useEffect(() => {
@@ -108,6 +107,11 @@ export function Header() {
 
   const isTransparent = useMemo(() => {
     return themeSettings?.header?.transparent === true;
+  }, [themeSettings]);
+
+  // Hover ile menü açma ayarı
+  const hoverOpenMenu = useMemo(() => {
+    return themeSettings?.header?.hoverOpenMenu !== false; // Default true
   }, [themeSettings]);
 
   // Firma adı ve slogan renkleri - tema desteği ile
@@ -253,39 +257,106 @@ export function Header() {
 
             {/* Desktop Navigation - xl (1280px) ve üzerinde görünür */}
             <nav className="hidden xl:flex items-center gap-4 2xl:gap-6 flex-shrink-0">
-              {navItems.map((item) => (
-                <Link
-                  key={item.href}
-                  href={getLocalizedHref(item.href)}
-                  prefetch={false}
-                  className={cn(
-                    'relative font-medium transition-colors py-2 whitespace-nowrap text-sm 2xl:text-base',
-                    isActive(item.href)
-                      ? headerTextColor
-                        ? ''
-                        : 'text-primary-600 dark:text-primary-400'
-                      : headerTextColor
-                        ? ''
-                        : 'text-gray-700 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400'
-                  )}
-                  style={{
-                    color: headerTextColor
-                      ? (isActive(item.href) ? headerTextColor : `${headerTextColor}DD`)
-                      : undefined,
-                  }}
-                >
-                  {item.label}
-                  {isActive(item.href) && (
-                    <motion.div
-                      layoutId="activeNav"
-                      className="absolute -bottom-1 left-0 right-0 h-0.5"
+              {navItems.map((item) => {
+                const hasChildren = item.children && item.children.length > 0;
+                const isDropdownOpen = openDropdown === item.href;
+
+                // Alt linki olmayan normal linkler
+                if (!hasChildren) {
+                  return (
+                    <Link
+                      key={item.href}
+                      href={getLocalizedHref(item.href)}
+                      prefetch={false}
+                      className={cn(
+                        'relative font-medium transition-colors py-2 whitespace-nowrap text-sm 2xl:text-base',
+                        isActive(item.href)
+                          ? headerTextColor
+                            ? ''
+                            : 'text-primary-600 dark:text-primary-400'
+                          : headerTextColor
+                            ? ''
+                            : 'text-gray-700 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400'
+                      )}
                       style={{
-                        backgroundColor: headerTextColor || undefined,
+                        color: headerTextColor
+                          ? (isActive(item.href) ? headerTextColor : `${headerTextColor}DD`)
+                          : undefined,
                       }}
-                    />
-                  )}
-                </Link>
-              ))}
+                    >
+                      {item.label}
+                      {isActive(item.href) && (
+                        <motion.div
+                          layoutId="activeNav"
+                          className="absolute -bottom-1 left-0 right-0 h-0.5"
+                          style={{
+                            backgroundColor: headerTextColor || undefined,
+                          }}
+                        />
+                      )}
+                    </Link>
+                  );
+                }
+
+                // Dropdown menü - alt linki olan
+                return (
+                  <div
+                    key={item.href}
+                    className="relative"
+                    onMouseEnter={() => hoverOpenMenu && setOpenDropdown(item.href)}
+                    onMouseLeave={() => hoverOpenMenu && setOpenDropdown(null)}
+                  >
+                    <button
+                      onClick={() => !hoverOpenMenu && setOpenDropdown(isDropdownOpen ? null : item.href)}
+                      className={cn(
+                        'flex items-center gap-1 relative font-medium transition-colors py-2 whitespace-nowrap text-sm 2xl:text-base',
+                        headerTextColor
+                          ? ''
+                          : 'text-gray-700 dark:text-gray-300 hover:text-primary-600 dark:hover:text-primary-400'
+                      )}
+                      style={{
+                        color: headerTextColor ? `${headerTextColor}DD` : undefined,
+                      }}
+                    >
+                      {item.label}
+                      <ChevronDown className={cn(
+                        'w-4 h-4 transition-transform',
+                        isDropdownOpen && 'rotate-180'
+                      )} />
+                    </button>
+
+                    {/* Dropdown Panel */}
+                    <AnimatePresence>
+                      {isDropdownOpen && (
+                        <motion.div
+                          initial={{ opacity: 0, y: -10 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          exit={{ opacity: 0, y: -10 }}
+                          transition={{ duration: 0.15 }}
+                          className="absolute top-full left-0 mt-2 py-2 min-w-[180px] bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 z-50"
+                        >
+                          {item.children?.map((child) => (
+                            <Link
+                              key={child.href}
+                              href={getLocalizedHref(child.href)}
+                              prefetch={false}
+                              onClick={() => setOpenDropdown(null)}
+                              className={cn(
+                                'block px-4 py-2 text-sm transition-colors',
+                                isActive(child.href)
+                                  ? 'bg-primary-50 dark:bg-primary-900/30 text-primary-600 dark:text-primary-400'
+                                  : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
+                              )}
+                            >
+                              {child.label}
+                            </Link>
+                          ))}
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+                  </div>
+                );
+              })}
             </nav>
 
             {/* Right side */}
@@ -365,21 +436,83 @@ export function Header() {
 
                 {/* Navigation */}
                 <nav className="flex flex-col gap-2">
-                  {navItems.map((item) => (
-                    <Link
-                      key={item.href}
-                      href={getLocalizedHref(item.href)}
-                      prefetch={false}
-                      className={cn(
-                        'px-4 py-3 rounded-lg font-medium transition-colors',
-                        isActive(item.href)
-                          ? 'bg-primary-50 dark:bg-primary-900/30 text-primary-600 dark:text-primary-400'
-                          : 'hover:bg-gray-100 dark:hover:bg-gray-800'
-                      )}
-                    >
-                      {item.label}
-                    </Link>
-                  ))}
+                  {navItems.map((item) => {
+                    const hasChildren = item.children && item.children.length > 0;
+                    const isExpanded = mobileExpandedItems.includes(item.href);
+
+                    // Alt linki olmayan normal linkler
+                    if (!hasChildren) {
+                      return (
+                        <Link
+                          key={item.href}
+                          href={getLocalizedHref(item.href)}
+                          prefetch={false}
+                          className={cn(
+                            'px-4 py-3 rounded-lg font-medium transition-colors',
+                            isActive(item.href)
+                              ? 'bg-primary-50 dark:bg-primary-900/30 text-primary-600 dark:text-primary-400'
+                              : 'hover:bg-gray-100 dark:hover:bg-gray-800'
+                          )}
+                        >
+                          {item.label}
+                        </Link>
+                      );
+                    }
+
+                    // Accordion menü - alt linki olan
+                    return (
+                      <div key={item.href} className="rounded-lg overflow-hidden">
+                        <button
+                          onClick={() => setMobileExpandedItems(prev =>
+                            prev.includes(item.href)
+                              ? prev.filter(h => h !== item.href)
+                              : [...prev, item.href]
+                          )}
+                          className={cn(
+                            'w-full flex items-center justify-between px-4 py-3 font-medium transition-colors',
+                            isExpanded
+                              ? 'bg-gray-100 dark:bg-gray-800'
+                              : 'hover:bg-gray-100 dark:hover:bg-gray-800'
+                          )}
+                        >
+                          <span>{item.label}</span>
+                          <ChevronDown className={cn(
+                            'w-4 h-4 transition-transform',
+                            isExpanded && 'rotate-180'
+                          )} />
+                        </button>
+
+                        {/* Alt linkler */}
+                        <AnimatePresence>
+                          {isExpanded && (
+                            <motion.div
+                              initial={{ height: 0, opacity: 0 }}
+                              animate={{ height: 'auto', opacity: 1 }}
+                              exit={{ height: 0, opacity: 0 }}
+                              transition={{ duration: 0.2 }}
+                              className="overflow-hidden bg-gray-50 dark:bg-gray-800/50"
+                            >
+                              {item.children?.map((child) => (
+                                <Link
+                                  key={child.href}
+                                  href={getLocalizedHref(child.href)}
+                                  prefetch={false}
+                                  className={cn(
+                                    'block px-6 py-2.5 text-sm transition-colors border-l-2 ml-4',
+                                    isActive(child.href)
+                                      ? 'border-primary-500 text-primary-600 dark:text-primary-400 bg-primary-50 dark:bg-primary-900/20'
+                                      : 'border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200'
+                                  )}
+                                >
+                                  {child.label}
+                                </Link>
+                              ))}
+                            </motion.div>
+                          )}
+                        </AnimatePresence>
+                      </div>
+                    );
+                  })}
                 </nav>
 
                 {/* Divider */}

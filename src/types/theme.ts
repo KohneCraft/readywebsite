@@ -35,6 +35,15 @@ export interface ThemePageConfig {
 }
 
 /**
+ * Navigation item tipi (dropdown desteği ile)
+ */
+export interface NavItem {
+  href: string;
+  label: string;
+  children?: NavItem[]; // Alt linkler (dropdown menü için)
+}
+
+/**
  * Tema ayarları
  */
 export interface ThemeSettings {
@@ -45,11 +54,12 @@ export interface ThemeSettings {
   header?: {
     logo?: string;
     logoText?: string;
-    navItems?: Array<{ href: string; label: string }>;
+    navItems?: NavItem[];
     backgroundColor?: string;
     textColor?: string;
     sticky?: boolean;
     transparent?: boolean;
+    hoverOpenMenu?: boolean; // Hover ile dropdown menü açılsın mı
   };
   footer?: {
     logo?: string;
