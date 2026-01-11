@@ -130,6 +130,11 @@ export function ColumnRenderer({ columnId, index, isNested: _isNested = false, i
         if (isFlexLayout) return '1fr';
         if (nestedColumns.length === 0) return '1fr';
 
+        // Mobil cihazlarda nested kolonlar da tek sütun olsun (alt alta yığılsın)
+        if (deviceType === 'mobile') return '1fr';
+        // Tablet'te 2'den fazla nested kolon varsa 2 sütun yap
+        if (deviceType === 'tablet' && nestedColumns.length > 2) return 'repeat(2, 1fr)';
+
         const hasPxColumns = nestedColumns.some(col => {
             const width = col.width || (100 / nestedColumns.length);
             return width > 100 || width < 0;
@@ -148,7 +153,7 @@ export function ColumnRenderer({ columnId, index, isNested: _isNested = false, i
             const width = col.width || (100 / nestedColumns.length);
             return `${width}fr`;
         }).join(' ');
-    }, [nestedColumns, isFlexLayout]);
+    }, [nestedColumns, isFlexLayout, deviceType]);
 
     // Koyu tema arka plan rengi
     const effectiveBgColor = useThemeColor({
@@ -189,8 +194,9 @@ export function ColumnRenderer({ columnId, index, isNested: _isNested = false, i
                 ? `${settings.border.width}px ${settings.border.style} ${settings.border.color}`
                 : 'none',
             boxShadow: settings.boxShadow || 'none',
-            minHeight: settings.minHeight ? `${settings.minHeight}px` : 'auto',
-            maxHeight: settings.maxHeight ? `${settings.maxHeight}px` : 'none',
+            // Mobil/tablet'te minHeight ve maxHeight sınırlamalarını kaldır
+            minHeight: isMobileOrTablet ? 'auto' : (settings.minHeight ? `${settings.minHeight}px` : 'auto'),
+            maxHeight: isMobileOrTablet ? 'none' : (settings.maxHeight ? `${settings.maxHeight}px` : 'none'),
             // Mobil/tablet'te maxWidth sınırlaması kaldır
             maxWidth: isMobileOrTablet ? '100%' : (settings.maxWidth ? `${settings.maxWidth}px` : 'none'),
             // Mobil/tablet'te sabit width kullanma, tam genişlik al
