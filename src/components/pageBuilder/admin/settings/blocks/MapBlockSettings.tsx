@@ -2,6 +2,7 @@
 
 import { SpacingControl } from '../../controls/SpacingControl';
 import { cn } from '@/lib/utils';
+import { getGroupedCSSClasses, READY_CSS_CLASSES, READY_IDS } from '@/lib/readyCSSClasses';
 import type { Block } from '@/types/pageBuilder';
 
 interface MapBlockSettingsProps {
@@ -171,26 +172,78 @@ export function MapBlockSettings({ block, activeTab, onUpdate }: MapBlockSetting
           <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
             CSS Sınıfı
           </label>
-          <input
-            type="text"
-            value={props.className || ''}
-            onChange={(e) => onUpdate({ className: e.target.value })}
-            className="w-full px-3 py-2 text-sm border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-white"
-            placeholder="custom-class"
-          />
+          <select
+            value={READY_CSS_CLASSES.some(c => c.name === props.className) ? props.className : '__custom__'}
+            onChange={(e) => {
+              if (e.target.value === '__custom__') {
+                // Özel sınıf seçildi
+              } else if (e.target.value === '') {
+                onUpdate({ className: '' });
+              } else {
+                onUpdate({ className: e.target.value });
+              }
+            }}
+            className="w-full px-3 py-2 text-sm border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-white mb-2"
+          >
+            <option value="">Sınıf Seç...</option>
+            {Object.entries(getGroupedCSSClasses()).map(([category, classes]) => (
+              <optgroup key={category} label={category}>
+                {classes.map((cssClass) => (
+                  <option key={cssClass.name} value={cssClass.name}>
+                    {cssClass.label}
+                  </option>
+                ))}
+              </optgroup>
+            ))}
+            <option value="__custom__">✏️ Özel Sınıf</option>
+          </select>
+
+          {(!READY_CSS_CLASSES.some(c => c.name === props.className) || !props.className) && (
+            <input
+              type="text"
+              value={props.className || ''}
+              onChange={(e) => onUpdate({ className: e.target.value })}
+              className="w-full px-3 py-2 text-sm border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-white"
+              placeholder="Özel sınıf adı"
+            />
+          )}
         </div>
 
         <div>
           <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
             ID
           </label>
-          <input
-            type="text"
-            value={props.id || ''}
-            onChange={(e) => onUpdate({ id: e.target.value })}
-            className="w-full px-3 py-2 text-sm border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-white"
-            placeholder="custom-id"
-          />
+          <select
+            value={READY_IDS.some(r => r.id === props.id) ? props.id : '__custom__'}
+            onChange={(e) => {
+              if (e.target.value === '__custom__') {
+                // Özel ID seçildi
+              } else if (e.target.value === '') {
+                onUpdate({ id: '' });
+              } else {
+                onUpdate({ id: e.target.value });
+              }
+            }}
+            className="w-full px-3 py-2 text-sm border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-white mb-2"
+          >
+            <option value="">ID Seç...</option>
+            {READY_IDS.map((readyId) => (
+              <option key={readyId.id} value={readyId.id}>
+                {readyId.label}
+              </option>
+            ))}
+            <option value="__custom__">✏️ Özel ID</option>
+          </select>
+
+          {(!READY_IDS.some(r => r.id === props.id) || !props.id) && (
+            <input
+              type="text"
+              value={props.id || ''}
+              onChange={(e) => onUpdate({ id: e.target.value })}
+              className="w-full px-3 py-2 text-sm border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-white"
+              placeholder="Özel ID (anchor link için)"
+            />
+          )}
         </div>
       </div>
     );
