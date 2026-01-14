@@ -68,3 +68,36 @@ export function getCSSCategories(): string[] {
 export function findCSSClass(name: string): ReadyCSSClass | undefined {
     return READY_CSS_CLASSES.find(c => c.name === name);
 }
+
+// ============================================
+// Hazır ID Seçenekleri
+// Anchor linkler ve bölüm tanımlamaları için
+// ============================================
+
+export interface ReadyID {
+    id: string;
+    label: string;
+    description: string;
+}
+
+export const READY_IDS: ReadyID[] = [
+    // Bölümler
+    { id: 'hero', label: 'Hero Bölümü', description: 'Ana sayfa hero alanı' },
+    { id: 'hakkimizda', label: 'Hakkımızda', description: 'Hakkımızda bölümü' },
+    { id: 'hizmetler', label: 'Hizmetler', description: 'Hizmetler bölümü' },
+    { id: 'projeler', label: 'Projeler', description: 'Projeler/Portfolio bölümü' },
+    { id: 'referanslar', label: 'Referanslar', description: 'Müşteri referansları' },
+    { id: 'iletisim', label: 'İletişim', description: 'İletişim bölümü' },
+
+    // Özellikler
+    { id: 'ozellikler', label: 'Özellikler', description: 'Özellikler listesi' },
+    { id: 'fiyatlandirma', label: 'Fiyatlandırma', description: 'Fiyat tablosu' },
+    { id: 'sss', label: 'SSS', description: 'Sıkça Sorulan Sorular' },
+    { id: 'blog', label: 'Blog', description: 'Blog yazıları' },
+    { id: 'galeri', label: 'Galeri', description: 'Fotoğraf galerisi' },
+    { id: 'ekip', label: 'Ekip', description: 'Takım/Ekip tanıtımı' },
+
+    // CTA
+    { id: 'cta-ana', label: 'Ana CTA', description: 'Ana aksiyon butonu' },
+    { id: 'cta-alt', label: 'Alt CTA', description: 'İkincil aksiyon butonu' },
+];
