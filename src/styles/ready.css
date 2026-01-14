@@ -1,0 +1,229 @@
+/* ============================================
+   Page Builder - Ready CSS Sınıfları
+   Blok Ayarları > Ayarlar > CSS Sınıfı 
+   alanından dropdown ile seçilebilir
+   ============================================ */
+
+/* ==========================
+   Kenarlık ve Çerçeve Stilleri
+   ========================== */
+
+/* Altın kenarlık ve gölge */
+.altin-cerceve {
+    border: 3px solid rgb(var(--color-secondary)) !important;
+    border-radius: 12px !important;
+    box-shadow: 0 8px 32px rgba(245, 158, 11, 0.3) !important;
+    padding: 20px !important;
+}
+
+/* Mavi kenarlık */
+.mavi-cerceve {
+    border: 2px solid rgb(var(--color-primary)) !important;
+    border-radius: 8px !important;
+    padding: 16px !important;
+}
+
+/* Yumuşak gölge */
+.yumusak-golge {
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1) !important;
+    border-radius: 12px !important;
+}
+
+/* Keskin gölge */
+.keskin-golge {
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.2) !important;
+    border-radius: 8px !important;
+}
+
+/* ==========================
+   Cam Efektleri (Glassmorphism)
+   ========================== */
+
+/* Cam efekti - açık */
+.cam-efekti {
+    background: rgba(255, 255, 255, 0.15) !important;
+    backdrop-filter: blur(10px) !important;
+    -webkit-backdrop-filter: blur(10px) !important;
+    border: 1px solid rgba(255, 255, 255, 0.2) !important;
+    border-radius: 16px !important;
+}
+
+.dark .cam-efekti {
+    background: rgba(0, 0, 0, 0.3) !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+}
+
+/* Cam efekti - koyu */
+.cam-efekti-koyu {
+    background: rgba(0, 0, 0, 0.4) !important;
+    backdrop-filter: blur(12px) !important;
+    -webkit-backdrop-filter: blur(12px) !important;
+    border: 1px solid rgba(0, 0, 0, 0.3) !important;
+    border-radius: 16px !important;
+}
+
+/* ==========================
+   Metin Stilleri
+   ========================== */
+
+/* Gradient metin */
+.gradient-metin .text-block,
+.gradient-metin .heading-block {
+    background: linear-gradient(135deg, rgb(var(--color-primary)), rgb(var(--color-secondary))) !important;
+    -webkit-background-clip: text !important;
+    background-clip: text !important;
+    -webkit-text-fill-color: transparent !important;
+}
+
+/* Gölgeli metin */
+.golgeli-metin .text-block,
+.golgeli-metin .heading-block {
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3) !important;
+}
+
+/* Parlak metin */
+.parlak-metin .text-block,
+.parlak-metin .heading-block {
+    text-shadow: 0 0 10px rgba(255, 255, 255, 0.5), 0 0 20px rgba(255, 255, 255, 0.3) !important;
+}
+
+/* Vurgulu metin (alt çizgi highlight) */
+.vurgulu-metin .text-block {
+    position: relative;
+    display: inline-block;
+}
+
+.vurgulu-metin .text-block::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 30%;
+    background: linear-gradient(transparent, rgba(var(--color-secondary), 0.3));
+    z-index: -1;
+}
+
+/* ==========================
+   Animasyon Stilleri
+   ========================== */
+
+/* Hover'da büyüme */
+.hover-buyut {
+    transition: transform 0.3s ease, box-shadow 0.3s ease !important;
+}
+
+.hover-buyut:hover {
+    transform: scale(1.05) !important;
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15) !important;
+}
+
+/* Hover'da yukarı kaldırma */
+.hover-kaldir {
+    transition: transform 0.3s ease, box-shadow 0.3s ease !important;
+}
+
+.hover-kaldir:hover {
+    transform: translateY(-8px) !important;
+    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.15) !important;
+}
+
+/* Pulse animasyonu */
+.pulse-animasyon {
+    animation: pulse 2s infinite !important;
+}
+
+@keyframes pulse {
+
+    0%,
+    100% {
+        transform: scale(1);
+    }
+
+    50% {
+        transform: scale(1.02);
+    }
+}
+
+/* Fade in animasyonu */
+.fade-in {
+    animation: fadeIn 0.6s ease-out !important;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* ==========================
+   Arka Plan Stilleri
+   ========================== */
+
+/* Gradient arka plan - gün batımı */
+.gradient-arka-plan {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+}
+
+/* Gradient arka plan - okyanus */
+.gradient-okyanus {
+    background: linear-gradient(135deg, #00c6fb 0%, #005bea 100%) !important;
+}
+
+/* Gradient arka plan - orman */
+.gradient-orman {
+    background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%) !important;
+}
+
+/* Desenli arka plan - noktalar */
+.desen-noktalar {
+    background-image: radial-gradient(rgba(0, 0, 0, 0.1) 1px, transparent 1px) !important;
+    background-size: 20px 20px !important;
+}
+
+/* Desenli arka plan - çizgiler */
+.desen-cizgiler {
+    background-image: repeating-linear-gradient(45deg,
+            transparent,
+            transparent 10px,
+            rgba(0, 0, 0, 0.03) 10px,
+            rgba(0, 0, 0, 0.03) 20px) !important;
+}
+
+/* ==========================
+   Kart Stilleri
+   ========================== */
+
+/* Modern kart */
+.modern-kart {
+    background: white !important;
+    border-radius: 16px !important;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08) !important;
+    padding: 24px !important;
+    transition: box-shadow 0.3s ease !important;
+}
+
+.dark .modern-kart {
+    background: rgb(31, 41, 55) !important;
+}
+
+.modern-kart:hover {
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12) !important;
+}
+
+/* Minimal kart */
+.minimal-kart {
+    border: 1px solid rgba(0, 0, 0, 0.1) !important;
+    border-radius: 8px !important;
+    padding: 20px !important;
+}
+
+.dark .minimal-kart {
+    border-color: rgba(255, 255, 255, 0.1) !important;
+}

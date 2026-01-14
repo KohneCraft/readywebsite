@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@import "../styles/ready.css";
 
 /* ============================================
    Vav Yapı - Design System
@@ -764,72 +765,4 @@
   }
 }
 
-/* ============================================
-   Page Builder - Örnek CSS Sınıfları
-   Blok Ayarları > Ayarlar > CSS Sınıfı 
-   alanına sınıf adını yazarak kullanabilirsiniz
-   ============================================ */
-
-/* Örnek 1: Altın kenarlık ve gölge */
-.altin-cerceve {
-  border: 3px solid rgb(var(--color-secondary)) !important;
-  border-radius: 12px !important;
-  box-shadow: 0 8px 32px rgba(245, 158, 11, 0.3) !important;
-  padding: 20px !important;
-}
-
-/* Örnek 2: Cam efekti (glassmorphism) */
-.cam-efekti {
-  background: rgba(255, 255, 255, 0.15) !important;
-  backdrop-filter: blur(10px) !important;
-  -webkit-backdrop-filter: blur(10px) !important;
-  border: 1px solid rgba(255, 255, 255, 0.2) !important;
-  border-radius: 16px !important;
-}
-
-.dark .cam-efekti {
-  background: rgba(0, 0, 0, 0.3) !important;
-  border: 1px solid rgba(255, 255, 255, 0.1) !important;
-}
-
-/* Örnek 3: Gradient metin */
-.gradient-metin .text-block,
-.gradient-metin .heading-block {
-  background: linear-gradient(135deg, rgb(var(--color-primary)), rgb(var(--color-secondary))) !important;
-  -webkit-background-clip: text !important;
-  background-clip: text !important;
-  -webkit-text-fill-color: transparent !important;
-}
-
-/* Örnek 4: Hover animasyonu */
-.hover-buyut {
-  transition: transform 0.3s ease, box-shadow 0.3s ease !important;
-}
-
-.hover-buyut:hover {
-  transform: scale(1.05) !important;
-  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15) !important;
-}
-
-/* Örnek 5: Vurgulu metin (highlight) */
-.vurgulu-metin .text-block {
-  position: relative;
-  display: inline-block;
-}
-
-.vurgulu-metin .text-block::after {
-  content: '';
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  width: 100%;
-  height: 30%;
-  background: linear-gradient(transparent, rgba(var(--color-secondary), 0.3));
-  z-index: -1;
-}
-
-/* Örnek 6: ID ile özel stil (#sinif kullanımı) */
-#ozel-baslik {
-  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3) !important;
-  letter-spacing: 2px !important;
-}
+/* Hazır CSS sınıfları artık src/styles/ready.css dosyasında */
