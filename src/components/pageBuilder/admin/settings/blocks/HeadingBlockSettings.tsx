@@ -8,6 +8,7 @@
 import { DualColorPicker } from '../../controls/DualColorPicker';
 import { SpacingControl } from '../../controls/SpacingControl';
 import { cn } from '@/lib/utils';
+import { getGroupedCSSClasses, READY_CSS_CLASSES } from '@/lib/readyCSSClasses';
 import type { Block } from '@/types/pageBuilder';
 
 interface HeadingBlockSettingsProps {
@@ -160,19 +161,57 @@ export function HeadingBlockSettings({ block, activeTab, onUpdate }: HeadingBloc
   }
 
   if (activeTab === 'settings') {
+    const groupedClasses = getGroupedCSSClasses();
+    const currentClassName = props.className || '';
+    const isReadyClass = READY_CSS_CLASSES.some(c => c.name === currentClassName);
+
     return (
       <div className="space-y-4">
         <div>
           <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
             CSS Sınıfı
           </label>
-          <input
-            type="text"
-            value={props.className || ''}
-            onChange={(e) => onUpdate({ className: e.target.value })}
-            className="w-full px-3 py-2 text-sm border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-white"
-            placeholder="custom-class"
-          />
+          <select
+            value={isReadyClass ? currentClassName : '__custom__'}
+            onChange={(e) => {
+              if (e.target.value === '__custom__') {
+                // Özel sınıf seçildi
+              } else if (e.target.value === '') {
+                onUpdate({ className: '' });
+              } else {
+                onUpdate({ className: e.target.value });
+              }
+            }}
+            className="w-full px-3 py-2 text-sm border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-white mb-2"
+          >
+            <option value="">Sınıf Seç...</option>
+            {Object.entries(groupedClasses).map(([category, classes]) => (
+              <optgroup key={category} label={category}>
+                {classes.map((cssClass) => (
+                  <option key={cssClass.name} value={cssClass.name}>
+                    {cssClass.label}
+                  </option>
+                ))}
+              </optgroup>
+            ))}
+            <option value="__custom__">✏️ Özel Sınıf</option>
+          </select>
+
+          {(!isReadyClass || currentClassName === '') && (
+            <input
+              type="text"
+              value={currentClassName}
+              onChange={(e) => onUpdate({ className: e.target.value })}
+              className="w-full px-3 py-2 text-sm border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-white"
+              placeholder="Özel sınıf adı"
+            />
+          )}
+
+          {isReadyClass && (
+            <p className="text-xs text-green-600 dark:text-green-400 mt-1">
+              ✓ Hazır stil: {READY_CSS_CLASSES.find(c => c.name === currentClassName)?.description}
+            </p>
+          )}
         </div>
 
         <div>
