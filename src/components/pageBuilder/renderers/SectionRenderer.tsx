@@ -248,14 +248,16 @@ export function SectionRenderer({ sectionId }: SectionRendererProps) {
     );
   }
 
-  // Error state - section not found
+  // Error state - section not found (orphan ID)
   if (!section) {
-    logger.pageBuilder.warn(`Section bulunamadı (${sectionId})`);
-    return (
-      <section className="section-renderer-error text-center py-12 text-gray-500 dark:text-gray-400">
-        <p>Section yüklenemedi</p>
-      </section>
-    );
+    // Orphan section ID temizleme event'i tetikle
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new CustomEvent('orphan-section', {
+        detail: { sectionId }
+      }));
+    }
+    // Hata mesajı yerine hiçbir şey gösterme
+    return null;
   }
 
   // Responsive visibility check

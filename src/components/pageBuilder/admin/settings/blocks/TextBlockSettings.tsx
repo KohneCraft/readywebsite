@@ -8,7 +8,7 @@
 import { DualColorPicker } from '../../controls/DualColorPicker';
 import { SpacingControl } from '../../controls/SpacingControl';
 import { cn } from '@/lib/utils';
-import { getGroupedCSSClasses, READY_CSS_CLASSES } from '@/lib/readyCSSClasses';
+import { getGroupedCSSClasses, READY_CSS_CLASSES, READY_IDS } from '@/lib/readyCSSClasses';
 import type { Block } from '@/types/pageBuilder';
 
 interface TextBlockSettingsProps {
@@ -273,13 +273,43 @@ export function TextBlockSettings({ block, activeTab, onUpdate }: TextBlockSetti
           <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
             ID
           </label>
-          <input
-            type="text"
-            value={props.id || ''}
-            onChange={(e) => onUpdate({ id: e.target.value })}
-            className="w-full px-3 py-2 text-sm border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-white"
-            placeholder="custom-id"
-          />
+          <select
+            value={READY_IDS.some(r => r.id === props.id) ? props.id : '__custom__'}
+            onChange={(e) => {
+              if (e.target.value === '__custom__') {
+                // Özel ID seçildi
+              } else if (e.target.value === '') {
+                onUpdate({ id: '' });
+              } else {
+                onUpdate({ id: e.target.value });
+              }
+            }}
+            className="w-full px-3 py-2 text-sm border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-white mb-2"
+          >
+            <option value="">ID Seç...</option>
+            {READY_IDS.map((readyId) => (
+              <option key={readyId.id} value={readyId.id}>
+                {readyId.label}
+              </option>
+            ))}
+            <option value="__custom__">✏️ Özel ID</option>
+          </select>
+
+          {(!READY_IDS.some(r => r.id === props.id) || !props.id) && (
+            <input
+              type="text"
+              value={props.id || ''}
+              onChange={(e) => onUpdate({ id: e.target.value })}
+              className="w-full px-3 py-2 text-sm border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-white"
+              placeholder="Özel ID (anchor link için)"
+            />
+          )}
+
+          {READY_IDS.some(r => r.id === props.id) && (
+            <p className="text-xs text-green-600 dark:text-green-400 mt-1">
+              ✓ {READY_IDS.find(r => r.id === props.id)?.description}
+            </p>
+          )}
         </div>
 
         <div>

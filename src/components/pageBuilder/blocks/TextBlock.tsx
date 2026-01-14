@@ -105,6 +105,13 @@ function TextBlockComponent({ props }: TextBlockProps) {
     }), {} as Record<string, string>)
     : {};
 
+  // Özel CSS'i scope'la - blok ID'si veya className ile
+  const scopedCSS = props.customCSS
+    ? props.customCSS
+      // .text-block seçicisini otomatik olarak güçlendir
+      .replace(/\.text-block\s*\{/g, `.text-block-wrapper${props.className ? '.' + props.className : ''} .text-block {`)
+    : '';
+
   return (
     <div
       className={`text-block-wrapper ${props.className || ''}`}
@@ -112,12 +119,12 @@ function TextBlockComponent({ props }: TextBlockProps) {
       id={props.id || undefined}
       {...dataAttrs}
     >
-      {/* Özel CSS */}
-      {props.customCSS && (
-        <style dangerouslySetInnerHTML={{ __html: props.customCSS }} />
+      {/* Özel CSS - Scope'lanmış */}
+      {scopedCSS && (
+        <style dangerouslySetInnerHTML={{ __html: scopedCSS }} />
       )}
       <div
-        className="text-block"
+        className={`text-block ${props.className || ''}`}
         style={style}
         dangerouslySetInnerHTML={{ __html: sanitizedContent }}
       />

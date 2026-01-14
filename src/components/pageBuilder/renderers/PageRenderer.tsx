@@ -14,7 +14,7 @@ interface PageRendererProps {
 
 function updateMetaTag(property: string, content: string, dataAttribute: string = 'data-generated-by-page-renderer'): HTMLMetaElement | null {
   if (!content) return null;
-  
+
   let tag = document.querySelector(`meta[property="${property}"][${dataAttribute}]`) as HTMLMetaElement | null;
   if (!tag) {
     tag = document.createElement('meta');
@@ -30,24 +30,24 @@ export function PageRenderer({ pageId, slug, allowDraft = false }: PageRendererP
   const [page, setPage] = useState<Page | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  
+
   useEffect(() => {
     async function loadPage() {
       try {
         setLoading(true);
-        
+
         // Sayfa verilerini çek (ID veya slug ile)
-        const pageData = pageId 
+        const pageData = pageId
           ? await getPageById(pageId)
-          : slug 
+          : slug
             ? await getPageBySlug(slug)
             : null;
-        
+
         if (!pageData) {
           setError('Sayfa bulunamadı');
           return;
         }
-        
+
         logger.pageBuilder.debug('Sayfa yüklendi', {
           id: pageData.id,
           title: pageData.title,
@@ -55,7 +55,7 @@ export function PageRenderer({ pageId, slug, allowDraft = false }: PageRendererP
           status: pageData.status,
           sectionsCount: pageData.sections?.length || 0,
         });
-        
+
         // Status kontrolü (preview modunda taslak sayfalar da görüntülenebilir)
         // Eğer status yoksa veya undefined ise, published olarak kabul et (geriye dönük uyumluluk)
         const pageStatus = pageData.status || 'published';
@@ -63,7 +63,7 @@ export function PageRenderer({ pageId, slug, allowDraft = false }: PageRendererP
           setError('Bu sayfa henüz yayınlanmamış');
           return;
         }
-        
+
         setPage(pageData);
       } catch (err) {
         logger.pageBuilder.error('Sayfa yükleme hatası', err);
@@ -72,19 +72,59 @@ export function PageRenderer({ pageId, slug, allowDraft = false }: PageRendererP
         setLoading(false);
       }
     }
-    
+
     loadPage();
   }, [pageId, slug, allowDraft]);
-  
+
+  // Orphan section temizleme event listener
+  useEffect(() => {
+    if (!page) return;
+
+    const orphanSections = new Set<string>();
+
+    const handleOrphanSection = (e: CustomEvent<{ sectionId: string }>) => {
+      const { sectionId } = e.detail;
+      orphanSections.add(sectionId);
+
+      // Debounce - birden fazla orphan section için tek bir güncelleme yap
+      setTimeout(async () => {
+        if (orphanSections.size === 0) return;
+
+        const sectionsToRemove = Array.from(orphanSections);
+        orphanSections.clear();
+
+        logger.pageBuilder.warn('Orphan section ID\'leri temizleniyor', sectionsToRemove);
+
+        // Page state'ini güncelle (UI için)
+        const updatedSections = page.sections?.filter(id => !sectionsToRemove.includes(id)) || [];
+        setPage(prev => prev ? { ...prev, sections: updatedSections } : null);
+
+        // Firestore'da da güncelle (kalıcı)
+        try {
+          const { updatePage } = await import('@/lib/firebase/firestore');
+          await updatePage(page.id, { sections: updatedSections });
+          logger.pageBuilder.info('Orphan section ID\'leri başarıyla temizlendi');
+        } catch (error) {
+          logger.pageBuilder.error('Orphan section temizleme hatası', error);
+        }
+      }, 500);
+    };
+
+    window.addEventListener('orphan-section', handleOrphanSection as EventListener);
+    return () => {
+      window.removeEventListener('orphan-section', handleOrphanSection as EventListener);
+    };
+  }, [page]);
+
   // SEO Meta Tags
   useEffect(() => {
     if (!page?.settings?.seo) return;
-    
+
     const originalTitle = document.title;
     const addedMetaTags: HTMLElement[] = [];
-    
+
     document.title = page.settings.seo.title || page.title;
-    
+
     // Meta description
     let metaDesc = document.querySelector('meta[name="description"][data-generated-by-page-renderer]') as HTMLMetaElement | null;
     if (!metaDesc) {
@@ -95,7 +135,7 @@ export function PageRenderer({ pageId, slug, allowDraft = false }: PageRendererP
       addedMetaTags.push(metaDesc);
     }
     metaDesc.setAttribute('content', page.settings.seo.description || '');
-    
+
     // Open Graph tags
     if (page.settings.seo.ogTitle) {
       const tag = updateMetaTag('og:title', page.settings.seo.ogTitle);
@@ -109,11 +149,11 @@ export function PageRenderer({ pageId, slug, allowDraft = false }: PageRendererP
       const tag = updateMetaTag('og:image', page.settings.seo.ogImage);
       if (tag) addedMetaTags.push(tag);
     }
-    
+
     // Cleanup: Bu component tarafından eklenen meta tag'leri kaldır
     return () => {
       document.title = originalTitle;
-      
+
       // Güvenli cleanup: Her elementi ayrı ayrı ve null check ile kaldır
       document.querySelectorAll('meta[data-generated-by-page-renderer]').forEach(el => {
         try {
@@ -126,22 +166,22 @@ export function PageRenderer({ pageId, slug, allowDraft = false }: PageRendererP
       });
     };
   }, [page]);
-  
+
   // Custom CSS/JS injection
   useEffect(() => {
     if (!page?.settings?.customCSS) return;
-    
+
     const styleId = `custom-page-css-${page.id}`;
     let styleEl = document.getElementById(styleId) as HTMLStyleElement;
-    
+
     if (!styleEl) {
       styleEl = document.createElement('style');
       styleEl.id = styleId;
       document.head.appendChild(styleEl);
     }
-    
+
     styleEl.textContent = page.settings.customCSS;
-    
+
     return () => {
       const el = document.getElementById(styleId);
       try {
@@ -153,7 +193,7 @@ export function PageRenderer({ pageId, slug, allowDraft = false }: PageRendererP
       }
     };
   }, [page?.settings?.customCSS, page?.id]);
-  
+
   if (loading) {
     return (
       <div className="page-loading min-h-screen flex items-center justify-center">
@@ -162,7 +202,7 @@ export function PageRenderer({ pageId, slug, allowDraft = false }: PageRendererP
       </div>
     );
   }
-  
+
   if (error) {
     return (
       <div className="page-error min-h-screen flex flex-col items-center justify-center p-10 text-center">
@@ -171,13 +211,13 @@ export function PageRenderer({ pageId, slug, allowDraft = false }: PageRendererP
       </div>
     );
   }
-  
+
   if (!page) {
     return null;
   }
-  
+
   return (
-    <div 
+    <div
       className={`page-renderer page-${page.settings?.layout || 'default'}`}
       style={{
         '--primary-color': page.settings?.primaryColor || '#007bff',
@@ -189,8 +229,8 @@ export function PageRenderer({ pageId, slug, allowDraft = false }: PageRendererP
       {/* Sections */}
       {page.sections && page.sections.length > 0 ? (
         page.sections.map((sectionId) => (
-          <SectionRenderer 
-            key={sectionId} 
+          <SectionRenderer
+            key={sectionId}
             sectionId={sectionId}
           />
         ))
