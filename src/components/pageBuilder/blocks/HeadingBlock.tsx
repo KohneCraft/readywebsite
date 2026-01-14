@@ -82,8 +82,25 @@ function HeadingBlockComponent({ props }: HeadingBlockProps) {
     maxWidth: '100%',
   };
 
+  // Data attributes'ları objeye çevir
+  const dataAttrs = props.dataAttributes
+    ? Object.entries(props.dataAttributes).reduce((acc, [key, value]) => ({
+      ...acc,
+      [`data-${key}`]: value,
+    }), {} as Record<string, string>)
+    : {};
+
   return (
-    <div className="heading-block-wrapper" style={wrapperStyle}>
+    <div
+      className={`heading-block-wrapper ${props.className || ''}`}
+      style={wrapperStyle}
+      id={props.id || undefined}
+      {...dataAttrs}
+    >
+      {/* Özel CSS */}
+      {props.customCSS && (
+        <style dangerouslySetInnerHTML={{ __html: props.customCSS }} />
+      )}
       <Tag className="heading-block" style={style}>
         {props.content}
       </Tag>

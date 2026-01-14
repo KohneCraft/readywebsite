@@ -97,8 +97,25 @@ function TextBlockComponent({ props }: TextBlockProps) {
     maxWidth: '100%',
   };
 
+  // Data attributes'ları objeye çevir
+  const dataAttrs = props.dataAttributes
+    ? Object.entries(props.dataAttributes).reduce((acc, [key, value]) => ({
+      ...acc,
+      [`data-${key}`]: value,
+    }), {} as Record<string, string>)
+    : {};
+
   return (
-    <div className="text-block-wrapper" style={wrapperStyle}>
+    <div
+      className={`text-block-wrapper ${props.className || ''}`}
+      style={wrapperStyle}
+      id={props.id || undefined}
+      {...dataAttrs}
+    >
+      {/* Özel CSS */}
+      {props.customCSS && (
+        <style dangerouslySetInnerHTML={{ __html: props.customCSS }} />
+      )}
       <div
         className="text-block"
         style={style}

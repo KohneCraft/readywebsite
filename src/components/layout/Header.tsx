@@ -193,6 +193,29 @@ export function Header() {
     };
   }, [isMobileMenuOpen]);
 
+  // Dropdown dışına tıklayınca kapat (hover modu kapalıyken)
+  useEffect(() => {
+    if (!openDropdown || hoverOpenMenu) return;
+
+    const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target as HTMLElement;
+      // Dropdown buton veya panel içinde değilse kapat
+      if (!target.closest('[data-dropdown-trigger]') && !target.closest('[data-dropdown-panel]')) {
+        setOpenDropdown(null);
+      }
+    };
+
+    // Bir sonraki tick'te dinleyiciyi ekle (aynı tıklamanın hemen kapatmasını önlemek için)
+    const timeoutId = setTimeout(() => {
+      document.addEventListener('click', handleClickOutside);
+    }, 0);
+
+    return () => {
+      clearTimeout(timeoutId);
+      document.removeEventListener('click', handleClickOutside);
+    };
+  }, [openDropdown, hoverOpenMenu]);
+
   return (
     <>
       {/* Main header */}
@@ -307,6 +330,7 @@ export function Header() {
                     onMouseLeave={() => hoverOpenMenu && setOpenDropdown(null)}
                   >
                     <button
+                      data-dropdown-trigger
                       onClick={() => !hoverOpenMenu && setOpenDropdown(isDropdownOpen ? null : item.href)}
                       className={cn(
                         'flex items-center gap-1 relative font-medium transition-colors py-2 whitespace-nowrap text-sm 2xl:text-base',
@@ -329,11 +353,12 @@ export function Header() {
                     <AnimatePresence>
                       {isDropdownOpen && (
                         <motion.div
+                          data-dropdown-panel
                           initial={{ opacity: 0, y: -10 }}
                           animate={{ opacity: 1, y: 0 }}
                           exit={{ opacity: 0, y: -10 }}
                           transition={{ duration: 0.15 }}
-                          className="absolute top-full left-0 mt-2 py-2 min-w-[180px] bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 z-50"
+                          className="absolute top-full left-0 mt-2 py-2 min-w-[180px] bg-white dark:bg-gray-900 rounded-lg shadow-lg border border-gray-200 dark:border-gray-600 z-50"
                         >
                           {item.children?.map((child) => (
                             <Link
@@ -344,8 +369,8 @@ export function Header() {
                               className={cn(
                                 'block px-4 py-2 text-sm transition-colors',
                                 isActive(child.href)
-                                  ? 'bg-primary-50 dark:bg-primary-900/30 text-primary-600 dark:text-primary-400'
-                                  : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
+                                  ? 'bg-primary-100 dark:bg-primary-900/50 text-primary-700 dark:text-primary-300'
+                                  : 'text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700/70'
                               )}
                             >
                               {child.label}
