@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useRef, memo } from 'react';
-import { sanitizeCSS } from '@/lib/sanitize';
+import { sanitizeCSS, sanitizeHTML } from '@/lib/sanitize';
 import { logger } from '@/lib/logger';
 import type { BlockProps } from '@/types/pageBuilder';
 
@@ -11,7 +11,7 @@ interface HTMLBlockProps {
 
 function HTMLBlockComponent({ props }: HTMLBlockProps) {
   const containerRef = useRef<HTMLDivElement>(null);
-  
+
   const containerStyle = {
     width: '100%',
     margin: props.margin
@@ -21,10 +21,10 @@ function HTMLBlockComponent({ props }: HTMLBlockProps) {
       ? `${props.padding.top || 0}px ${props.padding.right || 0}px ${props.padding.bottom || 0}px ${props.padding.left || 0}px`
       : '0',
   };
-  
+
   useEffect(() => {
     if (!containerRef.current) return;
-    
+
     // Custom CSS ekle
     if (props.css) {
       const styleId = `html-block-css-${props.id || 'default'}`;
@@ -36,7 +36,7 @@ function HTMLBlockComponent({ props }: HTMLBlockProps) {
       }
       styleEl.textContent = props.css;
     }
-    
+
     // Custom JavaScript çalıştır
     if (props.javascript) {
       try {
@@ -46,7 +46,7 @@ function HTMLBlockComponent({ props }: HTMLBlockProps) {
         logger.pageBuilder.error('HTML Block JavaScript hatası', error);
       }
     }
-    
+
     return () => {
       // Cleanup
       if (props.css) {
@@ -62,22 +62,22 @@ function HTMLBlockComponent({ props }: HTMLBlockProps) {
       }
     };
   }, [props.css, props.javascript, props.id]);
-  
+
   // Custom CSS cleanup for customCSS prop (must be before early return)
   useEffect(() => {
     if (!props.customCSS) return;
-    
+
     const styleId = `html-block-custom-css-${props.id || 'default'}`;
     let styleEl = document.getElementById(styleId) as HTMLStyleElement;
-    
+
     if (!styleEl) {
       styleEl = document.createElement('style');
       styleEl.id = styleId;
       document.head.appendChild(styleEl);
     }
-    
+
     styleEl.textContent = sanitizeCSS(props.customCSS);
-    
+
     return () => {
       const el = document.getElementById(styleId);
       try {
@@ -89,10 +89,11 @@ function HTMLBlockComponent({ props }: HTMLBlockProps) {
       }
     };
   }, [props.customCSS, props.id]);
-  
-  if (!props.css && !props.javascript) {
+
+  // İçerik kontrolü - html, css veya javascript varsa render et
+  if (!props.html && !props.css && !props.javascript) {
     return (
-      <div 
+      <div
         ref={containerRef}
         className={`html-block ${props.className || ''}`}
         style={containerStyle}
@@ -105,14 +106,15 @@ function HTMLBlockComponent({ props }: HTMLBlockProps) {
       </div>
     );
   }
-  
+
   return (
-    <div 
+    <div
       ref={containerRef}
       className={`html-block ${props.className || ''}`}
       style={containerStyle}
       id={props.id}
       {...(props.dataAttributes || {})}
+      dangerouslySetInnerHTML={{ __html: sanitizeHTML(props.html || '') }}
     />
   );
 }

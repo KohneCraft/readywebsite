@@ -237,6 +237,7 @@ export interface BlockProps {
   interactive?: boolean;
 
   // HTML Block
+  html?: string; // HTML içeriği
   css?: string;
   javascript?: string;
 

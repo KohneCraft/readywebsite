@@ -228,8 +228,8 @@ export function TextBlockSettings({ block, activeTab, onUpdate }: TextBlockSetti
             value={isReadyClass ? currentClassName : '__custom__'}
             onChange={(e) => {
               if (e.target.value === '__custom__') {
-                // Özel sınıf seçildi - mevcut değeri koru veya boşalt
-                // Input alanında düzenlenecek
+                // Özel sınıf için değeri boşalt, input görünsün
+                onUpdate({ className: '' });
               } else if (e.target.value === '') {
                 onUpdate({ className: '' });
               } else {
@@ -277,7 +277,8 @@ export function TextBlockSettings({ block, activeTab, onUpdate }: TextBlockSetti
             value={READY_IDS.some(r => r.id === props.id) ? props.id : '__custom__'}
             onChange={(e) => {
               if (e.target.value === '__custom__') {
-                // Özel ID seçildi
+                // Özel ID için değeri boşalt, input görünsün
+                onUpdate({ id: '' });
               } else if (e.target.value === '') {
                 onUpdate({ id: '' });
               } else {

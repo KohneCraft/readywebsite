@@ -89,7 +89,6 @@ function MapBlockComponent({ props }: MapBlockProps) {
 
     const currentRef = mapRef.current;
     const showMarker = props.marker !== false; // Varsayılan true
-    const markerTitle = props.markerTitle || '';
 
     // Google Maps veya OpenStreetMap entegrasyonu
     if (props.mapProvider === 'google') {
@@ -119,10 +118,9 @@ function MapBlockComponent({ props }: MapBlockProps) {
       // Marker gösterilecekse place mode, gösterilmeyecekse view mode kullan
       if (showMarker) {
         // Place mode - marker ile konum gösterir
-        const query = markerTitle
-          ? encodeURIComponent(markerTitle)
-          : `${props.latitude},${props.longitude}`;
-        iframe.src = `https://www.google.com/maps/embed/v1/place?key=${apiKey}&q=${query}&center=${props.latitude},${props.longitude}&zoom=${props.zoom || 15}`;
+        // Her zaman koordinat kullan (markerTitle sadece Google'ın bulamadığı yerlerde aranır)
+        const query = `${props.latitude},${props.longitude}`;
+        iframe.src = `https://www.google.com/maps/embed/v1/place?key=${apiKey}&q=${query}&zoom=${props.zoom || 15}`;
       } else {
         // View mode - marker olmadan sadece harita
         iframe.src = `https://www.google.com/maps/embed/v1/view?key=${apiKey}&center=${props.latitude},${props.longitude}&zoom=${props.zoom || 15}&maptype=roadmap`;

@@ -175,7 +175,8 @@ export function HeadingBlockSettings({ block, activeTab, onUpdate }: HeadingBloc
             value={isReadyClass ? currentClassName : '__custom__'}
             onChange={(e) => {
               if (e.target.value === '__custom__') {
-                // Özel sınıf seçildi
+                // Özel sınıf için değeri boşalt, input görünsün
+                onUpdate({ className: '' });
               } else if (e.target.value === '') {
                 onUpdate({ className: '' });
               } else {
@@ -222,7 +223,8 @@ export function HeadingBlockSettings({ block, activeTab, onUpdate }: HeadingBloc
             value={READY_IDS.some(r => r.id === props.id) ? props.id : '__custom__'}
             onChange={(e) => {
               if (e.target.value === '__custom__') {
-                // Özel ID seçildi
+                // Özel ID için değeri boşalt, input görünsün
+                onUpdate({ id: '' });
               } else if (e.target.value === '') {
                 onUpdate({ id: '' });
               } else {

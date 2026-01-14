@@ -176,7 +176,8 @@ export function MapBlockSettings({ block, activeTab, onUpdate }: MapBlockSetting
             value={READY_CSS_CLASSES.some(c => c.name === props.className) ? props.className : '__custom__'}
             onChange={(e) => {
               if (e.target.value === '__custom__') {
-                // Özel sınıf seçildi
+                // Özel sınıf için değeri boşalt, input görünsün
+                onUpdate({ className: '' });
               } else if (e.target.value === '') {
                 onUpdate({ className: '' });
               } else {
@@ -217,7 +218,8 @@ export function MapBlockSettings({ block, activeTab, onUpdate }: MapBlockSetting
             value={READY_IDS.some(r => r.id === props.id) ? props.id : '__custom__'}
             onChange={(e) => {
               if (e.target.value === '__custom__') {
-                // Özel ID seçildi
+                // Özel ID için değeri boşalt, input görünsün
+                onUpdate({ id: '' });
               } else if (e.target.value === '') {
                 onUpdate({ id: '' });
               } else {
