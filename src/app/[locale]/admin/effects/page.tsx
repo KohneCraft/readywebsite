@@ -199,7 +199,7 @@ export default function EffectsPage() {
             try {
                 const snapshot = await getDocs(collection(db, 'pages'));
                 const pages = snapshot.docs.map((docSnap) => ({
-                    id: docSnap.id,
+                    id: docSnap.data().slug || docSnap.id,
                     title: docSnap.data().title || 'İsimsiz Sayfa',
                 }));
                 setAvailablePages(pages);
