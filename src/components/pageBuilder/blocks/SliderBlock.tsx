@@ -115,8 +115,8 @@ export function SliderBlock({ props }: SliderBlockProps) {
     return (
         <div
             ref={containerRef}
-            className="relative overflow-hidden"
-            style={sliderStyle}
+            className="relative overflow-hidden w-full"
+            style={{ ...sliderStyle, minWidth: 0 }}
             onMouseEnter={() => setIsHovered(true)}
             onMouseLeave={() => setIsHovered(false)}
         >
@@ -143,30 +143,30 @@ export function SliderBlock({ props }: SliderBlockProps) {
                 <>
                     <button
                         onClick={goToPrev}
-                        className="absolute left-4 top-1/2 -translate-y-1/2 w-10 h-10 bg-black/30 hover:bg-black/50 text-white rounded-full flex items-center justify-center transition-all z-10"
+                        className="absolute left-2 sm:left-4 top-1/2 -translate-y-1/2 w-8 h-8 sm:w-10 sm:h-10 bg-black/30 hover:bg-black/50 text-white rounded-full flex items-center justify-center transition-all z-10"
                         aria-label="Önceki slayt"
                     >
-                        <ChevronLeft className="w-6 h-6" />
+                        <ChevronLeft className="w-4 h-4 sm:w-6 sm:h-6" />
                     </button>
                     <button
                         onClick={goToNext}
-                        className="absolute right-4 top-1/2 -translate-y-1/2 w-10 h-10 bg-black/30 hover:bg-black/50 text-white rounded-full flex items-center justify-center transition-all z-10"
+                        className="absolute right-2 sm:right-4 top-1/2 -translate-y-1/2 w-8 h-8 sm:w-10 sm:h-10 bg-black/30 hover:bg-black/50 text-white rounded-full flex items-center justify-center transition-all z-10"
                         aria-label="Sonraki slayt"
                     >
-                        <ChevronRight className="w-6 h-6" />
+                        <ChevronRight className="w-4 h-4 sm:w-6 sm:h-6" />
                     </button>
                 </>
             )}
 
             {/* Sayfa Göstergeleri (Dots) */}
             {showDots && sortedSlides.length > 1 && (
-                <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex items-center gap-2 z-10">
+                <div className="absolute bottom-2 sm:bottom-4 left-1/2 -translate-x-1/2 flex items-center gap-1.5 sm:gap-2 z-10">
                     {sortedSlides.map((_, index) => (
                         <button
                             key={index}
                             onClick={() => goToSlide(index)}
                             className={cn(
-                                'w-3 h-3 rounded-full transition-all',
+                                'w-2 h-2 sm:w-3 sm:h-3 rounded-full transition-all',
                                 index === currentIndex
                                     ? 'bg-white scale-110'
                                     : 'bg-white/50 hover:bg-white/75'
@@ -175,7 +175,7 @@ export function SliderBlock({ props }: SliderBlockProps) {
                         />
                     ))}
                     {/* Sayfa Numarası */}
-                    <span className="ml-3 text-sm text-white bg-black/30 px-2 py-1 rounded">
+                    <span className="ml-2 sm:ml-3 text-xs sm:text-sm text-white bg-black/30 px-1.5 sm:px-2 py-0.5 sm:py-1 rounded">
                         {currentIndex + 1} / {sortedSlides.length}
                     </span>
                 </div>
