@@ -60,6 +60,11 @@ import type {
   ThemePreview,
   ThemePageData,
 } from '@/types/theme';
+import type {
+  Effect,
+  EffectCreateInput,
+  EffectUpdateInput,
+} from '@/types/effects';
 import { DEFAULT_SITE_SETTINGS, getDefaultElementsForPage } from '@/types';
 
 // ============================================
@@ -79,6 +84,8 @@ const COLLECTIONS = {
   blocks: 'blocks',
   // Theme collections
   themes: 'themes',
+  // Effects collection
+  effects: 'effects',
 } as const;
 
 // ============================================
@@ -1325,7 +1332,7 @@ export async function installTheme(themeData: ThemeData, createdBy: string): Pro
       const data = doc.data();
       return data.name === metadata.name || data.id === metadata.id;
     });
-    
+
     if (foundDoc) {
       existingTheme = { id: foundDoc.id, name: foundDoc.data().name };
     }
@@ -1334,20 +1341,20 @@ export async function installTheme(themeData: ThemeData, createdBy: string): Pro
       logger.firestore.info('Mevcut tema bulundu, metadata orijinal ayarlarla güncelleniyor...');
       logger.firestore.info('Header navItems (önceki):', metadata.settings?.header?.navItems);
       logger.firestore.info('Footer quickLinks (önceki):', metadata.settings?.footer?.quickLinks);
-      
+
       // Tema metadata'sını TAMAMEN orijinal tema dosyasındaki ayarlarla değiştir
       // setDoc ile merge: false kullanarak tüm dokümanı değiştir
       const themeRef = doc(db, COLLECTIONS.themes, existingTheme.id);
-      
+
       // ÖNEMLI: settings objesini JSON parse/stringify ile deep clone yap
       // Böylece Firestore nested objeleri de tamamen değiştirir
       const cleanMetadata = JSON.parse(JSON.stringify(metadata));
-      
+
       await setDoc(themeRef, {
         ...cleanMetadata,
         updatedAt: serverTimestamp(),
       }, { merge: false }); // merge: false = doküman tamamen değiştirilir
-      
+
       logger.firestore.info('✓ Tema metadata TAMAMEN orijinal ayarlarla güncellendi');
       logger.firestore.info('✓ Header navItems (sonrası):', cleanMetadata.settings?.header?.navItems);
       logger.firestore.info('✓ Footer quickLinks (sonrası):', cleanMetadata.settings?.footer?.quickLinks);
@@ -1457,7 +1464,7 @@ export async function installTheme(themeData: ThemeData, createdBy: string): Pro
     const currentSettings = await getSiteSettingsClient();
     const existingThemeId = existingTheme ? existingTheme.id : null;
     const themeSettings = metadata.settings || {};
-    
+
     logger.firestore.info(`Aktif tema ayarlanıyor: ${metadata.name} (ID: ${existingThemeId || metadata.id})`);
 
     // Tema bilgilerini siteSettings formatına çevir
@@ -1474,11 +1481,11 @@ export async function installTheme(themeData: ThemeData, createdBy: string): Pro
       homepage: currentSettings.homepage,
       forms: currentSettings.forms,
       redirects: currentSettings.redirects,
-      
+
       // Aktif tema bilgisini kaydet
       activeThemeId: existingThemeId || metadata.id,
       activeThemeName: metadata.name,
-      
+
       // Company bilgileri - TEMA'dan tamamen override et
       siteName: {
         tr: themeCompanyInfo.name || 'Page Builder',
@@ -1492,7 +1499,7 @@ export async function installTheme(themeData: ThemeData, createdBy: string): Pro
         de: themeCompanyInfo.slogan || 'Erstellen Sie moderne und flexible Webseiten',
         fr: themeCompanyInfo.slogan || 'Créez des pages Web modernes et flexibles',
       },
-      
+
       // Logo'yu TAMAMEN sıfırla
       logo: {
         light: { url: themeCompanyInfo.logo || '', path: '', width: 0, height: 0 },
@@ -1500,12 +1507,12 @@ export async function installTheme(themeData: ThemeData, createdBy: string): Pro
         favicon: { url: '', path: '' },
         mobile: { url: '', path: '' },
       },
-      
+
       // Renk ve font stillerini TAMAMEN sil (tema değiştiğinde sıfırlanmalı)
       companyNameStyle: null,
       sloganStyle: null,
       browserFavicon: null,
-      
+
       // İletişim bilgileri - TEMA'dan override et
       contact: {
         email: themeContactInfo.email || '',
@@ -1527,7 +1534,7 @@ export async function installTheme(themeData: ThemeData, createdBy: string): Pro
           lng: 0,
         },
       },
-      
+
       // Sosyal medya linkleri - TEMA'dan override et
       socialLinks: {
         facebook: themeSocialInfo.facebook || '',
@@ -1536,7 +1543,7 @@ export async function installTheme(themeData: ThemeData, createdBy: string): Pro
         linkedin: themeSocialInfo.linkedin || '',
         youtube: themeSocialInfo.youtube || '',
       },
-      
+
       // SEO bilgileri - TEMA'dan override et
       seo: {
         titleTemplate: {
@@ -1735,7 +1742,7 @@ export async function updateActiveThemeSettings(
 
     // Settings'i güncelle (nested objects için deep merge)
     const updatedSettings = { ...currentMetadata.settings };
-    
+
     // Header veya footer güncellemesi ise nested merge yap
     if (settings.header) {
       updatedSettings.header = {
@@ -1749,7 +1756,7 @@ export async function updateActiveThemeSettings(
         ...settings.footer,
       };
     }
-    
+
     // Diğer ayarlar için shallow merge
     Object.keys(settings).forEach(key => {
       if (key !== 'header' && key !== 'footer') {
@@ -1766,4 +1773,137 @@ export async function updateActiveThemeSettings(
     logger.firestore.error('Tema ayarları güncellenirken hata:', error);
     throw error;
   }
+}
+
+// ============================================
+// EFFECTS CRUD
+// ============================================
+
+/**
+ * Helper: Convert Firestore document to Effect
+ */
+function docToEffect(docSnap: DocumentSnapshot): Effect | null {
+  const data = docSnap.data();
+  if (!data) return null;
+
+  return {
+    ...data,
+    id: docSnap.id,
+    createdAt: convertTimestamp(data.createdAt),
+    updatedAt: convertTimestamp(data.updatedAt),
+  } as Effect;
+}
+
+/**
+ * Efekt oluştur
+ */
+export async function createEffect(input: EffectCreateInput): Promise<string> {
+  const docRef = await addDoc(collection(db, COLLECTIONS.effects), {
+    ...input,
+    visibility: input.visibility || {
+      enabled: true,
+      scope: 'all',
+      pages: [],
+    },
+    createdAt: serverTimestamp(),
+    updatedAt: serverTimestamp(),
+  });
+
+  logger.firestore.info(`✓ Efekt oluşturuldu: ${input.displayName}`);
+  return docRef.id;
+}
+
+/**
+ * Efekt ID ile getir
+ */
+export async function getEffectById(id: string): Promise<Effect | null> {
+  const docSnap = await getDoc(doc(db, COLLECTIONS.effects, id));
+  return docToEffect(docSnap);
+}
+
+/**
+ * Tüm efektleri getir
+ */
+export async function getAllEffects(): Promise<Effect[]> {
+  const snapshot = await getDocs(collection(db, COLLECTIONS.effects));
+  return snapshot.docs
+    .map(docItem => docToEffect(docItem))
+    .filter((effect): effect is Effect => effect !== null);
+}
+
+/**
+ * Aktif efektleri getir (visibility.enabled = true)
+ */
+export async function getActiveEffects(): Promise<Effect[]> {
+  const q = query(
+    collection(db, COLLECTIONS.effects),
+    where('visibility.enabled', '==', true)
+  );
+
+  const snapshot = await getDocs(q);
+  return snapshot.docs
+    .map(docItem => docToEffect(docItem))
+    .filter((effect): effect is Effect => effect !== null);
+}
+
+/**
+ * Sayfa bazlı aktif efektleri getir
+ * @param pageId - Sayfa ID'si (null = anasayfa)
+ */
+export async function getEffectsForPage(pageId: string | null): Promise<Effect[]> {
+  const activeEffects = await getActiveEffects();
+
+  return activeEffects.filter(effect => {
+    const { scope, pages } = effect.visibility;
+
+    switch (scope) {
+      case 'all':
+        return true;
+      case 'home':
+        return !pageId; // Sadece anasayfa
+      case 'selected':
+        return pageId ? pages.includes(pageId) : false;
+      case 'exclude':
+        return pageId ? !pages.includes(pageId) : true;
+      default:
+        return false;
+    }
+  });
+}
+
+/**
+ * Efekt güncelle
+ */
+export async function updateEffect(id: string, input: EffectUpdateInput): Promise<void> {
+  const docRef = doc(db, COLLECTIONS.effects, id);
+
+  // Mevcut efekti al
+  const existing = await getEffectById(id);
+  if (!existing) {
+    throw new Error('Efekt bulunamadı');
+  }
+
+  // Güncelleme verisini hazırla
+  const updateData: Record<string, unknown> = {
+    updatedAt: serverTimestamp(),
+  };
+
+  if (input.settings) {
+    updateData.settings = { ...existing.settings, ...input.settings };
+  }
+
+  if (input.visibility) {
+    updateData.visibility = { ...existing.visibility, ...input.visibility };
+  }
+
+  await updateDoc(docRef, updateData);
+  logger.firestore.info(`✓ Efekt güncellendi: ${id}`);
+}
+
+/**
+ * Efekt sil
+ */
+export async function deleteEffect(id: string): Promise<void> {
+  await deleteDoc(doc(db, COLLECTIONS.effects, id));
+  logger.firestore.info(`✓ Efekt silindi: ${id}`);
 }
