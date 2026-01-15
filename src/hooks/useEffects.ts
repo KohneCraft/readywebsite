@@ -51,9 +51,17 @@ export function useEffects(pageId: string | null = null): UseEffectsResult {
                         case 'home':
                             return pageId === null;
                         case 'selected':
-                            return pageId !== null && pages.includes(pageId);
+                            if (pageId === null) {
+                                const homeIdentifiers = ['', 'home', 'index', '/'];
+                                return pages.some(p => homeIdentifiers.includes(p));
+                            }
+                            return pages.includes(pageId);
                         case 'exclude':
-                            return pageId === null || !pages.includes(pageId);
+                            if (pageId === null) {
+                                const homeIdentifiers = ['', 'home', 'index', '/'];
+                                return !pages.some(p => homeIdentifiers.includes(p));
+                            }
+                            return !pages.includes(pageId);
                         default:
                             return false;
                     }

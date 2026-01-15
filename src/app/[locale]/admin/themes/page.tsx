@@ -9,10 +9,10 @@ import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import { useLocale } from 'next-intl';
 import { motion } from 'framer-motion';
-import { 
-  Palette, 
-  Download, 
-  Eye, 
+import {
+  Palette,
+  Download,
+  Eye,
   AlertTriangle,
   CheckCircle,
   Loader2,
@@ -29,7 +29,7 @@ import type { ThemePreview } from '@/types/theme';
 
 export default function ThemesPage() {
   const locale = useLocale() as Locale;
-  
+
   const [themes, setThemes] = useState<ThemePreview[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [installingTheme, setInstallingTheme] = useState<string | null>(null);
@@ -45,7 +45,7 @@ export default function ThemesPage() {
     try {
       setIsLoading(true);
       setError(null);
-      
+
       // Önce varsayılan temaları hazırla (Firebase bağlantısı olmasa bile)
       const defaultThemes = getDefaultThemes();
       logger.theme.debug('Varsayılan temalar yüklendi', defaultThemes.map(t => t.metadata.name));
@@ -58,16 +58,16 @@ export default function ThemesPage() {
         version: t.metadata.version,
       }));
       logger.theme.debug('Tema preview listesi', defaultThemesPreview.map(t => t.name));
-      
+
       // Firebase'den temaları çekmeyi dene (timeout ile)
       try {
-        const timeoutPromise = new Promise<ThemePreview[]>((_, reject) => 
+        const timeoutPromise = new Promise<ThemePreview[]>((_, reject) =>
           setTimeout(() => reject(new Error('Timeout')), 5000)
         );
-        
+
         const themesPromise = getAvailableThemes();
         const availableThemes = await Promise.race([themesPromise, timeoutPromise]);
-        
+
         // Firebase'den gelen temaları varsayılan temalarla birleştir
         // Eğer bir tema Firebase'de varsa onu kullan, yoksa varsayılan temadan al
         const mergedThemes: ThemePreview[] = defaultThemesPreview.map(defaultTheme => {
@@ -81,14 +81,21 @@ export default function ThemesPage() {
             if (defaultName === firestoreName) return true;
             return false;
           });
-          
-          // Firebase'de varsa onu kullan, yoksa varsayılan temayı kullan
-          return firestoreTheme || defaultTheme;
+
+          // Firebase'de varsa onu kullan, ama thumbnail'i varsayılan temadan al (bozuk olma ihtimaline karşı)
+          if (firestoreTheme) {
+            return {
+              ...firestoreTheme,
+              thumbnail: defaultTheme.thumbnail,
+            };
+          }
+
+          return defaultTheme;
         });
-        
+
         logger.theme.debug('Birleştirilmiş temalar', mergedThemes.map(t => t.name));
         setThemes(mergedThemes);
-        
+
         // Arka planda eksik temaları Firestore'a kaydetmeyi dene
         if (availableThemes.length < defaultThemesPreview.length) {
           // Firebase'de olmayan temaları bul ve kaydet
@@ -99,7 +106,7 @@ export default function ThemesPage() {
               return defaultName === firestoreName || ft.id === defaultTheme.metadata.id;
             });
           });
-          
+
           if (missingThemes.length > 0) {
             logger.theme.debug('Eksik temalar Firestore\'a kaydediliyor', missingThemes.map(t => t.metadata.name));
             Promise.all(
@@ -146,7 +153,7 @@ export default function ThemesPage() {
 
       // Kullanıcı bilgisini al (geçici session veya Firebase auth)
       let userId: string | null = null;
-      
+
       // Önce geçici session kontrolü
       const tempSession = localStorage.getItem('temp_admin_session');
       if (tempSession) {
@@ -159,7 +166,7 @@ export default function ThemesPage() {
           userId = user.uid;
         }
       }
-      
+
       if (!userId) {
         throw new Error('Kullanıcı bulunamadı. Lütfen giriş yapın.');
       }
@@ -170,40 +177,40 @@ export default function ThemesPage() {
       // 2. Yeni tema verilerini getir (her zaman varsayılan temalardan)
       // Firestore'da sadece metadata var, pages verileri yok
       const defaultThemes = getDefaultThemes();
-      
+
       // Önce ID ile eşleştirmeyi dene
       let themeToInstall = defaultThemes.find(t => t.metadata.id === themeId);
-      
+
       // Eğer ID ile bulunamazsa, Firestore'dan tema bilgisini al ve name ile eşleştir
       if (!themeToInstall) {
         try {
           const firestoreThemes = await getAvailableThemes();
           const foundFirestoreTheme = firestoreThemes.find(t => t.id === themeId);
-          
+
           if (foundFirestoreTheme) {
             logger.theme.debug('Firestore tema bulundu', foundFirestoreTheme);
             // Name ile eşleştir (tam eşleşme veya kısmi eşleşme)
             themeToInstall = defaultThemes.find(t => {
               const defaultName = t.metadata.name.toLowerCase().trim();
               const firestoreName = foundFirestoreTheme.name.toLowerCase().trim();
-              
+
               // Tam eşleşme
               if (defaultName === firestoreName) return true;
-              
+
               // Kısmi eşleşme (örneğin "Modern Business" vs "Modern Business")
               if (defaultName.includes(firestoreName) || firestoreName.includes(defaultName)) {
                 return true;
               }
-              
+
               // ID'den name çıkar (theme-modern -> Modern Business)
               const idBasedName = themeId.toLowerCase().replace('theme-', '').replace(/-/g, ' ');
               if (defaultName.includes(idBasedName) || idBasedName.includes(defaultName.split(' ')[0])) {
                 return true;
               }
-              
+
               return false;
             });
-            
+
             if (themeToInstall) {
               logger.theme.debug('Tema eşleştirildi', { from: themeToInstall.metadata.name, to: foundFirestoreTheme.name });
             }
@@ -218,13 +225,13 @@ export default function ThemesPage() {
           });
         }
       }
-      
+
       // Hala bulunamazsa, tüm temaları listele ve hata ver
       if (!themeToInstall) {
         logger.theme.error('Tema bulunamadı', { arananId: themeId, mevcutTemalar: defaultThemes.map(t => ({ id: t.metadata.id, name: t.metadata.name })) });
         throw new Error(`Tema verileri bulunamadı. Tema ID: ${themeId}. Lütfen sayfayı yenileyin ve tekrar deneyin.`);
       }
-      
+
       const themeData = themeToInstall;
       logger.theme.debug('Yüklenecek tema bulundu', { name: themeData.metadata.name, id: themeData.metadata.id });
 
@@ -232,7 +239,7 @@ export default function ThemesPage() {
       await installTheme(themeData, userId);
 
       setSuccess('Tema başarıyla yüklendi! Sayfalar oluşturuluyor...');
-      
+
       // 4. Sayfayı yenile
       setTimeout(() => {
         window.location.href = locale === 'tr' ? '/admin/page-builder' : `/${locale}/admin/page-builder`;
