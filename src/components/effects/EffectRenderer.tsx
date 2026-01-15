@@ -28,7 +28,7 @@ interface EffectRendererProps {
 /**
  * Efekt instance'ı oluştur
  */
-function createEffectInstance(
+export function createEffectInstance(
     effectName: EffectType,
     canvas: HTMLCanvasElement,
     ctx: CanvasRenderingContext2D,
