@@ -21,6 +21,8 @@ import type { Block, BlockType } from '@/types/pageBuilder';
 interface BlockRendererProps {
   blockId: string;
   index: number;
+  // Opsiyonel: Live preview için pending updates ile merge edilmiş block
+  block?: Block;
 }
 
 const blockComponents: Record<BlockType, React.ComponentType<{ props: Block['props'] }>> = {
@@ -37,13 +39,22 @@ const blockComponents: Record<BlockType, React.ComponentType<{ props: Block['pro
   slider: SliderBlock,
 };
 
-export function BlockRenderer({ blockId, index }: BlockRendererProps) {
+export function BlockRenderer({ blockId, index, block: propBlock }: BlockRendererProps) {
   const blockRef = useRef<HTMLDivElement>(null);
-  const [block, setBlock] = useState<Block | null>(null);
+  const [fetchedBlock, setFetchedBlock] = useState<Block | null>(null);
   const [isVisible, setIsVisible] = useState(false);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(!propBlock); // propBlock varsa loading gerek yok
+
+  // Kullanılacak block: propBlock varsa onu kullan, yoksa Firebase'den yüklenen
+  const block = propBlock || fetchedBlock;
 
   useEffect(() => {
+    // Eğer propBlock varsa Firebase'den yüklemeye gerek yok
+    if (propBlock) {
+      setLoading(false);
+      return;
+    }
+
     let isMounted = true;
 
     async function loadBlock() {
@@ -56,7 +67,7 @@ export function BlockRenderer({ blockId, index }: BlockRendererProps) {
         if (!blockData) {
           logger.pageBuilder.warn(`Block bulunamadı: ${blockId}`);
         }
-        setBlock(blockData);
+        setFetchedBlock(blockData);
       } catch (error) {
         if (!isMounted) return;
         logger.pageBuilder.error(`Block yükleme hatası (${blockId})`, error);
@@ -71,7 +82,7 @@ export function BlockRenderer({ blockId, index }: BlockRendererProps) {
     return () => {
       isMounted = false;
     };
-  }, [blockId]);
+  }, [blockId, propBlock]);
 
   // Animation hesaplamaları - early return'lerden önce
   const animation = block?.props?.animation;

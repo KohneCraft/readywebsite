@@ -47,7 +47,7 @@ export function BlockEditor({
 
   const handleDelete = useCallback(async () => {
     if (isDeleting) return;
-    
+
     if (!confirm('Bu bloğu silmek istediğinizden emin misiniz?')) {
       return;
     }
@@ -205,7 +205,7 @@ export function BlockEditor({
 
       {/* Block Preview */}
       <div className="pt-6">
-        <BlockRenderer blockId={block.id} index={index} />
+        <BlockRenderer blockId={block.id} index={index} block={block} />
       </div>
     </div>
   );
