@@ -86,7 +86,7 @@ export function EffectCard({ effect, isActive, onAdd }: EffectCardProps) {
                         className="absolute inset-0 bg-black/0 group-hover:bg-black/30 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all cursor-pointer"
                         aria-label="Önizle"
                     >
-                        <div className="bg-white/90 px-4 py-2 rounded-lg flex items-center gap-2 font-medium text-gray-900 shadow-lg transform translate-y-2 group-hover:translate-y-0 transition-all">
+                        <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 px-4 py-2 rounded-lg flex items-center gap-2 font-medium text-gray-900 dark:text-white shadow-lg transform translate-y-2 group-hover:translate-y-0 transition-all">
                             <Play size={18} />
                             Önizle
                         </div>
@@ -150,7 +150,7 @@ export function EffectCard({ effect, isActive, onAdd }: EffectCardProps) {
                         </p>
                         <button
                             onClick={() => setIsPreviewOpen(false)}
-                            className="w-full px-6 py-3 bg-gray-900 dark:bg-white text-white dark:text-gray-900 rounded-xl font-bold hover:opacity-90 transition-opacity"
+                            className="w-full px-6 py-3 bg-red-600 hover:bg-red-700 text-white rounded-xl font-bold shadow-lg shadow-red-500/20 transition-all"
                         >
                             Önizlemeyi Kapat
                         </button>
