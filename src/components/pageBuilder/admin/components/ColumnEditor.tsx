@@ -24,6 +24,8 @@ interface ColumnEditorProps {
   onSelectElement?: (element: { type: 'section' | 'column' | 'block' | 'page' | 'header' | 'footer'; id: string } | null) => void;
   onAddColumn?: (afterColumnId: string) => Promise<void>; // Yan yana kolon eklemek için
   onDeleteColumn?: (columnId: string) => Promise<void>; // Kolon silmek için
+  // Pending updates for live preview
+  pendingBlockUpdates?: Record<string, Partial<Block>>;
 }
 
 export function ColumnEditor({
@@ -35,8 +37,9 @@ export function ColumnEditor({
   onSelectElement,
   onAddColumn,
   onDeleteColumn,
+  pendingBlockUpdates = {},
 }: ColumnEditorProps) {
-  const [blocks, setBlocks] = useState<Block[]>([]);
+  const [baseBlocks, setBaseBlocks] = useState<Block[]>([]);
   const [nestedColumns, setNestedColumns] = useState<Column[]>([]);
   const [isHovered, setIsHovered] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -51,7 +54,7 @@ export function ColumnEditor({
   useEffect(() => {
     async function loadBlocks() {
       if (!column.blocks || column.blocks.length === 0) {
-        setBlocks([]);
+        setBaseBlocks([]);
         setLoading(false);
         return;
       }
@@ -60,10 +63,10 @@ export function ColumnEditor({
         setLoading(true);
         const blockPromises = column.blocks.map(blockId => getBlockById(blockId));
         const loadedBlocks = await Promise.all(blockPromises);
-        setBlocks(loadedBlocks.filter(Boolean) as Block[]);
+        setBaseBlocks(loadedBlocks.filter(Boolean) as Block[]);
       } catch (error) {
         logger.pageBuilder.error('Block yükleme hatası', error);
-        setBlocks([]);
+        setBaseBlocks([]);
       } finally {
         setLoading(false);
       }
@@ -71,6 +74,18 @@ export function ColumnEditor({
 
     loadBlocks();
   }, [column.blocks]);
+
+  // Pending updates'i merge ederek live preview blocks oluştur
+  const blocks = baseBlocks.map(block => {
+    if (pendingBlockUpdates[block.id]) {
+      return {
+        ...block,
+        props: { ...block.props, ...pendingBlockUpdates[block.id].props },
+        ...pendingBlockUpdates[block.id]
+      };
+    }
+    return block;
+  });
 
   // Nested columns'ları yükle
   useEffect(() => {
@@ -336,7 +351,7 @@ export function ColumnEditor({
                   ?.filter((id) => id !== block.id)
                   .map((blockId) => getBlockById(blockId)) || [];
                 const loadedBlocks = await Promise.all(blockPromises);
-                setBlocks(loadedBlocks.filter(Boolean) as Block[]);
+                setBaseBlocks(loadedBlocks.filter(Boolean) as Block[]);
               }}
               onDuplicate={async (blockId: string) => {
                 try {
@@ -347,7 +362,7 @@ export function ColumnEditor({
                   // Block listesini yenile
                   const blockPromises = column.blocks?.map((id) => getBlockById(id)) || [];
                   const loadedBlocks = await Promise.all(blockPromises);
-                  setBlocks(loadedBlocks.filter(Boolean) as Block[]);
+                  setBaseBlocks(loadedBlocks.filter(Boolean) as Block[]);
                 } catch (error) {
                   logger.pageBuilder.error('Block kopyalama hatası', error);
                   throw error;

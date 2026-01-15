@@ -13,7 +13,7 @@ import { getColumnById } from '@/lib/firebase/firestore';
 import { logger } from '@/lib/logger';
 import { ArrowUp, ArrowDown, Copy, Trash2, Settings, Plus } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import type { Section, Column } from '@/types/pageBuilder';
+import type { Section, Column, Block } from '@/types/pageBuilder';
 
 interface SectionEditorProps {
   section: Section;
@@ -25,6 +25,9 @@ interface SectionEditorProps {
   onMove?: (sectionId: string, direction: 'up' | 'down') => Promise<void>;
   onDuplicate?: (sectionId: string) => Promise<void>;
   onDelete?: (sectionId: string) => Promise<void>;
+  // Pending updates for live preview
+  pendingColumnUpdates?: Record<string, Partial<Column>>;
+  pendingBlockUpdates?: Record<string, Partial<Block>>;
 }
 
 export function SectionEditor({
@@ -37,11 +40,13 @@ export function SectionEditor({
   onMove,
   onDuplicate,
   onDelete,
+  pendingColumnUpdates = {},
+  pendingBlockUpdates = {},
 }: SectionEditorProps) {
   const [isMoving, setIsMoving] = useState(false);
   const [isDuplicating, setIsDuplicating] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
-  const [columns, setColumns] = useState<Column[]>([]);
+  const [baseColumns, setBaseColumns] = useState<Column[]>([]);
   const [isHovered, setIsHovered] = useState(false);
   const [loading, setLoading] = useState(true);
 
@@ -54,7 +59,7 @@ export function SectionEditor({
   useEffect(() => {
     async function loadColumns() {
       if (!section.columns || section.columns.length === 0) {
-        setColumns([]);
+        setBaseColumns([]);
         setLoading(false);
         return;
       }
@@ -63,10 +68,10 @@ export function SectionEditor({
         setLoading(true);
         const columnPromises = section.columns.map(columnId => getColumnById(columnId));
         const loadedColumns = await Promise.all(columnPromises);
-        setColumns(loadedColumns.filter(Boolean) as Column[]);
+        setBaseColumns(loadedColumns.filter(Boolean) as Column[]);
       } catch (error) {
         logger.pageBuilder.error('Column yükleme hatası', error);
-        setColumns([]);
+        setBaseColumns([]);
       } finally {
         setLoading(false);
       }
@@ -74,6 +79,14 @@ export function SectionEditor({
 
     loadColumns();
   }, [section.columns]);
+
+  // Pending updates'i merge ederek live preview columns oluştur
+  const columns = baseColumns.map(column => {
+    if (pendingColumnUpdates[column.id]) {
+      return { ...column, ...pendingColumnUpdates[column.id] };
+    }
+    return column;
+  });
 
   const settings = section.settings || {};
   const gridTemplate = columns.length > 0
@@ -88,8 +101,8 @@ export function SectionEditor({
         isSelected
           ? 'border-primary-500 shadow-lg'
           : isOver
-          ? 'border-primary-300 dark:border-primary-600'
-          : 'border-transparent hover:border-gray-300 dark:hover:border-gray-600'
+            ? 'border-primary-300 dark:border-primary-600'
+            : 'border-transparent hover:border-gray-300 dark:hover:border-gray-600'
       )}
       onClick={onSelect}
       onMouseEnter={() => setIsHovered(true)}
@@ -272,27 +285,28 @@ export function SectionEditor({
                 }}
                 selectedElement={selectedElement}
                 onSelectElement={onSelectElement}
+                pendingBlockUpdates={pendingBlockUpdates}
                 onAddColumn={async (afterColumnId) => {
                   try {
                     const { createColumn, getSectionById } = await import('@/lib/firebase/firestore');
                     const currentSection = await getSectionById(section.id);
                     if (!currentSection) return;
-                    
+
                     // Mevcut kolon sayısını al
                     const currentColumns = currentSection.columns || [];
                     const afterIndex = currentColumns.indexOf(afterColumnId);
-                    
+
                     // Yeni kolon genişliğini hesapla (mevcut kolonların genişliklerini eşit dağıt)
                     const numColumns = currentColumns.length + 1;
                     const equalWidth = 100 / numColumns;
-                    
+
                     // Yeni kolon oluştur
                     await createColumn({
                       sectionId: section.id,
                       width: equalWidth,
                       order: afterIndex + 1,
                     });
-                    
+
                     // Mevcut kolonların genişliklerini güncelle
                     const { updateColumn, getColumnById } = await import('@/lib/firebase/firestore');
                     for (const colId of currentColumns) {
@@ -301,7 +315,7 @@ export function SectionEditor({
                         await updateColumn(colId, { width: equalWidth });
                       }
                     }
-                    
+
                     window.dispatchEvent(new CustomEvent('section-updated', { detail: { sectionId: section.id } }));
                   } catch (error) {
                     logger.pageBuilder.error('Yeni kolon ekleme hatası', error);

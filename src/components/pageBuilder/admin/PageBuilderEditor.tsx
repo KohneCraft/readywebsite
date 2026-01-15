@@ -455,14 +455,15 @@ export function PageBuilderEditor({ pageId }: PageBuilderEditorProps) {
       setPendingBlockUpdates({});
       setHasChanges(false);
 
-      // Sayfayı yeniden yükle - history'yi koru
-      await loadPage(true);
+      // Artık live preview olduğu için sayfa yenilemeye gerek yok
+      // Kullanıcıya başarı mesajı göster
+      logger.pageBuilder.info('Sayfa başarıyla kaydedildi');
     } catch (error) {
       logger.pageBuilder.error('Kaydetme hatası', error);
     } finally {
       setIsSaving(false);
     }
-  }, [page, pageId, hasChanges, pendingSectionUpdates, pendingColumnUpdates, pendingBlockUpdates, loadPage]);
+  }, [page, pageId, hasChanges, pendingSectionUpdates, pendingColumnUpdates, pendingBlockUpdates]);
 
   // Sayfa güncelleme
   const handlePageUpdate = useCallback((updates: Partial<Page>) => {
@@ -620,6 +621,9 @@ export function PageBuilderEditor({ pageId }: PageBuilderEditorProps) {
               zoom={zoom}
               selectedElement={selectedElement}
               onSelectElement={setSelectedElement}
+              pendingSectionUpdates={pendingSectionUpdates}
+              pendingColumnUpdates={pendingColumnUpdates}
+              pendingBlockUpdates={pendingBlockUpdates}
               onMoveSection={async (sectionId, direction) => {
                 // Önce history'ye kaydet
                 saveToHistory();

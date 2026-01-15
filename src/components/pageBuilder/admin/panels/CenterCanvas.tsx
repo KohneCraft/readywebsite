@@ -5,13 +5,13 @@
 // Ana düzenleme alanı - Section'ları gösterir
 // ============================================
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useDroppable } from '@dnd-kit/core';
 import { SectionEditor } from '../components/SectionEditor';
 import { getSectionById } from '@/lib/firebase/firestore';
 import { logger } from '@/lib/logger';
 import { cn } from '@/lib/utils';
-import type { Page, Section } from '@/types/pageBuilder';
+import type { Page, Section, Column, Block } from '@/types/pageBuilder';
 
 interface CenterCanvasProps {
   page: Page;
@@ -22,6 +22,10 @@ interface CenterCanvasProps {
   onMoveSection?: (sectionId: string, direction: 'up' | 'down') => Promise<void>;
   onDuplicateSection?: (sectionId: string) => Promise<void>;
   onDeleteSection?: (sectionId: string) => Promise<void>;
+  // Pending updates for live preview
+  pendingSectionUpdates?: Record<string, Partial<Section>>;
+  pendingColumnUpdates?: Record<string, Partial<Column>>;
+  pendingBlockUpdates?: Record<string, Partial<Block>>;
 }
 
 const deviceWidths = {
@@ -39,15 +43,18 @@ export function CenterCanvas({
   onMoveSection,
   onDuplicateSection,
   onDeleteSection,
+  pendingSectionUpdates = {},
+  pendingColumnUpdates = {},
+  pendingBlockUpdates = {},
 }: CenterCanvasProps) {
-  const [sections, setSections] = useState<Section[]>([]);
+  const [baseSections, setBaseSections] = useState<Section[]>([]);
   const [loading, setLoading] = useState(true);
 
   // Section'ları yükle
   useEffect(() => {
     async function loadSections() {
       if (!page.sections || page.sections.length === 0) {
-        setSections([]);
+        setBaseSections([]);
         setLoading(false);
         return;
       }
@@ -56,10 +63,10 @@ export function CenterCanvas({
         setLoading(true);
         const sectionPromises = page.sections.map(sectionId => getSectionById(sectionId));
         const loadedSections = await Promise.all(sectionPromises);
-        setSections(loadedSections.filter(Boolean) as Section[]);
+        setBaseSections(loadedSections.filter(Boolean) as Section[]);
       } catch (error) {
         logger.pageBuilder.error('Section yükleme hatası', error);
-        setSections([]);
+        setBaseSections([]);
       } finally {
         setLoading(false);
       }
@@ -74,7 +81,7 @@ export function CenterCanvas({
       try {
         const updatedSection = await getSectionById(sectionId);
         if (updatedSection) {
-          setSections(prev => prev.map(s => s.id === sectionId ? updatedSection : s));
+          setBaseSections(prev => prev.map(s => s.id === sectionId ? updatedSection : s));
         }
       } catch (error) {
         logger.pageBuilder.error('Section güncelleme hatası', error);
@@ -86,6 +93,18 @@ export function CenterCanvas({
       window.removeEventListener('section-updated', handleSectionUpdate);
     };
   }, [page.sections]);
+
+  // Pending updates'i merge ederek live preview sections oluştur
+  // Not: columns string array (ID'ler) olduğu için column/block merge SectionEditor'da yapılacak
+  const sections = useMemo(() => {
+    return baseSections.map(section => {
+      // Section'a pending updates uygula
+      if (pendingSectionUpdates[section.id]) {
+        return { ...section, ...pendingSectionUpdates[section.id] };
+      }
+      return section;
+    });
+  }, [baseSections, pendingSectionUpdates]);
 
   return (
     <div className="flex-1 flex flex-col overflow-hidden bg-gray-100 dark:bg-gray-900">
@@ -119,6 +138,8 @@ export function CenterCanvas({
                   onMove={onMoveSection}
                   onDuplicate={onDuplicateSection}
                   onDelete={onDeleteSection}
+                  pendingColumnUpdates={pendingColumnUpdates}
+                  pendingBlockUpdates={pendingBlockUpdates}
                 />
               ))
             ) : (
