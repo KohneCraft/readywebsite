@@ -77,11 +77,19 @@ export function ColumnEditor({
 
   // Pending updates'i merge ederek live preview blocks oluştur
   const blocks = baseBlocks.map(block => {
-    if (pendingBlockUpdates[block.id]) {
+    const pending = pendingBlockUpdates[block.id];
+    if (pending) {
+      console.log('[Live Preview] Block güncellendi:', block.id, pending);
+      // pending tüm block objesini içerebilir veya sadece güncellenmiş alanları
+      // props özel olarak merge edilmeli
+      const mergedProps = pending.props
+        ? { ...block.props, ...pending.props }
+        : block.props;
+
       return {
         ...block,
-        props: { ...block.props, ...pendingBlockUpdates[block.id].props },
-        ...pendingBlockUpdates[block.id]
+        ...pending,
+        props: mergedProps
       };
     }
     return block;
@@ -281,6 +289,7 @@ export function ColumnEditor({
                 }}
                 selectedElement={selectedElement}
                 onSelectElement={onSelectElement}
+                pendingBlockUpdates={pendingBlockUpdates}
                 onAddColumn={async (afterColumnId) => {
                   try {
                     const { createColumn, getColumnById, updateColumn } = await import('@/lib/firebase/firestore');

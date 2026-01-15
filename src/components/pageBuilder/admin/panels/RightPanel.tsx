@@ -24,9 +24,11 @@ interface RightPanelProps {
   onSectionUpdate?: (sectionId: string, updates: Partial<Section>) => void;
   onColumnUpdate?: (columnId: string, updates: Partial<Column>) => void;
   onBlockUpdate?: (blockId: string, updates: Partial<Block>) => void;
+  // Live preview için pending block updates
+  pendingBlockUpdates?: Record<string, Partial<Block>>;
 }
 
-export function RightPanel({ selectedElement, page, onUpdate, onSelectElement, onSectionUpdate, onColumnUpdate, onBlockUpdate }: RightPanelProps) {
+export function RightPanel({ selectedElement, page, onUpdate, onSelectElement, onSectionUpdate, onColumnUpdate, onBlockUpdate, pendingBlockUpdates }: RightPanelProps) {
   const [activeTab, setActiveTab] = useState<'style' | 'settings' | 'advanced'>('style');
   const [viewMode, setViewMode] = useState<'element' | 'header' | 'footer' | 'page'>('element');
 
@@ -159,7 +161,7 @@ export function RightPanel({ selectedElement, page, onUpdate, onSelectElement, o
                   </button>
                 ))}
               </div>
-              <PageSettings page={page} activeTab={activeTab} onUpdate={onUpdate || (() => {})} />
+              <PageSettings page={page} activeTab={activeTab} onUpdate={onUpdate || (() => { })} />
             </div>
           )}
 
@@ -239,6 +241,7 @@ export function RightPanel({ selectedElement, page, onUpdate, onSelectElement, o
             blockId={selectedElement.id}
             activeTab={activeTab}
             onUpdate={handleBlockUpdate}
+            pendingBlock={pendingBlockUpdates?.[selectedElement.id]}
           />
         )}
       </div>

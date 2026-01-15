@@ -270,6 +270,7 @@ function SlideItem({ slide, isActive, transitionSpeed, transitionEffect }: Slide
                         fill
                         className="object-cover"
                         priority={isActive}
+                        unoptimized={true}
                     />
                 </div>
             ) : (

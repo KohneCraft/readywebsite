@@ -26,18 +26,26 @@ interface BlockSettingsProps {
   blockId: string;
   activeTab: 'style' | 'settings' | 'advanced';
   onUpdate: (updates: Partial<Block>) => void;
+  // Live preview için: pending updates ile birleştirilmiş block
+  pendingBlock?: Partial<Block>;
 }
 
-export function BlockSettings({ blockId, activeTab, onUpdate }: BlockSettingsProps) {
-  const [block, setBlock] = useState<Block | null>(null);
-  const [loading, setLoading] = useState(true);
+export function BlockSettings({ blockId, activeTab, onUpdate, pendingBlock }: BlockSettingsProps) {
+  const [fetchedBlock, setFetchedBlock] = useState<Block | null>(null);
+  const [loading, setLoading] = useState(!pendingBlock);
 
   useEffect(() => {
+    // PendingBlock varsa ve tam bir block ise Firebase'den yüklemeye gerek yok
+    if (pendingBlock && 'id' in pendingBlock && 'type' in pendingBlock) {
+      setLoading(false);
+      return;
+    }
+
     async function loadBlock() {
       try {
         setLoading(true);
         const blockData = await getBlockById(blockId);
-        setBlock(blockData);
+        setFetchedBlock(blockData);
       } catch (error) {
         logger.pageBuilder.error('Block yükleme hatası', error);
       } finally {
@@ -45,7 +53,19 @@ export function BlockSettings({ blockId, activeTab, onUpdate }: BlockSettingsPro
       }
     }
     loadBlock();
-  }, [blockId]);
+  }, [blockId, pendingBlock]);
+
+  // Kullanılacak block: pendingBlock varsa onu kullan, yoksa Firebase'den yüklenen
+  // pendingBlock tam bir Block değilse, fetchedBlock ile birleştir
+  const block: Block | null = (() => {
+    if (pendingBlock && 'id' in pendingBlock && 'type' in pendingBlock) {
+      return pendingBlock as Block;
+    }
+    if (fetchedBlock && pendingBlock) {
+      return { ...fetchedBlock, ...pendingBlock } as Block;
+    }
+    return fetchedBlock;
+  })();
 
   if (loading) {
     return (
@@ -73,7 +93,6 @@ export function BlockSettings({ blockId, activeTab, onUpdate }: BlockSettingsPro
             activeTab={activeTab}
             onUpdate={(updates) => {
               const updated = { ...block, props: { ...block.props, ...updates } };
-              setBlock(updated);
               onUpdate(updated);
             }}
           />
@@ -85,7 +104,6 @@ export function BlockSettings({ blockId, activeTab, onUpdate }: BlockSettingsPro
             activeTab={activeTab}
             onUpdate={(updates) => {
               const updated = { ...block, props: { ...block.props, ...updates } };
-              setBlock(updated);
               onUpdate(updated);
             }}
           />
@@ -97,7 +115,6 @@ export function BlockSettings({ blockId, activeTab, onUpdate }: BlockSettingsPro
             activeTab={activeTab}
             onUpdate={(updates) => {
               const updated = { ...block, props: { ...block.props, ...updates } };
-              setBlock(updated);
               onUpdate(updated);
             }}
           />
@@ -109,7 +126,6 @@ export function BlockSettings({ blockId, activeTab, onUpdate }: BlockSettingsPro
             activeTab={activeTab}
             onUpdate={(updates) => {
               const updated = { ...block, props: { ...block.props, ...updates } };
-              setBlock(updated);
               onUpdate(updated);
             }}
           />
@@ -121,7 +137,6 @@ export function BlockSettings({ blockId, activeTab, onUpdate }: BlockSettingsPro
             activeTab={activeTab}
             onUpdate={(updates) => {
               const updated = { ...block, props: { ...block.props, ...updates } };
-              setBlock(updated);
               onUpdate(updated);
             }}
           />
@@ -133,7 +148,6 @@ export function BlockSettings({ blockId, activeTab, onUpdate }: BlockSettingsPro
             activeTab={activeTab}
             onUpdate={(updates) => {
               const updated = { ...block, props: { ...block.props, ...updates } };
-              setBlock(updated);
               onUpdate(updated);
             }}
           />
@@ -145,7 +159,6 @@ export function BlockSettings({ blockId, activeTab, onUpdate }: BlockSettingsPro
             activeTab={activeTab}
             onUpdate={(updates) => {
               const updated = { ...block, props: { ...block.props, ...updates } };
-              setBlock(updated);
               onUpdate(updated);
             }}
           />
@@ -157,7 +170,6 @@ export function BlockSettings({ blockId, activeTab, onUpdate }: BlockSettingsPro
             activeTab={activeTab}
             onUpdate={(updates) => {
               const updated = { ...block, props: { ...block.props, ...updates } };
-              setBlock(updated);
               onUpdate(updated);
             }}
           />
@@ -169,7 +181,6 @@ export function BlockSettings({ blockId, activeTab, onUpdate }: BlockSettingsPro
             activeTab={activeTab}
             onUpdate={(updates) => {
               const updated = { ...block, props: { ...block.props, ...updates } };
-              setBlock(updated);
               onUpdate(updated);
             }}
           />
@@ -181,7 +192,6 @@ export function BlockSettings({ blockId, activeTab, onUpdate }: BlockSettingsPro
             activeTab={activeTab}
             onUpdate={(updates) => {
               const updated = { ...block, props: { ...block.props, ...updates } };
-              setBlock(updated);
               onUpdate(updated);
             }}
           />
@@ -193,7 +203,6 @@ export function BlockSettings({ blockId, activeTab, onUpdate }: BlockSettingsPro
             activeTab={activeTab}
             onUpdate={(updates) => {
               const updated = { ...block, props: { ...block.props, ...updates } };
-              setBlock(updated);
               onUpdate(updated);
             }}
           />
@@ -209,4 +218,3 @@ export function BlockSettings({ blockId, activeTab, onUpdate }: BlockSettingsPro
 
   return renderBlockSettings();
 }
-

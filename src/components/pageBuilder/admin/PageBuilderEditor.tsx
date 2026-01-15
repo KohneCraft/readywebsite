@@ -669,6 +669,7 @@ export function PageBuilderEditor({ pageId }: PageBuilderEditorProps) {
               page={page}
               onUpdate={handlePageUpdate}
               onSelectElement={setSelectedElement}
+              pendingBlockUpdates={pendingBlockUpdates}
               onSectionUpdate={(sectionId, updates) => {
                 setPendingSectionUpdates(prev => ({
                   ...prev,
@@ -684,6 +685,7 @@ export function PageBuilderEditor({ pageId }: PageBuilderEditorProps) {
                 setHasChanges(true);
               }}
               onBlockUpdate={(blockId, updates) => {
+                console.log('[PageBuilderEditor] onBlockUpdate:', blockId, updates);
                 setPendingBlockUpdates(prev => ({
                   ...prev,
                   [blockId]: { ...prev[blockId], ...updates }
