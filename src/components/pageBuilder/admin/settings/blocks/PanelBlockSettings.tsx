@@ -241,10 +241,115 @@ export function PanelBlockSettings({ block, activeTab, onUpdate }: PanelBlockSet
     }
 
     if (activeTab === 'settings') {
+        const panelSpacing = props.panelSpacing || { margin: { top: 0, right: 0, bottom: 0, left: 0 }, padding: { top: 20, right: 20, bottom: 20, left: 20 } };
+        const panelMode = props.panelMode || 'overlay';
+
         return (
             <div className="space-y-4">
+                {/* Panel Modu */}
+                <div>
+                    <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        Panel Modu
+                    </label>
+                    <div className="grid grid-cols-2 gap-2">
+                        <button
+                            onClick={() => onUpdate({ panelMode: 'overlay' })}
+                            className={cn(
+                                'flex flex-col items-center gap-1 px-3 py-3 text-sm rounded-lg transition-all',
+                                panelMode === 'overlay'
+                                    ? 'bg-primary-600 text-white'
+                                    : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
+                            )}
+                        >
+                            <span className="text-lg">🪟</span>
+                            <span>Overlay</span>
+                            <span className="text-[10px] opacity-75">İçerik üzerinde</span>
+                        </button>
+                        <button
+                            onClick={() => onUpdate({ panelMode: 'sidebar' })}
+                            className={cn(
+                                'flex flex-col items-center gap-1 px-3 py-3 text-sm rounded-lg transition-all',
+                                panelMode === 'sidebar'
+                                    ? 'bg-primary-600 text-white'
+                                    : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
+                            )}
+                        >
+                            <span className="text-lg">📐</span>
+                            <span>Sidebar</span>
+                            <span className="text-[10px] opacity-75">İçeriği iter</span>
+                        </button>
+                    </div>
+                    <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
+                        💡 Sidebar modu seçildiğinde, panel açıldığında sayfa içeriği kenara kayar
+                    </p>
+                </div>
+
+                {/* Margin Ayarları */}
+                <div className="pt-4 border-t border-gray-200 dark:border-gray-700">
+                    <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        Dış Boşluk (Margin)
+                    </label>
+                    <div className="grid grid-cols-4 gap-2">
+                        {['top', 'right', 'bottom', 'left'].map((side) => (
+                            <div key={side} className="text-center">
+                                <span className="block text-[10px] text-gray-500 mb-1 capitalize">
+                                    {side === 'top' ? 'Üst' : side === 'right' ? 'Sağ' : side === 'bottom' ? 'Alt' : 'Sol'}
+                                </span>
+                                <input
+                                    type="number"
+                                    value={panelSpacing.margin?.[side as keyof typeof panelSpacing.margin] ?? 0}
+                                    onChange={(e) => {
+                                        const value = parseInt(e.target.value) || 0;
+                                        onUpdate({
+                                            panelSpacing: {
+                                                ...panelSpacing,
+                                                margin: { ...panelSpacing.margin, [side]: value },
+                                            },
+                                        });
+                                    }}
+                                    min={0}
+                                    max={200}
+                                    className="w-full px-2 py-1 text-sm text-center border border-gray-200 dark:border-gray-700 rounded bg-white dark:bg-gray-900 text-gray-900 dark:text-white"
+                                />
+                            </div>
+                        ))}
+                    </div>
+                </div>
+
+                {/* Padding Ayarları */}
+                <div>
+                    <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        İç Boşluk (Padding)
+                    </label>
+                    <div className="grid grid-cols-4 gap-2">
+                        {['top', 'right', 'bottom', 'left'].map((side) => (
+                            <div key={side} className="text-center">
+                                <span className="block text-[10px] text-gray-500 mb-1 capitalize">
+                                    {side === 'top' ? 'Üst' : side === 'right' ? 'Sağ' : side === 'bottom' ? 'Alt' : 'Sol'}
+                                </span>
+                                <input
+                                    type="number"
+                                    value={panelSpacing.padding?.[side as keyof typeof panelSpacing.padding] ?? 20}
+                                    onChange={(e) => {
+                                        const value = parseInt(e.target.value) || 0;
+                                        onUpdate({
+                                            panelSpacing: {
+                                                ...panelSpacing,
+                                                padding: { ...panelSpacing.padding, [side]: value },
+                                            },
+                                        });
+                                    }}
+                                    min={0}
+                                    max={100}
+                                    className="w-full px-2 py-1 text-sm text-center border border-gray-200 dark:border-gray-700 rounded bg-white dark:bg-gray-900 text-gray-900 dark:text-white"
+                                />
+                            </div>
+                        ))}
+                    </div>
+                </div>
+
                 {/* Davranış Ayarları */}
-                <div className="space-y-3">
+                <div className="space-y-3 pt-4 border-t border-gray-200 dark:border-gray-700">
                     <h4 className="text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider">
                         Davranış
                     </h4>

@@ -310,6 +310,11 @@ export interface BlockProps {
     easing?: string;
   };
   panelBlocks?: string[]; // İçindeki blok ID'leri
+  panelSpacing?: {
+    margin?: { top?: number; right?: number; bottom?: number; left?: number };
+    padding?: { top?: number; right?: number; bottom?: number; left?: number };
+  };
+  panelMode?: 'overlay' | 'sidebar'; // Overlay: içerik üzerinde, Sidebar: içeriği iter
 }
 
 /**
