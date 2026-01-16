@@ -22,6 +22,7 @@ import {
   Plus,
   Columns,
   SlidersHorizontal,
+  PanelRight,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import type { BlockType } from '@/types/pageBuilder';
@@ -54,6 +55,7 @@ const blockLibrary: BlockLibraryItem[] = [
   // Gelişmiş Bloklar
   { type: 'map', icon: MapPin, label: 'Harita', description: 'Google Maps', category: 'advanced' },
   { type: 'html', icon: Code, label: 'HTML', description: 'Özel HTML kodu', category: 'advanced' },
+  { type: 'panel', icon: PanelRight, label: 'Panel', description: 'Sabit pozisyonlu panel', category: 'advanced' },
 ];
 
 const categories = [

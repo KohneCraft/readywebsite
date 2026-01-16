@@ -12,7 +12,8 @@ import {
   FormBlock,
   MapBlock,
   HTMLBlock,
-  SliderBlock
+  SliderBlock,
+  PanelBlock
 } from '../blocks';
 import { getBlockById } from '@/lib/firebase/firestore';
 import { logger } from '@/lib/logger';
@@ -37,6 +38,7 @@ const blockComponents: Record<BlockType, React.ComponentType<{ props: Block['pro
   map: MapBlock,
   html: HTMLBlock,
   slider: SliderBlock,
+  panel: PanelBlock,
 };
 
 export function BlockRenderer({ blockId, index, block: propBlock }: BlockRendererProps) {

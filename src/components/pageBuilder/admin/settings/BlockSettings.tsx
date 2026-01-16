@@ -19,6 +19,7 @@ import { FormBlockSettings } from './blocks/FormBlockSettings';
 import { MapBlockSettings } from './blocks/MapBlockSettings';
 import { HTMLBlockSettings } from './blocks/HTMLBlockSettings';
 import { SliderBlockSettings } from './blocks/SliderBlockSettings';
+import { PanelBlockSettings } from './blocks/PanelBlockSettings';
 import { Spinner } from '@/components/ui/Spinner';
 import type { Block } from '@/types/pageBuilder';
 
@@ -199,6 +200,17 @@ export function BlockSettings({ blockId, activeTab, onUpdate, pendingBlock }: Bl
       case 'slider':
         return (
           <SliderBlockSettings
+            block={block}
+            activeTab={activeTab}
+            onUpdate={(updates) => {
+              const updated = { ...block, props: { ...block.props, ...updates } };
+              onUpdate(updated);
+            }}
+          />
+        );
+      case 'panel':
+        return (
+          <PanelBlockSettings
             block={block}
             activeTab={activeTab}
             onUpdate={(updates) => {

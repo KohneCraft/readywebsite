@@ -20,7 +20,8 @@ export type BlockType =
   | 'form'
   | 'map'
   | 'html'
-  | 'slider';
+  | 'slider'
+  | 'panel';
 
 /**
  * Responsive breakpoint
@@ -253,6 +254,62 @@ export interface BlockProps {
   sliderHeight?: number | 'auto'; // Slider yükseakliği
   transitionSpeed?: number; // Geçiş hızı (ms)
   transitionEffect?: 'slide' | 'fade' | 'zoom' | 'flip'; // Geçiş efekti
+
+  // Panel Block
+  panelPosition?: 'right' | 'left' | 'top' | 'bottom';
+  panelDimensions?: {
+    width?: number | string;
+    height?: number | string;
+    maxWidth?: number;
+    minWidth?: number;
+  };
+  panelPositioning?: {
+    type?: 'fixed' | 'sticky' | 'absolute';
+    offset?: Spacing;
+    zIndex?: number;
+  };
+  panelAppearance?: {
+    backgroundColor?: string;
+    backgroundColorDark?: string;
+    borderColor?: string;
+    borderWidth?: number;
+    borderStyle?: 'solid' | 'dashed' | 'dotted' | 'none';
+    boxShadow?: string;
+    borderRadius?: number;
+  };
+  panelBehavior?: {
+    closeable?: boolean;
+    defaultOpen?: boolean;
+    showOnScroll?: boolean;
+    hideOnScroll?: boolean;
+    scrollThreshold?: number;
+    overlay?: boolean;
+    overlayColor?: string;
+    closeOnEscape?: boolean;
+    closeOnClickOutside?: boolean;
+  };
+  panelResponsive?: {
+    mobile?: {
+      enabled?: boolean;
+      position?: 'right' | 'left' | 'top' | 'bottom';
+      width?: number | string;
+      height?: number | string;
+      collapsible?: boolean;
+      showAsModal?: boolean;
+    };
+    tablet?: {
+      enabled?: boolean;
+      width?: number | string;
+      height?: number | string;
+    };
+  };
+  panelAnimation?: {
+    enabled?: boolean;
+    type?: 'slide' | 'fade' | 'scale';
+    duration?: number;
+    easing?: string;
+  };
+  panelBlocks?: string[]; // İçindeki blok ID'leri
 }
 
 /**
@@ -558,6 +615,7 @@ export const BLOCK_TYPE_LABELS: Record<BlockType, string> = {
   map: 'Harita',
   html: 'HTML',
   slider: 'Slider',
+  panel: 'Panel',
 };
 
 /**
@@ -676,6 +734,60 @@ export function getDefaultBlockProps(type: BlockType): Partial<BlockProps> {
       sliderHeight: 400,
       transitionSpeed: 500,
       transitionEffect: 'slide',
+    },
+    panel: {
+      panelPosition: 'right',
+      panelDimensions: {
+        width: 320,
+        height: 'auto',
+        maxWidth: 400,
+        minWidth: 200,
+      },
+      panelPositioning: {
+        type: 'fixed',
+        offset: { top: 0, right: 0, bottom: 0, left: 0 },
+        zIndex: 1000,
+      },
+      panelAppearance: {
+        backgroundColor: '#ffffff',
+        backgroundColorDark: '#1f2937',
+        borderColor: '#e5e7eb',
+        borderWidth: 1,
+        borderStyle: 'solid',
+        boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)',
+        borderRadius: 0,
+      },
+      panelBehavior: {
+        closeable: true,
+        defaultOpen: true,
+        showOnScroll: false,
+        hideOnScroll: false,
+        scrollThreshold: 100,
+        overlay: false,
+        overlayColor: 'rgba(0, 0, 0, 0.5)',
+        closeOnEscape: true,
+        closeOnClickOutside: false,
+      },
+      panelResponsive: {
+        mobile: {
+          enabled: true,
+          position: 'bottom',
+          width: '100%',
+          collapsible: true,
+          showAsModal: true,
+        },
+        tablet: {
+          enabled: true,
+          width: 280,
+        },
+      },
+      panelAnimation: {
+        enabled: true,
+        type: 'slide',
+        duration: 0.3,
+        easing: 'ease-in-out',
+      },
+      panelBlocks: [],
     },
   };
 

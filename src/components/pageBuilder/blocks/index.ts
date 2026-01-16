@@ -9,4 +9,5 @@ export { FormBlock } from './FormBlock';
 export { MapBlock } from './MapBlock';
 export { HTMLBlock } from './HTMLBlock';
 export { SliderBlock } from './SliderBlock';
+export { PanelBlock } from './PanelBlock';
 

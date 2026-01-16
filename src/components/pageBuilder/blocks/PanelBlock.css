@@ -1,0 +1,254 @@
+/* ============================================
+   Panel Block Styles
+   Sabit pozisyonlu panel konteyner stilleri
+   ============================================ */
+
+/* Base Panel Styles */
+.panel-block {
+  display: flex;
+  flex-direction: column;
+  background: var(--panel-bg, #ffffff);
+  box-sizing: border-box;
+}
+
+/* Dark mode */
+.dark .panel-block {
+  background: var(--panel-bg-dark, #1f2937);
+  border-color: var(--panel-border-dark, #374151);
+}
+
+/* Position-specific styles */
+.panel-block.panel-right {
+  border-left-width: 1px;
+}
+
+.panel-block.panel-left {
+  border-right-width: 1px;
+}
+
+.panel-block.panel-top {
+  border-bottom-width: 1px;
+}
+
+.panel-block.panel-bottom {
+  border-top-width: 1px;
+}
+
+/* Panel Content */
+.panel-content {
+  flex: 1;
+  padding: 20px;
+  overflow-y: auto;
+}
+
+/* Empty state */
+.panel-empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100px;
+  color: #9ca3af;
+  font-size: 14px;
+}
+
+.dark .panel-empty {
+  color: #6b7280;
+}
+
+/* Close Button */
+.panel-close-btn {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  background: transparent;
+  border: none;
+  border-radius: 6px;
+  color: #6b7280;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  z-index: 10;
+}
+
+.panel-close-btn:hover {
+  background: rgba(0, 0, 0, 0.1);
+  color: #374151;
+}
+
+.dark .panel-close-btn {
+  color: #9ca3af;
+}
+
+.dark .panel-close-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: #e5e7eb;
+}
+
+/* Toggle Button (when panel is closed) */
+.panel-toggle-btn {
+  position: fixed;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  color: #374151;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  z-index: 1001;
+}
+
+.panel-toggle-btn:hover {
+  background: #f3f4f6;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.dark .panel-toggle-btn {
+  background: #374151;
+  border-color: #4b5563;
+  color: #e5e7eb;
+}
+
+.dark .panel-toggle-btn:hover {
+  background: #4b5563;
+}
+
+/* Toggle button positions */
+.panel-toggle-right {
+  right: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  border-top-right-radius: 0;
+  border-bottom-right-radius: 0;
+}
+
+.panel-toggle-left {
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  border-top-left-radius: 0;
+  border-bottom-left-radius: 0;
+}
+
+.panel-toggle-top {
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  border-top-left-radius: 0;
+  border-top-right-radius: 0;
+}
+
+.panel-toggle-bottom {
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  border-bottom-left-radius: 0;
+  border-bottom-right-radius: 0;
+}
+
+/* Overlay */
+.panel-overlay {
+  transition: opacity 0.3s ease;
+}
+
+/* State classes */
+.panel-block.closed {
+  pointer-events: none;
+}
+
+.panel-block.closed .panel-toggle-btn {
+  pointer-events: auto;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .panel-block.panel-right,
+  .panel-block.panel-left {
+    width: 85% !important;
+    max-width: 320px;
+  }
+
+  .panel-content {
+    padding: 16px;
+  }
+
+  .panel-close-btn {
+    top: 8px;
+    right: 8px;
+  }
+}
+
+/* Safe area support for mobile */
+@supports (padding: env(safe-area-inset-top)) {
+  .panel-block.panel-top {
+    padding-top: env(safe-area-inset-top);
+  }
+
+  .panel-block.panel-bottom {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+
+  .panel-block.panel-left {
+    padding-left: env(safe-area-inset-left);
+  }
+
+  .panel-block.panel-right {
+    padding-right: env(safe-area-inset-right);
+  }
+}
+
+/* Animation keyframes */
+@keyframes panelSlideInRight {
+  from {
+    transform: translateX(100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+@keyframes panelSlideInLeft {
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+@keyframes panelSlideInTop {
+  from {
+    transform: translateY(-100%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
+@keyframes panelSlideInBottom {
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
+@keyframes panelFadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
