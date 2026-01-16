@@ -456,6 +456,7 @@ export interface Page {
   title: string;
   slug: string;
   sections: string[]; // Section ID'leri
+  globalPanels?: string[]; // Global panel block ID'leri (section dışında)
   settings: PageSettings;
   status: 'draft' | 'published' | 'archived';
   createdAt: Date | Timestamp;
@@ -549,6 +550,7 @@ export interface PageUpdateInput {
   settings?: Partial<PageSettings>;
   status?: 'draft' | 'published' | 'archived';
   sections?: string[];
+  globalPanels?: string[];
 }
 
 export interface SectionUpdateInput {

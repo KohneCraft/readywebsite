@@ -6,13 +6,17 @@
 // ============================================
 
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
-import { X, ChevronLeft, ChevronRight, ChevronUp, ChevronDown } from 'lucide-react';
+import { X, ChevronLeft, ChevronRight, ChevronUp, ChevronDown, Settings, Maximize2 } from 'lucide-react';
 import { BlockRenderer } from '../renderers/BlockRenderer';
 import type { BlockProps } from '@/types/pageBuilder';
 import './PanelBlock.css';
 
 interface PanelBlockProps {
     props: BlockProps;
+    // Admin modda seçim için callback
+    onSelect?: () => void;
+    isSelected?: boolean;
+    isAdminMode?: boolean;
 }
 
 // Device detection
@@ -35,10 +39,22 @@ function useCurrentDevice(): 'mobile' | 'tablet' | 'desktop' {
     return device;
 }
 
-export function PanelBlock({ props }: PanelBlockProps) {
+// Admin mode detection
+function useIsAdminMode(): boolean {
+    const [isAdmin, setIsAdmin] = useState(false);
+
+    useEffect(() => {
+        // URL'de admin varsa admin modundayız
+        setIsAdmin(window.location.pathname.includes('/admin/'));
+    }, []);
+
+    return isAdmin;
+}
+
+export function PanelBlock({ props, onSelect, isSelected, isAdminMode: propIsAdmin }: PanelBlockProps) {
     const {
         panelPosition = 'right',
-        panelDimensions = { width: 320, height: 'auto' },
+        panelDimensions = { width: 320, height: 400 },
         panelPositioning = { type: 'fixed', zIndex: 1000 },
         panelAppearance = {},
         panelBehavior = {},
@@ -52,6 +68,8 @@ export function PanelBlock({ props }: PanelBlockProps) {
     const [isScrolled, setIsScrolled] = useState(false);
 
     const currentDevice = useCurrentDevice();
+    const detectedAdminMode = useIsAdminMode();
+    const isAdminMode = propIsAdmin ?? detectedAdminMode;
 
     // Responsive settings
     const responsiveSettings = useMemo(() => {
@@ -101,7 +119,7 @@ export function PanelBlock({ props }: PanelBlockProps) {
 
     // ESC key handler
     useEffect(() => {
-        if (!panelBehavior.closeOnEscape) return;
+        if (!panelBehavior.closeOnEscape || isAdminMode) return;
 
         const handleEscape = (e: KeyboardEvent) => {
             if (e.key === 'Escape' && isOpen) {
@@ -111,7 +129,7 @@ export function PanelBlock({ props }: PanelBlockProps) {
 
         document.addEventListener('keydown', handleEscape);
         return () => document.removeEventListener('keydown', handleEscape);
-    }, [isOpen, panelBehavior.closeOnEscape]);
+    }, [isOpen, panelBehavior.closeOnEscape, isAdminMode]);
 
     // Toggle panel
     const togglePanel = useCallback(() => {
@@ -125,35 +143,145 @@ export function PanelBlock({ props }: PanelBlockProps) {
 
     // Handle overlay click
     const handleOverlayClick = useCallback(() => {
-        if (panelBehavior.closeOnClickOutside) {
+        if (panelBehavior.closeOnClickOutside && !isAdminMode) {
             closePanel();
         }
-    }, [panelBehavior.closeOnClickOutside, closePanel]);
+    }, [panelBehavior.closeOnClickOutside, closePanel, isAdminMode]);
 
-    // Don't render if disabled on current device
-    if (!isEnabledOnDevice || !isVisible) {
+    // Handle panel click (for admin selection)
+    const handlePanelClick = useCallback((e: React.MouseEvent) => {
+        e.stopPropagation();
+        if (onSelect) {
+            onSelect();
+        }
+    }, [onSelect]);
+
+    // Don't render if disabled on current device (but always show in admin mode)
+    if (!isAdminMode && (!isEnabledOnDevice || !isVisible)) {
         return null;
     }
 
     // Calculate dimensions
     const getWidth = () => {
         if (currentPosition === 'top' || currentPosition === 'bottom') return '100%';
-        if (responsiveSettings?.width) return typeof responsiveSettings.width === 'number' ? `${responsiveSettings.width}px` : responsiveSettings.width;
-        return typeof panelDimensions.width === 'number' ? `${panelDimensions.width}px` : panelDimensions.width;
+        if (responsiveSettings?.width) {
+            return typeof responsiveSettings.width === 'number' ? `${responsiveSettings.width}px` : responsiveSettings.width;
+        }
+        const width = panelDimensions.width ?? 320;
+        return typeof width === 'number' ? `${width}px` : width;
     };
 
     const getHeight = () => {
-        if (currentPosition === 'left' || currentPosition === 'right') return '100vh';
-        if (responsiveSettings?.height) return typeof responsiveSettings.height === 'number' ? `${responsiveSettings.height}px` : responsiveSettings.height;
-        return typeof panelDimensions.height === 'number' ? `${panelDimensions.height}px` : panelDimensions.height;
+        // Admin modda küçük göster
+        if (isAdminMode) {
+            if (currentPosition === 'left' || currentPosition === 'right') {
+                return 'auto';
+            }
+        }
+
+        // Kullanıcı tarafından ayarlanan yükseklik
+        if (responsiveSettings?.height) {
+            return typeof responsiveSettings.height === 'number' ? `${responsiveSettings.height}px` : responsiveSettings.height;
+        }
+
+        const height = panelDimensions.height ?? 'auto';
+        if (height === 'auto' || height === '100vh' || height === 'full') {
+            // Sağ/sol paneller için varsayılan olarak auto (içerik yüksekliği) kullan
+            if (currentPosition === 'left' || currentPosition === 'right') {
+                return 'auto';
+            }
+            return height === 'full' ? '100vh' : height;
+        }
+        return typeof height === 'number' ? `${height}px` : height;
     };
 
-    // Panel style
+    // Admin modda inline görünüm için özel stiller
+    if (isAdminMode) {
+        return (
+            <div
+                className={`panel-block-admin-preview ${isSelected ? 'selected' : ''}`}
+                onClick={handlePanelClick}
+                style={{
+                    backgroundColor: panelAppearance.backgroundColor ?? '#ffffff',
+                    borderColor: isSelected ? '#3b82f6' : (panelAppearance.borderColor ?? '#e5e7eb'),
+                    borderWidth: isSelected ? 2 : (panelAppearance.borderWidth ?? 1),
+                    borderStyle: 'solid',
+                    borderRadius: panelAppearance.borderRadius ?? 8,
+                    padding: '16px',
+                    minHeight: '120px',
+                    cursor: 'pointer',
+                    position: 'relative',
+                }}
+            >
+                {/* Admin Header */}
+                <div className="panel-admin-header" style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    marginBottom: '12px',
+                    paddingBottom: '8px',
+                    borderBottom: '1px solid #e5e7eb',
+                }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <Maximize2 size={16} className="text-gray-500" />
+                        <span style={{ fontSize: '12px', fontWeight: 600, color: '#6b7280' }}>
+                            Panel ({currentPosition === 'right' ? 'Sağ' : currentPosition === 'left' ? 'Sol' : currentPosition === 'top' ? 'Üst' : 'Alt'})
+                        </span>
+                    </div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                        <Settings size={14} className="text-gray-400" />
+                        <span style={{ fontSize: '11px', color: '#9ca3af' }}>
+                            {getWidth()} × {getHeight()}
+                        </span>
+                    </div>
+                </div>
+
+                {/* Panel Content Preview */}
+                <div className="panel-admin-content" style={{
+                    color: '#6b7280',
+                    fontSize: '13px',
+                    textAlign: 'center',
+                    padding: '20px',
+                    backgroundColor: '#f9fafb',
+                    borderRadius: '6px',
+                }}>
+                    {panelBlocks && panelBlocks.length > 0 ? (
+                        <div>
+                            <p style={{ marginBottom: '8px' }}>📦 {panelBlocks.length} blok içeriyor</p>
+                            <p style={{ fontSize: '11px', color: '#9ca3af' }}>Önizlemede tam görünür</p>
+                        </div>
+                    ) : (
+                        <div>
+                            <p style={{ marginBottom: '8px' }}>Panel içeriği boş</p>
+                            <p style={{ fontSize: '11px', color: '#9ca3af' }}>
+                                Ayarlardan içerik ekleyebilirsiniz
+                            </p>
+                        </div>
+                    )}
+                </div>
+
+                {/* Info Bar */}
+                <div style={{
+                    marginTop: '12px',
+                    padding: '8px 12px',
+                    backgroundColor: '#eff6ff',
+                    borderRadius: '6px',
+                    fontSize: '11px',
+                    color: '#3b82f6',
+                }}>
+                    💡 Sayfa önizlemesinde panel {currentPosition === 'right' ? 'sağ' : currentPosition === 'left' ? 'sol' : currentPosition === 'top' ? 'üst' : 'alt'} kenara sabitlenecek
+                </div>
+            </div>
+        );
+    }
+
+    // Frontend görünüm (gerçek panel)
     const panelStyle: React.CSSProperties = {
         position: panelPositioning.type as 'fixed' | 'sticky' | 'absolute',
         zIndex: panelPositioning.zIndex ?? 1000,
         width: getWidth(),
         height: getHeight(),
+        maxHeight: currentPosition === 'left' || currentPosition === 'right' ? '100vh' : undefined,
         backgroundColor: panelAppearance.backgroundColor ?? '#ffffff',
         borderColor: panelAppearance.borderColor ?? '#e5e7eb',
         borderWidth: panelAppearance.borderWidth ?? 1,

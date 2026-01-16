@@ -55,6 +55,10 @@ export function PageBuilderEditor({ pageId }: PageBuilderEditorProps) {
   const [pendingColumnUpdates, setPendingColumnUpdates] = useState<Record<string, Partial<Column>>>({});
   const [pendingBlockUpdates, setPendingBlockUpdates] = useState<Record<string, Partial<Block>>>({});
 
+  // Global Paneller
+  const [globalPanels, setGlobalPanels] = useState<Block[]>([]);
+  const [selectedGlobalPanelId, setSelectedGlobalPanelId] = useState<string | undefined>();
+
   // History (Undo/Redo) State
   const historyRef = useRef<HistoryState[]>([]);
   const futureRef = useRef<HistoryState[]>([]);
@@ -188,6 +192,17 @@ export function PageBuilderEditor({ pageId }: PageBuilderEditorProps) {
       const pageData = await getPageById(pageId);
       setPage(pageData);
       setHasChanges(false);
+
+      // Global panelleri yükle
+      if (pageData && pageData.globalPanels && pageData.globalPanels.length > 0) {
+        const { getBlockById } = await import('@/lib/firebase/firestore');
+        const panels = await Promise.all(
+          pageData.globalPanels.map((id: string) => getBlockById(id))
+        );
+        setGlobalPanels(panels.filter(Boolean) as Block[]);
+      } else {
+        setGlobalPanels([]);
+      }
       // Pending değişiklikleri temizle
       setPendingSectionUpdates({});
       setPendingColumnUpdates({});
@@ -602,7 +617,65 @@ export function PageBuilderEditor({ pageId }: PageBuilderEditorProps) {
             className="bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 flex flex-col relative"
             style={{ width: `${leftPanelWidth}px`, minWidth: '200px', maxWidth: '600px' }}
           >
-            <LeftPanel />
+            <LeftPanel
+              globalPanels={globalPanels}
+              selectedGlobalPanelId={selectedGlobalPanelId}
+              onSelectGlobalPanel={(panelId) => {
+                setSelectedGlobalPanelId(panelId);
+                setSelectedElement({ type: 'block', id: panelId });
+              }}
+              onAddGlobalPanel={async (position) => {
+                if (!page) return;
+                saveToHistory();
+                try {
+                  const { createBlock } = await import('@/lib/firebase/firestore');
+                  const { getDefaultBlockProps } = await import('@/types/pageBuilder');
+
+                  // Panel bloğu oluştur (columnId olmadan - global panel)
+                  const panelId = await createBlock({
+                    columnId: '', // Boş bırak - global panel
+                    type: 'panel',
+                    props: {
+                      ...getDefaultBlockProps('panel'),
+                      panelPosition: position,
+                    },
+                  });
+
+                  // Sayfa'ya global panel ekle
+                  const updatedGlobalPanels = [...(page.globalPanels || []), panelId];
+                  await updatePage(page.id, { globalPanels: updatedGlobalPanels });
+
+                  // State'leri güncelle
+                  await loadPage(true);
+                  setSelectedGlobalPanelId(panelId);
+                  setSelectedElement({ type: 'block', id: panelId });
+                } catch (error) {
+                  logger.pageBuilder.error('Global panel ekleme hatası', error);
+                }
+              }}
+              onDeleteGlobalPanel={async (panelId) => {
+                if (!page) return;
+                if (!confirm('Bu paneli silmek istediğinize emin misiniz?')) return;
+                saveToHistory();
+                try {
+                  const { deleteBlock } = await import('@/lib/firebase/firestore');
+                  await deleteBlock(panelId);
+
+                  // Sayfa'dan panel ID'sini çıkar
+                  const updatedGlobalPanels = (page.globalPanels || []).filter(id => id !== panelId);
+                  await updatePage(page.id, { globalPanels: updatedGlobalPanels });
+
+                  // State'i güncelle
+                  await loadPage(true);
+                  if (selectedGlobalPanelId === panelId) {
+                    setSelectedGlobalPanelId(undefined);
+                    setSelectedElement(null);
+                  }
+                } catch (error) {
+                  logger.pageBuilder.error('Global panel silme hatası', error);
+                }
+              }}
+            />
             {/* Resize Handle */}
             <div
               className="absolute right-0 top-0 bottom-0 w-1 cursor-col-resize hover:bg-primary-500 transition-colors z-10"

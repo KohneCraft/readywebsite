@@ -2,9 +2,10 @@
 
 import { useState, useEffect } from 'react';
 import { SectionRenderer } from './SectionRenderer';
-import { getPageById, getPageBySlug } from '@/lib/firebase/firestore';
+import { BlockRenderer } from './BlockRenderer';
+import { getPageById, getPageBySlug, getBlockById } from '@/lib/firebase/firestore';
 import { logger } from '@/lib/logger';
-import type { Page } from '@/types/pageBuilder';
+import type { Page, Block } from '@/types/pageBuilder';
 
 interface PageRendererProps {
   pageId?: string;
@@ -28,6 +29,7 @@ function updateMetaTag(property: string, content: string, dataAttribute: string 
 
 export function PageRenderer({ pageId, slug, allowDraft = false }: PageRendererProps) {
   const [page, setPage] = useState<Page | null>(null);
+  const [globalPanels, setGlobalPanels] = useState<Block[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -54,6 +56,7 @@ export function PageRenderer({ pageId, slug, allowDraft = false }: PageRendererP
           slug: pageData.slug,
           status: pageData.status,
           sectionsCount: pageData.sections?.length || 0,
+          globalPanelsCount: pageData.globalPanels?.length || 0,
         });
 
         // Status kontrolü (preview modunda taslak sayfalar da görüntülenebilir)
@@ -65,6 +68,16 @@ export function PageRenderer({ pageId, slug, allowDraft = false }: PageRendererP
         }
 
         setPage(pageData);
+
+        // Global panelleri yükle
+        if (pageData.globalPanels && pageData.globalPanels.length > 0) {
+          const panels = await Promise.all(
+            pageData.globalPanels.map((id: string) => getBlockById(id))
+          );
+          setGlobalPanels(panels.filter(Boolean) as Block[]);
+        } else {
+          setGlobalPanels([]);
+        }
       } catch (err) {
         logger.pageBuilder.error('Sayfa yükleme hatası', err);
         setError('Sayfa yüklenirken bir hata oluştu');
@@ -238,6 +251,20 @@ export function PageRenderer({ pageId, slug, allowDraft = false }: PageRendererP
         <div className="p-8 text-center text-gray-500">
           <p>Bu sayfada henüz içerik yok.</p>
           <p className="text-sm mt-2">Section sayısı: {page.sections?.length || 0}</p>
+        </div>
+      )}
+
+      {/* Global Paneller - Section'ların dışında, sabit pozisyonda */}
+      {globalPanels.length > 0 && (
+        <div className="global-panels-container">
+          {globalPanels.map((panel, index) => (
+            <BlockRenderer
+              key={panel.id}
+              blockId={panel.id}
+              index={index}
+              block={panel}
+            />
+          ))}
         </div>
       )}
     </div>

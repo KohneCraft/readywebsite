@@ -57,34 +57,85 @@ export function PanelBlockSettings({ block, activeTab, onUpdate }: PanelBlockSet
                     </div>
                 </div>
 
-                {/* Boyutlar */}
+                {/* Genişlik */}
                 <div>
                     <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
-                        {panelPosition === 'left' || panelPosition === 'right' ? 'Genişlik (px)' : 'Yükseklik (px)'}
+                        Genişlik
                     </label>
-                    <input
-                        type="number"
-                        value={
-                            panelPosition === 'left' || panelPosition === 'right'
-                                ? (panelDimensions.width as number) || 320
-                                : (panelDimensions.height as number) || 80
-                        }
-                        onChange={(e) => {
-                            const value = parseInt(e.target.value) || 0;
-                            if (panelPosition === 'left' || panelPosition === 'right') {
+                    <div className="flex gap-2">
+                        <input
+                            type="number"
+                            value={typeof panelDimensions.width === 'number' ? panelDimensions.width : 320}
+                            onChange={(e) => {
+                                const value = parseInt(e.target.value) || 320;
                                 onUpdate({
                                     panelDimensions: { ...panelDimensions, width: value },
                                 });
+                            }}
+                            min={50}
+                            max={800}
+                            className="flex-1 px-3 py-2 text-sm border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-white"
+                        />
+                        <span className="flex items-center text-xs text-gray-500">px</span>
+                    </div>
+                    <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                        {panelPosition === 'top' || panelPosition === 'bottom'
+                            ? '(Üst/Alt panelde %100 kullanılır)'
+                            : 'Sağ/Sol panelin genişliği'}
+                    </p>
+                </div>
+
+                {/* Yükseklik */}
+                <div>
+                    <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
+                        Yükseklik
+                    </label>
+                    <select
+                        value={
+                            panelDimensions.height === 'auto' || panelDimensions.height === undefined
+                                ? 'auto'
+                                : panelDimensions.height === '100vh' || panelDimensions.height === 'full'
+                                    ? 'full'
+                                    : 'custom'
+                        }
+                        onChange={(e) => {
+                            if (e.target.value === 'auto') {
+                                onUpdate({ panelDimensions: { ...panelDimensions, height: 'auto' } });
+                            } else if (e.target.value === 'full') {
+                                onUpdate({ panelDimensions: { ...panelDimensions, height: '100vh' } });
                             } else {
-                                onUpdate({
-                                    panelDimensions: { ...panelDimensions, height: value },
-                                });
+                                onUpdate({ panelDimensions: { ...panelDimensions, height: 400 } });
                             }
                         }}
-                        min={50}
-                        max={800}
-                        className="w-full px-3 py-2 text-sm border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-white"
-                    />
+                        className="w-full px-3 py-2 text-sm border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-white mb-2"
+                    >
+                        <option value="auto">Otomatik (İçerik Yüksekliği)</option>
+                        <option value="full">Tam Ekran (100vh)</option>
+                        <option value="custom">Özel (px)</option>
+                    </select>
+
+                    {typeof panelDimensions.height === 'number' && (
+                        <div className="flex gap-2">
+                            <input
+                                type="number"
+                                value={panelDimensions.height}
+                                onChange={(e) => {
+                                    const value = parseInt(e.target.value) || 400;
+                                    onUpdate({
+                                        panelDimensions: { ...panelDimensions, height: value },
+                                    });
+                                }}
+                                min={50}
+                                max={2000}
+                                className="flex-1 px-3 py-2 text-sm border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-white"
+                            />
+                            <span className="flex items-center text-xs text-gray-500">px</span>
+                        </div>
+                    )}
+
+                    <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                        💡 "Otomatik" seçeneği panelin içeriğine göre yükseklik ayarlar
+                    </p>
                 </div>
 
                 {/* Arkaplan Rengi */}
