@@ -250,7 +250,7 @@ export function PageRenderer({ pageId, slug, allowDraft = false }: PageRendererP
         '--heading-font': page.settings?.headingFont || 'Montserrat'
       } as React.CSSProperties}
     >
-      {/* Sections - rowOrder'a göre grupla */}
+      {/* Sections - CSS Grid ile rowSpan desteği */}
       {sectionsData.length > 0 ? (
         (() => {
           // Section'ları rowOrder'a göre grupla
@@ -266,36 +266,78 @@ export function PageRenderer({ pageId, slug, allowDraft = false }: PageRendererP
             rows[Number(rowKey)].sort((a, b) => (a.columnOrder ?? 0) - (b.columnOrder ?? 0));
           });
 
-          // Row'ları sıralı render et
-          return Object.keys(rows)
-            .map(Number)
-            .sort((a, b) => a - b)
-            .map(rowOrder => {
-              const rowSections = rows[rowOrder];
-              // Tek section varsa normal render
-              if (rowSections.length === 1) {
-                return (
-                  <SectionRenderer
-                    key={rowSections[0].id}
-                    sectionId={rowSections[0].id}
-                  />
-                );
-              }
-              // Birden fazla section varsa flex container içinde yan yana
-              return (
-                <div
-                  key={`row-${rowOrder}`}
-                  className="flex gap-0"
-                  style={{ width: '100%' }}
-                >
-                  {rowSections.map(section => (
-                    <div key={section.id} style={{ flex: 1 }}>
+          const sortedRowOrders = Object.keys(rows).map(Number).sort((a, b) => a - b);
+
+          // rowSpan olan section var mı kontrol et
+          const hasRowSpan = sectionsData.some(s => (s.rowSpan ?? 1) > 1);
+
+          // rowSpan varsa CSS Grid kullan
+          if (hasRowSpan) {
+            // Grid için maksimum kolon sayısını bul
+            const maxCols = Math.max(...sortedRowOrders.map(r => rows[r].length));
+            const rowCount = sortedRowOrders.length;
+
+            return (
+              <div
+                className="sections-grid"
+                style={{
+                  display: 'grid',
+                  gridTemplateColumns: `repeat(${maxCols}, 1fr)`,
+                  gridTemplateRows: `repeat(${rowCount}, auto)`,
+                  gap: '0',
+                  width: '100%'
+                }}
+              >
+                {sectionsData.map(section => {
+                  const rowSpan = section.rowSpan ?? 1;
+                  const sectionWidth = section.settings?.maxWidth;
+                  const gridStyle: React.CSSProperties = {
+                    gridRow: `span ${rowSpan}`,
+                    maxWidth: sectionWidth ? `${sectionWidth}px` : undefined,
+                  };
+                  return (
+                    <div key={section.id} style={gridStyle}>
                       <SectionRenderer sectionId={section.id} />
                     </div>
-                  ))}
-                </div>
+                  );
+                })}
+              </div>
+            );
+          }
+
+          // rowSpan yoksa normal flex render
+          return sortedRowOrders.map(rowOrder => {
+            const rowSections = rows[rowOrder];
+            // Tek section varsa normal render
+            if (rowSections.length === 1) {
+              return (
+                <SectionRenderer
+                  key={rowSections[0].id}
+                  sectionId={rowSections[0].id}
+                />
               );
-            });
+            }
+            // Birden fazla section varsa flex container içinde yan yana
+            return (
+              <div
+                key={`row-${rowOrder}`}
+                className="flex gap-0"
+                style={{ width: '100%' }}
+              >
+                {rowSections.map(section => {
+                  const sectionWidth = section.settings?.maxWidth;
+                  const flexStyle = sectionWidth
+                    ? { flex: `0 0 ${sectionWidth}px`, maxWidth: `${sectionWidth}px` }
+                    : { flex: 1 };
+                  return (
+                    <div key={section.id} style={flexStyle}>
+                      <SectionRenderer sectionId={section.id} />
+                    </div>
+                  );
+                })}
+              </div>
+            );
+          });
         })()
       ) : page?.sections && page.sections.length > 0 ? (
         // Fallback: sectionsData henüz yüklenmemişse eski yöntem

@@ -160,7 +160,7 @@ export function ColumnEditor({
     >
       {/* Column Header */}
       {(isHovered || isSelected) && (
-        <div className="absolute top-0 left-0 right-0 z-10 bg-gray-800 text-white px-2 py-1 flex items-center justify-between text-xs rounded-t-lg">
+        <div className="absolute top-0 left-0 right-0 z-30 bg-gray-800 text-white px-2 py-1 flex items-center justify-between text-xs rounded-t-lg pointer-events-auto" style={{ pointerEvents: 'auto' }}>
           <div className="flex items-center gap-1">
             <GripVertical className="w-3 h-3" />
             <span>Kolon {index + 1}</span>

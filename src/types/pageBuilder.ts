@@ -403,6 +403,7 @@ export interface Section {
   order: number;
   rowOrder: number;    // Hangi satırda (0, 1, 2...)
   columnOrder: number; // Satır içinde hangi sırada (0, 1, 2...)
+  rowSpan?: number;    // Kaç satır kaplasın (default: 1)
   visibility: {
     desktop: boolean;
     tablet: boolean;
