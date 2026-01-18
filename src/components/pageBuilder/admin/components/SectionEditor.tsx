@@ -240,6 +240,79 @@ export function SectionEditor({
         </div>
       )}
 
+      {/* Directional Add Section Buttons - Hover'da göster */}
+      {isHovered && !isSelected && (
+        <>
+          {/* Üste Ekle */}
+          <button
+            className="absolute -top-6 left-1/2 transform -translate-x-1/2 bg-green-600 hover:bg-green-700 text-white p-2 rounded-full shadow-lg transition-all z-20"
+            title="Üste Section Ekle"
+            onClick={(e) => {
+              e.stopPropagation();
+              window.dispatchEvent(new CustomEvent('add-section', {
+                detail: {
+                  direction: 'top',
+                  referenceSectionId: section.id
+                }
+              }));
+            }}
+          >
+            <ArrowUp className="w-4 h-4" />
+          </button>
+
+          {/* Alta Ekle */}
+          <button
+            className="absolute -bottom-6 left-1/2 transform -translate-x-1/2 bg-green-600 hover:bg-green-700 text-white p-2 rounded-full shadow-lg transition-all z-20"
+            title="Alta Section Ekle"
+            onClick={(e) => {
+              e.stopPropagation();
+              window.dispatchEvent(new CustomEvent('add-section', {
+                detail: {
+                  direction: 'bottom',
+                  referenceSectionId: section.id
+                }
+              }));
+            }}
+          >
+            <ArrowDown className="w-4 h-4" />
+          </button>
+
+          {/* Sola Ekle */}
+          <button
+            className="absolute top-1/2 -left-6 transform -translate-y-1/2 bg-green-600 hover:bg-green-700 text-white p-2 rounded-full shadow-lg transition-all z-20"
+            title="Sola Section Ekle"
+            onClick={(e) => {
+              e.stopPropagation();
+              window.dispatchEvent(new CustomEvent('add-section', {
+                detail: {
+                  direction: 'left',
+                  referenceSectionId: section.id
+                }
+              }));
+            }}
+          >
+            <span className="text-sm font-bold">←</span>
+          </button>
+
+          {/* Sağa Ekle */}
+          <button
+            className="absolute top-1/2 -right-6 transform -translate-y-1/2 bg-green-600 hover:bg-green-700 text-white p-2 rounded-full shadow-lg transition-all z-20"
+            title="Sağa Section Ekle"
+            onClick={(e) => {
+              e.stopPropagation();
+              window.dispatchEvent(new CustomEvent('add-section', {
+                detail: {
+                  direction: 'right',
+                  referenceSectionId: section.id
+                }
+              }));
+            }}
+          >
+            <span className="text-sm font-bold">→</span>
+          </button>
+        </>
+      )}
+
       {/* Overlay */}
       {settings.overlay?.enabled && (
         <div

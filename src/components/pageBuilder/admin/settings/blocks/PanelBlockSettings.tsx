@@ -604,18 +604,49 @@ export function PanelBlockSettings({ block, activeTab, onUpdate }: PanelBlockSet
                     </h4>
 
                     <div className="p-4 bg-gray-50 dark:bg-gray-800/50 rounded-lg border border-gray-200 dark:border-gray-700">
-                        <p className="text-xs text-gray-600 dark:text-gray-400 mb-3">
-                            Panel içine blok eklemek için:
-                        </p>
-                        <ol className="text-xs text-gray-600 dark:text-gray-400 space-y-2 list-decimal list-inside">
-                            <li>Sol panelden "Bloklar" sekmesine gidin</li>
-                            <li>Eklemek istediğiniz bloğu sürükleyin</li>
-                            <li>Bu panelin üzerine bırakın</li>
-                        </ol>
+                        {/* Blok Ekle Dropdown */}
+                        <div className="mb-4">
+                            <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                Blok Ekle
+                            </label>
+                            <select
+                                onChange={async (e) => {
+                                    if (!e.target.value) return;
+
+                                    try {
+                                        const { createBlock } = await import('@/lib/firebase/firestore');
+                                        const newBlockId = await createBlock({
+                                            columnId: '', // Panel için boş
+                                            type: e.target.value as any,
+                                            props: {},
+                                        });
+
+                                        const currentBlocks = props.panelBlocks || [];
+                                        onUpdate({
+                                            panelBlocks: [...currentBlocks, newBlockId],
+                                        });
+
+                                        // Reset dropdown
+                                        e.target.value = '';
+                                    } catch (error) {
+                                        console.error('Blok ekleme hatası:', error);
+                                    }
+                                }}
+                                className="w-full px-3 py-2 text-sm border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-white"
+                            >
+                                <option value="">Blok tipi seçin...</option>
+                                <option value="text">📝 Text Block</option>
+                                <option value="heading">🔤 Heading Block</option>
+                                <option value="image">🖼️ Image Block</option>
+                                <option value="button">🔘 Button Block</option>
+                                <option value="spacer">📏 Spacer Block</option>
+                                <option value="divider">➖ Divider Block</option>
+                            </select>
+                        </div>
 
                         {/* Mevcut Bloklar */}
                         {panelBlocks.length > 0 && (
-                            <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
+                            <div className="pt-4 border-t border-gray-200 dark:border-gray-700">
                                 <p className="text-xs font-medium text-gray-700 dark:text-gray-300 mb-2">
                                     Mevcut Bloklar ({panelBlocks.length})
                                 </p>
@@ -628,15 +659,30 @@ export function PanelBlockSettings({ block, activeTab, onUpdate }: PanelBlockSet
                                             <span className="text-xs text-gray-600 dark:text-gray-400">
                                                 #{index + 1} - {blockId.substring(0, 8)}...
                                             </span>
-                                            <button
-                                                onClick={() => {
-                                                    const updatedBlocks = panelBlocks.filter((id) => id !== blockId);
-                                                    onUpdate({ panelBlocks: updatedBlocks });
-                                                }}
-                                                className="text-red-500 hover:text-red-700 text-xs px-2 py-1"
-                                            >
-                                                Sil
-                                            </button>
+                                            <div className="flex gap-2">
+                                                <button
+                                                    onClick={() => {
+                                                        // Bloğu seç - RightPanel'de göster
+                                                        window.dispatchEvent(new CustomEvent('select-block', {
+                                                            detail: { blockId }
+                                                        }));
+                                                    }}
+                                                    className="text-blue-500 hover:text-blue-700 text-xs px-2 py-1"
+                                                    title="Düzenle"
+                                                >
+                                                    ✏️
+                                                </button>
+                                                <button
+                                                    onClick={() => {
+                                                        const updatedBlocks = panelBlocks.filter((id) => id !== blockId);
+                                                        onUpdate({ panelBlocks: updatedBlocks });
+                                                    }}
+                                                    className="text-red-500 hover:text-red-700 text-xs px-2 py-1"
+                                                    title="Sil"
+                                                >
+                                                    🗑️
+                                                </button>
+                                            </div>
                                         </div>
                                     ))}
                                 </div>
@@ -644,8 +690,8 @@ export function PanelBlockSettings({ block, activeTab, onUpdate }: PanelBlockSet
                         )}
 
                         {panelBlocks.length === 0 && (
-                            <p className="text-xs text-gray-500 dark:text-gray-500 mt-3 italic">
-                                Henüz blok eklenmemiş
+                            <p className="text-xs text-gray-500 dark:text-gray-500 mt-3 italic text-center">
+                                Henüz blok eklenmemiş. Yukarıdan blok tipi seçerek ekleyin.
                             </p>
                         )}
                     </div>
