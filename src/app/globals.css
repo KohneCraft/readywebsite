@@ -766,3 +766,51 @@
 }
 
 /* Hazır CSS sınıfları artık src/styles/ready.css dosyasında */
+
+/* ============================================
+   Section Grid - Responsive Styles
+   ============================================ */
+
+/* Sections Grid - desktop'ta grid, mobilde tek kolon */
+.sections-grid {
+  display: grid !important;
+  width: 100%;
+}
+
+/* Mobil (varsayılan tek kolon) */
+@media (max-width: 767px) {
+  .sections-grid {
+    grid-template-columns: 1fr !important;
+    grid-template-rows: auto !important;
+  }
+
+  .sections-grid>div {
+    grid-row: auto !important;
+    grid-column: auto !important;
+  }
+
+  /* Flex row'ları da dikey yap */
+  .flex.gap-0 {
+    flex-direction: column !important;
+  }
+
+  .flex.gap-0>div {
+    flex: 1 1 100% !important;
+    max-width: 100% !important;
+  }
+}
+
+/* Tablet (768px+) */
+@media (min-width: 768px) and (max-width: 1023px) {
+  .sections-grid {
+    /* Tablet'te 2 kolon maksimum */
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)) !important;
+  }
+}
+
+/* Desktop (1024px+) - inline style'lar kullanılır */
+@media (min-width: 1024px) {
+  .sections-grid {
+    /* Inline style'lardan grid-template-columns kullanılacak */
+  }
+}
