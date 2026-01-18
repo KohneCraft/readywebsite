@@ -7,6 +7,7 @@
 
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { X, ChevronLeft, ChevronRight, ChevronUp, ChevronDown, Settings, PanelRight } from 'lucide-react';
+import { useDroppable } from '@dnd-kit/core';
 import { BlockRenderer } from '../renderers/BlockRenderer';
 import type { BlockProps } from '@/types/pageBuilder';
 import './PanelBlock.css';
@@ -95,6 +96,14 @@ export function PanelBlock({ props, onSelect, isSelected, isAdminMode: propIsAdm
         }
         return panelPosition;
     }, [currentDevice, panelPosition, panelResponsive]);
+
+    // Droppable zone for admin mode - Hook'lar her zaman en üstte çağrılmalı
+    const { setNodeRef, isOver } = useDroppable({
+        id: props.id || 'panel-preview',
+        data: {
+            type: 'panel',
+        },
+    });
 
     // Scroll event listener
     useEffect(() => {
@@ -289,18 +298,20 @@ export function PanelBlock({ props, onSelect, isSelected, isAdminMode: propIsAdm
     if (isAdminMode) {
         return (
             <div
+                ref={setNodeRef}
                 className={`panel-block-admin-preview ${isSelected ? 'selected' : ''}`}
                 onClick={handlePanelClick}
                 style={{
-                    backgroundColor: panelAppearance.backgroundColor ?? '#ffffff',
-                    borderColor: isSelected ? '#3b82f6' : (panelAppearance.borderColor ?? '#e5e7eb'),
-                    borderWidth: isSelected ? 2 : (panelAppearance.borderWidth ?? 1),
-                    borderStyle: 'solid',
+                    backgroundColor: isOver ? '#f0f9ff' : (panelAppearance.backgroundColor ?? '#ffffff'),
+                    borderColor: isOver ? '#3b82f6' : (isSelected ? '#3b82f6' : (panelAppearance.borderColor ?? '#e5e7eb')),
+                    borderWidth: isSelected || isOver ? 2 : (panelAppearance.borderWidth ?? 1),
+                    borderStyle: isOver ? 'dashed' : 'solid',
                     borderRadius: panelAppearance.borderRadius ?? 8,
                     padding: '16px',
                     minHeight: '120px',
                     cursor: 'pointer',
                     position: 'relative',
+                    transition: 'all 0.2s ease',
                 }}
             >
                 <div className="panel-admin-header" style={{

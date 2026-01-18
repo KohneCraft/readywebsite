@@ -352,10 +352,17 @@ export function PageBuilderEditor({ pageId }: PageBuilderEditorProps) {
     // Yeni blok ekleme (library'den)
     if (activeData?.source === 'library' && activeData?.type) {
       try {
-        let targetColumnId: string;
+        let targetColumnId: string | undefined;
+        let targetPanelId: string | undefined;
 
+        // Eğer panel'e bırakıldıysa
+        if (overData?.type === 'panel') {
+          targetPanelId = over.id as string;
+          // Panel bloğu için columnId boş olacak
+          targetColumnId = '';
+        }
         // Eğer column'a bırakıldıysa
-        if (overData?.type === 'column') {
+        else if (overData?.type === 'column') {
           targetColumnId = over.id as string;
         }
         // Eğer boş section'a bırakıldıysa, önce column oluştur
@@ -372,11 +379,26 @@ export function PageBuilderEditor({ pageId }: PageBuilderEditorProps) {
         }
 
         // Blok oluştur
-        await createBlock({
-          columnId: targetColumnId,
+        const newBlockId = await createBlock({
+          columnId: targetColumnId || '',
           type: activeData.type as BlockType,
           props: {},
         });
+
+        // Eğer panel'e eklendiyse, panel'in panelBlocks array'ine ekle
+        if (targetPanelId && newBlockId) {
+          const { getBlockById, updateBlock } = await import('@/lib/firebase/firestore');
+          const panelBlock = await getBlockById(targetPanelId);
+          if (panelBlock) {
+            const currentPanelBlocks = panelBlock.props.panelBlocks || [];
+            await updateBlock(targetPanelId, {
+              props: {
+                ...panelBlock.props,
+                panelBlocks: [...currentPanelBlocks, newBlockId],
+              },
+            });
+          }
+        }
 
         // Kısa bir bekleme - column güncellemesinin tamamlanması için
         await new Promise(resolve => setTimeout(resolve, 300));
@@ -489,16 +511,51 @@ export function PageBuilderEditor({ pageId }: PageBuilderEditorProps) {
 
   // Yeni section ekleme
   useEffect(() => {
-    const handleAddSection = async () => {
+    const handleAddSection = async (event?: CustomEvent) => {
       if (!page) return;
 
       try {
-        await createSection({
+        const direction = event?.detail?.direction || 'bottom'; // 'top', 'bottom', 'left', 'right'
+        const referenceSectionId = event?.detail?.referenceSectionId;
+
+        let newOrder = page.sections?.length || 0;
+
+        // Eğer referans section varsa, ona göre order hesapla
+        if (referenceSectionId && page.sections) {
+          const refIndex = page.sections.indexOf(referenceSectionId);
+          if (refIndex !== -1) {
+            switch (direction) {
+              case 'top':
+              case 'left':
+                // Referans section'ın üstüne/soluna ekle
+                newOrder = refIndex;
+                break;
+              case 'bottom':
+              case 'right':
+                // Referans section'ın altına/sağına ekle
+                newOrder = refIndex + 1;
+                break;
+            }
+          }
+        }
+
+        const newSectionId = await createSection({
           pageId: page.id,
           name: 'Yeni Bölüm',
-          order: page.sections?.length || 0,
+          order: newOrder,
           settings: {},
         });
+
+        // Diğer section'ların order'ını güncelle
+        if (referenceSectionId && page.sections && newOrder < page.sections.length) {
+          const { updateSection } = await import('@/lib/firebase/firestore');
+          for (let i = newOrder; i < page.sections.length; i++) {
+            const sectionId = page.sections[i];
+            if (sectionId !== newSectionId) {
+              await updateSection(sectionId, { order: i + 1 });
+            }
+          }
+        }
 
         // Sayfayı yeniden yükle
         const pageData = await getPageById(pageId);
@@ -521,10 +578,10 @@ export function PageBuilderEditor({ pageId }: PageBuilderEditorProps) {
       }
     };
 
-    window.addEventListener('add-section', handleAddSection);
+    window.addEventListener('add-section', handleAddSection as any);
     window.addEventListener('section-updated', handleSectionUpdate);
     return () => {
-      window.removeEventListener('add-section', handleAddSection);
+      window.removeEventListener('add-section', handleAddSection as any);
       window.removeEventListener('section-updated', handleSectionUpdate);
     };
   }, [page, pageId]);
@@ -615,7 +672,7 @@ export function PageBuilderEditor({ pageId }: PageBuilderEditorProps) {
           {/* Left Panel - Blok Kütüphanesi */}
           <div
             className="bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 flex flex-col relative"
-            style={{ width: `${leftPanelWidth}px`, minWidth: '200px', maxWidth: '600px' }}
+            style={{ width: `${leftPanelWidth} px`, minWidth: '200px', maxWidth: '600px' }}
           >
             <LeftPanel
               globalPanels={globalPanels}
@@ -687,7 +744,7 @@ export function PageBuilderEditor({ pageId }: PageBuilderEditorProps) {
           </div>
 
           {/* Center Canvas - Düzenleme Alanı */}
-          <div className="flex-1 overflow-auto" style={{ width: `calc(100% - ${leftPanelWidth + rightPanelWidth}px)` }}>
+          <div className="flex-1 overflow-auto" style={{ width: `calc(100 % - ${leftPanelWidth + rightPanelWidth}px)` }}>
             <CenterCanvas
               page={page}
               device={device}
