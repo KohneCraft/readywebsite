@@ -121,9 +121,9 @@ export function SectionEditor({
         minHeight: settings.minHeight ? `${settings.minHeight}px` : 'auto',
       }}
     >
-      {/* Section Toolbar */}
+      {/* Section Toolbar - Kolon toolbar'ın üstünü kapatmamak için biraz aşağıda */}
       {(isHovered || isSelected) && (
-        <div className="absolute top-0 left-0 right-0 z-10 bg-primary-600 text-white px-3 py-1.5 flex items-center justify-between text-xs">
+        <div className="absolute -top-8 left-0 right-0 z-20 bg-primary-600 text-white px-3 py-1.5 flex items-center justify-between text-xs rounded-t-lg">
           <span className="font-medium">{section.name || `Section ${index + 1}`}</span>
           <div className="flex items-center gap-1">
             <button

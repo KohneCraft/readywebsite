@@ -22,6 +22,7 @@ import {
 } from '@/lib/firebase/firestore';
 import { logger } from '@/lib/logger';
 import type { Page, BlockType, Section, Column, Block } from '@/types/pageBuilder';
+import { getDefaultBlockProps } from '@/types/pageBuilder';
 import { updateSection, updateColumn, updateBlock } from '@/lib/firebase/firestore';
 
 // History State Type
@@ -380,11 +381,12 @@ export function PageBuilderEditor({ pageId }: PageBuilderEditorProps) {
           return;
         }
 
-        // Blok oluştur
+        // Blok oluştur - varsayılan props ile
+        const blockType = activeData.type as BlockType;
         const newBlockId = await createBlock({
           columnId: targetColumnId || '',
-          type: activeData.type as BlockType,
-          props: {},
+          type: blockType,
+          props: getDefaultBlockProps(blockType),
         });
 
         // Eğer panel'e eklendiyse, panel'in panelBlocks array'ine ekle
@@ -682,22 +684,34 @@ export function PageBuilderEditor({ pageId }: PageBuilderEditorProps) {
 
   // Resize handlers - TÜM hook'lar early return'lerden ÖNCE olmalı
   useEffect(() => {
+    let animationFrameId: number | null = null;
+
     const handleMouseMove = (e: MouseEvent) => {
-      if (isResizingLeft) {
-        const newWidth = e.clientX;
-        if (newWidth >= 200 && newWidth <= 600) {
-          setLeftPanelWidth(newWidth);
+      // Performance: requestAnimationFrame ile throttle
+      if (animationFrameId) return;
+
+      animationFrameId = requestAnimationFrame(() => {
+        if (isResizingLeft) {
+          const newWidth = e.clientX;
+          if (newWidth >= 200 && newWidth <= 600) {
+            setLeftPanelWidth(newWidth);
+          }
         }
-      }
-      if (isResizingRight) {
-        const newWidth = window.innerWidth - e.clientX;
-        if (newWidth >= 200 && newWidth <= 600) {
-          setRightPanelWidth(newWidth);
+        if (isResizingRight) {
+          const newWidth = window.innerWidth - e.clientX;
+          if (newWidth >= 200 && newWidth <= 600) {
+            setRightPanelWidth(newWidth);
+          }
         }
-      }
+        animationFrameId = null;
+      });
     };
 
     const handleMouseUp = () => {
+      if (animationFrameId) {
+        cancelAnimationFrame(animationFrameId);
+        animationFrameId = null;
+      }
       setIsResizingLeft(false);
       setIsResizingRight(false);
     };
@@ -710,6 +724,9 @@ export function PageBuilderEditor({ pageId }: PageBuilderEditorProps) {
     }
 
     return () => {
+      if (animationFrameId) {
+        cancelAnimationFrame(animationFrameId);
+      }
       document.removeEventListener('mousemove', handleMouseMove);
       document.removeEventListener('mouseup', handleMouseUp);
       document.body.style.cursor = '';

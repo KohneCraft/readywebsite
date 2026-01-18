@@ -317,6 +317,83 @@ export function SectionSettings({ sectionId, activeTab, onUpdate, onColumnUpdate
           </select>
         </div>
 
+        {/* Grid Konumu */}
+        <div className="border-t border-gray-200 dark:border-gray-700 pt-4 mt-4">
+          <label className="block text-xs font-bold text-gray-800 dark:text-gray-200 mb-3">
+            📐 Grid Konumu
+          </label>
+
+          <div className="grid grid-cols-3 gap-3">
+            {/* Satır Numarası */}
+            <div>
+              <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
+                Satır No
+              </label>
+              <input
+                type="number"
+                min={0}
+                value={section?.rowOrder ?? 0}
+                onChange={(e) => {
+                  const updated = {
+                    ...section,
+                    rowOrder: parseInt(e.target.value) || 0,
+                  };
+                  setSection(updated);
+                  onUpdate(updated);
+                }}
+                className="w-full px-2 py-1.5 text-sm border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-white"
+              />
+            </div>
+
+            {/* Kolon Sırası */}
+            <div>
+              <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
+                Kolon Sırası
+              </label>
+              <input
+                type="number"
+                min={0}
+                value={section?.columnOrder ?? 0}
+                onChange={(e) => {
+                  const updated = {
+                    ...section,
+                    columnOrder: parseInt(e.target.value) || 0,
+                  };
+                  setSection(updated);
+                  onUpdate(updated);
+                }}
+                className="w-full px-2 py-1.5 text-sm border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-white"
+              />
+            </div>
+
+            {/* Row Span */}
+            <div>
+              <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
+                Satır Kapla
+              </label>
+              <input
+                type="number"
+                min={1}
+                max={10}
+                value={section?.rowSpan ?? 1}
+                onChange={(e) => {
+                  const updated = {
+                    ...section,
+                    rowSpan: parseInt(e.target.value) || 1,
+                  };
+                  setSection(updated);
+                  onUpdate(updated);
+                }}
+                className="w-full px-2 py-1.5 text-sm border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-white"
+              />
+            </div>
+          </div>
+
+          <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
+            Aynı satır numarasına sahip section'lar yan yana görünür. Satır Kapla değeri ile birden fazla satırı kaplayan bölümler oluşturabilirsiniz.
+          </p>
+        </div>
+
         {/* Kolon Genişlikleri */}
         {columns.length > 0 && (
           <div className="border-t border-gray-200 dark:border-gray-700 pt-4 mt-4">
