@@ -126,22 +126,29 @@ export function CenterCanvas({
                 </div>
               </div>
             ) : sections.length > 0 ? (
-              sections.map((section, index) => (
-                <SectionEditor
-                  key={section.id}
-                  section={section}
-                  index={index}
-                  isSelected={selectedElement?.type === 'section' && selectedElement.id === section.id}
-                  onSelect={() => onSelectElement({ type: 'section', id: section.id })}
-                  selectedElement={selectedElement}
-                  onSelectElement={onSelectElement}
-                  onMove={onMoveSection}
-                  onDuplicate={onDuplicateSection}
-                  onDelete={onDeleteSection}
-                  pendingColumnUpdates={pendingColumnUpdates}
-                  pendingBlockUpdates={pendingBlockUpdates}
-                />
-              ))
+              <div
+                className="grid gap-4"
+                style={{
+                  gridTemplateColumns: 'repeat(auto-fit, minmax(400px, 1fr))',
+                }}
+              >
+                {sections.map((section, index) => (
+                  <SectionEditor
+                    key={section.id}
+                    section={section}
+                    index={index}
+                    isSelected={selectedElement?.type === 'section' && selectedElement.id === section.id}
+                    onSelect={() => onSelectElement({ type: 'section', id: section.id })}
+                    selectedElement={selectedElement}
+                    onSelectElement={onSelectElement}
+                    onMove={onMoveSection}
+                    onDuplicate={onDuplicateSection}
+                    onDelete={onDeleteSection}
+                    pendingColumnUpdates={pendingColumnUpdates}
+                    pendingBlockUpdates={pendingBlockUpdates}
+                  />
+                ))}
+              </div>
             ) : (
               <EmptyCanvas
                 onAddSection={() => {
