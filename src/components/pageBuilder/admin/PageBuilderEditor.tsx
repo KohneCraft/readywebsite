@@ -515,29 +515,34 @@ export function PageBuilderEditor({ pageId }: PageBuilderEditorProps) {
       if (!page) return;
 
       try {
-        const direction = event?.detail?.direction || 'bottom'; // 'top', 'bottom', 'left', 'right'
+        const direction = event?.detail?.direction || 'bottom';
         const referenceSectionId = event?.detail?.referenceSectionId;
+
+        console.log('🔍 Section Ekleme:', { direction, referenceSectionId, currentSections: page.sections });
 
         let newOrder = page.sections?.length || 0;
 
         // Eğer referans section varsa, ona göre order hesapla
         if (referenceSectionId && page.sections) {
           const refIndex = page.sections.indexOf(referenceSectionId);
+          console.log('🔍 Ref Index:', refIndex, 'Total sections:', page.sections.length);
           if (refIndex !== -1) {
             switch (direction) {
               case 'top':
               case 'left':
-                // Referans section'ın üstüne/soluna ekle
                 newOrder = refIndex;
+                console.log('📍 Üste/Sola ekle - newOrder:', newOrder);
                 break;
               case 'bottom':
               case 'right':
-                // Referans section'ın altına/sağına ekle
                 newOrder = refIndex + 1;
+                console.log('📍 Alta/Sağa ekle - newOrder:', newOrder);
                 break;
             }
           }
         }
+
+        console.log('✅ Final newOrder:', newOrder);
 
         const newSectionId = await createSection({
           pageId: page.id,
@@ -546,22 +551,30 @@ export function PageBuilderEditor({ pageId }: PageBuilderEditorProps) {
           settings: {},
         });
 
+        console.log('✅ New section created:', newSectionId);
+
         // Diğer section'ların order'ını güncelle
         if (referenceSectionId && page.sections && newOrder < page.sections.length) {
           const { updateSection } = await import('@/lib/firebase/firestore');
+          console.log('🔄 Updating other sections order...');
           for (let i = newOrder; i < page.sections.length; i++) {
             const sectionId = page.sections[i];
             if (sectionId !== newSectionId) {
               await updateSection(sectionId, { order: i + 1 });
+              console.log('  Updated section', sectionId, 'order to', i + 1);
             }
           }
         }
 
         // Sayfayı yeniden yükle
         const pageData = await getPageById(pageId);
-        if (pageData) setPage(pageData);
+        if (pageData) {
+          setPage(pageData);
+          console.log('✅ Page reloaded. New sections:', pageData.sections);
+        }
         setHasChanges(true);
       } catch (error) {
+        console.error('❌ Section ekleme hatası:', error);
         logger.pageBuilder.error('Section ekleme hatası', error);
       }
     };
@@ -578,11 +591,21 @@ export function PageBuilderEditor({ pageId }: PageBuilderEditorProps) {
       }
     };
 
+    // Block seçme event'ini dinle (Panel edit butonu için)
+    const handleSelectBlock = (event: Event) => {
+      const customEvent = event as CustomEvent<{ blockId: string }>;
+      const { blockId } = customEvent.detail;
+      console.log('🎯 Block selected:', blockId);
+      setSelectedElement({ type: 'block', id: blockId });
+    };
+
     window.addEventListener('add-section', handleAddSection as any);
     window.addEventListener('section-updated', handleSectionUpdate);
+    window.addEventListener('select-block', handleSelectBlock);
     return () => {
       window.removeEventListener('add-section', handleAddSection as any);
       window.removeEventListener('section-updated', handleSectionUpdate);
+      window.removeEventListener('select-block', handleSelectBlock);
     };
   }, [page, pageId]);
 
