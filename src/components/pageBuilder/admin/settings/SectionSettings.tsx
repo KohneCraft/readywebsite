@@ -292,6 +292,31 @@ export function SectionSettings({ sectionId, activeTab, onUpdate, onColumnUpdate
           />
         </div>
 
+        <div>
+          <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-2">
+            Kolonlar Arası Hizalama
+          </label>
+          <select
+            value={settings.columnAlignment || 'start'}
+            onChange={(e) => {
+              const updated = {
+                ...section,
+                settings: { ...settings, columnAlignment: e.target.value as any },
+              };
+              setSection(updated);
+              onUpdate(updated);
+            }}
+            className="w-full px-3 py-2 text-sm border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-white"
+          >
+            <option value="start">Başlangıç (Sol)</option>
+            <option value="center">Orta</option>
+            <option value="end">Son (Sağ)</option>
+            <option value="space-between">İki Yana Yaslı</option>
+            <option value="space-around">Boşluklu (Around)</option>
+            <option value="space-evenly">Eşit Boşluklu</option>
+          </select>
+        </div>
+
         {/* Kolon Genişlikleri */}
         {columns.length > 0 && (
           <div className="border-t border-gray-200 dark:border-gray-700 pt-4 mt-4">

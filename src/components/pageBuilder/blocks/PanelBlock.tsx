@@ -126,16 +126,29 @@ export function PanelBlock({ props, onSelect, isSelected, isAdminMode: propIsAdm
         const panelWidth = typeof panelDimensions.width === 'number' ? panelDimensions.width : 320;
         const panelSidebarSettings = props.panelSidebarSettings || { pushNavbar: false, pushFooter: false };
 
-        // Ana içerik
-        const mainContent = document.querySelector('main, .page-renderer');
-        // Navbar
-        const navbar = document.querySelector('nav, header, [role="banner"]');
-        // Footer
-        const footer = document.querySelector('footer, [role="contentinfo"]');
+        // Ana içerik - daha spesifik selectorlar
+        const mainContent = document.querySelector('main, .page-renderer, #__next > div, body > div');
+
+        // Navbar - birden fazla selector dene
+        let navbar: Element | null = null;
+        const navbarSelectors = ['nav', 'header', '[role="banner"]', '.navbar', '.header', '#navbar', '#header', 'body > nav', 'body > header'];
+        for (const selector of navbarSelectors) {
+            navbar = document.querySelector(selector);
+            if (navbar) break;
+        }
+
+        // Footer - birden fazla selector dene
+        let footer: Element | null = null;
+        const footerSelectors = ['footer', '[role="contentinfo"]', '.footer', '#footer', 'body > footer'];
+        for (const selector of footerSelectors) {
+            footer = document.querySelector(selector);
+            if (footer) break;
+        }
 
         if (isOpen) {
             // Ana içeriği her zaman it
             if (mainContent) {
+                (mainContent as HTMLElement).style.transition = 'margin 0.3s ease';
                 if (currentPosition === 'right') {
                     (mainContent as HTMLElement).style.marginRight = `${panelWidth}px`;
                 } else if (currentPosition === 'left') {
@@ -145,6 +158,7 @@ export function PanelBlock({ props, onSelect, isSelected, isAdminMode: propIsAdm
 
             // Navbar'ı ayara göre it
             if (navbar && panelSidebarSettings.pushNavbar) {
+                (navbar as HTMLElement).style.transition = 'margin 0.3s ease';
                 if (currentPosition === 'right') {
                     (navbar as HTMLElement).style.marginRight = `${panelWidth}px`;
                 } else if (currentPosition === 'left') {
@@ -154,6 +168,7 @@ export function PanelBlock({ props, onSelect, isSelected, isAdminMode: propIsAdm
 
             // Footer'ı ayara göre it
             if (footer && panelSidebarSettings.pushFooter) {
+                (footer as HTMLElement).style.transition = 'margin 0.3s ease';
                 if (currentPosition === 'right') {
                     (footer as HTMLElement).style.marginRight = `${panelWidth}px`;
                 } else if (currentPosition === 'left') {
@@ -166,14 +181,17 @@ export function PanelBlock({ props, onSelect, isSelected, isAdminMode: propIsAdm
             if (mainContent) {
                 (mainContent as HTMLElement).style.marginRight = '';
                 (mainContent as HTMLElement).style.marginLeft = '';
+                (mainContent as HTMLElement).style.transition = '';
             }
             if (navbar) {
                 (navbar as HTMLElement).style.marginRight = '';
                 (navbar as HTMLElement).style.marginLeft = '';
+                (navbar as HTMLElement).style.transition = '';
             }
             if (footer) {
                 (footer as HTMLElement).style.marginRight = '';
                 (footer as HTMLElement).style.marginLeft = '';
+                (footer as HTMLElement).style.transition = '';
             }
         };
     }, [isOpen, panelMode, currentPosition, panelDimensions.width, isAdminMode, props.panelSidebarSettings]);

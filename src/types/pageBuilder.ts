@@ -420,6 +420,7 @@ export interface SectionSettings {
   columnGap?: number;
   columnDistribution?: 'equal' | 'custom';
   columnLayout?: 'row' | 'column'; // 'row' = yan yana, 'column' = alt alta
+  columnAlignment?: 'start' | 'center' | 'end' | 'space-between' | 'space-around' | 'space-evenly'; // Kolonlar arası hizalama
 
   // Background
   backgroundColor?: string;

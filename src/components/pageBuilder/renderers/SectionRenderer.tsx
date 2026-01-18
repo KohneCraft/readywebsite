@@ -318,6 +318,7 @@ export function SectionRenderer({ sectionId }: SectionRendererProps) {
             display: settings.columnLayout === 'column' ? 'flex' : 'grid',
             flexDirection: settings.columnLayout === 'column' ? 'column' : undefined,
             gridTemplateColumns: settings.columnLayout === 'column' ? undefined : gridTemplateColumns,
+            justifyContent: settings.columnAlignment || 'start', // Kolonlar arası hizalama
             gap: settings.columnGap !== undefined && settings.columnGap !== null
               ? deviceType === 'mobile'
                 ? `${Math.max(15, (settings.columnGap || 30) * 0.5)}px`
