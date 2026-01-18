@@ -359,6 +359,7 @@ export function SectionEditor({
                 selectedElement={selectedElement}
                 onSelectElement={onSelectElement}
                 pendingBlockUpdates={pendingBlockUpdates}
+                isFlexLayout={settings.columnLayout === 'column'}
                 onAddColumn={async (afterColumnId) => {
                   try {
                     const { createColumn, getSectionById } = await import('@/lib/firebase/firestore');

@@ -26,6 +26,7 @@ interface ColumnEditorProps {
   onDeleteColumn?: (columnId: string) => Promise<void>; // Kolon silmek için
   // Pending updates for live preview
   pendingBlockUpdates?: Record<string, Partial<Block>>;
+  isFlexLayout?: boolean; // Section columnLayout === 'column' ise true
 }
 
 export function ColumnEditor({
@@ -38,6 +39,7 @@ export function ColumnEditor({
   onAddColumn,
   onDeleteColumn,
   pendingBlockUpdates = {},
+  isFlexLayout = false,
 }: ColumnEditorProps) {
   const [baseBlocks, setBaseBlocks] = useState<Block[]>([]);
   const [nestedColumns, setNestedColumns] = useState<Column[]>([]);
@@ -271,9 +273,9 @@ export function ColumnEditor({
         ) : nestedColumns.length > 0 ? (
           // Nested columns varsa, onları göster
           <div
-            className="grid gap-2"
+            className={`${isFlexLayout ? 'flex flex-col' : 'grid'} gap-2`}
             style={{
-              gridTemplateColumns: nestedGridTemplate,
+              gridTemplateColumns: isFlexLayout ? undefined : nestedGridTemplate,
             }}
           >
             {nestedColumns.map((nestedCol, nestedIndex) => (

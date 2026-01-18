@@ -3,9 +3,9 @@
 import { useState, useEffect } from 'react';
 import { SectionRenderer } from './SectionRenderer';
 import { BlockRenderer } from './BlockRenderer';
-import { getPageById, getPageBySlug, getBlockById } from '@/lib/firebase/firestore';
+import { getPageById, getPageBySlug, getBlockById, getSectionById } from '@/lib/firebase/firestore';
 import { logger } from '@/lib/logger';
-import type { Page, Block } from '@/types/pageBuilder';
+import type { Page, Block, Section } from '@/types/pageBuilder';
 
 interface PageRendererProps {
   pageId?: string;
@@ -29,6 +29,7 @@ function updateMetaTag(property: string, content: string, dataAttribute: string 
 
 export function PageRenderer({ pageId, slug, allowDraft = false }: PageRendererProps) {
   const [page, setPage] = useState<Page | null>(null);
+  const [sectionsData, setSectionsData] = useState<Section[]>([]);
   const [globalPanels, setGlobalPanels] = useState<Block[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -68,6 +69,16 @@ export function PageRenderer({ pageId, slug, allowDraft = false }: PageRendererP
         }
 
         setPage(pageData);
+
+        // Sections verilerini yükle (rowOrder için)
+        if (pageData.sections && pageData.sections.length > 0) {
+          const sections = await Promise.all(
+            pageData.sections.map((id: string) => getSectionById(id))
+          );
+          setSectionsData(sections.filter(Boolean) as Section[]);
+        } else {
+          setSectionsData([]);
+        }
 
         // Global panelleri yükle
         if (pageData.globalPanels && pageData.globalPanels.length > 0) {
@@ -239,8 +250,55 @@ export function PageRenderer({ pageId, slug, allowDraft = false }: PageRendererP
         '--heading-font': page.settings?.headingFont || 'Montserrat'
       } as React.CSSProperties}
     >
-      {/* Sections */}
-      {page.sections && page.sections.length > 0 ? (
+      {/* Sections - rowOrder'a göre grupla */}
+      {sectionsData.length > 0 ? (
+        (() => {
+          // Section'ları rowOrder'a göre grupla
+          const rows = sectionsData.reduce((acc, section) => {
+            const rowOrder = section.rowOrder ?? section.order ?? 0;
+            if (!acc[rowOrder]) acc[rowOrder] = [];
+            acc[rowOrder].push(section);
+            return acc;
+          }, {} as Record<number, Section[]>);
+
+          // Her row'u columnOrder'a göre sırala
+          Object.keys(rows).forEach(rowKey => {
+            rows[Number(rowKey)].sort((a, b) => (a.columnOrder ?? 0) - (b.columnOrder ?? 0));
+          });
+
+          // Row'ları sıralı render et
+          return Object.keys(rows)
+            .map(Number)
+            .sort((a, b) => a - b)
+            .map(rowOrder => {
+              const rowSections = rows[rowOrder];
+              // Tek section varsa normal render
+              if (rowSections.length === 1) {
+                return (
+                  <SectionRenderer
+                    key={rowSections[0].id}
+                    sectionId={rowSections[0].id}
+                  />
+                );
+              }
+              // Birden fazla section varsa flex container içinde yan yana
+              return (
+                <div
+                  key={`row-${rowOrder}`}
+                  className="flex gap-0"
+                  style={{ width: '100%' }}
+                >
+                  {rowSections.map(section => (
+                    <div key={section.id} style={{ flex: 1 }}>
+                      <SectionRenderer sectionId={section.id} />
+                    </div>
+                  ))}
+                </div>
+              );
+            });
+        })()
+      ) : page?.sections && page.sections.length > 0 ? (
+        // Fallback: sectionsData henüz yüklenmemişse eski yöntem
         page.sections.map((sectionId) => (
           <SectionRenderer
             key={sectionId}
@@ -250,7 +308,7 @@ export function PageRenderer({ pageId, slug, allowDraft = false }: PageRendererP
       ) : (
         <div className="p-8 text-center text-gray-500">
           <p>Bu sayfada henüz içerik yok.</p>
-          <p className="text-sm mt-2">Section sayısı: {page.sections?.length || 0}</p>
+          <p className="text-sm mt-2">Section sayısı: {page?.sections?.length || 0}</p>
         </div>
       )}
 
