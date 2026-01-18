@@ -848,6 +848,8 @@ export async function createSection(input: SectionCreateInput): Promise<string> 
   const docRef = await addDoc(collection(db, COLLECTIONS.sections), {
     ...input,
     columns: [],
+    rowOrder: input.rowOrder ?? input.order ?? 0,
+    columnOrder: input.columnOrder ?? 0,
     createdAt: serverTimestamp(),
     updatedAt: serverTimestamp(),
   });

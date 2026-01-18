@@ -401,6 +401,8 @@ export interface Section {
   columns: string[]; // Column ID'leri
   settings: SectionSettings;
   order: number;
+  rowOrder: number;    // Hangi satırda (0, 1, 2...)
+  columnOrder: number; // Satır içinde hangi sırada (0, 1, 2...)
   visibility: {
     desktop: boolean;
     tablet: boolean;
@@ -534,6 +536,8 @@ export interface SectionCreateInput {
   name?: string;
   settings?: Partial<SectionSettings>;
   order?: number;
+  rowOrder?: number;
+  columnOrder?: number;
 }
 
 export interface ColumnCreateInput {
@@ -567,6 +571,8 @@ export interface SectionUpdateInput {
   name?: string;
   settings?: Partial<SectionSettings>;
   order?: number;
+  rowOrder?: number;
+  columnOrder?: number;
   columns?: string[];
   visibility?: {
     desktop?: boolean;
