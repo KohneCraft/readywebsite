@@ -518,53 +518,122 @@ export function PageBuilderEditor({ pageId }: PageBuilderEditorProps) {
         const direction = event?.detail?.direction || 'bottom';
         const referenceSectionId = event?.detail?.referenceSectionId;
 
-        console.log('🔍 Section Ekleme:', { direction, referenceSectionId, currentSections: page.sections });
+        console.log('🔍 Section Ekleme:', { direction, referenceSectionId });
 
+        // Referans section'ı bul ve bilgilerini al
+        let refSection: { rowOrder: number; columnOrder: number } | null = null;
+        if (referenceSectionId) {
+          const { getSectionById } = await import('@/lib/firebase/firestore');
+          const section = await getSectionById(referenceSectionId);
+          if (section) {
+            refSection = {
+              rowOrder: section.rowOrder ?? section.order ?? 0,
+              columnOrder: section.columnOrder ?? 0,
+            };
+          }
+        }
+
+        console.log('🔍 Reference Section:', refSection);
+
+        // Yeni section için rowOrder ve columnOrder hesapla
+        let newRowOrder = 0;
+        let newColumnOrder = 0;
         let newOrder = page.sections?.length || 0;
 
-        // Eğer referans section varsa, ona göre order hesapla
+        if (refSection) {
+          switch (direction) {
+            case 'top':
+              // Üste: Aynı columnOrder, rowOrder azalt
+              newRowOrder = refSection.rowOrder;
+              newColumnOrder = refSection.columnOrder;
+              // Referans ve üstündeki section'ların rowOrder'ını artır
+              break;
+            case 'bottom':
+              // Alta: Aynı columnOrder, rowOrder artır
+              newRowOrder = refSection.rowOrder + 1;
+              newColumnOrder = 0;
+              break;
+            case 'left':
+              // Sola: Aynı rowOrder, columnOrder azalt
+              newRowOrder = refSection.rowOrder;
+              newColumnOrder = refSection.columnOrder;
+              break;
+            case 'right':
+              // Sağa: Aynı rowOrder, columnOrder artır
+              newRowOrder = refSection.rowOrder;
+              newColumnOrder = refSection.columnOrder + 1;
+              break;
+          }
+        }
+
+        console.log('📍 New Section:', { newRowOrder, newColumnOrder, direction });
+
+        // Mevcut section'ların order'larını güncelle
         if (referenceSectionId && page.sections) {
-          const refIndex = page.sections.indexOf(referenceSectionId);
-          console.log('🔍 Ref Index:', refIndex, 'Total sections:', page.sections.length);
-          if (refIndex !== -1) {
-            switch (direction) {
-              case 'top':
-              case 'left':
-                newOrder = refIndex;
-                console.log('📍 Üste/Sola ekle - newOrder:', newOrder);
-                break;
-              case 'bottom':
-              case 'right':
-                newOrder = refIndex + 1;
-                console.log('📍 Alta/Sağa ekle - newOrder:', newOrder);
-                break;
+          const { getSectionById, updateSection } = await import('@/lib/firebase/firestore');
+
+          if (direction === 'top') {
+            // Üste eklerken: Referans dahil tüm section'ların rowOrder'ını artır
+            for (const sectionId of page.sections) {
+              const section = await getSectionById(sectionId);
+              if (section && (section.rowOrder ?? section.order ?? 0) >= newRowOrder) {
+                await updateSection(sectionId, {
+                  rowOrder: (section.rowOrder ?? section.order ?? 0) + 1
+                });
+                console.log('  Updated section', sectionId, 'rowOrder to', (section.rowOrder ?? 0) + 1);
+              }
+            }
+          } else if (direction === 'bottom') {
+            // Alta eklerken: newRowOrder'dan büyük section'ların rowOrder'ını artır
+            for (const sectionId of page.sections) {
+              const section = await getSectionById(sectionId);
+              if (section && (section.rowOrder ?? section.order ?? 0) >= newRowOrder) {
+                await updateSection(sectionId, {
+                  rowOrder: (section.rowOrder ?? section.order ?? 0) + 1
+                });
+                console.log('  Updated section', sectionId, 'rowOrder to', (section.rowOrder ?? 0) + 1);
+              }
+            }
+          } else if (direction === 'left') {
+            // Sola eklerken: Aynı row'daki columnOrder >= newColumnOrder olan section'ların columnOrder'ını artır
+            for (const sectionId of page.sections) {
+              const section = await getSectionById(sectionId);
+              if (section &&
+                (section.rowOrder ?? section.order ?? 0) === newRowOrder &&
+                (section.columnOrder ?? 0) >= newColumnOrder) {
+                await updateSection(sectionId, {
+                  columnOrder: (section.columnOrder ?? 0) + 1
+                });
+                console.log('  Updated section', sectionId, 'columnOrder to', (section.columnOrder ?? 0) + 1);
+              }
+            }
+          } else if (direction === 'right') {
+            // Sağa eklerken: Aynı row'daki columnOrder >= newColumnOrder olan section'ların columnOrder'ını artır
+            for (const sectionId of page.sections) {
+              const section = await getSectionById(sectionId);
+              if (section &&
+                (section.rowOrder ?? section.order ?? 0) === newRowOrder &&
+                (section.columnOrder ?? 0) >= newColumnOrder) {
+                await updateSection(sectionId, {
+                  columnOrder: (section.columnOrder ?? 0) + 1
+                });
+                console.log('  Updated section', sectionId, 'columnOrder to', (section.columnOrder ?? 0) + 1);
+              }
             }
           }
         }
 
-        console.log('✅ Final newOrder:', newOrder);
-
+        // Yeni section oluştur
         const newSectionId = await createSection({
           pageId: page.id,
           name: 'Yeni Bölüm',
           order: newOrder,
+          rowOrder: newRowOrder,
+          columnOrder: newColumnOrder,
           settings: {},
         });
 
         console.log('✅ New section created:', newSectionId);
-
-        // Diğer section'ların order'ını güncelle
-        if (referenceSectionId && page.sections && newOrder < page.sections.length) {
-          const { updateSection } = await import('@/lib/firebase/firestore');
-          console.log('🔄 Updating other sections order...');
-          for (let i = newOrder; i < page.sections.length; i++) {
-            const sectionId = page.sections[i];
-            if (sectionId !== newSectionId) {
-              await updateSection(sectionId, { order: i + 1 });
-              console.log('  Updated section', sectionId, 'order to', i + 1);
-            }
-          }
-        }
 
         // Sayfayı yeniden yükle
         const pageData = await getPageById(pageId);

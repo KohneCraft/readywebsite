@@ -126,28 +126,52 @@ export function CenterCanvas({
                 </div>
               </div>
             ) : sections.length > 0 ? (
-              <div
-                className="grid gap-4"
-                style={{
-                  gridTemplateColumns: 'repeat(auto-fit, minmax(400px, 1fr))',
-                }}
-              >
-                {sections.map((section, index) => (
-                  <SectionEditor
-                    key={section.id}
-                    section={section}
-                    index={index}
-                    isSelected={selectedElement?.type === 'section' && selectedElement.id === section.id}
-                    onSelect={() => onSelectElement({ type: 'section', id: section.id })}
-                    selectedElement={selectedElement}
-                    onSelectElement={onSelectElement}
-                    onMove={onMoveSection}
-                    onDuplicate={onDuplicateSection}
-                    onDelete={onDeleteSection}
-                    pendingColumnUpdates={pendingColumnUpdates}
-                    pendingBlockUpdates={pendingBlockUpdates}
-                  />
-                ))}
+              <div className="space-y-4">
+                {/* Section'ları rowOrder'a göre grupla */}
+                {(() => {
+                  // Section'ları rowOrder'a göre grupla
+                  const rows = sections.reduce((acc, section) => {
+                    const rowOrder = section.rowOrder ?? section.order ?? 0;
+                    if (!acc[rowOrder]) acc[rowOrder] = [];
+                    acc[rowOrder].push(section);
+                    return acc;
+                  }, {} as Record<number, typeof sections>);
+
+                  // Her row'u columnOrder'a göre sırala
+                  Object.keys(rows).forEach(rowKey => {
+                    rows[Number(rowKey)].sort((a, b) => (a.columnOrder ?? 0) - (b.columnOrder ?? 0));
+                  });
+
+                  // Row'ları sıralı render et
+                  return Object.keys(rows)
+                    .map(Number)
+                    .sort((a, b) => a - b)
+                    .map(rowOrder => (
+                      <div
+                        key={`row-${rowOrder}`}
+                        className="flex gap-4"
+                        style={{ minHeight: '100px' }}
+                      >
+                        {rows[rowOrder].map((section, index) => (
+                          <div key={section.id} className="flex-1">
+                            <SectionEditor
+                              section={section}
+                              index={index}
+                              isSelected={selectedElement?.type === 'section' && selectedElement.id === section.id}
+                              onSelect={() => onSelectElement({ type: 'section', id: section.id })}
+                              selectedElement={selectedElement}
+                              onSelectElement={onSelectElement}
+                              onMove={onMoveSection}
+                              onDuplicate={onDuplicateSection}
+                              onDelete={onDeleteSection}
+                              pendingColumnUpdates={pendingColumnUpdates}
+                              pendingBlockUpdates={pendingBlockUpdates}
+                            />
+                          </div>
+                        ))}
+                      </div>
+                    ));
+                })()}
               </div>
             ) : (
               <EmptyCanvas
