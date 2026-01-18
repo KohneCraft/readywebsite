@@ -282,6 +282,49 @@ export function PanelBlockSettings({ block, activeTab, onUpdate }: PanelBlockSet
                     <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
                         💡 Sidebar modu seçildiğinde, panel açıldığında sayfa içeriği kenara kayar
                     </p>
+
+                    {/* Sidebar Ayarları - Sadece sidebar modunda göster */}
+                    {panelMode === 'sidebar' && (
+                        <div className="mt-3 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
+                            <h5 className="text-xs font-semibold text-blue-900 dark:text-blue-100 mb-2">
+                                Sidebar İtme Ayarları
+                            </h5>
+                            <div className="space-y-2">
+                                <label className="flex items-center gap-2 cursor-pointer">
+                                    <input
+                                        type="checkbox"
+                                        checked={props.panelSidebarSettings?.pushNavbar ?? false}
+                                        onChange={(e) =>
+                                            onUpdate({
+                                                panelSidebarSettings: {
+                                                    ...props.panelSidebarSettings,
+                                                    pushNavbar: e.target.checked,
+                                                },
+                                            })
+                                        }
+                                        className="w-4 h-4 rounded border-gray-300"
+                                    />
+                                    <span className="text-sm text-gray-700 dark:text-gray-300">Navbar'ı İt</span>
+                                </label>
+                                <label className="flex items-center gap-2 cursor-pointer">
+                                    <input
+                                        type="checkbox"
+                                        checked={props.panelSidebarSettings?.pushFooter ?? false}
+                                        onChange={(e) =>
+                                            onUpdate({
+                                                panelSidebarSettings: {
+                                                    ...props.panelSidebarSettings,
+                                                    pushFooter: e.target.checked,
+                                                },
+                                            })
+                                        }
+                                        className="w-4 h-4 rounded border-gray-300"
+                                    />
+                                    <span className="text-sm text-gray-700 dark:text-gray-300">Footer'ı İt</span>
+                                </label>
+                            </div>
+                        </div>
+                    )}
                 </div>
 
                 {/* Margin Ayarları */}
@@ -550,8 +593,64 @@ export function PanelBlockSettings({ block, activeTab, onUpdate }: PanelBlockSet
     }
 
     if (activeTab === 'advanced') {
+        const panelBlocks = props.panelBlocks || [];
+
         return (
             <div className="space-y-4">
+                {/* Panel İçeriği */}
+                <div className="space-y-3">
+                    <h4 className="text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider">
+                        Panel İçeriği
+                    </h4>
+
+                    <div className="p-4 bg-gray-50 dark:bg-gray-800/50 rounded-lg border border-gray-200 dark:border-gray-700">
+                        <p className="text-xs text-gray-600 dark:text-gray-400 mb-3">
+                            Panel içine blok eklemek için:
+                        </p>
+                        <ol className="text-xs text-gray-600 dark:text-gray-400 space-y-2 list-decimal list-inside">
+                            <li>Sol panelden "Bloklar" sekmesine gidin</li>
+                            <li>Eklemek istediğiniz bloğu sürükleyin</li>
+                            <li>Bu panelin üzerine bırakın</li>
+                        </ol>
+
+                        {/* Mevcut Bloklar */}
+                        {panelBlocks.length > 0 && (
+                            <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
+                                <p className="text-xs font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                    Mevcut Bloklar ({panelBlocks.length})
+                                </p>
+                                <div className="space-y-2">
+                                    {panelBlocks.map((blockId, index) => (
+                                        <div
+                                            key={blockId}
+                                            className="flex items-center justify-between p-2 bg-white dark:bg-gray-900 rounded border border-gray-200 dark:border-gray-700"
+                                        >
+                                            <span className="text-xs text-gray-600 dark:text-gray-400">
+                                                #{index + 1} - {blockId.substring(0, 8)}...
+                                            </span>
+                                            <button
+                                                onClick={() => {
+                                                    const updatedBlocks = panelBlocks.filter((id) => id !== blockId);
+                                                    onUpdate({ panelBlocks: updatedBlocks });
+                                                }}
+                                                className="text-red-500 hover:text-red-700 text-xs px-2 py-1"
+                                            >
+                                                Sil
+                                            </button>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
+
+                        {panelBlocks.length === 0 && (
+                            <p className="text-xs text-gray-500 dark:text-gray-500 mt-3 italic">
+                                Henüz blok eklenmemiş
+                            </p>
+                        )}
+                    </div>
+                </div>
+
                 {/* Animasyon */}
                 <div className="space-y-3">
                     <h4 className="text-xs font-semibold text-gray-600 dark:text-gray-400 uppercase tracking-wider">

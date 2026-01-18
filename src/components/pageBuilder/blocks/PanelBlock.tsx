@@ -124,13 +124,41 @@ export function PanelBlock({ props, onSelect, isSelected, isAdminMode: propIsAdm
         if (isAdminMode || panelMode !== 'sidebar') return;
 
         const panelWidth = typeof panelDimensions.width === 'number' ? panelDimensions.width : 320;
-        const mainContent = document.querySelector('main, .page-renderer, body');
+        const panelSidebarSettings = props.panelSidebarSettings || { pushNavbar: false, pushFooter: false };
 
-        if (mainContent && isOpen) {
-            if (currentPosition === 'right') {
-                (mainContent as HTMLElement).style.marginRight = `${panelWidth}px`;
-            } else if (currentPosition === 'left') {
-                (mainContent as HTMLElement).style.marginLeft = `${panelWidth}px`;
+        // Ana içerik
+        const mainContent = document.querySelector('main, .page-renderer');
+        // Navbar
+        const navbar = document.querySelector('nav, header, [role="banner"]');
+        // Footer
+        const footer = document.querySelector('footer, [role="contentinfo"]');
+
+        if (isOpen) {
+            // Ana içeriği her zaman it
+            if (mainContent) {
+                if (currentPosition === 'right') {
+                    (mainContent as HTMLElement).style.marginRight = `${panelWidth}px`;
+                } else if (currentPosition === 'left') {
+                    (mainContent as HTMLElement).style.marginLeft = `${panelWidth}px`;
+                }
+            }
+
+            // Navbar'ı ayara göre it
+            if (navbar && panelSidebarSettings.pushNavbar) {
+                if (currentPosition === 'right') {
+                    (navbar as HTMLElement).style.marginRight = `${panelWidth}px`;
+                } else if (currentPosition === 'left') {
+                    (navbar as HTMLElement).style.marginLeft = `${panelWidth}px`;
+                }
+            }
+
+            // Footer'ı ayara göre it
+            if (footer && panelSidebarSettings.pushFooter) {
+                if (currentPosition === 'right') {
+                    (footer as HTMLElement).style.marginRight = `${panelWidth}px`;
+                } else if (currentPosition === 'left') {
+                    (footer as HTMLElement).style.marginLeft = `${panelWidth}px`;
+                }
             }
         }
 
@@ -139,8 +167,16 @@ export function PanelBlock({ props, onSelect, isSelected, isAdminMode: propIsAdm
                 (mainContent as HTMLElement).style.marginRight = '';
                 (mainContent as HTMLElement).style.marginLeft = '';
             }
+            if (navbar) {
+                (navbar as HTMLElement).style.marginRight = '';
+                (navbar as HTMLElement).style.marginLeft = '';
+            }
+            if (footer) {
+                (footer as HTMLElement).style.marginRight = '';
+                (footer as HTMLElement).style.marginLeft = '';
+            }
         };
-    }, [isOpen, panelMode, currentPosition, panelDimensions.width, isAdminMode]);
+    }, [isOpen, panelMode, currentPosition, panelDimensions.width, isAdminMode, props.panelSidebarSettings]);
 
     // ESC key handler
     useEffect(() => {

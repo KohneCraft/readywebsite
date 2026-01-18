@@ -315,6 +315,10 @@ export interface BlockProps {
     padding?: { top?: number; right?: number; bottom?: number; left?: number };
   };
   panelMode?: 'overlay' | 'sidebar'; // Overlay: içerik üzerinde, Sidebar: içeriği iter
+  panelSidebarSettings?: {
+    pushNavbar?: boolean; // Navbar'ı iter (varsayılan: false)
+    pushFooter?: boolean; // Footer'ı iter (varsayılan: false)
+  };
 }
 
 /**
