@@ -6,15 +6,16 @@
 // ============================================
 
 import { useState, useCallback } from 'react';
-import { X, Settings as SettingsIcon, Navigation, Layout } from 'lucide-react';
+import { X, Settings as SettingsIcon, Navigation, Layout, LayoutTemplate } from 'lucide-react';
 import { SectionSettings } from '../settings/SectionSettings';
 import { ColumnSettings } from '../settings/ColumnSettings';
 import { BlockSettings } from '../settings/BlockSettings';
 import { PageSettings } from '../settings/PageSettings';
 import { HeaderSettings } from '../settings/HeaderSettings';
 import { FooterSettings } from '../settings/FooterSettings';
+import { SectionTemplatePanel } from './SectionTemplatePanel';
 import { cn } from '@/lib/utils';
-import type { Page, Section, Column, Block } from '@/types/pageBuilder';
+import type { Page, Section, Column, Block, SectionTemplate } from '@/types/pageBuilder';
 
 interface RightPanelProps {
   selectedElement: { type: 'section' | 'column' | 'block' | 'page' | 'header' | 'footer'; id: string } | null;
@@ -26,11 +27,13 @@ interface RightPanelProps {
   onBlockUpdate?: (blockId: string, updates: Partial<Block>) => void;
   // Live preview için pending block updates
   pendingBlockUpdates?: Record<string, Partial<Block>>;
+  // Template ekleme
+  onTemplateInsert?: (template: SectionTemplate, mode: 'append' | 'replace') => Promise<void>;
 }
 
-export function RightPanel({ selectedElement, page, onUpdate, onSelectElement, onSectionUpdate, onColumnUpdate, onBlockUpdate, pendingBlockUpdates }: RightPanelProps) {
+export function RightPanel({ selectedElement, page, onUpdate, onSelectElement, onSectionUpdate, onColumnUpdate, onBlockUpdate, pendingBlockUpdates, onTemplateInsert }: RightPanelProps) {
   const [activeTab, setActiveTab] = useState<'style' | 'settings' | 'advanced'>('style');
-  const [viewMode, setViewMode] = useState<'element' | 'header' | 'footer' | 'page'>('element');
+  const [viewMode, setViewMode] = useState<'element' | 'header' | 'footer' | 'page' | 'template'>('element');
 
   // State güncelleme fonksiyonları - debounce yok, sadece pending updates'e ekle
   const handleSectionUpdate = useCallback((updates: Partial<Section>) => {
@@ -57,7 +60,7 @@ export function RightPanel({ selectedElement, page, onUpdate, onSelectElement, o
       <div className="w-full h-full bg-white dark:bg-gray-800 flex flex-col overflow-hidden">
         {/* View Mode Selector */}
         <div className="p-4 border-b border-gray-200 dark:border-gray-700">
-          <div className="grid grid-cols-3 gap-2">
+          <div className="grid grid-cols-4 gap-2">
             <button
               onClick={() => setViewMode('header')}
               className={cn(
@@ -92,7 +95,19 @@ export function RightPanel({ selectedElement, page, onUpdate, onSelectElement, o
               )}
             >
               <SettingsIcon className="w-4 h-4 mx-auto mb-1" />
-              Sayfa Ayarları
+              Sayfa
+            </button>
+            <button
+              onClick={() => setViewMode('template')}
+              className={cn(
+                'p-3 rounded-lg border transition-colors text-sm font-medium',
+                viewMode === 'template'
+                  ? 'border-green-500 bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400'
+                  : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600 text-gray-700 dark:text-gray-300'
+              )}
+            >
+              <LayoutTemplate className="w-4 h-4 mx-auto mb-1" />
+              Template
             </button>
           </div>
         </div>
@@ -162,6 +177,15 @@ export function RightPanel({ selectedElement, page, onUpdate, onSelectElement, o
                 ))}
               </div>
               <PageSettings page={page} activeTab={activeTab} onUpdate={onUpdate || (() => { })} />
+            </div>
+          )}
+
+          {viewMode === 'template' && page && onTemplateInsert && (
+            <div className="p-4">
+              <SectionTemplatePanel
+                currentSections={page.sections?.map(id => ({ id, name: '', columns: [], order: 0, visibility: { desktop: true, tablet: true, mobile: true } })) || []}
+                onTemplateInsert={onTemplateInsert}
+              />
             </div>
           )}
 

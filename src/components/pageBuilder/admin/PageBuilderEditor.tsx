@@ -19,9 +19,10 @@ import {
   createSection,
   createBlock,
   moveBlock,
+  insertTemplate,
 } from '@/lib/firebase/firestore';
 import { logger } from '@/lib/logger';
-import type { Page, BlockType, Section, Column, Block } from '@/types/pageBuilder';
+import type { Page, BlockType, Section, Column, Block, SectionTemplate } from '@/types/pageBuilder';
 import { getDefaultBlockProps } from '@/types/pageBuilder';
 import { updateSection, updateColumn, updateBlock } from '@/lib/firebase/firestore';
 
@@ -970,6 +971,17 @@ export function PageBuilderEditor({ pageId }: PageBuilderEditorProps) {
                       [blockId]: { ...prev[blockId], ...updates }
                     }));
                     setHasChanges(true);
+                  }}
+                  onTemplateInsert={async (template: SectionTemplate, mode: 'append' | 'replace') => {
+                    if (!page) return;
+                    try {
+                      await insertTemplate(page.id, template, mode);
+                      // Sayfayı yeniden yükle
+                      await loadPage();
+                      logger.info(`Template eklendi: ${template.name}`);
+                    } catch (error) {
+                      logger.error('Template eklenemedi:', error);
+                    }
                   }}
                 />
               </>
