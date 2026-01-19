@@ -815,3 +815,60 @@ export function getDefaultBlockProps(type: BlockType): Partial<BlockProps> {
   return defaults[type] || {};
 }
 
+// ============================================
+// Section Template Sistemi
+// Hazır template yapıları için tipler
+// ============================================
+
+/**
+ * Template kategorileri
+ */
+export type TemplateCategory =
+  | 'landing'
+  | 'portfolio'
+  | 'blog'
+  | 'ecommerce'
+  | 'business'
+  | 'event'
+  | 'restaurant';
+
+/**
+ * Template içindeki block verisi
+ */
+export interface TemplateBlockData {
+  type: BlockType;
+  props: Record<string, unknown>;
+}
+
+/**
+ * Template içindeki column verisi
+ */
+export interface TemplateColumnData {
+  width: number;
+  settings?: Partial<ColumnSettings>;
+  blocks: TemplateBlockData[];
+}
+
+/**
+ * Template içindeki section verisi
+ */
+export interface TemplateSectionData {
+  name: string;
+  settings: Partial<SectionSettings>;
+  columns: TemplateColumnData[];
+}
+
+/**
+ * Section Template - Hazır sayfa düzeni
+ */
+export interface SectionTemplate {
+  id: string;
+  name: string;
+  category: TemplateCategory;
+  thumbnail?: string;
+  description: string;
+  sections: TemplateSectionData[];
+  tags: string[];
+  createdAt?: Date | Timestamp;
+  author?: string;
+}

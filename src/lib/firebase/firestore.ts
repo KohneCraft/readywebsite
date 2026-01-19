@@ -1909,3 +1909,185 @@ export async function deleteEffect(id: string): Promise<void> {
   await deleteDoc(doc(db, COLLECTIONS.effects, id));
   logger.firestore.info(`✓ Efekt silindi: ${id}`);
 }
+
+// ============================================
+// SECTION TEMPLATE FUNCTIONS
+// ============================================
+
+import type {
+  SectionTemplate
+} from '@/types/pageBuilder';
+
+/**
+ * Sayfadaki tüm section'ları sil
+ */
+export async function deleteAllPageSections(pageId: string): Promise<void> {
+  const pageDoc = await getDoc(doc(db, COLLECTIONS.pages, pageId));
+
+  if (!pageDoc.exists()) {
+    throw new Error('Sayfa bulunamadı');
+  }
+
+  const page = pageDoc.data();
+  const sectionIds = page.sections || [];
+
+  if (sectionIds.length === 0) return;
+
+  // Her section için cascade delete
+  for (const sectionId of sectionIds) {
+    const sectionDoc = await getDoc(doc(db, COLLECTIONS.sections, sectionId));
+
+    if (!sectionDoc.exists()) continue;
+
+    const section = sectionDoc.data();
+    const columnIds = section.columns || [];
+
+    // Her column'u sil
+    for (const columnId of columnIds) {
+      const columnDoc = await getDoc(doc(db, COLLECTIONS.columns, columnId));
+
+      if (!columnDoc.exists()) continue;
+
+      const column = columnDoc.data();
+      const blockIds = column.blocks || [];
+
+      // Her block'u sil
+      for (const blockId of blockIds) {
+        await deleteDoc(doc(db, COLLECTIONS.blocks, blockId));
+      }
+
+      await deleteDoc(doc(db, COLLECTIONS.columns, columnId));
+    }
+
+    await deleteDoc(doc(db, COLLECTIONS.sections, sectionId));
+  }
+
+  // Page'den section'ları temizle
+  await updateDoc(doc(db, COLLECTIONS.pages, pageId), {
+    sections: [],
+    updatedAt: serverTimestamp(),
+  });
+
+  logger.firestore.info(`✓ Sayfa temizlendi: ${pageId} - ${sectionIds.length} section silindi`);
+}
+
+/**
+ * Template'i sayfaya ekle
+ */
+export async function insertTemplate(
+  pageId: string,
+  template: SectionTemplate,
+  mode: 'append' | 'replace'
+): Promise<{ success: boolean; addedSections: number }> {
+  const batch = writeBatch(db);
+
+  try {
+    // 1. Replace modunda mevcut section'ları sil
+    if (mode === 'replace') {
+      await deleteAllPageSections(pageId);
+    }
+
+    // 2. Mevcut section sayısını al (append için sıralama)
+    const pageDoc = await getDoc(doc(db, COLLECTIONS.pages, pageId));
+    const currentSectionIds = pageDoc.data()?.sections || [];
+    let startOrder = currentSectionIds.length;
+
+    // 3. Template section'larını oluştur
+    const newSectionIds: string[] = [];
+
+    for (const sectionData of template.sections) {
+      // Section oluştur
+      const sectionRef = doc(collection(db, COLLECTIONS.sections));
+      const sectionId = sectionRef.id;
+
+      const columnIds: string[] = [];
+
+      // Column'ları oluştur
+      for (let colIndex = 0; colIndex < sectionData.columns.length; colIndex++) {
+        const columnData = sectionData.columns[colIndex];
+        const columnRef = doc(collection(db, COLLECTIONS.columns));
+        const columnId = columnRef.id;
+
+        const blockIds: string[] = [];
+
+        // Block'ları oluştur
+        for (let blockIndex = 0; blockIndex < columnData.blocks.length; blockIndex++) {
+          const blockData = columnData.blocks[blockIndex];
+          const blockRef = doc(collection(db, COLLECTIONS.blocks));
+          const blockId = blockRef.id;
+
+          batch.set(blockRef, {
+            id: blockId,
+            columnId,
+            type: blockData.type,
+            props: blockData.props,
+            order: blockIndex,
+            visibility: { desktop: true, tablet: true, mobile: true },
+            createdAt: serverTimestamp(),
+            updatedAt: serverTimestamp(),
+          });
+
+          blockIds.push(blockId);
+        }
+
+        // Column kaydet
+        batch.set(columnRef, {
+          id: columnId,
+          sectionId,
+          width: columnData.width,
+          settings: columnData.settings || {},
+          blocks: blockIds,
+          order: colIndex,
+          visibility: { desktop: true, tablet: true, mobile: true },
+          createdAt: serverTimestamp(),
+          updatedAt: serverTimestamp(),
+        });
+
+        columnIds.push(columnId);
+      }
+
+      // Section kaydet
+      batch.set(sectionRef, {
+        id: sectionId,
+        pageId,
+        name: sectionData.name,
+        settings: sectionData.settings,
+        columns: columnIds,
+        order: startOrder + newSectionIds.length,
+        rowOrder: 0,
+        columnOrder: 0,
+        visibility: { desktop: true, tablet: true, mobile: true },
+        createdAt: serverTimestamp(),
+        updatedAt: serverTimestamp(),
+      });
+
+      newSectionIds.push(sectionId);
+    }
+
+    // 4. Page'i güncelle
+    const allSectionIds = mode === 'append'
+      ? [...currentSectionIds, ...newSectionIds]
+      : newSectionIds;
+
+    batch.update(doc(db, COLLECTIONS.pages, pageId), {
+      sections: allSectionIds,
+      updatedAt: serverTimestamp(),
+    });
+
+    // 5. Batch commit
+    await batch.commit();
+
+    logger.firestore.info(
+      `✓ Template eklendi: ${template.name} → Sayfa ${pageId} (${mode}, ${newSectionIds.length} section)`
+    );
+
+    return {
+      success: true,
+      addedSections: newSectionIds.length,
+    };
+
+  } catch (error) {
+    logger.firestore.error('Template insert hatası:', error);
+    throw error;
+  }
+}
