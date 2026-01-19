@@ -59,12 +59,12 @@ export function RightPanel({ selectedElement, page, onUpdate, onSelectElement, o
     return (
       <div className="w-full h-full bg-white dark:bg-gray-800 flex flex-col overflow-hidden">
         {/* View Mode Selector */}
-        <div className="p-4 border-b border-gray-200 dark:border-gray-700">
-          <div className="grid grid-cols-4 gap-2">
+        <div className="p-3 border-b border-gray-200 dark:border-gray-700">
+          <div className="grid grid-cols-2 gap-2">
             <button
               onClick={() => setViewMode('header')}
               className={cn(
-                'p-3 rounded-lg border transition-colors text-sm font-medium',
+                'p-2.5 rounded-lg border transition-colors text-xs font-medium',
                 viewMode === 'header'
                   ? 'border-primary-500 bg-primary-50 dark:bg-primary-900/20 text-primary-700 dark:text-primary-400'
                   : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600 text-gray-700 dark:text-gray-300'
@@ -76,7 +76,7 @@ export function RightPanel({ selectedElement, page, onUpdate, onSelectElement, o
             <button
               onClick={() => setViewMode('footer')}
               className={cn(
-                'p-3 rounded-lg border transition-colors text-sm font-medium',
+                'p-2.5 rounded-lg border transition-colors text-xs font-medium',
                 viewMode === 'footer'
                   ? 'border-primary-500 bg-primary-50 dark:bg-primary-900/20 text-primary-700 dark:text-primary-400'
                   : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600 text-gray-700 dark:text-gray-300'
@@ -88,7 +88,7 @@ export function RightPanel({ selectedElement, page, onUpdate, onSelectElement, o
             <button
               onClick={() => setViewMode('page')}
               className={cn(
-                'p-3 rounded-lg border transition-colors text-sm font-medium',
+                'p-2.5 rounded-lg border transition-colors text-xs font-medium',
                 viewMode === 'page'
                   ? 'border-primary-500 bg-primary-50 dark:bg-primary-900/20 text-primary-700 dark:text-primary-400'
                   : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600 text-gray-700 dark:text-gray-300'
@@ -100,7 +100,7 @@ export function RightPanel({ selectedElement, page, onUpdate, onSelectElement, o
             <button
               onClick={() => setViewMode('template')}
               className={cn(
-                'p-3 rounded-lg border transition-colors text-sm font-medium',
+                'p-2.5 rounded-lg border transition-colors text-xs font-medium',
                 viewMode === 'template'
                   ? 'border-green-500 bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400'
                   : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600 text-gray-700 dark:text-gray-300'
