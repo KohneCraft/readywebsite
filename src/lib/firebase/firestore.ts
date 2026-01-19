@@ -2046,15 +2046,16 @@ export async function insertTemplate(
         columnIds.push(columnId);
       }
 
-      // Section kaydet
+      // Section kaydet - Her section farklı bir satırda olmalı (alt alta görünmesi için)
+      const currentSectionIndex = newSectionIds.length;
       batch.set(sectionRef, {
         id: sectionId,
         pageId,
         name: sectionData.name,
         settings: sectionData.settings,
         columns: columnIds,
-        order: startOrder + newSectionIds.length,
-        rowOrder: 0,
+        order: startOrder + currentSectionIndex,
+        rowOrder: startOrder + currentSectionIndex, // Her section farklı satırda
         columnOrder: 0,
         visibility: { desktop: true, tablet: true, mobile: true },
         createdAt: serverTimestamp(),
