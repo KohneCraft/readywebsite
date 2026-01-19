@@ -6,7 +6,7 @@
 // ============================================
 
 import { useState, useMemo } from 'react';
-import { Search, Layers, Grid3X3, Plus } from 'lucide-react';
+import { Search, Layers, Plus } from 'lucide-react';
 import { defaultTemplates, templateCategories, getTemplatesByCategory } from '@/data/defaultTemplates';
 import type { SectionTemplate } from '@/types/pageBuilder';
 import { TemplateInsertModal } from '../modals/TemplateInsertModal';
@@ -94,49 +94,15 @@ export function SectionTemplatePanel({
         <div className="section-template-panel">
             {/* Mevcut Sayfa Düzeni */}
             <div className="mb-4">
-                <div className="flex items-center gap-2 mb-3">
-                    <Layers size={16} className="text-primary-500" />
-                    <h3 className="text-sm font-semibold text-gray-800 dark:text-gray-200">
+                <div className="flex items-center gap-2 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg">
+                    <Layers size={18} className="text-primary-500" />
+                    <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
                         Mevcut Sayfa Düzeni
-                    </h3>
-                    <span className="ml-auto bg-primary-100 dark:bg-primary-900 text-primary-700 dark:text-primary-300 text-xs px-2 py-0.5 rounded-full">
+                    </span>
+                    <span className="ml-auto bg-primary-100 dark:bg-primary-900 text-primary-700 dark:text-primary-300 text-sm font-semibold px-2.5 py-1 rounded-full">
                         {currentSections.length} Section
                     </span>
                 </div>
-
-                {currentSections.length === 0 ? (
-                    <div className="text-center py-6 bg-gray-50 dark:bg-gray-800 rounded-lg border-2 border-dashed border-gray-200 dark:border-gray-700">
-                        <Grid3X3 size={32} className="mx-auto mb-2 text-gray-400" />
-                        <p className="text-sm text-gray-500 dark:text-gray-400">Sayfa henüz boş</p>
-                        <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">
-                            Aşağıdan bir template seçerek başlayın
-                        </p>
-                    </div>
-                ) : (
-                    <div className="space-y-1.5">
-                        {currentSections.slice(0, 5).map((section, index) => (
-                            <div
-                                key={section.id}
-                                className="flex items-center gap-2 p-2 bg-gray-50 dark:bg-gray-800 rounded-lg"
-                            >
-                                <div className="w-6 h-6 flex items-center justify-center bg-primary-500 text-white rounded text-xs font-bold">
-                                    {index + 1}
-                                </div>
-                                <span className="text-sm text-gray-700 dark:text-gray-300 truncate flex-1">
-                                    {section.name || `Section ${index + 1}`}
-                                </span>
-                                <span className="text-xs text-gray-400">
-                                    {section.columns?.length || 0} kolon
-                                </span>
-                            </div>
-                        ))}
-                        {currentSections.length > 5 && (
-                            <p className="text-xs text-gray-400 text-center py-1">
-                                +{currentSections.length - 5} section daha
-                            </p>
-                        )}
-                    </div>
-                )}
             </div>
 
             {/* Hazır Template'ler */}

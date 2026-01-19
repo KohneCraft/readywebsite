@@ -126,27 +126,80 @@ export function CenterCanvas({
                 </div>
               </div>
             ) : sections.length > 0 ? (
-              <div className="space-y-4">
-                {/* Section'ları rowOrder'a göre grupla */}
-                {(() => {
-                  // Section'ları rowOrder'a göre grupla
-                  const rows = sections.reduce((acc, section) => {
-                    const rowOrder = section.rowOrder ?? section.order ?? 0;
-                    if (!acc[rowOrder]) acc[rowOrder] = [];
-                    acc[rowOrder].push(section);
-                    return acc;
-                  }, {} as Record<number, typeof sections>);
+              (() => {
+                // Section'ları rowOrder'a göre grupla
+                const rows = sections.reduce((acc, section) => {
+                  const rowOrder = section.rowOrder ?? section.order ?? 0;
+                  if (!acc[rowOrder]) acc[rowOrder] = [];
+                  acc[rowOrder].push(section);
+                  return acc;
+                }, {} as Record<number, typeof sections>);
 
-                  // Her row'u columnOrder'a göre sırala
-                  Object.keys(rows).forEach(rowKey => {
-                    rows[Number(rowKey)].sort((a, b) => (a.columnOrder ?? 0) - (b.columnOrder ?? 0));
-                  });
+                // Her row'u columnOrder'a göre sırala
+                Object.keys(rows).forEach(rowKey => {
+                  rows[Number(rowKey)].sort((a, b) => (a.columnOrder ?? 0) - (b.columnOrder ?? 0));
+                });
 
-                  // Row'ları sıralı render et
-                  return Object.keys(rows)
-                    .map(Number)
-                    .sort((a, b) => a - b)
-                    .map(rowOrder => (
+                const sortedRowOrders = Object.keys(rows).map(Number).sort((a, b) => a - b);
+
+                // rowSpan veya colSpan olan section var mı kontrol et
+                const hasSpan = sections.some(s => (s.rowSpan ?? 1) > 1 || (s.colSpan ?? 1) > 1);
+
+                // Span varsa CSS Grid kullan (PageRenderer ile aynı)
+                if (hasSpan) {
+                  // Grid için maksimum kolon sayısını bul
+                  const maxCols = Math.max(...sortedRowOrders.map(r => rows[r].length), 1);
+                  const rowCount = sortedRowOrders.length || 1;
+
+                  return (
+                    <div
+                      className="sections-grid"
+                      style={{
+                        display: 'grid',
+                        gridTemplateColumns: `repeat(${maxCols}, 1fr)`,
+                        gridTemplateRows: `repeat(${rowCount}, auto)`,
+                        gap: '16px',
+                        width: '100%',
+                        minHeight: '200px'
+                      }}
+                    >
+                      {sections.map((section, idx) => {
+                        const rowSpan = section.rowSpan ?? 1;
+                        const colSpan = section.colSpan ?? 1;
+
+                        return (
+                          <div
+                            key={section.id}
+                            style={{
+                              gridRow: `span ${rowSpan}`,
+                              gridColumn: `span ${colSpan}`,
+                              minHeight: '100px'
+                            }}
+                          >
+                            <SectionEditor
+                              section={section}
+                              index={idx}
+                              isSelected={selectedElement?.type === 'section' && selectedElement.id === section.id}
+                              onSelect={() => onSelectElement({ type: 'section', id: section.id })}
+                              selectedElement={selectedElement}
+                              onSelectElement={onSelectElement}
+                              onMove={onMoveSection}
+                              onDuplicate={onDuplicateSection}
+                              onDelete={onDeleteSection}
+                              pendingColumnUpdates={pendingColumnUpdates}
+                              pendingBlockUpdates={pendingBlockUpdates}
+                            />
+                          </div>
+                        );
+                      })}
+                    </div>
+                  );
+                }
+
+                // Span yoksa normal row-based render
+                return (
+                  <div className="space-y-4">
+                    {sortedRowOrders.map(rowOrder => (
                       <div
                         key={`row-${rowOrder}`}
                         className="flex gap-4"
@@ -170,9 +223,10 @@ export function CenterCanvas({
                           </div>
                         ))}
                       </div>
-                    ));
-                })()}
-              </div>
+                    ))}
+                  </div>
+                );
+              })()
             ) : (
               <EmptyCanvas
                 onAddSection={() => {
