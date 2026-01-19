@@ -404,6 +404,8 @@ export interface Section {
   rowOrder: number;    // Hangi satırda (0, 1, 2...)
   columnOrder: number; // Satır içinde hangi sırada (0, 1, 2...)
   rowSpan?: number;    // Kaç satır kaplasın (default: 1)
+  colSpan?: number;    // Kaç kolon kaplasın (default: 1)
+  gridAlignment?: 'start' | 'center' | 'end'; // Section'ın grid içinde hizası
   visibility: {
     desktop: boolean;
     tablet: boolean;

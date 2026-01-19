@@ -268,11 +268,11 @@ export function PageRenderer({ pageId, slug, allowDraft = false }: PageRendererP
 
           const sortedRowOrders = Object.keys(rows).map(Number).sort((a, b) => a - b);
 
-          // rowSpan olan section var mı kontrol et
-          const hasRowSpan = sectionsData.some(s => (s.rowSpan ?? 1) > 1);
+          // rowSpan veya colSpan olan section var mı kontrol et
+          const hasSpan = sectionsData.some(s => (s.rowSpan ?? 1) > 1 || (s.colSpan ?? 1) > 1);
 
-          // rowSpan varsa CSS Grid kullan
-          if (hasRowSpan) {
+          // Span varsa CSS Grid kullan
+          if (hasSpan) {
             // Grid için maksimum kolon sayısını bul
             const maxCols = Math.max(...sortedRowOrders.map(r => rows[r].length));
             const rowCount = sortedRowOrders.length;
@@ -290,10 +290,16 @@ export function PageRenderer({ pageId, slug, allowDraft = false }: PageRendererP
               >
                 {sectionsData.map(section => {
                   const rowSpan = section.rowSpan ?? 1;
+                  const colSpan = section.colSpan ?? 1;
                   const sectionWidth = section.settings?.maxWidth;
+                  const alignment = section.gridAlignment || 'start';
+
                   const gridStyle: React.CSSProperties = {
                     gridRow: `span ${rowSpan}`,
+                    gridColumn: `span ${colSpan}`,
+                    justifySelf: alignment, // start, center, end
                     maxWidth: sectionWidth ? `${sectionWidth}px` : undefined,
+                    width: '100%',
                   };
                   return (
                     <div key={section.id} style={gridStyle}>

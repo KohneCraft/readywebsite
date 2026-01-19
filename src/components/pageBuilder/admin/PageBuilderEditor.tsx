@@ -682,35 +682,34 @@ export function PageBuilderEditor({ pageId }: PageBuilderEditorProps) {
     };
   }, [page, pageId]);
 
-  // Resize handlers - TÜM hook'lar early return'lerden ÖNCE olmalı
+  // Resize handlers - Doğrudan DOM manipulation ile smooth resize
+  const leftPanelRef = useRef<HTMLDivElement>(null);
+  const rightPanelRef = useRef<HTMLDivElement>(null);
+  const pendingLeftWidth = useRef(leftPanelWidth);
+  const pendingRightWidth = useRef(rightPanelWidth);
+
   useEffect(() => {
-    let animationFrameId: number | null = null;
-
     const handleMouseMove = (e: MouseEvent) => {
-      // Performance: requestAnimationFrame ile throttle
-      if (animationFrameId) return;
-
-      animationFrameId = requestAnimationFrame(() => {
-        if (isResizingLeft) {
-          const newWidth = e.clientX;
-          if (newWidth >= 200 && newWidth <= 600) {
-            setLeftPanelWidth(newWidth);
-          }
-        }
-        if (isResizingRight) {
-          const newWidth = window.innerWidth - e.clientX;
-          if (newWidth >= 200 && newWidth <= 600) {
-            setRightPanelWidth(newWidth);
-          }
-        }
-        animationFrameId = null;
-      });
+      // Doğrudan DOM manipulation - React re-render yok
+      if (isResizingLeft && leftPanelRef.current) {
+        const newWidth = Math.min(600, Math.max(200, e.clientX));
+        leftPanelRef.current.style.width = `${newWidth}px`;
+        pendingLeftWidth.current = newWidth;
+      }
+      if (isResizingRight && rightPanelRef.current) {
+        const newWidth = Math.min(600, Math.max(200, window.innerWidth - e.clientX));
+        rightPanelRef.current.style.width = `${newWidth}px`;
+        pendingRightWidth.current = newWidth;
+      }
     };
 
     const handleMouseUp = () => {
-      if (animationFrameId) {
-        cancelAnimationFrame(animationFrameId);
-        animationFrameId = null;
+      // Mouse bırakıldığında React state'i güncelle
+      if (isResizingLeft) {
+        setLeftPanelWidth(pendingLeftWidth.current);
+      }
+      if (isResizingRight) {
+        setRightPanelWidth(pendingRightWidth.current);
       }
       setIsResizingLeft(false);
       setIsResizingRight(false);
@@ -724,9 +723,6 @@ export function PageBuilderEditor({ pageId }: PageBuilderEditorProps) {
     }
 
     return () => {
-      if (animationFrameId) {
-        cancelAnimationFrame(animationFrameId);
-      }
       document.removeEventListener('mousemove', handleMouseMove);
       document.removeEventListener('mouseup', handleMouseUp);
       document.body.style.cursor = '';
@@ -782,11 +778,13 @@ export function PageBuilderEditor({ pageId }: PageBuilderEditorProps) {
         <div className="flex-1 flex overflow-hidden relative">
           {/* Left Panel - Blok Kütüphanesi */}
           <div
-            className="bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 flex flex-col relative transition-all duration-300"
+            ref={leftPanelRef}
+            className={`bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 flex flex-col relative ${isResizingLeft ? '' : 'transition-all duration-300'}`}
             style={{
               width: leftPanelCollapsed ? '48px' : `${leftPanelWidth}px`,
               minWidth: leftPanelCollapsed ? '48px' : '200px',
-              maxWidth: leftPanelCollapsed ? '48px' : '600px'
+              maxWidth: leftPanelCollapsed ? '48px' : '600px',
+              willChange: isResizingLeft ? 'width' : 'auto'
             }}
           >
             {/* Toggle Button */}
@@ -914,11 +912,13 @@ export function PageBuilderEditor({ pageId }: PageBuilderEditorProps) {
 
           {/* Right Panel - Ayarlar */}
           <div
-            className="bg-white dark:bg-gray-800 border-l border-gray-200 dark:border-gray-700 flex flex-col relative transition-all duration-300"
+            ref={rightPanelRef}
+            className={`bg-white dark:bg-gray-800 border-l border-gray-200 dark:border-gray-700 flex flex-col relative ${isResizingRight ? '' : 'transition-all duration-300'}`}
             style={{
               width: rightPanelCollapsed ? '48px' : `${rightPanelWidth}px`,
               minWidth: rightPanelCollapsed ? '48px' : '200px',
-              maxWidth: rightPanelCollapsed ? '48px' : '600px'
+              maxWidth: rightPanelCollapsed ? '48px' : '600px',
+              willChange: isResizingRight ? 'width' : 'auto'
             }}
           >
             {/* Toggle Button */}

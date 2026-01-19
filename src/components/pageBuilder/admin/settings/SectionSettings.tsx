@@ -387,10 +387,55 @@ export function SectionSettings({ sectionId, activeTab, onUpdate, onColumnUpdate
                 className="w-full px-2 py-1.5 text-sm border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-white"
               />
             </div>
+
+            {/* Col Span */}
+            <div>
+              <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
+                Kolon Kapla
+              </label>
+              <input
+                type="number"
+                min={1}
+                max={10}
+                value={section?.colSpan ?? 1}
+                onChange={(e) => {
+                  const updated = {
+                    ...section,
+                    colSpan: parseInt(e.target.value) || 1,
+                  };
+                  setSection(updated);
+                  onUpdate(updated);
+                }}
+                className="w-full px-2 py-1.5 text-sm border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-white"
+              />
+            </div>
+          </div>
+
+          {/* Section Hizalama */}
+          <div className="mt-3">
+            <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
+              Section Hizalama
+            </label>
+            <select
+              value={section?.gridAlignment || 'start'}
+              onChange={(e) => {
+                const updated = {
+                  ...section,
+                  gridAlignment: e.target.value as 'start' | 'center' | 'end',
+                };
+                setSection(updated);
+                onUpdate(updated);
+              }}
+              className="w-full px-2 py-1.5 text-sm border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-white"
+            >
+              <option value="start">Başa Hizala (Sol)</option>
+              <option value="center">Ortala</option>
+              <option value="end">Sona Hizala (Sağ)</option>
+            </select>
           </div>
 
           <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
-            Aynı satır numarasına sahip section'lar yan yana görünür. Satır Kapla değeri ile birden fazla satırı kaplayan bölümler oluşturabilirsiniz.
+            Aynı satır numarasına sahip section'lar yan yana görünür. Satır/Kolon Kapla ile birden fazla hücre kaplayan bölümler oluşturabilirsiniz.
           </p>
         </div>
 
