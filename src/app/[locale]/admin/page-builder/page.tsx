@@ -8,8 +8,8 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { useLocale, useTranslations } from 'next-intl';
-import { 
-  LayoutDashboard, 
+import {
+  LayoutDashboard,
   ChevronRight,
   Plus,
   Layers,
@@ -35,6 +35,7 @@ export default function PageBuilderListPage() {
   const [showAddModal, setShowAddModal] = useState(false);
   const [newPageTitle, setNewPageTitle] = useState('');
   const [newPageSlug, setNewPageSlug] = useState('');
+  const [parentPageSlug, setParentPageSlug] = useState('');
 
   const getLocalizedHref = useCallback((href: string) => {
     if (locale === 'tr') return href;
@@ -72,9 +73,14 @@ export default function PageBuilderListPage() {
         return;
       }
 
+      // Full slug oluştur (parent varsa prefix ekle)
+      const fullSlug = parentPageSlug
+        ? `${parentPageSlug}/${newPageSlug}`
+        : newPageSlug;
+
       const pageId = await createPage({
         title: newPageTitle,
-        slug: newPageSlug,
+        slug: fullSlug,
         author: user.uid,
       });
 
@@ -83,6 +89,7 @@ export default function PageBuilderListPage() {
       setShowAddModal(false);
       setNewPageTitle('');
       setNewPageSlug('');
+      setParentPageSlug('');
     } catch (error) {
       logger.api.error('Sayfa oluşturma hatası', error);
       toast.error('Sayfa oluşturulurken bir hata oluştu');
@@ -117,9 +124,9 @@ export default function PageBuilderListPage() {
           </div>
         ) : pages.length > 0 ? (
           pages.map((page) => (
-            <Card 
+            <Card
               key={page.id}
-              hover 
+              hover
               className="h-full group cursor-pointer"
               onClick={() => {
                 router.push(getLocalizedHref(`/admin/page-builder/${page.id}`));
@@ -208,8 +215,8 @@ export default function PageBuilderListPage() {
                 Yeni Sayfa Oluştur
               </h3>
               <button
-                onClick={() => { 
-                  setShowAddModal(false); 
+                onClick={() => {
+                  setShowAddModal(false);
                   setNewPageTitle('');
                   setNewPageSlug('');
                 }}
@@ -218,7 +225,7 @@ export default function PageBuilderListPage() {
                 <X className="w-5 h-5 text-gray-500" />
               </button>
             </div>
-            
+
             <div className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
@@ -233,6 +240,28 @@ export default function PageBuilderListPage() {
                 />
               </div>
 
+              {/* Parent Page Selection */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                  Üst Sayfa (Opsiyonel)
+                </label>
+                <select
+                  value={parentPageSlug}
+                  onChange={(e) => setParentPageSlug(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-white"
+                >
+                  <option value="">Yok (Ana Sayfa)</option>
+                  {pages.map((page) => (
+                    <option key={page.id} value={page.slug}>
+                      /{page.slug} - {page.title}
+                    </option>
+                  ))}
+                </select>
+                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                  Alt sayfa oluşturmak için üst sayfa seçin
+                </p>
+              </div>
+
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                   Slug (URL)
@@ -245,17 +274,18 @@ export default function PageBuilderListPage() {
                   className="w-full px-3 py-2 border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-white"
                 />
                 <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                  URL: /{newPageSlug || 'slug'}
+                  URL: /{parentPageSlug ? `${parentPageSlug}/` : ''}{newPageSlug || 'slug'}
                 </p>
               </div>
-              
+
               <div className="flex gap-3 pt-2">
                 <Button
                   variant="outline"
-                  onClick={() => { 
-                    setShowAddModal(false); 
+                  onClick={() => {
+                    setShowAddModal(false);
                     setNewPageTitle('');
                     setNewPageSlug('');
+                    setParentPageSlug('');
                   }}
                   className="flex-1"
                 >
