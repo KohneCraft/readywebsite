@@ -4,11 +4,13 @@
 // ============================================
 
 import type { ThemeData } from '@/types/theme';
-import { homePage } from './pages/home';
 import { restoranHeader } from './header';
 import { restoranFooter } from './footer';
+import { homePage } from './pages/home';
+import { aboutPage } from './pages/about';
+import { contactPage } from './pages/contact';
+import { menuPage } from './pages/menu';
 
-// Çeviriler
 const translations = {
     tr: {
         siteName: 'Lezzet Mutfağı',
@@ -66,7 +68,7 @@ export const restoranTheme: ThemeData = {
     metadata: {
         id: 'theme-restoran',
         name: 'Restoran & Kafe',
-        description: 'Restoran, kafe ve yeme-içme işletmeleri için zengin tema - TR/EN destekli',
+        description: 'Restoran, kafe ve yeme-içme işletmeleri için profesyonel tema - TR/EN destekli',
         version: '1.0.0',
         thumbnail: '/themes/restaurant/preview.jpg',
         author: 'Page Builder',
@@ -75,16 +77,13 @@ export const restoranTheme: ThemeData = {
             { slug: 'home', title: 'Ana Sayfa', file: 'pages/home.json' },
             { slug: 'menu', title: 'Menü', file: 'pages/menu.json' },
             { slug: 'about', title: 'Hakkımızda', file: 'pages/about.json' },
-            { slug: 'gallery', title: 'Galeri', file: 'pages/gallery.json' },
-            { slug: 'reservation', title: 'Rezervasyon', file: 'pages/reservation.json' },
             { slug: 'contact', title: 'İletişim', file: 'pages/contact.json' },
         ],
         settings: {
-            primaryColor: '#d97706', // Amber
+            primaryColor: '#d97706',
             secondaryColor: '#1a1a1a',
-            accentColor: '#b45309',
+            accentColor: '#f59e0b',
             fontFamily: "'Playfair Display', serif",
-            bodyFontFamily: "'Inter', sans-serif",
             defaultLanguage: 'tr',
             translations: translations,
             header: restoranHeader,
@@ -98,16 +97,17 @@ export const restoranTheme: ThemeData = {
                 email: 'info@lezzetmutfagi.com',
                 phone: '+90 212 345 6789',
                 address: 'Beyoğlu, İstiklal Cad. No: 123, İstanbul',
-                mapUrl: 'https://maps.google.com/?q=41.0322,28.9770',
+                mapUrl: 'https://maps.google.com/?q=41.0340,28.9770',
             },
             social: {
                 facebook: 'https://facebook.com/lezzetmutfagi',
                 instagram: 'https://instagram.com/lezzetmutfagi',
+                twitter: 'https://twitter.com/lezzetmutfagi',
             },
             seo: {
-                metaTitle: 'Lezzet Mutfağı | Restoran & Kafe - İstanbul',
-                metaDescription: 'Geleneksel Türk mutfağının modern yorumu. Taze malzemeler, uzman şefler ve sıcak atmosfer. Rezervasyon için hemen arayın.',
-                metaKeywords: 'restoran, kafe, türk mutfağı, istanbul, beyoğlu, yemek',
+                metaTitle: 'Lezzet Mutfağı | Restoran & Kafe - İstanbul Beyoğlu',
+                metaDescription: 'Geleneksel Türk mutfağının modern yorumu. Taze malzemeler, usta şefler. Rezervasyon için hemen arayın!',
+                metaKeywords: 'restoran, kafe, türk mutfağı, beyoğlu, istanbul, yemek, rezervasyon',
                 googleAnalyticsId: '',
             },
             animations: {
@@ -120,6 +120,9 @@ export const restoranTheme: ThemeData = {
     },
     pages: {
         home: homePage,
+        about: aboutPage,
+        contact: contactPage,
+        menu: menuPage,
     },
 };
 

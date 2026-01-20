@@ -3,11 +3,14 @@
 // Klinik, hastane ve sağlık kuruluşları için - TR/EN destekli
 // ============================================
 
-import type { ThemeData, ThemePageData } from '@/types/theme';
+import type { ThemeData } from '@/types/theme';
 import { saglikHeader } from './header';
 import { saglikFooter } from './footer';
+import { homePage } from './pages/home';
+import { aboutPage } from './pages/about';
+import { contactPage } from './pages/contact';
+import { departmentsPage } from './pages/departments';
 
-// Çeviriler
 const translations = {
     tr: {
         siteName: 'Medikal Sağlık',
@@ -55,89 +58,6 @@ const translations = {
     },
 };
 
-// Ana Sayfa
-const homePage: ThemePageData = {
-    slug: 'home',
-    title: 'Ana Sayfa',
-    sections: [
-        {
-            name: 'Hero',
-            settings: {
-                backgroundColor: '#0369a1',
-                backgroundImage: '/themes/healthcare/hero-bg.jpg',
-                backgroundSize: 'cover',
-                padding: { top: 120, right: 40, bottom: 120, left: 40 },
-                minHeight: 600,
-                overlay: { enabled: true, color: 'rgba(3, 105, 161, 0.85)' },
-                animation: { enabled: true, type: 'fadeIn', duration: 700 },
-            },
-            columns: [
-                {
-                    width: 60,
-                    settings: { padding: { top: 40, right: 40, bottom: 40, left: 40 } },
-                    blocks: [
-                        { type: 'heading', props: { level: 'h1', content: 'Profesyonel Sağlık Hizmetleri', fontSize: 52, color: '#ffffff', fontWeight: 'bold' } },
-                        { type: 'text', props: { content: 'Uzman kadromuz ve modern altyapımız ile sağlığınız güvende. 7/24 acil hizmet.', fontSize: 20, color: '#e0f2fe', lineHeight: 1.6 } },
-                        { type: 'button', props: { text: 'Randevu Al', link: '/appointment', style: 'primary', size: 'large', backgroundColor: '#16a34a' } },
-                        { type: 'button', props: { text: 'Acil: 444 0 123', link: 'tel:4440123', style: 'outline', size: 'large', borderColor: '#ffffff', textColor: '#ffffff' } },
-                    ],
-                },
-                {
-                    width: 40,
-                    settings: { padding: { top: 40, right: 40, bottom: 40, left: 40 } },
-                    blocks: [],
-                },
-            ],
-        },
-        {
-            name: 'Features',
-            settings: {
-                backgroundColor: '#ffffff',
-                padding: { top: 80, right: 40, bottom: 80, left: 40 },
-                animation: { enabled: true, type: 'slideUp', duration: 600 },
-            },
-            columns: [
-                {
-                    width: 25,
-                    settings: { textAlign: 'center', padding: { top: 20, right: 20, bottom: 20, left: 20 } },
-                    blocks: [
-                        { type: 'heading', props: { level: 'h3', content: '🏥', fontSize: 42, color: '#0369a1' } },
-                        { type: 'heading', props: { level: 'h4', content: 'Modern Altyapı', fontSize: 20, color: '#1e293b', fontWeight: 'bold' } },
-                        { type: 'text', props: { content: 'Son teknoloji tıbbi cihazlar', fontSize: 15, color: '#64748b' } },
-                    ],
-                },
-                {
-                    width: 25,
-                    settings: { textAlign: 'center', padding: { top: 20, right: 20, bottom: 20, left: 20 } },
-                    blocks: [
-                        { type: 'heading', props: { level: 'h3', content: '👨‍⚕️', fontSize: 42, color: '#0369a1' } },
-                        { type: 'heading', props: { level: 'h4', content: 'Uzman Kadro', fontSize: 20, color: '#1e293b', fontWeight: 'bold' } },
-                        { type: 'text', props: { content: 'Alanında deneyimli hekimler', fontSize: 15, color: '#64748b' } },
-                    ],
-                },
-                {
-                    width: 25,
-                    settings: { textAlign: 'center', padding: { top: 20, right: 20, bottom: 20, left: 20 } },
-                    blocks: [
-                        { type: 'heading', props: { level: 'h3', content: '🚑', fontSize: 42, color: '#0369a1' } },
-                        { type: 'heading', props: { level: 'h4', content: '7/24 Acil', fontSize: 20, color: '#1e293b', fontWeight: 'bold' } },
-                        { type: 'text', props: { content: 'Kesintisiz acil hizmet', fontSize: 15, color: '#64748b' } },
-                    ],
-                },
-                {
-                    width: 25,
-                    settings: { textAlign: 'center', padding: { top: 20, right: 20, bottom: 20, left: 20 } },
-                    blocks: [
-                        { type: 'heading', props: { level: 'h3', content: '💊', fontSize: 42, color: '#0369a1' } },
-                        { type: 'heading', props: { level: 'h4', content: 'Eczane', fontSize: 20, color: '#1e293b', fontWeight: 'bold' } },
-                        { type: 'text', props: { content: 'Kapsamlı eczane hizmeti', fontSize: 15, color: '#64748b' } },
-                    ],
-                },
-            ],
-        },
-    ],
-};
-
 export const saglikTheme: ThemeData = {
     metadata: {
         id: 'theme-saglik',
@@ -150,15 +70,13 @@ export const saglikTheme: ThemeData = {
         pages: [
             { slug: 'home', title: 'Ana Sayfa', file: 'pages/home.json' },
             { slug: 'departments', title: 'Branşlar', file: 'pages/departments.json' },
-            { slug: 'doctors', title: 'Doktorlarımız', file: 'pages/doctors.json' },
-            { slug: 'appointment', title: 'Randevu', file: 'pages/appointment.json' },
             { slug: 'about', title: 'Hakkımızda', file: 'pages/about.json' },
             { slug: 'contact', title: 'İletişim', file: 'pages/contact.json' },
         ],
         settings: {
-            primaryColor: '#0369a1', // Sky-700
-            secondaryColor: '#16a34a', // Green-600
-            accentColor: '#0ea5e9', // Sky-500
+            primaryColor: '#0369a1',
+            secondaryColor: '#16a34a',
+            accentColor: '#0ea5e9',
             fontFamily: "'Inter', sans-serif",
             defaultLanguage: 'tr',
             translations: translations,
@@ -197,6 +115,9 @@ export const saglikTheme: ThemeData = {
     },
     pages: {
         home: homePage,
+        about: aboutPage,
+        contact: contactPage,
+        departments: departmentsPage,
     },
 };
 

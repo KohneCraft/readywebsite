@@ -3,9 +3,13 @@
 // Okul, üniversite ve kurs merkezleri için - TR/EN destekli
 // ============================================
 
-import type { ThemeData, ThemePageData } from '@/types/theme';
+import type { ThemeData } from '@/types/theme';
 import { egitimHeader } from './header';
 import { egitimFooter } from './footer';
+import { homePage } from './pages/home';
+import { aboutPage } from './pages/about';
+import { contactPage } from './pages/contact';
+import { programsPage } from './pages/programs';
 
 const translations = {
     tr: {
@@ -52,67 +56,6 @@ const translations = {
     },
 };
 
-const homePage: ThemePageData = {
-    slug: 'home',
-    title: 'Ana Sayfa',
-    sections: [
-        {
-            name: 'Hero',
-            settings: {
-                backgroundColor: '#1e40af',
-                backgroundImage: '/themes/education/hero-bg.jpg',
-                backgroundSize: 'cover',
-                padding: { top: 120, right: 40, bottom: 120, left: 40 },
-                minHeight: 600,
-                overlay: { enabled: true, color: 'rgba(30, 64, 175, 0.9)' },
-                animation: { enabled: true, type: 'fadeIn', duration: 700 },
-            },
-            columns: [
-                {
-                    width: 60,
-                    settings: { padding: { top: 40, right: 40, bottom: 40, left: 40 } },
-                    blocks: [
-                        { type: 'heading', props: { level: 'h1', content: 'Hayallerine Ulaşmanın Yolu', fontSize: 52, color: '#ffffff', fontWeight: 'bold' } },
-                        { type: 'text', props: { content: 'Uzman eğitim kadromuz ile kariyer hedeflerinize ulaşın.', fontSize: 20, color: '#dbeafe', lineHeight: 1.6 } },
-                        { type: 'button', props: { text: 'Programları İncele', link: '/programs', style: 'primary', size: 'large', backgroundColor: '#f59e0b' } },
-                    ],
-                },
-                { width: 40, settings: { padding: { top: 40, right: 40, bottom: 40, left: 40 } }, blocks: [] },
-            ],
-        },
-        {
-            name: 'Stats',
-            settings: { backgroundColor: '#f59e0b', padding: { top: 60, right: 40, bottom: 60, left: 40 } },
-            columns: [
-                {
-                    width: 25, settings: { textAlign: 'center' }, blocks: [
-                        { type: 'heading', props: { level: 'h2', content: '50+', fontSize: 48, color: '#ffffff', fontWeight: 'bold' } },
-                        { type: 'text', props: { content: 'Eğitim Programı', fontSize: 16, color: '#ffffff' } },
-                    ]
-                },
-                {
-                    width: 25, settings: { textAlign: 'center' }, blocks: [
-                        { type: 'heading', props: { level: 'h2', content: '10K+', fontSize: 48, color: '#ffffff', fontWeight: 'bold' } },
-                        { type: 'text', props: { content: 'Mezun', fontSize: 16, color: '#ffffff' } },
-                    ]
-                },
-                {
-                    width: 25, settings: { textAlign: 'center' }, blocks: [
-                        { type: 'heading', props: { level: 'h2', content: '100+', fontSize: 48, color: '#ffffff', fontWeight: 'bold' } },
-                        { type: 'text', props: { content: 'Eğitmen', fontSize: 16, color: '#ffffff' } },
-                    ]
-                },
-                {
-                    width: 25, settings: { textAlign: 'center' }, blocks: [
-                        { type: 'heading', props: { level: 'h2', content: '20', fontSize: 48, color: '#ffffff', fontWeight: 'bold' } },
-                        { type: 'text', props: { content: 'Yıllık Tecrübe', fontSize: 16, color: '#ffffff' } },
-                    ]
-                },
-            ],
-        },
-    ],
-};
-
 export const egitimTheme: ThemeData = {
     metadata: {
         id: 'theme-egitim',
@@ -125,9 +68,7 @@ export const egitimTheme: ThemeData = {
         pages: [
             { slug: 'home', title: 'Ana Sayfa', file: 'pages/home.json' },
             { slug: 'programs', title: 'Programlar', file: 'pages/programs.json' },
-            { slug: 'teachers', title: 'Eğitmenler', file: 'pages/teachers.json' },
             { slug: 'about', title: 'Hakkımızda', file: 'pages/about.json' },
-            { slug: 'blog', title: 'Blog', file: 'pages/blog.json' },
             { slug: 'contact', title: 'İletişim', file: 'pages/contact.json' },
         ],
         settings: {
@@ -146,7 +87,12 @@ export const egitimTheme: ThemeData = {
             animations: { enabled: true, defaultType: 'slideUp', defaultDuration: 500, staggerDelay: 100 },
         },
     },
-    pages: { home: homePage },
+    pages: {
+        home: homePage,
+        about: aboutPage,
+        contact: contactPage,
+        programs: programsPage,
+    },
 };
 
 export { egitimTheme as educationTheme };
