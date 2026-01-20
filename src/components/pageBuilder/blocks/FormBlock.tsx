@@ -154,24 +154,28 @@ function FormBlockComponent({ props }: FormBlockProps) {
                 }}
               />
             ) : field.type === 'select' ? (
-              <select
-                name={field.name}
-                value={formData[field.name] || ''}
-                onChange={(e) => handleChange(field.name, e.target.value)}
-                required={field.required}
-                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg"
-                style={{
-                  color: colors.formText || '#111827',
-                  backgroundColor: '#FFFFFF'
-                }}
-              >
-                <option value="">Seçiniz</option>
-                {field.options?.map((option) => (
-                  <option key={option.value} value={option.value}>
-                    {option.label}
-                  </option>
-                ))}
-              </select>
+              field.options && field.options.length > 0 ? (
+                <select
+                  name={field.name}
+                  value={formData[field.name] || ''}
+                  onChange={(e) => handleChange(field.name, e.target.value)}
+                  required={field.required}
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg"
+                  style={{
+                    color: colors.formText || '#111827',
+                    backgroundColor: '#FFFFFF'
+                  }}
+                >
+                  <option value="">Seçiniz</option>
+                  {field.options.map((option) => (
+                    <option key={option.value} value={option.value}>
+                      {option.label}
+                    </option>
+                  ))}
+                </select>
+              ) : (
+                <p className="text-sm text-gray-400 italic py-2">Seçenek tanımlanmamış</p>
+              )
             ) : field.type === 'checkbox' ? (
               <label className="flex items-center">
                 <input
@@ -184,23 +188,27 @@ function FormBlockComponent({ props }: FormBlockProps) {
                 />
                 <span style={{ color: colors.formLabel || '#4B5563' }}>{field.label}</span>
               </label>
-            ) : field.type === 'radio' && field.options ? (
-              <div className="space-y-2">
-                {field.options.map((option) => (
-                  <label key={option.value} className="flex items-center">
-                    <input
-                      type="radio"
-                      name={field.name}
-                      value={option.value}
-                      checked={formData[field.name] === option.value}
-                      onChange={(e) => handleChange(field.name, e.target.value)}
-                      required={field.required}
-                      className="mr-2"
-                    />
-                    <span style={{ color: colors.formLabel || '#4B5563' }}>{option.label}</span>
-                  </label>
-                ))}
-              </div>
+            ) : field.type === 'radio' ? (
+              field.options && field.options.length > 0 ? (
+                <div className="space-y-2">
+                  {field.options.map((option) => (
+                    <label key={option.value} className="flex items-center">
+                      <input
+                        type="radio"
+                        name={field.name}
+                        value={option.value}
+                        checked={formData[field.name] === option.value}
+                        onChange={(e) => handleChange(field.name, e.target.value)}
+                        required={field.required}
+                        className="mr-2"
+                      />
+                      <span style={{ color: colors.formLabel || '#4B5563' }}>{option.label}</span>
+                    </label>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-sm text-gray-400 italic py-2">Radio seçenekleri tanımlanmamış</p>
+              )
             ) : null}
           </div>
         ))}

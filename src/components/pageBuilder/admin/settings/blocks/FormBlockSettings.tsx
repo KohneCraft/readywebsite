@@ -137,6 +137,76 @@ export function FormBlockSettings({ block, activeTab, onUpdate }: FormBlockSetti
                     Zorunlu alan
                   </label>
                 </div>
+
+                {/* Select ve Radio için Seçenekler */}
+                {(field.type === 'select' || field.type === 'radio') && (
+                  <div className="mt-3 p-3 bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
+                    <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      📋 Seçenekler
+                    </label>
+                    <div className="space-y-2">
+                      {(field.options || []).map((option, optIndex) => (
+                        <div key={optIndex} className="flex items-center gap-2">
+                          <input
+                            type="text"
+                            value={option.value}
+                            onChange={(e) => {
+                              const newFields = [...fields];
+                              const newOptions = [...(field.options || [])];
+                              newOptions[optIndex] = { ...option, value: e.target.value };
+                              newFields[index] = { ...field, options: newOptions };
+                              onUpdate({ fields: newFields });
+                            }}
+                            placeholder="Değer"
+                            className="flex-1 px-2 py-1 text-xs border border-gray-200 dark:border-gray-600 rounded bg-white dark:bg-gray-900 text-gray-900 dark:text-white"
+                          />
+                          <input
+                            type="text"
+                            value={option.label}
+                            onChange={(e) => {
+                              const newFields = [...fields];
+                              const newOptions = [...(field.options || [])];
+                              newOptions[optIndex] = { ...option, label: e.target.value };
+                              newFields[index] = { ...field, options: newOptions };
+                              onUpdate({ fields: newFields });
+                            }}
+                            placeholder="Etiket"
+                            className="flex-1 px-2 py-1 text-xs border border-gray-200 dark:border-gray-600 rounded bg-white dark:bg-gray-900 text-gray-900 dark:text-white"
+                          />
+                          <button
+                            onClick={() => {
+                              const newFields = [...fields];
+                              const newOptions = (field.options || []).filter((_, i) => i !== optIndex);
+                              newFields[index] = { ...field, options: newOptions };
+                              onUpdate({ fields: newFields });
+                            }}
+                            className="p-1 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded"
+                            title="Seçeneği Sil"
+                          >
+                            <Trash2 className="w-3 h-3" />
+                          </button>
+                        </div>
+                      ))}
+                      <button
+                        onClick={() => {
+                          const newFields = [...fields];
+                          const newOptions = [...(field.options || []), { value: '', label: '' }];
+                          newFields[index] = { ...field, options: newOptions };
+                          onUpdate({ fields: newFields });
+                        }}
+                        className="w-full px-2 py-1 text-xs border border-dashed border-gray-300 dark:border-gray-600 rounded hover:bg-gray-100 dark:hover:bg-gray-700 flex items-center justify-center gap-1 text-gray-600 dark:text-gray-400"
+                      >
+                        <Plus className="w-3 h-3" />
+                        Seçenek Ekle
+                      </button>
+                    </div>
+                    {(field.options || []).length === 0 && (
+                      <p className="text-xs text-amber-600 dark:text-amber-400 mt-2">
+                        ⚠️ En az bir seçenek eklemeniz gerekiyor
+                      </p>
+                    )}
+                  </div>
+                )}
               </div>
             ))}
             <button
