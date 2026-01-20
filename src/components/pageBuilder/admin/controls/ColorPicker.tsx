@@ -54,7 +54,11 @@ export function ColorPicker({ color, onChange }: ColorPickerProps) {
       >
         <div
           className="w-8 h-8 rounded border border-gray-200 dark:border-gray-700"
-          style={{ backgroundColor: hexColor }}
+          style={hexColor.toLowerCase() === 'transparent' ? {
+            backgroundImage: 'linear-gradient(45deg, #ccc 25%, transparent 25%), linear-gradient(-45deg, #ccc 25%, transparent 25%), linear-gradient(45deg, transparent 75%, #ccc 75%), linear-gradient(-45deg, transparent 75%, #ccc 75%)',
+            backgroundSize: '8px 8px',
+            backgroundPosition: '0 0, 0 4px, 4px -4px, -4px 0px'
+          } : { backgroundColor: hexColor }}
         />
         <span className="flex-1 text-left text-sm text-gray-700 dark:text-gray-300">
           {hexColor}
@@ -92,6 +96,30 @@ export function ColorPicker({ color, onChange }: ColorPickerProps) {
                 className="w-full px-3 py-2 text-sm border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-white font-mono"
                 placeholder="#000000"
               />
+            </div>
+
+            {/* Transparent Option */}
+            <div>
+              <button
+                type="button"
+                onClick={() => handleColorChange('transparent')}
+                className={cn(
+                  'w-full flex items-center gap-2 px-3 py-2 rounded-lg border-2 transition-all',
+                  hexColor.toLowerCase() === 'transparent'
+                    ? 'border-primary-600 dark:border-primary-400 bg-primary-50 dark:bg-primary-900/20'
+                    : 'border-gray-200 dark:border-gray-700 hover:border-gray-400 dark:hover:border-gray-500'
+                )}
+              >
+                <div
+                  className="w-6 h-6 rounded border border-gray-300 dark:border-gray-600"
+                  style={{
+                    backgroundImage: 'linear-gradient(45deg, #ccc 25%, transparent 25%), linear-gradient(-45deg, #ccc 25%, transparent 25%), linear-gradient(45deg, transparent 75%, #ccc 75%), linear-gradient(-45deg, transparent 75%, #ccc 75%)',
+                    backgroundSize: '8px 8px',
+                    backgroundPosition: '0 0, 0 4px, 4px -4px, -4px 0px'
+                  }}
+                />
+                <span className="text-sm text-gray-700 dark:text-gray-300">Şeffaf (Transparent)</span>
+              </button>
             </div>
 
             {/* Preset Colors */}

@@ -13,7 +13,7 @@ import { DualColorPicker } from '../controls/DualColorPicker';
 import { Spinner } from '@/components/ui/Spinner';
 import { Input } from '@/components/ui/Input';
 import { cn } from '@/lib/utils';
-import type { Column } from '@/types/pageBuilder';
+import type { Column, ColumnSettings as ColumnSettingsType, Border } from '@/types/pageBuilder';
 
 interface ColumnSettingsProps {
   columnId: string;
@@ -502,6 +502,338 @@ export function ColumnSettings({ columnId, activeTab, onUpdate }: ColumnSettings
   if (activeTab === 'settings') {
     return (
       <div className="space-y-4">
+        {/* Hizalama Ayarları */}
+        <div>
+          <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-2">
+            Yatay Hizalama
+          </label>
+          <div className="grid grid-cols-4 gap-1">
+            {[
+              { value: 'left', label: 'Sol' },
+              { value: 'center', label: 'Orta' },
+              { value: 'right', label: 'Sağ' },
+              { value: 'stretch', label: 'Esnet' },
+            ].map((align) => (
+              <button
+                key={align.value}
+                onClick={async () => {
+                  const horizontalAlignValue = align.value as ColumnSettingsType['horizontalAlign'];
+                  const updated = {
+                    ...column,
+                    settings: { ...settings, horizontalAlign: horizontalAlignValue },
+                  };
+                  setColumn(updated);
+                  onUpdate(updated);
+                  try {
+                    const { updateColumn } = await import('@/lib/firebase/firestore');
+                    await updateColumn(column.id, { settings: { ...settings, horizontalAlign: horizontalAlignValue } });
+                    window.dispatchEvent(new CustomEvent('section-updated', { detail: { sectionId: 'any' } }));
+                  } catch (error) {
+                    logger.pageBuilder.error('Kolon yatay hizalama güncelleme hatası', error);
+                  }
+                }}
+                className={cn(
+                  'px-2 py-1.5 text-xs rounded-lg transition-colors',
+                  settings.horizontalAlign === align.value
+                    ? 'bg-primary-600 text-white'
+                    : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
+                )}
+              >
+                {align.label}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <div>
+          <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-2">
+            Dikey Hizalama
+          </label>
+          <div className="grid grid-cols-3 gap-1">
+            {[
+              { value: 'top', label: 'Üst' },
+              { value: 'center', label: 'Orta' },
+              { value: 'bottom', label: 'Alt' },
+            ].map((align) => (
+              <button
+                key={align.value}
+                onClick={async () => {
+                  const verticalAlignValue = align.value as ColumnSettingsType['verticalAlign'];
+                  const updated = {
+                    ...column,
+                    settings: { ...settings, verticalAlign: verticalAlignValue },
+                  };
+                  setColumn(updated);
+                  onUpdate(updated);
+                  try {
+                    const { updateColumn } = await import('@/lib/firebase/firestore');
+                    await updateColumn(column.id, { settings: { ...settings, verticalAlign: verticalAlignValue } });
+                    window.dispatchEvent(new CustomEvent('section-updated', { detail: { sectionId: 'any' } }));
+                  } catch (error) {
+                    logger.pageBuilder.error('Kolon dikey hizalama güncelleme hatası', error);
+                  }
+                }}
+                className={cn(
+                  'px-2 py-1.5 text-xs rounded-lg transition-colors',
+                  settings.verticalAlign === align.value
+                    ? 'bg-primary-600 text-white'
+                    : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
+                )}
+              >
+                {align.label}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Border Radius - Gelişmiş */}
+        <div className="border-t border-gray-200 dark:border-gray-700 pt-4">
+          <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-2">
+            Köşe Yuvarlaklığı (px)
+          </label>
+          <div className="grid grid-cols-2 gap-2">
+            <div>
+              <label className="block text-[10px] text-gray-500 dark:text-gray-400 mb-1">Sol Üst</label>
+              <input
+                type="number"
+                min="0"
+                max="100"
+                value={(typeof settings.borderRadius === 'object' && settings.borderRadius !== null) ? (settings.borderRadius.topLeft ?? 0) : (settings.borderRadius ?? 0)}
+                onChange={async (e) => {
+                  const value = parseInt(e.target.value) || 0;
+                  const currentRadius = typeof settings.borderRadius === 'object' && settings.borderRadius !== null ? settings.borderRadius : {};
+                  const baseValue = typeof settings.borderRadius === 'number' ? settings.borderRadius : 0;
+                  const newBorderRadius = {
+                    topLeft: value,
+                    topRight: currentRadius.topRight ?? baseValue,
+                    bottomRight: currentRadius.bottomRight ?? baseValue,
+                    bottomLeft: currentRadius.bottomLeft ?? baseValue,
+                  };
+                  const updated = { ...column, settings: { ...settings, borderRadius: newBorderRadius } };
+                  setColumn(updated);
+                  onUpdate(updated);
+                  try {
+                    const { updateColumn } = await import('@/lib/firebase/firestore');
+                    await updateColumn(column.id, { settings: { ...settings, borderRadius: newBorderRadius } });
+                    window.dispatchEvent(new CustomEvent('section-updated', { detail: { sectionId: 'any' } }));
+                  } catch (error) {
+                    logger.pageBuilder.error('Border radius güncelleme hatası', error);
+                  }
+                }}
+                className="w-full px-2 py-1 text-xs border border-gray-200 dark:border-gray-700 rounded bg-white dark:bg-gray-900 text-gray-900 dark:text-white"
+              />
+            </div>
+            <div>
+              <label className="block text-[10px] text-gray-500 dark:text-gray-400 mb-1">Sağ Üst</label>
+              <input
+                type="number"
+                min="0"
+                max="100"
+                value={(typeof settings.borderRadius === 'object' && settings.borderRadius !== null) ? (settings.borderRadius.topRight ?? 0) : (settings.borderRadius ?? 0)}
+                onChange={async (e) => {
+                  const value = parseInt(e.target.value) || 0;
+                  const currentRadius = typeof settings.borderRadius === 'object' && settings.borderRadius !== null ? settings.borderRadius : {};
+                  const baseValue = typeof settings.borderRadius === 'number' ? settings.borderRadius : 0;
+                  const newBorderRadius = {
+                    topLeft: currentRadius.topLeft ?? baseValue,
+                    topRight: value,
+                    bottomRight: currentRadius.bottomRight ?? baseValue,
+                    bottomLeft: currentRadius.bottomLeft ?? baseValue,
+                  };
+                  const updated = { ...column, settings: { ...settings, borderRadius: newBorderRadius } };
+                  setColumn(updated);
+                  onUpdate(updated);
+                  try {
+                    const { updateColumn } = await import('@/lib/firebase/firestore');
+                    await updateColumn(column.id, { settings: { ...settings, borderRadius: newBorderRadius } });
+                    window.dispatchEvent(new CustomEvent('section-updated', { detail: { sectionId: 'any' } }));
+                  } catch (error) {
+                    logger.pageBuilder.error('Border radius güncelleme hatası', error);
+                  }
+                }}
+                className="w-full px-2 py-1 text-xs border border-gray-200 dark:border-gray-700 rounded bg-white dark:bg-gray-900 text-gray-900 dark:text-white"
+              />
+            </div>
+            <div>
+              <label className="block text-[10px] text-gray-500 dark:text-gray-400 mb-1">Sol Alt</label>
+              <input
+                type="number"
+                min="0"
+                max="100"
+                value={(typeof settings.borderRadius === 'object' && settings.borderRadius !== null) ? (settings.borderRadius.bottomLeft ?? 0) : (settings.borderRadius ?? 0)}
+                onChange={async (e) => {
+                  const value = parseInt(e.target.value) || 0;
+                  const currentRadius = typeof settings.borderRadius === 'object' && settings.borderRadius !== null ? settings.borderRadius : {};
+                  const baseValue = typeof settings.borderRadius === 'number' ? settings.borderRadius : 0;
+                  const newBorderRadius = {
+                    topLeft: currentRadius.topLeft ?? baseValue,
+                    topRight: currentRadius.topRight ?? baseValue,
+                    bottomRight: currentRadius.bottomRight ?? baseValue,
+                    bottomLeft: value,
+                  };
+                  const updated = { ...column, settings: { ...settings, borderRadius: newBorderRadius } };
+                  setColumn(updated);
+                  onUpdate(updated);
+                  try {
+                    const { updateColumn } = await import('@/lib/firebase/firestore');
+                    await updateColumn(column.id, { settings: { ...settings, borderRadius: newBorderRadius } });
+                    window.dispatchEvent(new CustomEvent('section-updated', { detail: { sectionId: 'any' } }));
+                  } catch (error) {
+                    logger.pageBuilder.error('Border radius güncelleme hatası', error);
+                  }
+                }}
+                className="w-full px-2 py-1 text-xs border border-gray-200 dark:border-gray-700 rounded bg-white dark:bg-gray-900 text-gray-900 dark:text-white"
+              />
+            </div>
+            <div>
+              <label className="block text-[10px] text-gray-500 dark:text-gray-400 mb-1">Sağ Alt</label>
+              <input
+                type="number"
+                min="0"
+                max="100"
+                value={(typeof settings.borderRadius === 'object' && settings.borderRadius !== null) ? (settings.borderRadius.bottomRight ?? 0) : (settings.borderRadius ?? 0)}
+                onChange={async (e) => {
+                  const value = parseInt(e.target.value) || 0;
+                  const currentRadius = typeof settings.borderRadius === 'object' && settings.borderRadius !== null ? settings.borderRadius : {};
+                  const baseValue = typeof settings.borderRadius === 'number' ? settings.borderRadius : 0;
+                  const newBorderRadius = {
+                    topLeft: currentRadius.topLeft ?? baseValue,
+                    topRight: currentRadius.topRight ?? baseValue,
+                    bottomRight: value,
+                    bottomLeft: currentRadius.bottomLeft ?? baseValue,
+                  };
+                  const updated = { ...column, settings: { ...settings, borderRadius: newBorderRadius } };
+                  setColumn(updated);
+                  onUpdate(updated);
+                  try {
+                    const { updateColumn } = await import('@/lib/firebase/firestore');
+                    await updateColumn(column.id, { settings: { ...settings, borderRadius: newBorderRadius } });
+                    window.dispatchEvent(new CustomEvent('section-updated', { detail: { sectionId: 'any' } }));
+                  } catch (error) {
+                    logger.pageBuilder.error('Border radius güncelleme hatası', error);
+                  }
+                }}
+                className="w-full px-2 py-1 text-xs border border-gray-200 dark:border-gray-700 rounded bg-white dark:bg-gray-900 text-gray-900 dark:text-white"
+              />
+            </div>
+          </div>
+        </div>
+
+        {/* Border/Çizgi Ayarları */}
+        <div className="border-t border-gray-200 dark:border-gray-700 pt-4">
+          <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-2">
+            Kenarlık (Border)
+          </label>
+          <div className="space-y-2">
+            <div className="flex gap-2">
+              <div className="flex-1">
+                <label className="block text-[10px] text-gray-500 dark:text-gray-400 mb-1">Kalınlık (px)</label>
+                <input
+                  type="number"
+                  min="0"
+                  max="20"
+                  value={settings.border?.width ?? 0}
+                  onChange={async (e) => {
+                    const width = parseInt(e.target.value) || 0;
+                    const newBorder: Border = {
+                      width,
+                      style: settings.border?.style ?? 'solid',
+                      color: settings.border?.color ?? '#000000',
+                    };
+                    const updated = { ...column, settings: { ...settings, border: newBorder } };
+                    setColumn(updated);
+                    onUpdate(updated);
+                    try {
+                      const { updateColumn } = await import('@/lib/firebase/firestore');
+                      await updateColumn(column.id, { settings: { ...settings, border: newBorder } });
+                      window.dispatchEvent(new CustomEvent('section-updated', { detail: { sectionId: 'any' } }));
+                    } catch (error) {
+                      logger.pageBuilder.error('Border güncelleme hatası', error);
+                    }
+                  }}
+                  className="w-full px-2 py-1 text-xs border border-gray-200 dark:border-gray-700 rounded bg-white dark:bg-gray-900 text-gray-900 dark:text-white"
+                />
+              </div>
+              <div className="flex-1">
+                <label className="block text-[10px] text-gray-500 dark:text-gray-400 mb-1">Stil</label>
+                <select
+                  value={settings.border?.style ?? 'solid'}
+                  onChange={async (e) => {
+                    const style = e.target.value as Border['style'];
+                    const newBorder: Border = {
+                      width: settings.border?.width ?? 1,
+                      style,
+                      color: settings.border?.color ?? '#000000',
+                    };
+                    const updated = { ...column, settings: { ...settings, border: newBorder } };
+                    setColumn(updated);
+                    onUpdate(updated);
+                    try {
+                      const { updateColumn } = await import('@/lib/firebase/firestore');
+                      await updateColumn(column.id, { settings: { ...settings, border: newBorder } });
+                      window.dispatchEvent(new CustomEvent('section-updated', { detail: { sectionId: 'any' } }));
+                    } catch (error) {
+                      logger.pageBuilder.error('Border stil güncelleme hatası', error);
+                    }
+                  }}
+                  className="w-full px-2 py-1 text-xs border border-gray-200 dark:border-gray-700 rounded bg-white dark:bg-gray-900 text-gray-900 dark:text-white"
+                >
+                  <option value="solid">Düz</option>
+                  <option value="dashed">Kesikli</option>
+                  <option value="dotted">Noktalı</option>
+                  <option value="none">Yok</option>
+                </select>
+              </div>
+            </div>
+            <div>
+              <label className="block text-[10px] text-gray-500 dark:text-gray-400 mb-1">Renk</label>
+              <input
+                type="color"
+                value={settings.border?.color ?? '#000000'}
+                onChange={async (e) => {
+                  const color = e.target.value;
+                  const newBorder: Border = {
+                    width: settings.border?.width ?? 1,
+                    style: settings.border?.style ?? 'solid',
+                    color,
+                  };
+                  const updated = { ...column, settings: { ...settings, border: newBorder } };
+                  setColumn(updated);
+                  onUpdate(updated);
+                  try {
+                    const { updateColumn } = await import('@/lib/firebase/firestore');
+                    await updateColumn(column.id, { settings: { ...settings, border: newBorder } });
+                    window.dispatchEvent(new CustomEvent('section-updated', { detail: { sectionId: 'any' } }));
+                  } catch (error) {
+                    logger.pageBuilder.error('Border renk güncelleme hatası', error);
+                  }
+                }}
+                className="w-full h-8 rounded border border-gray-200 dark:border-gray-700 cursor-pointer"
+              />
+            </div>
+            {(settings.border?.width ?? 0) > 0 && (
+              <button
+                onClick={async () => {
+                  const newBorder: Border = { width: 0, style: 'solid', color: '#000000' };
+                  const updated = { ...column, settings: { ...settings, border: newBorder } };
+                  setColumn(updated);
+                  onUpdate(updated);
+                  try {
+                    const { updateColumn } = await import('@/lib/firebase/firestore');
+                    await updateColumn(column.id, { settings: { ...settings, border: newBorder } });
+                    window.dispatchEvent(new CustomEvent('section-updated', { detail: { sectionId: 'any' } }));
+                  } catch (error) {
+                    logger.pageBuilder.error('Border temizleme hatası', error);
+                  }
+                }}
+                className="text-xs text-red-600 dark:text-red-400 hover:underline"
+              >
+                Kenarlığı Kaldır
+              </button>
+            )}
+          </div>
+        </div>
+
         {/* Nested Columns Genişlikleri */}
         {nestedColumns.length > 0 && (
           <div className="border-t border-gray-200 dark:border-gray-700 pt-4 mt-4">

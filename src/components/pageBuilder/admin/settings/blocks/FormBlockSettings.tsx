@@ -240,8 +240,62 @@ export function FormBlockSettings({ block, activeTab, onUpdate }: FormBlockSetti
   }
 
   if (activeTab === 'settings') {
+    const { cn } = require('@/lib/utils');
     return (
       <div className="space-y-4">
+        {/* Hizalama Ayarları */}
+        <div>
+          <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
+            Yatay Hizalama
+          </label>
+          <div className="grid grid-cols-3 gap-1">
+            {[
+              { value: 'left', label: 'Sol' },
+              { value: 'center', label: 'Orta' },
+              { value: 'right', label: 'Sağ' },
+            ].map((align) => (
+              <button
+                key={align.value}
+                onClick={() => onUpdate({ horizontalAlign: align.value as any })}
+                className={cn(
+                  'px-2 py-1.5 text-xs rounded-lg transition-colors',
+                  props.horizontalAlign === align.value
+                    ? 'bg-primary-600 text-white'
+                    : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
+                )}
+              >
+                {align.label}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <div>
+          <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
+            Dikey Hizalama
+          </label>
+          <div className="grid grid-cols-3 gap-1">
+            {[
+              { value: 'top', label: 'Üst' },
+              { value: 'center', label: 'Orta' },
+              { value: 'bottom', label: 'Alt' },
+            ].map((align) => (
+              <button
+                key={align.value}
+                onClick={() => onUpdate({ verticalAlign: align.value as any })}
+                className={cn(
+                  'px-2 py-1.5 text-xs rounded-lg transition-colors',
+                  props.verticalAlign === align.value
+                    ? 'bg-primary-600 text-white'
+                    : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
+                )}
+              >
+                {align.label}
+              </button>
+            ))}
+          </div>
+        </div>
+
         <div>
           <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
             Form Action URL

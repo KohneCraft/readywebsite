@@ -179,6 +179,26 @@ export function ColumnRenderer({ columnId, index, isNested: _isNested = false, i
         // Mobil/tablet'te sabit genişlik kullanma - kolonlar grid/flex ile kontrol edilecek
         const shouldUseFixedWidth = !isMobileOrTablet && !isWidthPercent;
 
+        // BorderRadius object veya number olabilir
+        const getBorderRadius = (): string => {
+            if (!settings.borderRadius) return '0';
+            if (typeof settings.borderRadius === 'number') return `${settings.borderRadius}px`;
+            const br = settings.borderRadius;
+            return `${br.topLeft ?? 0}px ${br.topRight ?? 0}px ${br.bottomRight ?? 0}px ${br.bottomLeft ?? 0}px`;
+        };
+
+        // HorizontalAlign için alignItems değeri
+        const getHorizontalAlign = (align?: string): string => {
+            if (!align) return 'stretch';
+            const mapping: Record<string, string> = {
+                'left': 'flex-start',
+                'center': 'center',
+                'right': 'flex-end',
+                'stretch': 'stretch',
+            };
+            return mapping[align] || 'stretch';
+        };
+
         return {
             backgroundColor: effectiveBgColor,
             backgroundImage: settings.backgroundImage ? `url(${settings.backgroundImage})` : 'none',
@@ -189,7 +209,7 @@ export function ColumnRenderer({ columnId, index, isNested: _isNested = false, i
             margin: settings.margin
                 ? `${settings.margin.top || 0}px ${settings.margin.right || 0}px ${settings.margin.bottom || 0}px ${settings.margin.left || 0}px`
                 : '0',
-            borderRadius: settings.borderRadius ? `${settings.borderRadius}px` : '0',
+            borderRadius: getBorderRadius(),
             border: settings.border?.width
                 ? `${settings.border.width}px ${settings.border.style} ${settings.border.color}`
                 : 'none',
@@ -207,7 +227,7 @@ export function ColumnRenderer({ columnId, index, isNested: _isNested = false, i
             display: 'flex',
             flexDirection: 'column',
             justifyContent: getVerticalAlign(settings.verticalAlign),
-            alignItems: 'stretch',
+            alignItems: getHorizontalAlign(settings.horizontalAlign),
             // Mobil/tablet'te flex-shrink aktif olsun
             flexShrink: isMobileOrTablet ? 1 : (shouldUseFixedWidth ? 0 : undefined),
             // Mobil/tablet'te minWidth kullanma
