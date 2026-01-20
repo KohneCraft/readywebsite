@@ -285,6 +285,22 @@ service cloud.firestore {
       allow delete: if isAuthenticated() 
         && resource.data.userId == request.auth.uid;
     }
+
+    // ==========================================
+    // EFFECTS KOLEKSİYONU
+    // ==========================================
+    // Görsel efektler sistemi için
+    // ==========================================
+    
+    match /effects/{effectId} {
+      // Okuma: Herkes (sitede görünmesi için)
+      allow read: if true;
+      
+      // Yazma: Authenticated kullanıcılar (admin paneli için)
+      allow create: if isAuthenticated();
+      allow update: if isAuthenticated();
+      allow delete: if isAuthenticated();
+    }
     
     // ==========================================
     // VARSAYILAN KURAL
