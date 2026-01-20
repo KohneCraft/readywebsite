@@ -5,6 +5,10 @@
 
 import type { ThemeData } from '@/types/theme';
 import { homePage } from './pages/home';
+import { aboutPage } from './pages/about';
+import { servicesPage } from './pages/services';
+import { portfolioPage } from './pages/portfolio';
+import { contactPage } from './pages/contact';
 import { kurumsalHeader } from './header';
 import { kurumsalFooter } from './footer';
 
@@ -107,6 +111,10 @@ export const corporateTheme: ThemeData = {
   },
   pages: {
     home: homePage,
+    about: aboutPage,
+    services: servicesPage,
+    portfolio: portfolioPage,
+    contact: contactPage,
   },
 };
 

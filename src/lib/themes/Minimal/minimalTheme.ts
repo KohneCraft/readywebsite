@@ -5,6 +5,9 @@
 
 import type { ThemeData } from '@/types/theme';
 import { homePage } from './pages/home';
+import { portfolioPage } from './pages/portfolio';
+import { aboutPage } from './pages/about';
+import { contactPage } from './pages/contact';
 import { sadeHeader } from './header';
 import { sadeFooter } from './footer';
 
@@ -40,7 +43,7 @@ const translations = {
     servicesSubtitle: 'Focused and effective solutions',
     portfolioTitle: 'Selected Works',
     portfolioSubtitle: 'Examples from my latest projects',
-    ctaTitle: 'Let\'s Work Together',
+    ctaTitle: "Let's Work Together",
     ctaSubtitle: 'Get in touch for your project',
     ctaButton: 'Contact',
   },
@@ -102,6 +105,9 @@ export const minimalTheme: ThemeData = {
   },
   pages: {
     home: homePage,
+    portfolio: portfolioPage,
+    about: aboutPage,
+    contact: contactPage,
   },
 };
 

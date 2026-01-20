@@ -27,7 +27,7 @@ export const modernIsHeader = {
   backgroundColor: '#ffffff',
   textColor: '#1e1b4b',
   sticky: true,
-  transparent: true,
+  transparent: false,
   hoverOpenMenu: true,
   animation: {
     enabled: true,

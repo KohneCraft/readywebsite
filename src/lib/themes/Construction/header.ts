@@ -39,7 +39,7 @@ export const insaatHeader = {
   textColor: '#1a1a1a',
   textColorDark: '#f1f5f9',
   sticky: true,
-  transparent: true, // Scroll öncesi transparan
+  transparent: false, // Şeffaf header kapalı
   hoverOpenMenu: true,
   // Animasyon ayarları
   animation: {

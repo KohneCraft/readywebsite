@@ -27,7 +27,7 @@ export const restoranHeader = {
     backgroundColor: '#1a1a1a',
     textColor: '#ffffff',
     sticky: true,
-    transparent: true,
+    transparent: false,
     hoverOpenMenu: true,
     animation: {
         enabled: true,

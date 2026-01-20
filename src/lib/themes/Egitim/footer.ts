@@ -15,9 +15,19 @@ export const egitimFooter = {
         {
             title: 'Programlar',
             links: [
-                { label: 'Yazılım', href: '/programs#software' },
-                { label: 'Pazarlama', href: '/programs#marketing' },
-                { label: 'Finans', href: '/programs#finance' },
+                { label: 'Dil Eğitimleri', href: '/programs/languages' },
+                { label: 'Teknoloji', href: '/programs/technology' },
+                { label: 'İşletme', href: '/programs/business' },
+                { label: 'Tasarım', href: '/programs/design' },
+            ],
+            type: 'links',
+        },
+        {
+            title: 'Hızlı Erişim',
+            links: [
+                { label: 'Kayıt Ol', href: '/enroll' },
+                { label: 'Hakkımızda', href: '/about' },
+                { label: 'İletişim', href: '/contact' },
             ],
             type: 'links',
         },

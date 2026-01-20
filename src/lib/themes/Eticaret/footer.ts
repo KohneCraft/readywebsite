@@ -15,9 +15,10 @@ export const eticaretFooter = {
         {
             title: 'Kategoriler',
             links: [
-                { label: 'Kadın', href: '/shop?category=women' },
-                { label: 'Erkek', href: '/shop?category=men' },
-                { label: 'Aksesuar', href: '/shop?category=accessories' },
+                { label: 'Kadın', href: '/shop/women' },
+                { label: 'Erkek', href: '/shop/men' },
+                { label: 'Çocuk', href: '/shop/kids' },
+                { label: 'Aksesuar', href: '/shop/accessories' },
             ],
             type: 'links',
         },

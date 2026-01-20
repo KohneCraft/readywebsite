@@ -7,6 +7,8 @@ import type { ThemeData } from '@/types/theme';
 import { homePage } from './pages/home';
 import { aboutPage } from './pages/about';
 import { contactPage } from './pages/contact';
+import { servicesPage } from './pages/services';
+import { pricingPage } from './pages/pricing';
 import { modernIsHeader } from './header';
 import { modernIsFooter } from './footer';
 
@@ -124,6 +126,8 @@ export const modernBusinessTheme: ThemeData = {
   pages: {
     home: homePage,
     about: aboutPage,
+    services: servicesPage,
+    pricing: pricingPage,
     contact: contactPage,
   },
 };

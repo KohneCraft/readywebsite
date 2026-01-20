@@ -10,6 +10,11 @@ import { homePage } from './pages/home';
 import { aboutPage } from './pages/about';
 import { contactPage } from './pages/contact';
 import { programsPage } from './pages/programs';
+import { enrollPage } from './pages/enroll';
+import { languagesPage } from './pages/languages';
+import { technologyPage } from './pages/technology';
+import { businessPage } from './pages/business';
+import { designPage } from './pages/design';
 
 const translations = {
     tr: {
@@ -92,6 +97,11 @@ export const egitimTheme: ThemeData = {
         about: aboutPage,
         contact: contactPage,
         programs: programsPage,
+        enroll: enrollPage,
+        'programs/languages': languagesPage,
+        'programs/technology': technologyPage,
+        'programs/business': businessPage,
+        'programs/design': designPage,
     },
 };
 

@@ -15,9 +15,19 @@ export const saglikFooter = {
         {
             title: 'Branşlarımız',
             links: [
-                { label: 'Dahiliye', href: '/departments#internal' },
-                { label: 'Kardiyoloji', href: '/departments#cardiology' },
-                { label: 'Ortopedi', href: '/departments#orthopedics' },
+                { label: 'Kardiyoloji', href: '/departments/cardiology' },
+                { label: 'Ortopedi', href: '/departments/orthopedics' },
+                { label: 'Nöroloji', href: '/departments/neurology' },
+                { label: 'Göz Hastalıkları', href: '/departments/ophthalmology' },
+            ],
+            type: 'links',
+        },
+        {
+            title: 'Hizmetler',
+            links: [
+                { label: 'Randevu Al', href: '/appointment' },
+                { label: 'Hakkımızda', href: '/about' },
+                { label: 'İletişim', href: '/contact' },
             ],
             type: 'links',
         },

@@ -10,6 +10,10 @@ import { homePage } from './pages/home';
 import { aboutPage } from './pages/about';
 import { contactPage } from './pages/contact';
 import { shopPage } from './pages/shop';
+import { womenPage } from './pages/women';
+import { menPage } from './pages/men';
+import { kidsPage } from './pages/kids';
+import { accessoriesPage } from './pages/accessories';
 
 const translations = {
     tr: {
@@ -116,6 +120,10 @@ export const eticaretTheme: ThemeData = {
         about: aboutPage,
         contact: contactPage,
         shop: shopPage,
+        'shop/women': womenPage,
+        'shop/men': menPage,
+        'shop/kids': kidsPage,
+        'shop/accessories': accessoriesPage,
     },
 };
 

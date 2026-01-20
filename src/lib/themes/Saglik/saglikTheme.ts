@@ -10,6 +10,11 @@ import { homePage } from './pages/home';
 import { aboutPage } from './pages/about';
 import { contactPage } from './pages/contact';
 import { departmentsPage } from './pages/departments';
+import { appointmentPage } from './pages/appointment';
+import { cardiologyPage } from './pages/cardiology';
+import { orthopedicsPage } from './pages/orthopedics';
+import { neurologyPage } from './pages/neurology';
+import { ophthalmologyPage } from './pages/ophthalmology';
 
 const translations = {
     tr: {
@@ -118,6 +123,11 @@ export const saglikTheme: ThemeData = {
         about: aboutPage,
         contact: contactPage,
         departments: departmentsPage,
+        appointment: appointmentPage,
+        'departments/cardiology': cardiologyPage,
+        'departments/orthopedics': orthopedicsPage,
+        'departments/neurology': neurologyPage,
+        'departments/ophthalmology': ophthalmologyPage,
     },
 };
 

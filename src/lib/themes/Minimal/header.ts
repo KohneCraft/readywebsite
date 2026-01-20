@@ -17,7 +17,7 @@ export const sadeHeader = {
   backgroundColor: '#fafafa',
   textColor: '#0a0a0a',
   sticky: true,
-  transparent: true,
+  transparent: false,
   hoverOpenMenu: false,
   animation: {
     enabled: true,

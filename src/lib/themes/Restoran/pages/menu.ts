@@ -34,6 +34,7 @@ export const menuPage: ThemePageData = {
         {
             name: 'Starters',
             settings: {
+                id: 'starters',
                 backgroundColor: '#ffffff',
                 padding: { top: 80, right: 40, bottom: 40, left: 40 },
             },
@@ -71,6 +72,7 @@ export const menuPage: ThemePageData = {
         {
             name: 'Main Courses',
             settings: {
+                id: 'mains',
                 backgroundColor: '#f8f8f8',
                 padding: { top: 60, right: 40, bottom: 40, left: 40 },
             },
@@ -100,6 +102,110 @@ export const menuPage: ThemePageData = {
                         { type: 'heading', props: { level: 'h4', content: 'Levrek Izgara', fontSize: 20, color: '#1a1a1a', fontWeight: 'bold' } },
                         { type: 'text', props: { content: 'Taze levrek, sebze garnitürü ile', fontSize: 14, color: '#666666' } },
                         { type: 'text', props: { content: '₺345', fontSize: 18, color: '#d97706', fontWeight: 'bold' } },
+                    ]
+                },
+            ],
+        },
+        // Tatlılar
+        {
+            name: 'Desserts',
+            settings: {
+                id: 'desserts',
+                backgroundColor: '#ffffff',
+                padding: { top: 60, right: 40, bottom: 40, left: 40 },
+            },
+            columns: [
+                {
+                    width: 100,
+                    settings: { textAlign: 'center', padding: { top: 0, right: 0, bottom: 40, left: 0 } },
+                    blocks: [
+                        { type: 'heading', props: { level: 'h2', content: '🍰 Tatlılar', fontSize: 36, color: '#d97706', fontWeight: 'bold' } },
+                    ],
+                },
+            ],
+        },
+        {
+            name: 'Dessert Items',
+            settings: { backgroundColor: '#ffffff', padding: { top: 0, right: 40, bottom: 40, left: 40 } },
+            columns: [
+                {
+                    width: 50, settings: { padding: { top: 10, right: 20, bottom: 10, left: 20 } }, blocks: [
+                        { type: 'heading', props: { level: 'h4', content: 'Künefe', fontSize: 20, color: '#1a1a1a', fontWeight: 'bold' } },
+                        { type: 'text', props: { content: 'Tel kadayıf, antep fıstığı, özel şerbet ile', fontSize: 14, color: '#666666' } },
+                        { type: 'text', props: { content: '₺145', fontSize: 18, color: '#d97706', fontWeight: 'bold' } },
+                    ]
+                },
+                {
+                    width: 50, settings: { padding: { top: 10, right: 20, bottom: 10, left: 20 } }, blocks: [
+                        { type: 'heading', props: { level: 'h4', content: 'Sütlaç', fontSize: 20, color: '#1a1a1a', fontWeight: 'bold' } },
+                        { type: 'text', props: { content: 'Fırında karamelize, geleneksel tarif', fontSize: 14, color: '#666666' } },
+                        { type: 'text', props: { content: '₺85', fontSize: 18, color: '#d97706', fontWeight: 'bold' } },
+                    ]
+                },
+                {
+                    width: 50, settings: { padding: { top: 10, right: 20, bottom: 10, left: 20 } }, blocks: [
+                        { type: 'heading', props: { level: 'h4', content: 'Baklava', fontSize: 20, color: '#1a1a1a', fontWeight: 'bold' } },
+                        { type: 'text', props: { content: 'El açması, cevizli veya fıstıklı', fontSize: 14, color: '#666666' } },
+                        { type: 'text', props: { content: '₺125', fontSize: 18, color: '#d97706', fontWeight: 'bold' } },
+                    ]
+                },
+                {
+                    width: 50, settings: { padding: { top: 10, right: 20, bottom: 10, left: 20 } }, blocks: [
+                        { type: 'heading', props: { level: 'h4', content: 'Kazandibi', fontSize: 20, color: '#1a1a1a', fontWeight: 'bold' } },
+                        { type: 'text', props: { content: 'Osmanlı mutfağının klasiği', fontSize: 14, color: '#666666' } },
+                        { type: 'text', props: { content: '₺95', fontSize: 18, color: '#d97706', fontWeight: 'bold' } },
+                    ]
+                },
+            ],
+        },
+        // İçecekler
+        {
+            name: 'Drinks',
+            settings: {
+                id: 'drinks',
+                backgroundColor: '#f8f8f8',
+                padding: { top: 60, right: 40, bottom: 40, left: 40 },
+            },
+            columns: [
+                {
+                    width: 100,
+                    settings: { textAlign: 'center', padding: { top: 0, right: 0, bottom: 40, left: 0 } },
+                    blocks: [
+                        { type: 'heading', props: { level: 'h2', content: '🥤 İçecekler', fontSize: 36, color: '#d97706', fontWeight: 'bold' } },
+                    ],
+                },
+            ],
+        },
+        {
+            name: 'Drink Items',
+            settings: { backgroundColor: '#f8f8f8', padding: { top: 0, right: 40, bottom: 60, left: 40 } },
+            columns: [
+                {
+                    width: 50, settings: { padding: { top: 10, right: 20, bottom: 10, left: 20 } }, blocks: [
+                        { type: 'heading', props: { level: 'h4', content: 'Taze Sıkılmış Meyve Suyu', fontSize: 20, color: '#1a1a1a', fontWeight: 'bold' } },
+                        { type: 'text', props: { content: 'Portakal, nar, greyfurt seçenekleri', fontSize: 14, color: '#666666' } },
+                        { type: 'text', props: { content: '₺65', fontSize: 18, color: '#d97706', fontWeight: 'bold' } },
+                    ]
+                },
+                {
+                    width: 50, settings: { padding: { top: 10, right: 20, bottom: 10, left: 20 } }, blocks: [
+                        { type: 'heading', props: { level: 'h4', content: 'Türk Kahvesi', fontSize: 20, color: '#1a1a1a', fontWeight: 'bold' } },
+                        { type: 'text', props: { content: 'Dibek kahve, Türk lokumu ile', fontSize: 14, color: '#666666' } },
+                        { type: 'text', props: { content: '₺45', fontSize: 18, color: '#d97706', fontWeight: 'bold' } },
+                    ]
+                },
+                {
+                    width: 50, settings: { padding: { top: 10, right: 20, bottom: 10, left: 20 } }, blocks: [
+                        { type: 'heading', props: { level: 'h4', content: 'Ayran', fontSize: 20, color: '#1a1a1a', fontWeight: 'bold' } },
+                        { type: 'text', props: { content: 'Ev yapımı, taze', fontSize: 14, color: '#666666' } },
+                        { type: 'text', props: { content: '₺25', fontSize: 18, color: '#d97706', fontWeight: 'bold' } },
+                    ]
+                },
+                {
+                    width: 50, settings: { padding: { top: 10, right: 20, bottom: 10, left: 20 } }, blocks: [
+                        { type: 'heading', props: { level: 'h4', content: 'Şalgam Suyu', fontSize: 20, color: '#1a1a1a', fontWeight: 'bold' } },
+                        { type: 'text', props: { content: 'Acılı veya acısız', fontSize: 14, color: '#666666' } },
+                        { type: 'text', props: { content: '₺30', fontSize: 18, color: '#d97706', fontWeight: 'bold' } },
                     ]
                 },
             ],

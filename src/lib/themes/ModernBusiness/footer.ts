@@ -10,10 +10,10 @@ export const modernIsFooter = {
 
   // Ürün linkleri
   productLinks: [
-    { href: '/services#saas', label: 'SaaS Platform' },
-    { href: '/services#cloud', label: 'Bulut Hizmetleri' },
-    { href: '/services#automation', label: 'Otomasyon' },
-    { href: '/services#analytics', label: 'Analitik' },
+    { href: '/services', label: 'Hizmetler' },
+    { href: '/pricing', label: 'Fiyatlandırma' },
+    { href: '/about', label: 'Hakkımızda' },
+    { href: '/contact', label: 'İletişim' },
   ],
 
   // Şirket linkleri

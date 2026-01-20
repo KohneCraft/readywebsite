@@ -10,6 +10,7 @@ import { homePage } from './pages/home';
 import { aboutPage } from './pages/about';
 import { contactPage } from './pages/contact';
 import { menuPage } from './pages/menu';
+import { galleryPage } from './pages/gallery';
 
 const translations = {
     tr: {
@@ -123,6 +124,7 @@ export const restoranTheme: ThemeData = {
         about: aboutPage,
         contact: contactPage,
         menu: menuPage,
+        gallery: galleryPage,
     },
 };
 
