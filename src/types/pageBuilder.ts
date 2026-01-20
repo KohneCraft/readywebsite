@@ -185,6 +185,7 @@ export interface BlockProps {
   textColor?: string;
   textColorDark?: string | 'auto'; // Koyu tema buton metin rengi
   verticalAlign?: 'top' | 'center' | 'bottom'; // Dikey hizalama
+  horizontalAlign?: 'left' | 'center' | 'right'; // Yatay hizalama
   icon?: {
     enabled: boolean;
     name: string;
@@ -382,11 +383,16 @@ export interface ColumnSettings {
   backgroundRepeat?: string; // 'no-repeat' | 'repeat' | 'repeat-x' | 'repeat-y'
   padding?: Spacing;
   margin?: Spacing;
-  borderRadius?: number;
+  borderRadius?: number | {
+    topLeft?: number;
+    topRight?: number;
+    bottomLeft?: number;
+    bottomRight?: number;
+  };
   border?: Border;
   boxShadow?: string;
   verticalAlign?: 'top' | 'center' | 'bottom';
-  horizontalAlign?: 'left' | 'center' | 'right';
+  horizontalAlign?: 'left' | 'center' | 'right' | 'stretch';
   minHeight?: number;
   responsive?: Record<Breakpoint, ResponsiveSettings>;
 }

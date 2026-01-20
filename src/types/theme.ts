@@ -8,7 +8,21 @@ import type { Spacing } from './pageBuilder';
 /**
  * Tema kategorileri
  */
-export type ThemeCategory = 'business' | 'portfolio' | 'blog' | 'ecommerce' | 'landing' | 'corporate';
+export type ThemeCategory = 'business' | 'portfolio' | 'blog' | 'ecommerce' | 'landing' | 'corporate' | 'food' | 'medical' | 'education' | 'construction';
+
+/**
+ * Desteklenen diller
+ */
+export type SupportedLanguage = 'tr' | 'en';
+
+/**
+ * Çeviri yapısı
+ */
+export interface ThemeTranslations {
+  [lang: string]: {
+    [key: string]: string | Record<string, string>;
+  };
+}
 
 /**
  * Tema metadata
@@ -99,6 +113,10 @@ export interface ThemeSettings {
     metaKeywords?: string;
     googleAnalyticsId?: string;
   };
+  // Çoklu dil desteği
+  translations?: ThemeTranslations;
+  // Varsayılan dil
+  defaultLanguage?: SupportedLanguage;
   [key: string]: any;
 }
 
