@@ -5,7 +5,7 @@
 // Tema seçim ve yükleme sayfası - Modal + Progress Bar
 // ============================================
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import Image from 'next/image';
 import { useLocale } from 'next-intl';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -48,6 +48,7 @@ export default function ThemesPage() {
   const [progress, setProgress] = useState(0);
   const [progressText, setProgressText] = useState('');
   const [installLogs, setInstallLogs] = useState<InstallLog[]>([]);
+  const logPanelRef = useRef<HTMLDivElement>(null);
 
   // Log ekleme fonksiyonu
   const addLog = useCallback((message: string, type: InstallLog['type'] = 'info') => {
@@ -63,6 +64,13 @@ export default function ThemesPage() {
       logger.theme.debug(message);
     }
   }, []);
+
+  // Log paneli auto-scroll
+  useEffect(() => {
+    if (logPanelRef.current) {
+      logPanelRef.current.scrollTop = logPanelRef.current.scrollHeight;
+    }
+  }, [installLogs]);
 
   // Tema önizleme fonksiyonu
   const handlePreview = (themeId: string) => {
@@ -442,7 +450,7 @@ export default function ThemesPage() {
               </div>
 
               {/* Log Panel */}
-              <div className="bg-gray-900 rounded-lg p-4 max-h-48 overflow-y-auto font-mono text-xs">
+              <div ref={logPanelRef} className="bg-gray-900 rounded-lg p-4 max-h-48 overflow-y-auto font-mono text-xs">
                 {installLogs.length === 0 ? (
                   <p className="text-gray-500">Bekleniyor...</p>
                 ) : (

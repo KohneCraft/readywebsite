@@ -16,10 +16,26 @@ export default function ThemePreviewPage() {
     const params = useParams();
     const themeId = params?.themeId as string;
 
-    // Temayı bul
+    // Temayı bul - Esnek eşleştirme (ID veya name ile)
     const theme = useMemo(() => {
         const themes = getDefaultThemes();
-        return themes.find(t => t.metadata.id === themeId);
+
+        // Önce direkt ID ile eşleştir
+        let found = themes.find(t => t.metadata.id === themeId);
+        if (found) return found;
+
+        // ID'den name çıkarmayı dene (ör: theme-egitim -> egitim)
+        const idBasedName = themeId.toLowerCase().replace('theme-', '').replace(/-/g, ' ');
+        found = themes.find(t => {
+            const themeName = t.metadata.name.toLowerCase();
+            // Kısmi eşleşme
+            if (themeName.includes(idBasedName) || idBasedName.includes(themeName.split(' ')[0].toLowerCase())) {
+                return true;
+            }
+            return false;
+        });
+
+        return found;
     }, [themeId]);
 
     if (!theme) {
