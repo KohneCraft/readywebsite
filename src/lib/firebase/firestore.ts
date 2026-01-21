@@ -1315,15 +1315,16 @@ export async function deleteCurrentTheme(): Promise<void> {
  * Yapılan değişiklikler Firestore'da tutulur.
  * Tema tekrar yüklendiğinde, Firestore'daki değişiklikler silinir ve orijinal tema dosyasındaki ayarlar yüklenir.
  */
-export async function installTheme(themeData: ThemeData, createdBy: string): Promise<void> {
+export async function installTheme(
+  themeData: ThemeData,
+  createdBy: string,
+  onProgress?: (event: { type: 'page-created'; slug: string; title: string; sectionCount: number }) => void
+): Promise<void> {
   const { metadata, pages } = themeData;
 
   if (!metadata || !pages) {
     throw new Error('Geçersiz tema formatı');
   }
-
-  logger.firestore.info(`Tema yükleniyor: ${metadata.name} (${metadata.pages.length} sayfa)`);
-  logger.firestore.debug(`Tema pages keys:`, Object.keys(pages));
 
   // Mevcut temayı kontrol et ve varsa metadata'sını orijinal ayarlarla güncelle
   // Bu sayede header/footer ayarları sıfırlanır
@@ -1340,10 +1341,6 @@ export async function installTheme(themeData: ThemeData, createdBy: string): Pro
     }
 
     if (existingTheme) {
-      logger.firestore.info('Mevcut tema bulundu, metadata orijinal ayarlarla güncelleniyor...');
-      logger.firestore.info('Header navItems (önceki):', metadata.settings?.header?.navItems);
-      logger.firestore.info('Footer quickLinks (önceki):', metadata.settings?.footer?.quickLinks);
-
       // Tema metadata'sını TAMAMEN orijinal tema dosyasındaki ayarlarla değiştir
       // setDoc ile merge: false kullanarak tüm dokümanı değiştir
       const themeRef = doc(db, COLLECTIONS.themes, existingTheme.id);
@@ -1356,17 +1353,9 @@ export async function installTheme(themeData: ThemeData, createdBy: string): Pro
         ...cleanMetadata,
         updatedAt: serverTimestamp(),
       }, { merge: false }); // merge: false = doküman tamamen değiştirilir
-
-      logger.firestore.info('✓ Tema metadata TAMAMEN orijinal ayarlarla güncellendi');
-      logger.firestore.info('✓ Header navItems (sonrası):', cleanMetadata.settings?.header?.navItems);
-      logger.firestore.info('✓ Footer quickLinks (sonrası):', cleanMetadata.settings?.footer?.quickLinks);
     } else {
       // Tema yoksa yeni oluştur
-      logger.firestore.info('Yeni tema oluşturuluyor...');
-      logger.firestore.info('Header navItems:', metadata.settings?.header?.navItems);
-      logger.firestore.info('Footer quickLinks:', metadata.settings?.footer?.quickLinks);
       await createTheme(metadata);
-      logger.firestore.info('✓ Yeni tema oluşturuldu');
     }
   } catch (error) {
     logger.firestore.warn('Tema metadata güncellenirken hata (yeni tema oluşturuluyor):', error);
@@ -1383,11 +1372,6 @@ export async function installTheme(themeData: ThemeData, createdBy: string): Pro
       continue;
     }
 
-    logger.firestore.debug(`Sayfa oluşturuluyor: ${pageConfig.title} (${pageConfig.slug})`);
-    logger.firestore.debug(`Sayfa verileri:`, pageData);
-    logger.firestore.debug(`Section sayısı:`, pageData.sections?.length || 0);
-    logger.firestore.debug(`Section'lar:`, pageData.sections);
-
     // Yeni sayfa oluştur
     const pageId = await createPage({
       title: pageConfig.title,
@@ -1403,50 +1387,44 @@ export async function installTheme(themeData: ThemeData, createdBy: string): Pro
     const sectionIds: string[] = [];
 
     if (!pageData.sections || pageData.sections.length === 0) {
-      logger.firestore.warn(`Sayfa ${pageConfig.slug} için section verisi yok!`);
       // Section yoksa bile sayfayı oluştur (boş sayfa)
+      // Callback ile UI'a bildir
+      if (onProgress) {
+        onProgress({ type: 'page-created', slug: pageConfig.slug, title: pageConfig.title, sectionCount: 0 });
+      }
       continue;
     }
 
-    logger.firestore.debug(`Section'lar oluşturuluyor (${pageData.sections.length} adet)...`);
-
     for (let sectionIndex = 0; sectionIndex < pageData.sections.length; sectionIndex++) {
       const sectionData = pageData.sections[sectionIndex];
-      logger.firestore.debug(`Section ${sectionIndex + 1}/${pageData.sections.length} oluşturuluyor: ${sectionData.name}`); const sectionId = await createSection({
+      const sectionId = await createSection({
         pageId,
         name: sectionData.name,
         order: sectionIndex,
         settings: sectionData.settings || {},
       });
 
-      logger.firestore.debug(`✓ Section oluşturuldu: ${sectionId} (${sectionData.name})`);
       sectionIds.push(sectionId);
 
       // Column'ları oluştur
-      logger.firestore.debug(`  Column'lar oluşturuluyor (${sectionData.columns.length} adet)...`);
       for (let columnIndex = 0; columnIndex < sectionData.columns.length; columnIndex++) {
         const columnData = sectionData.columns[columnIndex];
-        logger.firestore.debug(`    Column ${columnIndex + 1}/${sectionData.columns.length} oluşturuluyor: Genişlik ${columnData.width}%`);
         const columnId = await createColumn({
           sectionId,
           width: columnData.width,
           order: columnIndex,
           settings: columnData.settings || {},
         });
-        logger.firestore.debug(`    ✓ Column oluşturuldu: ${columnId} (Genişlik: ${columnData.width}%)`);
 
         // Block'ları oluştur
-        logger.firestore.debug(`      Block'lar oluşturuluyor (${columnData.blocks.length} adet)...`);
         for (let blockIndex = 0; blockIndex < columnData.blocks.length; blockIndex++) {
           const blockData = columnData.blocks[blockIndex];
-          logger.firestore.debug(`        Block ${blockIndex + 1}/${columnData.blocks.length} oluşturuluyor: ${blockData.type}`);
           await createBlock({
             columnId,
             type: blockData.type as any,
             order: blockIndex,
             props: blockData.props || {},
           });
-          logger.firestore.debug(`        ✓ Block oluşturuldu: ${blockData.type}`);
         }
       }
     }
@@ -1455,8 +1433,10 @@ export async function installTheme(themeData: ThemeData, createdBy: string): Pro
     // createSection içinde de ekleniyor ama race condition olmaması için burada da ekliyoruz
     await updatePage(pageId, { sections: sectionIds });
 
-    logger.firestore.info(`✓ Sayfa oluşturuldu: ${pageConfig.title} (${sectionIds.length} section)`);
-    logger.firestore.debug(`  Section ID'leri:`, sectionIds);
+    // Callback ile UI'a bildir
+    if (onProgress) {
+      onProgress({ type: 'page-created', slug: pageConfig.slug, title: pageConfig.title, sectionCount: sectionIds.length });
+    }
   }
 
   // Site settings'i tema ayarlarıyla güncelle (Header/Footer özelleştirmeleri + Company/Contact/Social/SEO)
@@ -1466,8 +1446,6 @@ export async function installTheme(themeData: ThemeData, createdBy: string): Pro
     const currentSettings = await getSiteSettingsClient();
     const existingThemeId = existingTheme ? existingTheme.id : null;
     const themeSettings = metadata.settings || {};
-
-    logger.firestore.info(`Aktif tema ayarlanıyor: ${metadata.name} (ID: ${existingThemeId || metadata.id})`);
 
     // Tema bilgilerini siteSettings formatına çevir
     const themeCompanyInfo = themeSettings.company || {};

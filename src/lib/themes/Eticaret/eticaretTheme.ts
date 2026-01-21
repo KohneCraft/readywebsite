@@ -72,6 +72,10 @@ export const eticaretTheme: ThemeData = {
         pages: [
             { slug: 'home', title: 'Ana Sayfa', file: 'pages/home.json' },
             { slug: 'shop', title: 'Mağaza', file: 'pages/shop.json' },
+            { slug: 'shop/women', title: 'Kadın', file: 'pages/women.json' },
+            { slug: 'shop/men', title: 'Erkek', file: 'pages/men.json' },
+            { slug: 'shop/kids', title: 'Çocuk', file: 'pages/kids.json' },
+            { slug: 'shop/accessories', title: 'Aksesuarlar', file: 'pages/accessories.json' },
             { slug: 'about', title: 'Hakkımızda', file: 'pages/about.json' },
             { slug: 'contact', title: 'İletişim', file: 'pages/contact.json' },
         ],

@@ -73,6 +73,11 @@ export const egitimTheme: ThemeData = {
         pages: [
             { slug: 'home', title: 'Ana Sayfa', file: 'pages/home.json' },
             { slug: 'programs', title: 'Programlar', file: 'pages/programs.json' },
+            { slug: 'enroll', title: 'Kayıt Ol', file: 'pages/enroll.json' },
+            { slug: 'programs/languages', title: 'Dil Eğitimleri', file: 'pages/languages.json' },
+            { slug: 'programs/technology', title: 'Teknoloji', file: 'pages/technology.json' },
+            { slug: 'programs/business', title: 'İşletme', file: 'pages/business.json' },
+            { slug: 'programs/design', title: 'Tasarım', file: 'pages/design.json' },
             { slug: 'about', title: 'Hakkımızda', file: 'pages/about.json' },
             { slug: 'contact', title: 'İletişim', file: 'pages/contact.json' },
         ],

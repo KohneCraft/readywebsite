@@ -75,6 +75,11 @@ export const saglikTheme: ThemeData = {
         pages: [
             { slug: 'home', title: 'Ana Sayfa', file: 'pages/home.json' },
             { slug: 'departments', title: 'Branşlar', file: 'pages/departments.json' },
+            { slug: 'appointment', title: 'Randevu', file: 'pages/appointment.json' },
+            { slug: 'departments/cardiology', title: 'Kardiyoloji', file: 'pages/cardiology.json' },
+            { slug: 'departments/orthopedics', title: 'Ortopedi', file: 'pages/orthopedics.json' },
+            { slug: 'departments/neurology', title: 'Nöroloji', file: 'pages/neurology.json' },
+            { slug: 'departments/ophthalmology', title: 'Göz Hastalıkları', file: 'pages/ophthalmology.json' },
             { slug: 'about', title: 'Hakkımızda', file: 'pages/about.json' },
             { slug: 'contact', title: 'İletişim', file: 'pages/contact.json' },
         ],

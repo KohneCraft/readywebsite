@@ -78,6 +78,7 @@ export const restoranTheme: ThemeData = {
             { slug: 'home', title: 'Ana Sayfa', file: 'pages/home.json' },
             { slug: 'menu', title: 'Menü', file: 'pages/menu.json' },
             { slug: 'about', title: 'Hakkımızda', file: 'pages/about.json' },
+            { slug: 'gallery', title: 'Galeri', file: 'pages/gallery.json' },
             { slug: 'contact', title: 'İletişim', file: 'pages/contact.json' },
         ],
         settings: {
