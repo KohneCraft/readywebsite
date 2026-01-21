@@ -253,23 +253,28 @@ export default function ThemesPage() {
       setProgressText('Sayfalar oluşturuluyor...');
       setProgress(50);
 
-      const pageCount = Object.keys(themeToInstall.pages || {}).length;
+      // metadata.pages dizisinden sayfa sayısını al (bu dizideki sayfalar yüklenecek)
+      const pageCount = themeToInstall.metadata.pages?.length || 0;
       addLog(`📄 ${pageCount} sayfa oluşturulacak`, 'info');
 
-      // Her sayfa için simüle progress
-      let currentProgress = 50;
-      const progressPerPage = 40 / Math.max(pageCount, 1);
-
       // Sayfa isimlerini logla
-      Object.keys(themeToInstall.pages || {}).forEach((pageName, index) => {
-        setTimeout(() => {
-          addLog(`📝 Sayfa oluşturuluyor: ${pageName}`, 'info');
-          currentProgress += progressPerPage;
-          setProgress(Math.min(90, Math.round(currentProgress)));
-        }, index * 200);
+      themeToInstall.metadata.pages?.forEach((page) => {
+        addLog(`📝 Sayfa oluşturuluyor: ${page.title}`, 'info');
       });
 
-      await installTheme(themeToInstall, userId);
+      // Progress tracking için sayaç
+      let pagesCreated = 0;
+      const progressPerPage = 40 / Math.max(pageCount, 1);
+
+      // installTheme'e callback ile sayfa oluşturma bilgisini al
+      await installTheme(themeToInstall, userId, (event) => {
+        if (event.type === 'page-created') {
+          pagesCreated++;
+          const currentProgress = 50 + (pagesCreated * progressPerPage);
+          setProgress(Math.min(90, Math.round(currentProgress)));
+          addLog(`✓ Sayfa oluşturuldu: ${event.title} (${event.sectionCount} section)`, 'success');
+        }
+      });
 
       setProgress(95);
       addLog('✓ Tüm sayfalar oluşturuldu', 'success');
