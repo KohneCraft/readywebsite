@@ -28,6 +28,8 @@ interface SectionEditorProps {
   // Pending updates for live preview
   pendingColumnUpdates?: Record<string, Partial<Column>>;
   pendingBlockUpdates?: Record<string, Partial<Block>>;
+  // Device bilgisi (mobil/tablet görünümü için)
+  device?: 'desktop' | 'tablet' | 'mobile';
 }
 
 export function SectionEditor({
@@ -42,6 +44,7 @@ export function SectionEditor({
   onDelete,
   pendingColumnUpdates = {},
   pendingBlockUpdates = {},
+  device = 'desktop',
 }: SectionEditorProps) {
   const [isMoving, setIsMoving] = useState(false);
   const [isDuplicating, setIsDuplicating] = useState(false);
@@ -89,9 +92,18 @@ export function SectionEditor({
   });
 
   const settings = section.settings || {};
-  const gridTemplate = columns.length > 0
-    ? columns.map(col => `${col.width || 100 / columns.length}fr`).join(' ')
-    : '1fr';
+  
+  // Mobil görünümde kolonları alt alta göster
+  const isMobileView = device === 'mobile';
+  const isTabletView = device === 'tablet';
+  
+  const gridTemplate = isMobileView 
+    ? '1fr' // Mobilde tek kolon
+    : isTabletView && columns.length > 2
+      ? 'repeat(2, 1fr)' // Tablette en fazla 2 kolon
+      : columns.length > 0
+        ? columns.map(col => `${col.width || 100 / columns.length}fr`).join(' ')
+        : '1fr';
 
   return (
     <section
@@ -360,6 +372,7 @@ export function SectionEditor({
                 onSelectElement={onSelectElement}
                 pendingBlockUpdates={pendingBlockUpdates}
                 isFlexLayout={settings.columnLayout === 'column'}
+                device={device}
                 onAddColumn={async (afterColumnId) => {
                   try {
                     const { createColumn, getSectionById } = await import('@/lib/firebase/firestore');

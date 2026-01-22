@@ -5,7 +5,7 @@
 // Ana düzenleme alanı - Section'ları gösterir
 // ============================================
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import { useDroppable } from '@dnd-kit/core';
 import { SectionEditor } from '../components/SectionEditor';
 import { getSectionById } from '@/lib/firebase/firestore';
@@ -49,6 +49,54 @@ export function CenterCanvas({
 }: CenterCanvasProps) {
   const [baseSections, setBaseSections] = useState<Section[]>([]);
   const [loading, setLoading] = useState(true);
+  
+  // Pan (sürükleme) için state
+  const [isPanning, setIsPanning] = useState(false);
+  const [panStart, setPanStart] = useState({ x: 0, y: 0 });
+  const [scrollStart, setScrollStart] = useState({ x: 0, y: 0 });
+  const canvasRef = useRef<HTMLDivElement>(null);
+
+  // Pan event handlers
+  const handleMouseDown = useCallback((e: React.MouseEvent) => {
+    // Sadece boş alana tıklanırsa pan başlat (section, column, block değilse)
+    const target = e.target as HTMLElement;
+    const isCanvasBackground = target.closest('.canvas-scroll-area') && 
+      !target.closest('.section-editor') && 
+      !target.closest('.column-editor') && 
+      !target.closest('.block-editor') &&
+      !target.closest('button');
+    
+    if (isCanvasBackground && e.button === 0) {
+      setIsPanning(true);
+      setPanStart({ x: e.clientX, y: e.clientY });
+      if (canvasRef.current) {
+        setScrollStart({ 
+          x: canvasRef.current.scrollLeft, 
+          y: canvasRef.current.scrollTop 
+        });
+      }
+      e.preventDefault();
+    }
+  }, []);
+
+  const handleMouseMove = useCallback((e: React.MouseEvent) => {
+    if (!isPanning || !canvasRef.current) return;
+    
+    const dx = e.clientX - panStart.x;
+    const dy = e.clientY - panStart.y;
+    
+    canvasRef.current.scrollLeft = scrollStart.x - dx;
+    canvasRef.current.scrollTop = scrollStart.y - dy;
+  }, [isPanning, panStart, scrollStart]);
+
+  const handleMouseUp = useCallback(() => {
+    setIsPanning(false);
+  }, []);
+
+  // Mouse leave durumunda da pan'ı durdur
+  const handleMouseLeave = useCallback(() => {
+    setIsPanning(false);
+  }, []);
 
   // Section'ları yükle
   useEffect(() => {
@@ -109,10 +157,24 @@ export function CenterCanvas({
   return (
     <div className="flex-1 flex flex-col overflow-hidden bg-gray-100 dark:bg-gray-900">
       {/* Canvas Area */}
-      <div className="flex-1 overflow-auto p-8">
+      <div 
+        ref={canvasRef}
+        className={cn(
+          "flex-1 overflow-auto p-8 canvas-scroll-area",
+          isPanning ? "cursor-grabbing select-none" : "cursor-grab"
+        )}
+        onMouseDown={handleMouseDown}
+        onMouseMove={handleMouseMove}
+        onMouseUp={handleMouseUp}
+        onMouseLeave={handleMouseLeave}
+      >
         <div className="mx-auto" style={{ width: deviceWidths[device] }}>
           <div
-            className="bg-white dark:bg-gray-800 shadow-xl min-h-screen"
+            className={cn(
+              "bg-white dark:bg-gray-800 shadow-xl min-h-screen section-editor",
+              device === 'mobile' && "canvas-mobile-view",
+              device === 'tablet' && "canvas-tablet-view"
+            )}
             style={{
               transform: `scale(${zoom / 100})`,
               transformOrigin: 'top center',
@@ -188,6 +250,7 @@ export function CenterCanvas({
                               onDelete={onDeleteSection}
                               pendingColumnUpdates={pendingColumnUpdates}
                               pendingBlockUpdates={pendingBlockUpdates}
+                              device={device}
                             />
                           </div>
                         );
@@ -219,6 +282,7 @@ export function CenterCanvas({
                               onDelete={onDeleteSection}
                               pendingColumnUpdates={pendingColumnUpdates}
                               pendingBlockUpdates={pendingBlockUpdates}
+                              device={device}
                             />
                           </div>
                         ))}

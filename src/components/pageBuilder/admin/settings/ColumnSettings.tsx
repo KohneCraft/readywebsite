@@ -147,119 +147,182 @@ export function ColumnSettings({ columnId, activeTab, onUpdate, onSelectBlock, o
   if (activeTab === 'style') {
     return (
       <div className="space-y-4">
-        <div>
-          <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
-            Genişlik
-          </label>
-          <div className="flex gap-2">
-            <select
-              value={widthUnit}
-              onChange={(e) => {
-                const unit = e.target.value as 'percent' | 'pixels';
-                setWidthUnit(unit);
-                // Birim değiştiğinde değeri sıfırla veya dönüştür
-                if (unit === 'percent') {
-                  setWidthValue(100);
-                } else {
-                  setWidthValue(500); // Varsayılan px değeri
-                }
-              }}
-              className="w-24 px-3 py-2 text-sm border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-white"
-            >
-              <option value="percent">%</option>
-              <option value="pixels">px</option>
-            </select>
-            <input
-              type="number"
-              min="0"
-              max={widthUnit === 'percent' ? 100 : undefined}
-              step={widthUnit === 'percent' ? 0.1 : 1}
-              value={widthValue}
-              onChange={(e) => {
-                const newValue = widthUnit === 'percent'
-                  ? parseFloat(e.target.value) || 0
-                  : parseInt(e.target.value) || 0;
-                setWidthValue(newValue);
-
-                // UI'ı hemen güncelle (anlık görünüm için)
-                const updated = { ...column, width: newValue };
-                setColumn(updated);
-                onUpdate(updated);
-                // Gerçek kayıt "Kaydet" butonuna tıklandığında yapılacak
-              }}
-              className="flex-1 px-3 py-2 text-sm border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-white"
-            />
-            <span className="px-2 py-2 text-sm text-gray-500 dark:text-gray-400">
-              {widthUnit === 'percent' ? '%' : 'px'}
-            </span>
-          </div>
-        </div>
-
-        <div>
-          <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
-            Yükseklik
-          </label>
-          <div className="flex gap-2">
-            <select
-              value={typeof settings.height === 'string' ? settings.height : 'custom'}
-              onChange={(e) => {
-                const heightValue = e.target.value === 'auto' ? 'auto' : e.target.value === '100%' ? '100%' : undefined;
-                const updated = {
-                  ...column,
-                  settings: { ...settings, height: heightValue },
-                };
-                setColumn(updated);
-                onUpdate(updated);
-
-                // Firestore'da güncelle
-                (async () => {
-                  try {
-                    const { updateColumn } = await import('@/lib/firebase/firestore');
-                    await updateColumn(column.id, {
-                      settings: { ...settings, height: heightValue },
-                    });
-                    window.dispatchEvent(new CustomEvent('section-updated', { detail: { sectionId: 'any' } }));
-                  } catch (error) {
-                    logger.pageBuilder.error('Kolon yüksekliği güncelleme hatası', error);
+        {/* Genişlik ve Max Genişlik - Yan Yana */}
+        <div className="grid grid-cols-2 gap-3">
+          <div>
+            <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
+              Genişlik
+            </label>
+            <div className="flex gap-1">
+              <select
+                value={widthUnit}
+                onChange={(e) => {
+                  const unit = e.target.value as 'percent' | 'pixels';
+                  setWidthUnit(unit);
+                  if (unit === 'percent') {
+                    setWidthValue(100);
+                  } else {
+                    setWidthValue(500);
                   }
-                })();
-              }}
-              className="flex-1 px-3 py-2 text-sm border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-white"
-            >
-              <option value="auto">Otomatik</option>
-              <option value="100%">Tam Yükseklik</option>
-              <option value="custom">Özel (px)</option>
-            </select>
-            {(!settings.height || (typeof settings.height === 'number')) && (
+                }}
+                className="w-14 px-2 py-2 text-xs border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-white"
+              >
+                <option value="percent">%</option>
+                <option value="pixels">px</option>
+              </select>
+              <input
+                type="number"
+                min="0"
+                max={widthUnit === 'percent' ? 100 : undefined}
+                step={widthUnit === 'percent' ? 0.1 : 1}
+                value={widthValue}
+                onChange={(e) => {
+                  const newValue = widthUnit === 'percent'
+                    ? parseFloat(e.target.value) || 0
+                    : parseInt(e.target.value) || 0;
+                  setWidthValue(newValue);
+                  const updated = { ...column, width: newValue };
+                  setColumn(updated);
+                  onUpdate(updated);
+                }}
+                className="flex-1 min-w-0 px-2 py-2 text-sm border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-white"
+              />
+            </div>
+          </div>
+          <div>
+            <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
+              Max Genişlik
+            </label>
+            <div className="flex gap-1">
+              <span className="px-2 py-2 text-xs text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-gray-800 rounded-lg">px</span>
               <input
                 type="number"
                 min="0"
                 step="1"
-                value={typeof settings.height === 'number' ? settings.height : ''}
-                placeholder="px"
+                value={settings.maxWidth || ''}
+                placeholder="∞"
                 onChange={async (e) => {
-                  const heightValue = e.target.value ? parseInt(e.target.value) : undefined;
+                  const maxWidthValue = e.target.value ? parseInt(e.target.value) : undefined;
+                  const updated = {
+                    ...column,
+                    settings: { ...settings, maxWidth: maxWidthValue },
+                  };
+                  setColumn(updated);
+                  onUpdate(updated);
+                  try {
+                    const { updateColumn } = await import('@/lib/firebase/firestore');
+                    await updateColumn(column.id, {
+                      settings: { ...settings, maxWidth: maxWidthValue },
+                    });
+                    window.dispatchEvent(new CustomEvent('section-updated', { detail: { sectionId: 'any' } }));
+                  } catch (error) {
+                    logger.pageBuilder.error('Kolon max genişlik güncelleme hatası', error);
+                  }
+                }}
+                className="flex-1 min-w-0 px-2 py-2 text-sm border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-white"
+              />
+            </div>
+          </div>
+        </div>
+
+        {/* Yükseklik ve Max Yükseklik - Yan Yana */}
+        <div className="grid grid-cols-2 gap-3">
+          <div>
+            <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
+              Yükseklik
+            </label>
+            <div className="flex gap-1">
+              <select
+                value={typeof settings.height === 'string' ? settings.height : 'custom'}
+                onChange={(e) => {
+                  const heightValue = e.target.value === 'auto' ? 'auto' : e.target.value === '100%' ? '100%' : undefined;
                   const updated = {
                     ...column,
                     settings: { ...settings, height: heightValue },
                   };
                   setColumn(updated);
                   onUpdate(updated);
-
-                  // Firestore'da güncelle
+                  (async () => {
+                    try {
+                      const { updateColumn } = await import('@/lib/firebase/firestore');
+                      await updateColumn(column.id, {
+                        settings: { ...settings, height: heightValue },
+                      });
+                      window.dispatchEvent(new CustomEvent('section-updated', { detail: { sectionId: 'any' } }));
+                    } catch (error) {
+                      logger.pageBuilder.error('Kolon yüksekliği güncelleme hatası', error);
+                    }
+                  })();
+                }}
+                className="w-16 px-1 py-2 text-xs border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-white"
+              >
+                <option value="auto">Oto</option>
+                <option value="100%">100%</option>
+                <option value="custom">px</option>
+              </select>
+              {(!settings.height || (typeof settings.height === 'number')) && (
+                <input
+                  type="number"
+                  min="0"
+                  step="1"
+                  value={typeof settings.height === 'number' ? settings.height : ''}
+                  placeholder="px"
+                  onChange={async (e) => {
+                    const heightValue = e.target.value ? parseInt(e.target.value) : undefined;
+                    const updated = {
+                      ...column,
+                      settings: { ...settings, height: heightValue },
+                    };
+                    setColumn(updated);
+                    onUpdate(updated);
+                    try {
+                      const { updateColumn } = await import('@/lib/firebase/firestore');
+                      await updateColumn(column.id, {
+                        settings: { ...settings, height: heightValue },
+                      });
+                      window.dispatchEvent(new CustomEvent('section-updated', { detail: { sectionId: 'any' } }));
+                    } catch (error) {
+                      logger.pageBuilder.error('Kolon yüksekliği güncelleme hatası', error);
+                    }
+                  }}
+                  className="flex-1 min-w-0 px-2 py-2 text-sm border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-white"
+                />
+              )}
+            </div>
+          </div>
+          <div>
+            <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
+              Max Yükseklik
+            </label>
+            <div className="flex gap-1">
+              <span className="px-2 py-2 text-xs text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-gray-800 rounded-lg">px</span>
+              <input
+                type="number"
+                min="0"
+                step="1"
+                value={settings.maxHeight || ''}
+                placeholder="∞"
+                onChange={async (e) => {
+                  const maxHeightValue = e.target.value ? parseInt(e.target.value) : undefined;
+                  const updated = {
+                    ...column,
+                    settings: { ...settings, maxHeight: maxHeightValue },
+                  };
+                  setColumn(updated);
+                  onUpdate(updated);
                   try {
                     const { updateColumn } = await import('@/lib/firebase/firestore');
                     await updateColumn(column.id, {
-                      settings: { ...settings, height: heightValue },
+                      settings: { ...settings, maxHeight: maxHeightValue },
                     });
                     window.dispatchEvent(new CustomEvent('section-updated', { detail: { sectionId: 'any' } }));
                   } catch (error) {
-                    logger.pageBuilder.error('Kolon yüksekliği güncelleme hatası', error);
+                    logger.pageBuilder.error('Kolon max yükseklik güncelleme hatası', error);
                   }
                 }}
-                className="w-24 px-3 py-2 text-sm border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-white"
+                className="flex-1 min-w-0 px-2 py-2 text-sm border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-white"
               />
-            )}
+            </div>
           </div>
         </div>
 
@@ -454,74 +517,6 @@ export function ColumnSettings({ columnId, activeTab, onUpdate, onSelectBlock, o
             </div>
           </>
         )}
-
-        <div>
-          <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
-            Max Genişlik (px)
-          </label>
-          <input
-            type="number"
-            min="0"
-            step="1"
-            value={settings.maxWidth || ''}
-            placeholder="Sınırsız"
-            onChange={async (e) => {
-              const maxWidthValue = e.target.value ? parseInt(e.target.value) : undefined;
-              const updated = {
-                ...column,
-                settings: { ...settings, maxWidth: maxWidthValue },
-              };
-              setColumn(updated);
-              onUpdate(updated);
-
-              // Firestore'da güncelle
-              try {
-                const { updateColumn } = await import('@/lib/firebase/firestore');
-                await updateColumn(column.id, {
-                  settings: { ...settings, maxWidth: maxWidthValue },
-                });
-                window.dispatchEvent(new CustomEvent('section-updated', { detail: { sectionId: 'any' } }));
-              } catch (error) {
-                logger.pageBuilder.error('Kolon max genişlik güncelleme hatası', error);
-              }
-            }}
-            className="w-full px-3 py-2 text-sm border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-white"
-          />
-        </div>
-
-        <div>
-          <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
-            Max Yükseklik (px)
-          </label>
-          <input
-            type="number"
-            min="0"
-            step="1"
-            value={settings.maxHeight || ''}
-            placeholder="Sınırsız"
-            onChange={async (e) => {
-              const maxHeightValue = e.target.value ? parseInt(e.target.value) : undefined;
-              const updated = {
-                ...column,
-                settings: { ...settings, maxHeight: maxHeightValue },
-              };
-              setColumn(updated);
-              onUpdate(updated);
-
-              // Firestore'da güncelle
-              try {
-                const { updateColumn } = await import('@/lib/firebase/firestore');
-                await updateColumn(column.id, {
-                  settings: { ...settings, maxHeight: maxHeightValue },
-                });
-                window.dispatchEvent(new CustomEvent('section-updated', { detail: { sectionId: 'any' } }));
-              } catch (error) {
-                logger.pageBuilder.error('Kolon max yükseklik güncelleme hatası', error);
-              }
-            }}
-            className="w-full px-3 py-2 text-sm border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-white"
-          />
-        </div>
 
         <div>
           <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">

@@ -27,6 +27,7 @@ interface ColumnEditorProps {
   // Pending updates for live preview
   pendingBlockUpdates?: Record<string, Partial<Block>>;
   isFlexLayout?: boolean; // Section columnLayout === 'column' ise true
+  device?: 'desktop' | 'tablet' | 'mobile'; // Device bilgisi
 }
 
 export function ColumnEditor({
@@ -40,6 +41,7 @@ export function ColumnEditor({
   onDeleteColumn,
   pendingBlockUpdates = {},
   isFlexLayout = false,
+  device = 'desktop',
 }: ColumnEditorProps) {
   const [baseBlocks, setBaseBlocks] = useState<Block[]>([]);
   const [nestedColumns, setNestedColumns] = useState<Column[]>([]);
@@ -124,10 +126,18 @@ export function ColumnEditor({
 
   const settings = column.settings || {};
 
+  // Mobil görünümde nested kolonları alt alta göster
+  const isMobileView = device === 'mobile';
+  const isTabletView = device === 'tablet';
+
   // Nested columns için grid template
-  const nestedGridTemplate = nestedColumns.length > 0
-    ? nestedColumns.map(col => `${col.width || 100 / nestedColumns.length}fr`).join(' ')
-    : '1fr';
+  const nestedGridTemplate = isMobileView
+    ? '1fr' // Mobilde tek kolon
+    : isTabletView && nestedColumns.length > 2
+      ? 'repeat(2, 1fr)' // Tablette en fazla 2 kolon
+      : nestedColumns.length > 0
+        ? nestedColumns.map(col => `${col.width || 100 / nestedColumns.length}fr`).join(' ')
+        : '1fr';
 
   return (
     <div
@@ -146,6 +156,10 @@ export function ColumnEditor({
       onMouseLeave={() => setIsHovered(false)}
       style={{
         backgroundColor: settings.backgroundColor || 'transparent',
+        backgroundImage: settings.backgroundImage ? `url(${settings.backgroundImage})` : undefined,
+        backgroundSize: settings.backgroundSize || 'cover',
+        backgroundPosition: settings.backgroundPosition || 'center',
+        backgroundRepeat: settings.backgroundRepeat || 'no-repeat',
         padding: settings.padding
           ? `${settings.padding.top || 0}px ${settings.padding.right || 0}px ${settings.padding.bottom || 0}px ${settings.padding.left || 0}px`
           : '16px',
@@ -156,6 +170,8 @@ export function ColumnEditor({
           ? (typeof settings.height === 'number' ? `${settings.height}px` : settings.height)
           : 'auto',
         minHeight: settings.height === '100%' ? '100%' : undefined,
+        maxWidth: settings.maxWidth ? `${settings.maxWidth}px` : undefined,
+        maxHeight: settings.maxHeight ? `${settings.maxHeight}px` : undefined,
       }}
     >
       {/* Column Header */}
@@ -292,6 +308,7 @@ export function ColumnEditor({
                 selectedElement={selectedElement}
                 onSelectElement={onSelectElement}
                 pendingBlockUpdates={pendingBlockUpdates}
+                device={device}
                 onAddColumn={async (afterColumnId) => {
                   try {
                     const { createColumn, getColumnById, updateColumn } = await import('@/lib/firebase/firestore');
