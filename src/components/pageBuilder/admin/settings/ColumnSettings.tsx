@@ -6,24 +6,30 @@
 // ============================================
 
 import { useState, useEffect } from 'react';
-import { getColumnById } from '@/lib/firebase/firestore';
+import { getColumnById, getBlockById, deleteColumn, deleteBlock } from '@/lib/firebase/firestore';
 import { logger } from '@/lib/logger';
 import { SpacingControl } from '../controls/SpacingControl';
 import { DualColorPicker } from '../controls/DualColorPicker';
 import { Spinner } from '@/components/ui/Spinner';
 import { Input } from '@/components/ui/Input';
 import { cn } from '@/lib/utils';
-import type { Column, ColumnSettings as ColumnSettingsType, Border } from '@/types/pageBuilder';
+import type { Column, ColumnSettings as ColumnSettingsType, Border, Block } from '@/types/pageBuilder';
+import { BLOCK_TYPE_LABELS } from '@/types/pageBuilder';
+import { Pencil, Trash2 } from 'lucide-react';
 
 interface ColumnSettingsProps {
   columnId: string;
   activeTab: 'style' | 'settings' | 'advanced';
   onUpdate: (updates: Partial<Column>) => void;
+  onSelectBlock?: (blockId: string) => void;
+  onSelectColumn?: (columnId: string) => void;
 }
 
-export function ColumnSettings({ columnId, activeTab, onUpdate }: ColumnSettingsProps) {
+export function ColumnSettings({ columnId, activeTab, onUpdate, onSelectBlock, onSelectColumn }: ColumnSettingsProps) {
   const [column, setColumn] = useState<Column | null>(null);
   const [nestedColumns, setNestedColumns] = useState<Column[]>([]);
+  const [blocks, setBlocks] = useState<Block[]>([]);
+  const [nestedBlocksMap, setNestedBlocksMap] = useState<Record<string, Block[]>>({});
   const [loading, setLoading] = useState(true);
   const [widthUnit, setWidthUnit] = useState<'percent' | 'pixels'>('percent');
   const [widthValue, setWidthValue] = useState<number>(100);
@@ -67,6 +73,45 @@ export function ColumnSettings({ columnId, activeTab, onUpdate }: ColumnSettings
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [column?.columns]);
 
+  // Blokları yükle (ana kolon ve nested kolonlar için)
+  useEffect(() => {
+    async function loadBlocks() {
+      if (!column) return;
+
+      try {
+        // Ana kolonun bloklarını yükle
+        if (column.blocks && column.blocks.length > 0) {
+          const blockPromises = column.blocks.map(blockId => getBlockById(blockId));
+          const loadedBlocks = await Promise.all(blockPromises);
+          setBlocks(loadedBlocks.filter(Boolean) as Block[]);
+        } else {
+          setBlocks([]);
+        }
+
+        // Nested kolonların bloklarını yükle
+        if (nestedColumns.length > 0) {
+          const nestedBlocksMapTemp: Record<string, Block[]> = {};
+          for (const nestedCol of nestedColumns) {
+            if (nestedCol.blocks && nestedCol.blocks.length > 0) {
+              const nestedBlockPromises = nestedCol.blocks.map(blockId => getBlockById(blockId));
+              const loadedNestedBlocks = await Promise.all(nestedBlockPromises);
+              nestedBlocksMapTemp[nestedCol.id] = loadedNestedBlocks.filter(Boolean) as Block[];
+            }
+          }
+          setNestedBlocksMap(nestedBlocksMapTemp);
+        } else {
+          setNestedBlocksMap({});
+        }
+      } catch (error) {
+        logger.pageBuilder.error('Block yükleme hatası', error);
+        setBlocks([]);
+        setNestedBlocksMap({});
+      }
+    }
+
+    loadBlocks();
+  }, [column, nestedColumns]);
+
   // Width unit ve value'yu column'dan yükle
   useEffect(() => {
     if (column?.width !== undefined) {
@@ -80,7 +125,6 @@ export function ColumnSettings({ columnId, activeTab, onUpdate }: ColumnSettings
       }
     }
   }, [column?.width]);
-
 
   if (loading) {
     return (
@@ -916,11 +960,161 @@ export function ColumnSettings({ columnId, activeTab, onUpdate }: ColumnSettings
     );
   }
 
+  // ADVANCED TAB - Kolon içeriği listesi
+  const handleDeleteNestedColumn = async (nestedColumnId: string) => {
+    if (!confirm('Bu iç kolonu silmek istediğinizden emin misiniz?')) return;
+    try {
+      await deleteColumn(nestedColumnId);
+      window.dispatchEvent(new CustomEvent('section-updated', { detail: { sectionId: column?.sectionId || 'any' } }));
+    } catch (error) {
+      logger.pageBuilder.error('İç kolon silme hatası', error);
+    }
+  };
+
+  const handleDeleteBlock = async (blockId: string) => {
+    if (!confirm('Bu bloğu silmek istediğinizden emin misiniz?')) return;
+    try {
+      await deleteBlock(blockId);
+      window.dispatchEvent(new CustomEvent('section-updated', { detail: { sectionId: column?.sectionId || 'any' } }));
+    } catch (error) {
+      logger.pageBuilder.error('Blok silme hatası', error);
+    }
+  };
+
+  // Toplam sayıları hesapla
+  const totalNestedColumns = nestedColumns.length;
+  const totalBlocks = blocks.length + Object.values(nestedBlocksMap).reduce((sum, arr) => sum + arr.length, 0);
+
   return (
     <div className="space-y-4">
-      <p className="text-sm text-gray-500 dark:text-gray-400">
-        Column ayarları
-      </p>
+      {/* Özet bilgi */}
+      <div className="p-3 bg-gray-50 dark:bg-gray-800/50 rounded-lg">
+        <h4 className="text-xs font-medium text-gray-700 dark:text-gray-300 mb-2">İçerik Özeti</h4>
+        <div className="grid grid-cols-2 gap-2 text-xs">
+          <div className="text-center">
+            <div className="font-semibold text-gray-900 dark:text-white">{totalNestedColumns}</div>
+            <div className="text-gray-500 dark:text-gray-400">İç Kolon</div>
+          </div>
+          <div className="text-center">
+            <div className="font-semibold text-gray-900 dark:text-white">{totalBlocks}</div>
+            <div className="text-gray-500 dark:text-gray-400">Blok</div>
+          </div>
+        </div>
+      </div>
+
+      {/* Bloklar Listesi (Ana Kolon) */}
+      {blocks.length > 0 && (
+        <div>
+          <h4 className="text-xs font-medium text-gray-700 dark:text-gray-300 mb-2">Bloklar</h4>
+          <div className="space-y-1 border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden">
+            {blocks.map((block, blockIndex) => (
+              <div
+                key={block.id}
+                className="flex items-center justify-between px-3 py-2 hover:bg-gray-50 dark:hover:bg-gray-800/30 border-b border-gray-100 dark:border-gray-700/50 last:border-b-0"
+              >
+                <span className="text-xs text-gray-600 dark:text-gray-400">
+                  {blockIndex + 1}. {BLOCK_TYPE_LABELS[block.type] || block.type}
+                </span>
+                <div className="flex items-center gap-1">
+                  <button
+                    onClick={() => onSelectBlock?.(block.id)}
+                    className="p-1 text-gray-400 hover:text-primary-600 dark:hover:text-primary-400 transition-colors"
+                    title="Düzenle"
+                  >
+                    <Pencil className="w-3.5 h-3.5" />
+                  </button>
+                  <button
+                    onClick={() => handleDeleteBlock(block.id)}
+                    className="p-1 text-gray-400 hover:text-red-600 dark:hover:text-red-400 transition-colors"
+                    title="Kaldır"
+                  >
+                    <Trash2 className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Nested Kolonlar ve Blokları */}
+      {nestedColumns.length > 0 && (
+        <div>
+          <h4 className="text-xs font-medium text-gray-700 dark:text-gray-300 mb-2">İç Kolonlar</h4>
+          <div className="space-y-2">
+            {nestedColumns.map((nestedCol, nestedIndex) => (
+              <div key={nestedCol.id} className="border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden">
+                {/* İç Kolon Başlığı */}
+                <div className="flex items-center justify-between p-2 bg-gray-50 dark:bg-gray-800/50">
+                  <span className="text-xs font-medium text-gray-700 dark:text-gray-300">
+                    {nestedIndex + 1}. İç Kolon
+                    {nestedBlocksMap[nestedCol.id] && (
+                      <span className="text-gray-500 dark:text-gray-400 ml-1">
+                        ({nestedBlocksMap[nestedCol.id]?.length || 0} blok)
+                      </span>
+                    )}
+                  </span>
+                  <div className="flex items-center gap-1">
+                    <button
+                      onClick={() => onSelectColumn?.(nestedCol.id)}
+                      className="p-1 text-gray-500 hover:text-primary-600 dark:hover:text-primary-400 transition-colors"
+                      title="Düzenle"
+                    >
+                      <Pencil className="w-3.5 h-3.5" />
+                    </button>
+                    <button
+                      onClick={() => handleDeleteNestedColumn(nestedCol.id)}
+                      className="p-1 text-gray-500 hover:text-red-600 dark:hover:text-red-400 transition-colors"
+                      title="Kaldır"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                </div>
+
+                {/* İç Kolonun Blokları */}
+                {nestedBlocksMap[nestedCol.id] && nestedBlocksMap[nestedCol.id].length > 0 && (
+                  <div className="border-t border-gray-200 dark:border-gray-700">
+                    {nestedBlocksMap[nestedCol.id].map((block, blockIndex) => (
+                      <div
+                        key={block.id}
+                        className="flex items-center justify-between px-3 py-1.5 hover:bg-gray-50 dark:hover:bg-gray-800/30 border-b border-gray-100 dark:border-gray-700/50 last:border-b-0"
+                      >
+                        <span className="text-xs text-gray-500 dark:text-gray-500">
+                          {blockIndex + 1}. {BLOCK_TYPE_LABELS[block.type] || block.type}
+                        </span>
+                        <div className="flex items-center gap-1">
+                          <button
+                            onClick={() => onSelectBlock?.(block.id)}
+                            className="p-1 text-gray-400 hover:text-primary-600 dark:hover:text-primary-400 transition-colors"
+                            title="Düzenle"
+                          >
+                            <Pencil className="w-3 h-3" />
+                          </button>
+                          <button
+                            onClick={() => handleDeleteBlock(block.id)}
+                            className="p-1 text-gray-400 hover:text-red-600 dark:hover:text-red-400 transition-colors"
+                            title="Kaldır"
+                          >
+                            <Trash2 className="w-3 h-3" />
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Boş durum */}
+      {blocks.length === 0 && nestedColumns.length === 0 && (
+        <p className="text-sm text-gray-500 dark:text-gray-400 text-center py-4">
+          Bu kolonun içinde içerik bulunmuyor.
+        </p>
+      )}
     </div>
   );
 }
