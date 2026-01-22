@@ -48,6 +48,19 @@ export type {
 // ResponsiveSettings'i pageLayout.ts'den export et (pageBuilder.ts'deki ile farklı)
 export type { ResponsiveSettings as PageLayoutResponsiveSettings } from './pageLayout';
 
+// Localization Types
+export type {
+  LocalizedString,
+  LocalizableString,
+} from './localization';
+
+export {
+  isLocalizedString,
+  getLocalizedValue,
+  toLocalizedString,
+  updateLocalizedString,
+} from './localization';
+
 export {
   DEFAULT_ELEMENT_SETTINGS,
   PROJECT_DETAIL_DEFAULT_ELEMENTS,

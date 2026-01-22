@@ -7,8 +7,10 @@
 
 import { DualColorPicker } from '../../controls/DualColorPicker';
 import { SpacingControl } from '../../controls/SpacingControl';
+import { MultiLangInput } from '@/components/ui/MultiLangInput';
 import { cn } from '@/lib/utils';
 import type { Block } from '@/types/pageBuilder';
+import type { LocalizedString } from '@/types/localization';
 
 interface ButtonBlockSettingsProps {
   block: Block;
@@ -22,18 +24,14 @@ export function ButtonBlockSettings({ block, activeTab, onUpdate }: ButtonBlockS
   if (activeTab === 'style') {
     return (
       <div className="space-y-4">
-        <div>
-          <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
-            Buton Metni
-          </label>
-          <input
-            type="text"
-            value={props.text || ''}
-            onChange={(e) => onUpdate({ text: e.target.value })}
-            className="w-full px-3 py-2 text-sm border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-white"
-            placeholder="Tıklayın"
-          />
-        </div>
+        {/* Çoklu Dil Destekli Buton Metni */}
+        <MultiLangInput
+          label="Buton Metni"
+          value={props.text}
+          onChange={(value: LocalizedString) => onUpdate({ text: value })}
+          type="input"
+          placeholder="Tıklayın"
+        />
 
         <div>
           <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">

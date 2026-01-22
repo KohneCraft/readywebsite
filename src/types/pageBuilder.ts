@@ -131,8 +131,8 @@ export interface BlockProps {
   customCSS?: string;
   dataAttributes?: Record<string, string>;
 
-  // Text Block
-  content?: string;
+  // Text Block - çoklu dil destekli (string veya { tr: '', en: '' })
+  content?: string | Record<string, string>;
   fontSize?: number;
   fontFamily?: string;
   fontWeight?: 'normal' | 'bold' | number;
@@ -174,8 +174,8 @@ export interface BlockProps {
   aspectRatio?: '16:9' | '4:3' | '1:1' | '21:9';
   playsInline?: boolean;
 
-  // Button Block
-  text?: string;
+  // Button Block - çoklu dil destekli
+  text?: string | Record<string, string>;
   target?: '_self' | '_blank';
   buttonStyle?: 'primary' | 'secondary' | 'outline' | 'ghost';
   size?: 'small' | 'medium' | 'large';

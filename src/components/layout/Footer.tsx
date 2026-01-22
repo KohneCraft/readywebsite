@@ -68,7 +68,7 @@ export function Footer() {
   }, [locale]);
 
   // Label'ı Türkçe'den nav key'e dönüştüren mapping
-  const labelToNavKey: Record<string, string> = {
+  const labelToNavKey = useMemo(() => ({
     // Türkçe
     'Ana Sayfa': 'home',
     'Hakkımızda': 'aboutUs',
@@ -111,7 +111,7 @@ export function Footer() {
     'Team': 'team',
     'Testimonials': 'testimonials',
     'Pricing': 'pricing',
-  };
+  } as Record<string, string>), []);
 
   // Label'ı locale'e göre çevir
   const translateLabel = useCallback((label: string): string => {

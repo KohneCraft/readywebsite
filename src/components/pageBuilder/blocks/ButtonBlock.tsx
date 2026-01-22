@@ -1,16 +1,26 @@
 'use client';
 
-import { memo } from 'react';
+import { memo, useMemo } from 'react';
 import Link from 'next/link';
+import { useLocale } from 'next-intl';
 import { useDeviceType } from '@/hooks/useDeviceType';
 import { useThemeColors } from '@/hooks/useThemeColor';
+import { getLocalizedValue } from '@/types/localization';
+import type { Locale } from '@/i18n';
 
 interface ButtonBlockProps {
   props: Record<string, any>;
 }
 
 function ButtonBlockComponent({ props }: ButtonBlockProps) {
+  const locale = useLocale() as Locale;
   const deviceType = useDeviceType();
+
+  // Locale'e göre buton metnini al
+  const buttonText = useMemo(() =>
+    getLocalizedValue(props.text, locale) || 'Button',
+    [props.text, locale]
+  );
 
   // Tema renkleri
   const colors = useThemeColors({
@@ -133,7 +143,7 @@ function ButtonBlockComponent({ props }: ButtonBlockProps) {
       {props.icon?.enabled && props.icon.position === 'left' && (
         <span>{props.icon.name}</span>
       )}
-      <span>{props.text || 'Button'}</span>
+      <span>{buttonText}</span>
       {props.icon?.enabled && props.icon.position === 'right' && (
         <span>{props.icon.name}</span>
       )}

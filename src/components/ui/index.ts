@@ -4,6 +4,7 @@
 
 export { ThemeToggle } from './ThemeToggle';
 export { LanguageSwitcher } from './LanguageSwitcher';
+export { MultiLangInput } from './MultiLangInput';
 export { Button, buttonVariants } from './Button';
 export { Input } from './Input';
 export { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from './Card';

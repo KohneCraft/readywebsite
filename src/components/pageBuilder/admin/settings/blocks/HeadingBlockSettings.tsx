@@ -7,9 +7,11 @@
 
 import { DualColorPicker } from '../../controls/DualColorPicker';
 import { SpacingControl } from '../../controls/SpacingControl';
+import { MultiLangInput } from '@/components/ui/MultiLangInput';
 import { cn } from '@/lib/utils';
 import { getGroupedCSSClasses, READY_CSS_CLASSES, READY_IDS } from '@/lib/readyCSSClasses';
 import type { Block } from '@/types/pageBuilder';
+import type { LocalizedString } from '@/types/localization';
 
 interface HeadingBlockSettingsProps {
   block: Block;
@@ -23,18 +25,14 @@ export function HeadingBlockSettings({ block, activeTab, onUpdate }: HeadingBloc
   if (activeTab === 'style') {
     return (
       <div className="space-y-4">
-        <div>
-          <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
-            Başlık Metni
-          </label>
-          <input
-            type="text"
-            value={props.content || ''}
-            onChange={(e) => onUpdate({ content: e.target.value })}
-            className="w-full px-3 py-2 text-sm border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-white"
-            placeholder="Başlık metni..."
-          />
-        </div>
+        {/* Çoklu Dil Destekli Başlık */}
+        <MultiLangInput
+          label="Başlık Metni"
+          value={props.content}
+          onChange={(value: LocalizedString) => onUpdate({ content: value })}
+          type="input"
+          placeholder="Başlık metni..."
+        />
 
         <div>
           <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">

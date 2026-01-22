@@ -1,17 +1,27 @@
 'use client';
 
-import { memo } from 'react';
+import { memo, useMemo } from 'react';
+import { useLocale } from 'next-intl';
 import { useDeviceType } from '@/hooks/useDeviceType';
 import { useThemeColor } from '@/hooks/useThemeColor';
+import { getLocalizedValue } from '@/types/localization';
 import type { BlockProps } from '@/types/pageBuilder';
+import type { Locale } from '@/i18n';
 
 interface HeadingBlockProps {
   props: BlockProps;
 }
 
 function HeadingBlockComponent({ props }: HeadingBlockProps) {
+  const locale = useLocale() as Locale;
   const Tag = (props.level || 'h2') as keyof JSX.IntrinsicElements;
   const deviceType = useDeviceType();
+
+  // Locale'e göre içeriği al
+  const content = useMemo(() =>
+    getLocalizedValue(props.content, locale),
+    [props.content, locale]
+  );
 
   // Tema rengi
   const effectiveColor = useThemeColor({
@@ -102,7 +112,7 @@ function HeadingBlockComponent({ props }: HeadingBlockProps) {
         <style dangerouslySetInnerHTML={{ __html: props.customCSS }} />
       )}
       <Tag className="heading-block" style={style}>
-        {props.content}
+        {content}
       </Tag>
     </div>
   );

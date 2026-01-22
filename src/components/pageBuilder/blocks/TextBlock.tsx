@@ -1,16 +1,20 @@
 'use client';
 
 import { memo, useMemo } from 'react';
+import { useLocale } from 'next-intl';
 import { useDeviceType } from '@/hooks/useDeviceType';
 import { useThemeColors } from '@/hooks/useThemeColor';
 import { sanitizeHTML } from '@/lib/sanitize';
+import { getLocalizedValue } from '@/types/localization';
 import type { BlockProps } from '@/types/pageBuilder';
+import type { Locale } from '@/i18n';
 
 interface TextBlockProps {
   props: BlockProps;
 }
 
 function TextBlockComponent({ props }: TextBlockProps) {
+  const locale = useLocale() as Locale;
   const deviceType = useDeviceType();
   const responsiveProps = props.responsive?.[deviceType] || {};
 
@@ -20,10 +24,16 @@ function TextBlockComponent({ props }: TextBlockProps) {
     bg: { light: props.backgroundColor || 'transparent', dark: props.backgroundColorDark || 'auto' },
   });
 
+  // Locale'e göre içeriği al
+  const content = useMemo(() =>
+    getLocalizedValue(props.content, locale),
+    [props.content, locale]
+  );
+
   // İçeriği sanitize et (XSS koruması)
   const sanitizedContent = useMemo(() =>
-    sanitizeHTML(props.content || ''),
-    [props.content]
+    sanitizeHTML(content || ''),
+    [content]
   );
 
   // Responsive font size: mobilde %80, tablette %90
