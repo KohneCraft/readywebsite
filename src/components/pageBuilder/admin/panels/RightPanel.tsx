@@ -251,6 +251,8 @@ export function RightPanel({ selectedElement, page, onUpdate, onSelectElement, o
             activeTab={activeTab}
             onUpdate={handleSectionUpdate}
             onColumnUpdate={onColumnUpdate}
+            onSelectBlock={(blockId) => onSelectElement?.({ type: 'block', id: blockId })}
+            onSelectColumn={(columnId) => onSelectElement?.({ type: 'column', id: columnId })}
           />
         )}
         {selectedElement.type === 'column' && (
@@ -258,6 +260,8 @@ export function RightPanel({ selectedElement, page, onUpdate, onSelectElement, o
             columnId={selectedElement.id}
             activeTab={activeTab}
             onUpdate={handleColumnUpdate}
+            onSelectBlock={(blockId) => onSelectElement?.({ type: 'block', id: blockId })}
+            onSelectColumn={(columnId) => onSelectElement?.({ type: 'column', id: columnId })}
           />
         )}
         {selectedElement.type === 'block' && (

@@ -651,7 +651,7 @@ export const BLOCK_TYPE_LABELS: Record<BlockType, string> = {
 export function getDefaultBlockProps(type: BlockType): Partial<BlockProps> {
   const defaults: Record<BlockType, Partial<BlockProps>> = {
     text: {
-      content: '<p>Metin içeriği buraya gelir</p>',
+      content: 'Metin içeriği buraya gelir',
       fontSize: 16,
       fontFamily: 'Roboto',
       fontWeight: 400,
