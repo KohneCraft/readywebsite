@@ -68,7 +68,13 @@ export function PageBuilderEditor({ pageId }: PageBuilderEditorProps) {
   const futureRef = useRef<HistoryState[]>([]);
   const [canUndo, setCanUndo] = useState(false);
   const [canRedo, setCanRedo] = useState(false);
+
+  // Canvas scroll state
+  const [hasCanvasScrollOffset, setHasCanvasScrollOffset] = useState(false);
+  const resetCanvasScrollRef = useRef<(() => void) | null>(null);
   const isUndoRedoRef = useRef(false); // Undo/Redo sırasında history kaydetmeyi önle
+  const lastHistorySaveRef = useRef<number>(0); // Son history kayıt zamanı (debounce için)
+  const HISTORY_DEBOUNCE_MS = 500; // 500ms içindeki değişiklikleri grupla
   const MAX_HISTORY = 50;
 
   // Current state'i snapshot olarak al
@@ -81,9 +87,16 @@ export function PageBuilderEditor({ pageId }: PageBuilderEditorProps) {
     };
   }, [page, pendingSectionUpdates, pendingColumnUpdates, pendingBlockUpdates]);
 
-  // History'ye mevcut state'i ekle
+  // History'ye mevcut state'i ekle (debounce ile)
   const saveToHistory = useCallback(() => {
     if (isUndoRedoRef.current) return; // Undo/Redo sırasında kaydetme
+    
+    // Debounce: Son kayıttan bu yana yeterli süre geçmediyse kaydetme
+    const now = Date.now();
+    if (now - lastHistorySaveRef.current < HISTORY_DEBOUNCE_MS) {
+      return; // Çok yakın zamanda kaydedilmiş, atla
+    }
+    lastHistorySaveRef.current = now;
 
     const snapshot = getCurrentSnapshot();
     historyRef.current = [...historyRef.current.slice(-MAX_HISTORY + 1), snapshot];
@@ -271,6 +284,8 @@ export function PageBuilderEditor({ pageId }: PageBuilderEditorProps) {
 
     // Yeni kolon ekleme (library'den)
     if (activeData?.source === 'library' && activeData?.type === 'column') {
+      // History'ye kaydet
+      saveToHistory();
       try {
         const { createColumn, getSectionById, getColumnById, updateColumn } = await import('@/lib/firebase/firestore');
 
@@ -355,6 +370,8 @@ export function PageBuilderEditor({ pageId }: PageBuilderEditorProps) {
 
     // Yeni blok ekleme (library'den)
     if (activeData?.source === 'library' && activeData?.type) {
+      // History'ye kaydet
+      saveToHistory();
       try {
         let targetColumnId: string | undefined;
         let targetPanelId: string | undefined;
@@ -419,6 +436,8 @@ export function PageBuilderEditor({ pageId }: PageBuilderEditorProps) {
 
     // Blok taşıma (canvas içinde)
     if (activeData?.source === 'canvas' && overData?.type === 'column') {
+      // History'ye kaydet
+      saveToHistory();
       try {
         await moveBlock(active.id as string, over.id as string);
         // Sayfayı yeniden yükle
@@ -431,7 +450,7 @@ export function PageBuilderEditor({ pageId }: PageBuilderEditorProps) {
     }
 
     setActiveBlock(null);
-  }, [page, pageId]);
+  }, [page, pageId, saveToHistory]);
 
   // Kaydet - Tüm pending değişiklikleri kaydet
   const handleSave = useCallback(async () => {
@@ -773,6 +792,8 @@ export function PageBuilderEditor({ pageId }: PageBuilderEditorProps) {
           canRedo={canRedo}
           onUndo={handleUndo}
           onRedo={handleRedo}
+          hasCanvasScrollOffset={hasCanvasScrollOffset}
+          onResetCanvasScroll={() => resetCanvasScrollRef.current?.()}
         />
 
         {/* Main Content */}
@@ -884,6 +905,8 @@ export function PageBuilderEditor({ pageId }: PageBuilderEditorProps) {
               pendingSectionUpdates={pendingSectionUpdates}
               pendingColumnUpdates={pendingColumnUpdates}
               pendingBlockUpdates={pendingBlockUpdates}
+              onScrollOffsetChange={setHasCanvasScrollOffset}
+              onResetScrollRef={(fn) => { resetCanvasScrollRef.current = fn; }}
               onMoveSection={async (sectionId, direction) => {
                 // Önce history'ye kaydet
                 saveToHistory();
@@ -951,6 +974,8 @@ export function PageBuilderEditor({ pageId }: PageBuilderEditorProps) {
                   onSelectElement={setSelectedElement}
                   pendingBlockUpdates={pendingBlockUpdates}
                   onSectionUpdate={(sectionId, updates) => {
+                    // Değişiklik öncesi mevcut state'i history'ye kaydet
+                    saveToHistory();
                     setPendingSectionUpdates(prev => ({
                       ...prev,
                       [sectionId]: { ...prev[sectionId], ...updates }
@@ -958,6 +983,8 @@ export function PageBuilderEditor({ pageId }: PageBuilderEditorProps) {
                     setHasChanges(true);
                   }}
                   onColumnUpdate={(columnId, updates) => {
+                    // Değişiklik öncesi mevcut state'i history'ye kaydet
+                    saveToHistory();
                     setPendingColumnUpdates(prev => ({
                       ...prev,
                       [columnId]: { ...prev[columnId], ...updates }
@@ -966,6 +993,8 @@ export function PageBuilderEditor({ pageId }: PageBuilderEditorProps) {
                   }}
                   onBlockUpdate={(blockId, updates) => {
                     console.log('[PageBuilderEditor] onBlockUpdate:', blockId, updates);
+                    // Değişiklik öncesi mevcut state'i history'ye kaydet
+                    saveToHistory();
                     setPendingBlockUpdates(prev => ({
                       ...prev,
                       [blockId]: { ...prev[blockId], ...updates }

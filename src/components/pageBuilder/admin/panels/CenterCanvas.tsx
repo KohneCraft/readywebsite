@@ -26,6 +26,9 @@ interface CenterCanvasProps {
   pendingSectionUpdates?: Record<string, Partial<Section>>;
   pendingColumnUpdates?: Record<string, Partial<Column>>;
   pendingBlockUpdates?: Record<string, Partial<Block>>;
+  // Canvas scroll offset bilgisi ve reset
+  onScrollOffsetChange?: (hasOffset: boolean) => void;
+  onResetScrollRef?: (resetFn: () => void) => void;
 }
 
 const deviceWidths = {
@@ -46,6 +49,8 @@ export function CenterCanvas({
   pendingSectionUpdates = {},
   pendingColumnUpdates = {},
   pendingBlockUpdates = {},
+  onScrollOffsetChange,
+  onResetScrollRef,
 }: CenterCanvasProps) {
   const [baseSections, setBaseSections] = useState<Section[]>([]);
   const [loading, setLoading] = useState(true);
@@ -56,25 +61,30 @@ export function CenterCanvas({
   const [scrollStart, setScrollStart] = useState({ x: 0, y: 0 });
   const canvasRef = useRef<HTMLDivElement>(null);
 
+  // Pan özelliği için scroll offset tracking (reset butonu için)
+  const [hasScrollOffset, setHasScrollOffset] = useState(false);
+
   // Pan event handlers
   const handleMouseDown = useCallback((e: React.MouseEvent) => {
-    // Sadece boş alana tıklanırsa pan başlat (section, column, block değilse)
+    // Sadece boş alana tıklanırsa pan başlat
     const target = e.target as HTMLElement;
-    const isCanvasBackground = target.closest('.canvas-scroll-area') && 
-      !target.closest('.section-editor') && 
-      !target.closest('.column-editor') && 
-      !target.closest('.block-editor') &&
-      !target.closest('button');
+    // Herhangi bir interaktif element içinde değilse pan başlat
+    const isInteractiveElement = 
+      target.closest('button') || 
+      target.closest('input') || 
+      target.closest('textarea') || 
+      target.closest('select') ||
+      target.closest('[data-block-id]') ||
+      target.closest('[data-no-pan]');
     
-    if (isCanvasBackground && e.button === 0) {
+    // Sol tık ve interaktif element değilse
+    if (!isInteractiveElement && e.button === 0 && canvasRef.current) {
       setIsPanning(true);
       setPanStart({ x: e.clientX, y: e.clientY });
-      if (canvasRef.current) {
-        setScrollStart({ 
-          x: canvasRef.current.scrollLeft, 
-          y: canvasRef.current.scrollTop 
-        });
-      }
+      setScrollStart({ 
+        x: canvasRef.current.scrollLeft, 
+        y: canvasRef.current.scrollTop 
+      });
       e.preventDefault();
     }
   }, []);
@@ -87,16 +97,48 @@ export function CenterCanvas({
     
     canvasRef.current.scrollLeft = scrollStart.x - dx;
     canvasRef.current.scrollTop = scrollStart.y - dy;
+    
+    // Scroll offset kontrolü
+    const hasOffset = canvasRef.current.scrollLeft !== 0 || canvasRef.current.scrollTop !== 0;
+    setHasScrollOffset(hasOffset);
   }, [isPanning, panStart, scrollStart]);
 
   const handleMouseUp = useCallback(() => {
     setIsPanning(false);
+    // Scroll offset kontrolü
+    if (canvasRef.current) {
+      const hasOffset = canvasRef.current.scrollLeft !== 0 || canvasRef.current.scrollTop !== 0;
+      setHasScrollOffset(hasOffset);
+    }
   }, []);
 
   // Mouse leave durumunda da pan'ı durdur
   const handleMouseLeave = useCallback(() => {
     setIsPanning(false);
   }, []);
+
+  // Canvas'ı ortala (reset)
+  const handleResetScroll = useCallback(() => {
+    if (canvasRef.current) {
+      canvasRef.current.scrollLeft = 0;
+      canvasRef.current.scrollTop = 0;
+      setHasScrollOffset(false);
+    }
+  }, []);
+
+  // Reset fonksiyonunu parent'a expose et
+  useEffect(() => {
+    if (onResetScrollRef) {
+      onResetScrollRef(handleResetScroll);
+    }
+  }, [onResetScrollRef, handleResetScroll]);
+
+  // hasScrollOffset değiştiğinde parent'ı bilgilendir
+  useEffect(() => {
+    if (onScrollOffsetChange) {
+      onScrollOffsetChange(hasScrollOffset);
+    }
+  }, [hasScrollOffset, onScrollOffsetChange]);
 
   // Section'ları yükle
   useEffect(() => {

@@ -5,7 +5,7 @@
 // Üst toolbar: sayfa bilgisi, cihaz seçici, zoom, kaydet
 // ============================================
 
-import { Save, Eye, Monitor, Tablet, Smartphone, ZoomIn, ZoomOut, ArrowLeft, Undo2, Redo2 } from 'lucide-react';
+import { Save, Eye, Monitor, Tablet, Smartphone, ZoomIn, ZoomOut, ArrowLeft, Undo2, Redo2, Crosshair } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { Spinner } from '@/components/ui/Spinner';
 import { ThemeToggle } from '@/components/ui/ThemeToggle';
@@ -28,6 +28,9 @@ interface TopBarProps {
   canRedo?: boolean;
   onUndo?: () => void;
   onRedo?: () => void;
+  // Canvas scroll reset props
+  hasCanvasScrollOffset?: boolean;
+  onResetCanvasScroll?: () => void;
 }
 
 export function TopBar({
@@ -43,6 +46,8 @@ export function TopBar({
   canRedo = false,
   onUndo,
   onRedo,
+  hasCanvasScrollOffset = false,
+  onResetCanvasScroll,
 }: TopBarProps) {
   const router = useRouter();
   const locale = useLocale();
@@ -149,6 +154,21 @@ export function TopBar({
             title="Yakınlaştır"
           >
             <ZoomIn className="w-3.5 h-3.5" />
+          </button>
+
+          {/* Canvas Reset Butonu */}
+          <button
+            onClick={onResetCanvasScroll}
+            disabled={!hasCanvasScrollOffset}
+            className={cn(
+              'p-1.5 rounded transition-colors ml-1',
+              hasCanvasScrollOffset
+                ? 'hover:bg-blue-100 dark:hover:bg-blue-900/30 text-blue-600 dark:text-blue-400'
+                : 'text-gray-300 dark:text-gray-600 cursor-not-allowed'
+            )}
+            title="Canvas'ı Ortala"
+          >
+            <Crosshair className="w-3.5 h-3.5" />
           </button>
         </div>
       </div>
