@@ -67,17 +67,79 @@ export function Footer() {
     return `/${locale}${href}`;
   }, [locale]);
 
-  // Tema ayarlarından quick links'i al
+  // Label'ı Türkçe'den nav key'e dönüştüren mapping
+  const labelToNavKey: Record<string, string> = {
+    // Türkçe
+    'Ana Sayfa': 'home',
+    'Hakkımızda': 'aboutUs',
+    'Hizmetlerimiz': 'services',
+    'Projelerimiz': 'projects',
+    'İletişim': 'contact',
+    'Tarihçemiz': 'ourHistory',
+    'Ekibimiz': 'ourTeam',
+    'Değerlerimiz': 'ourValues',
+    'Konut İnşaatı': 'residential',
+    'Ticari İnşaat': 'commercial',
+    'Renovasyon': 'renovation',
+    'Danışmanlık': 'consulting',
+    'Blog': 'blog',
+    'Galeri': 'gallery',
+    'S.S.S.': 'faq',
+    'Kariyer': 'careers',
+    'Portfolyo': 'portfolio',
+    'Ekip': 'team',
+    'Referanslar': 'testimonials',
+    'Fiyatlandırma': 'pricing',
+    // İngilizce
+    'Home': 'home',
+    'About Us': 'aboutUs',
+    'About': 'about',
+    'Services': 'services',
+    'Projects': 'projects',
+    'Contact': 'contact',
+    'Our History': 'ourHistory',
+    'Our Team': 'ourTeam',
+    'Our Values': 'ourValues',
+    'Residential': 'residential',
+    'Commercial': 'commercial',
+    'Renovation': 'renovation',
+    'Consulting': 'consulting',
+    'Gallery': 'gallery',
+    'FAQ': 'faq',
+    'Careers': 'careers',
+    'Portfolio': 'portfolio',
+    'Team': 'team',
+    'Testimonials': 'testimonials',
+    'Pricing': 'pricing',
+  };
+
+  // Label'ı locale'e göre çevir
+  const translateLabel = useCallback((label: string): string => {
+    const navKey = labelToNavKey[label];
+    if (navKey) {
+      try {
+        return tNav(navKey);
+      } catch {
+        return label;
+      }
+    }
+    return label;
+  }, [tNav]);
+
+  // Tema ayarlarından quick links'i al ve çevir
   const quickLinks = useMemo(() => {
     logger.ui.debug('Footer themeSettings', { footer: themeSettings?.footer?.quickLinks });
     if (themeSettings?.footer?.quickLinks && themeSettings.footer.quickLinks.length > 0) {
-      return themeSettings.footer.quickLinks;
+      return themeSettings.footer.quickLinks.map((link: { href: string; label: string }) => ({
+        ...link,
+        label: translateLabel(link.label),
+      }));
     }
     // Varsayılan links
     return [
       { href: '/', label: tNav('home') },
     ];
-  }, [themeSettings, tNav]);
+  }, [themeSettings, tNav, translateLabel]);
 
   // Site settings'ten social links'i al, yoksa tema ayarlarından
   const socialLinks = useMemo(() => {

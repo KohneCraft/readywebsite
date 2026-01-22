@@ -58,17 +58,86 @@ export function Header() {
     };
   }, []);
 
-  // Tema ayarlarından navigation items'ı al
+  // Label'ı Türkçe'den nav key'e dönüştüren mapping
+  const labelToNavKey: Record<string, string> = {
+    // Türkçe
+    'Ana Sayfa': 'home',
+    'Hakkımızda': 'aboutUs',
+    'Hizmetlerimiz': 'services',
+    'Projelerimiz': 'projects',
+    'İletişim': 'contact',
+    'Tarihçemiz': 'ourHistory',
+    'Ekibimiz': 'ourTeam',
+    'Değerlerimiz': 'ourValues',
+    'Konut İnşaatı': 'residential',
+    'Ticari İnşaat': 'commercial',
+    'Renovasyon': 'renovation',
+    'Danışmanlık': 'consulting',
+    'Blog': 'blog',
+    'Galeri': 'gallery',
+    'S.S.S.': 'faq',
+    'Kariyer': 'careers',
+    'Portfolyo': 'portfolio',
+    'Ekip': 'team',
+    'Referanslar': 'testimonials',
+    'Fiyatlandırma': 'pricing',
+    // İngilizce - Eğer İngilizce olarak kaydedilmişse
+    'Home': 'home',
+    'About Us': 'aboutUs',
+    'About': 'about',
+    'Services': 'services',
+    'Projects': 'projects',
+    'Contact': 'contact',
+    'Our History': 'ourHistory',
+    'Our Team': 'ourTeam',
+    'Our Values': 'ourValues',
+    'Residential': 'residential',
+    'Commercial': 'commercial',
+    'Renovation': 'renovation',
+    'Consulting': 'consulting',
+    'Gallery': 'gallery',
+    'FAQ': 'faq',
+    'Careers': 'careers',
+    'Portfolio': 'portfolio',
+    'Team': 'team',
+    'Testimonials': 'testimonials',
+    'Pricing': 'pricing',
+  };
+
+  // NavItem label'ını locale'e göre çevir
+  const translateLabel = useCallback((label: string): string => {
+    const navKey = labelToNavKey[label];
+    if (navKey) {
+      try {
+        // next-intl çevirisini kullan
+        return t(navKey);
+      } catch {
+        return label; // Çeviri yoksa orijinal label'ı döndür
+      }
+    }
+    return label; // Mapping'de yoksa orijinal label'ı döndür
+  }, [t]);
+
+  // NavItem'ları recursive olarak çevir
+  const translateNavItems = useCallback((items: NavItem[]): NavItem[] => {
+    return items.map(item => ({
+      ...item,
+      label: translateLabel(item.label),
+      children: item.children ? translateNavItems(item.children) : undefined,
+    }));
+  }, [translateLabel]);
+
+  // Tema ayarlarından navigation items'ı al ve çevir
   const navItems: NavItem[] = useMemo(() => {
     logger.ui.debug('Header themeSettings', { header: themeSettings?.header?.navItems });
     if (themeSettings?.header?.navItems && themeSettings.header.navItems.length > 0) {
-      return themeSettings.header.navItems;
+      return translateNavItems(themeSettings.header.navItems);
     }
     // Varsayılan navigation
     return [
       { href: '/', label: t('home') },
     ];
-  }, [themeSettings, t]);
+  }, [themeSettings, t, translateNavItems]);
 
   // Site settings'ten logo ve firma adını al, yoksa tema ayarlarından
   const logoText = useMemo(() => {

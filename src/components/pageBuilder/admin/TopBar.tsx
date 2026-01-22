@@ -81,12 +81,12 @@ export function TopBar({
           </p>
         </div>
         {hasChanges && (
-          <span className="px-1.5 py-0.5 text-xs bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-400 rounded-full font-medium">
+          <span className="px-2 py-1 text-xs bg-amber-500 text-white rounded-full font-medium shadow-sm">
             Kaydedilmemiş değişiklikler
           </span>
         )}
         {page.status === 'published' && (
-          <span className="px-1.5 py-0.5 text-xs bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-400 rounded-full font-medium">
+          <span className="px-2 py-1 text-xs bg-emerald-500 text-white rounded-full font-medium shadow-sm">
             Yayında
           </span>
         )}
