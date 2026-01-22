@@ -38,7 +38,27 @@
   },
   "nav": {
     "home": "Ana Sayfa",
-    "admin": "Yönetim Paneli"
+    "admin": "Yönetim Paneli",
+    "about": "Hakkımızda",
+    "aboutUs": "Hakkımızda",
+    "services": "Hizmetlerimiz",
+    "projects": "Projelerimiz",
+    "contact": "İletişim",
+    "ourHistory": "Tarihçemiz",
+    "ourTeam": "Ekibimiz",
+    "ourValues": "Değerlerimiz",
+    "residential": "Konut İnşaatı",
+    "commercial": "Ticari İnşaat",
+    "renovation": "Renovasyon",
+    "consulting": "Danışmanlık",
+    "blog": "Blog",
+    "gallery": "Galeri",
+    "faq": "S.S.S.",
+    "careers": "Kariyer",
+    "portfolio": "Portfolyo",
+    "team": "Ekip",
+    "testimonials": "Referanslar",
+    "pricing": "Fiyatlandırma"
   },
   "footer": {
     "description": "Kod bilgisi olmadan profesyonel web sayfaları oluşturun.",

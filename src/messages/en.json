@@ -38,7 +38,27 @@
   },
   "nav": {
     "home": "Home",
-    "admin": "Admin Panel"
+    "admin": "Admin Panel",
+    "about": "About",
+    "aboutUs": "About Us",
+    "services": "Services",
+    "projects": "Projects",
+    "contact": "Contact",
+    "ourHistory": "Our History",
+    "ourTeam": "Our Team",
+    "ourValues": "Our Values",
+    "residential": "Residential",
+    "commercial": "Commercial",
+    "renovation": "Renovation",
+    "consulting": "Consulting",
+    "blog": "Blog",
+    "gallery": "Gallery",
+    "faq": "FAQ",
+    "careers": "Careers",
+    "portfolio": "Portfolio",
+    "team": "Team",
+    "testimonials": "Testimonials",
+    "pricing": "Pricing"
   },
   "footer": {
     "description": "Create professional web pages without coding knowledge.",

@@ -32,6 +32,7 @@ import {
 import { cn } from '@/lib/utils';
 import { Spinner } from '@/components/ui/Spinner';
 import { ThemeToggle } from '@/components/ui/ThemeToggle';
+import { LanguageSwitcher } from '@/components/ui/LanguageSwitcher';
 import { ToastProvider } from '@/components/providers';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { onAuthStateChanged, signOut as firebaseSignOut, getUserProfile } from '@/lib/firebase/auth';
@@ -543,6 +544,9 @@ export default function AdminLayout({
             <div className="flex items-center gap-4">
               {/* Theme Toggle */}
               <ThemeToggle className="text-gray-600 dark:text-gray-400" />
+
+              {/* Language Switcher */}
+              <LanguageSwitcher className="text-gray-600 dark:text-gray-400" />
 
               {/* Notifications */}
               <div className="relative" data-notification-dropdown>

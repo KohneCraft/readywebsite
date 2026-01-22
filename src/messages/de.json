@@ -38,11 +38,27 @@
   },
   "nav": {
     "home": "Startseite",
+    "admin": "Admin-Panel",
     "about": "Über uns",
-    "projects": "Projekte",
+    "aboutUs": "Über uns",
     "services": "Dienstleistungen",
+    "projects": "Projekte",
     "contact": "Kontakt",
-    "admin": "Admin-Panel"
+    "ourHistory": "Unsere Geschichte",
+    "ourTeam": "Unser Team",
+    "ourValues": "Unsere Werte",
+    "residential": "Wohnbau",
+    "commercial": "Gewerbebau",
+    "renovation": "Renovierung",
+    "consulting": "Beratung",
+    "blog": "Blog",
+    "gallery": "Galerie",
+    "faq": "FAQ",
+    "careers": "Karriere",
+    "portfolio": "Portfolio",
+    "team": "Team",
+    "testimonials": "Referenzen",
+    "pricing": "Preise"
   },
   "footer": {
     "description": "Wir bauen Ihre Traumgebäude mit zuverlässigen und qualitativ hochwertigen Bauleistungen.",
@@ -103,6 +119,15 @@
       "title": "Lassen Sie uns über Ihr Projekt sprechen",
       "description": "Planen Sie ein neues Projekt? Unser Expertenteam ist bereit, Ihnen zu helfen.",
       "button": "Kostenlose Beratung"
+    },
+    "partners": {
+      "title": "Unsere Partner",
+      "subtitle": "Wir arbeiten mit vertrauenswürdigen Marken zusammen"
+    },
+    "projectStatus": {
+      "completed": "Abgeschlossen",
+      "ongoing": "Laufend",
+      "planning": "Planung"
     }
   },
   "about": {
@@ -215,6 +240,7 @@
       "renovation": "Renovierung"
     },
     "status": {
+      "label": "Status",
       "all": "Alle Status",
       "planned": "Geplant",
       "planning": "Planung",
@@ -228,7 +254,44 @@
     "location": "Standort",
     "area": "Fläche",
     "type": "Typ",
+    "floors": "Etagen",
+    "roomLayout": "Raumaufteilung",
+    "video": "Projektvideo",
+    "map": "Standort",
+    "openInMaps": "In Karten öffnen",
+    "projectInfo": "Projektinfo",
+    "description": "Beschreibung",
+    "gallery": "Projektgalerie",
+    "completion": "Fertigstellungsrate",
+    "notFound": "Projekt nicht gefunden",
     "backToProjects": "Zurück zu Projekten",
+    "share": "Teilen",
+    "linkCopied": "Link kopiert!",
+    "copyLink": "Link kopieren",
+    "viewDetails": "Details anzeigen",
+    "projects": "Projekte",
+    "ongoing": {
+      "title": "Laufende Projekte",
+      "description": "Entdecken Sie unsere derzeit aktiven Projekte",
+      "activeProjects": "aktive Projekte"
+    },
+    "completed": {
+      "title": "Abgeschlossene Projekte",
+      "description": "Sehen Sie sich unsere erfolgreich abgeschlossenen Projekte an",
+      "totalProjects": "abgeschlossene Projekte"
+    },
+    "categories": {
+      "residential": "Wohnen",
+      "commercial": "Gewerbe",
+      "industrial": "Industrie",
+      "healthcare": "Gesundheitswesen"
+    },
+    "stats": {
+      "completedProjects": "Abgeschlossene Projekte",
+      "yearsExperience": "Jahre Erfahrung",
+      "awardWinning": "Preisgekrönte Projekte",
+      "satisfaction": "Kundenzufriedenheit"
+    },
     "details": {
       "location": "Standort",
       "area": "Fläche",
@@ -482,7 +545,78 @@
       "loginSuccess": "Anmeldung erfolgreich",
       "logoutSuccess": "Abgemeldet"
     },
-    "logout": "Abmelden"
+    "logout": "Abmelden",
+    "edit": "Bearbeiten",
+    "delete": "Löschen",
+    "save": "Speichern",
+    "cancel": "Abbrechen",
+    "add": "Hinzufügen",
+    "refresh": "Aktualisieren",
+    "charts": {
+      "monthlyRevenue": "Monatlicher Umsatz",
+      "monthlyProjects": "Monatliche Projekte",
+      "projectStatus": "Projektstatus",
+      "contactSources": "Kontaktquellen",
+      "weeklyVisitors": "Wöchentliche Besucher"
+    },
+    "team": {
+      "title": "Team-Verwaltung",
+      "subtitle": "Teammitglieder verwalten",
+      "addMember": "Neues Mitglied hinzufügen",
+      "editMember": "Mitglied bearbeiten",
+      "deleteConfirm": "Sind Sie sicher, dass Sie dieses Mitglied löschen möchten?",
+      "noMembers": "Noch keine Teammitglieder hinzugefügt",
+      "searchPlaceholder": "Mitglieder suchen...",
+      "name": "Vollständiger Name",
+      "position": "Position",
+      "email": "E-Mail",
+      "phone": "Telefon",
+      "imageUrl": "Bild-URL",
+      "status": "Status",
+      "actions": "Aktionen",
+      "active": "Aktiv",
+      "inactive": "Inaktiv"
+    },
+    "partners": {
+      "title": "Partner & Referenzen",
+      "subtitle": "Geschäftspartner und Referenzen verwalten",
+      "addPartner": "Neuen Partner hinzufügen",
+      "editPartner": "Partner bearbeiten",
+      "deleteConfirm": "Sind Sie sicher, dass Sie diesen Partner löschen möchten?",
+      "noPartners": "Noch keine Partner hinzugefügt",
+      "searchPlaceholder": "Partner suchen...",
+      "name": "Firmenname",
+      "logoUrl": "Logo-URL",
+      "website": "Webseite",
+      "category": "Kategorie",
+      "allCategories": "Alle Kategorien",
+      "categoryPartner": "Geschäftspartner",
+      "categorySupplier": "Lieferant",
+      "categoryClient": "Kunde",
+      "visitWebsite": "Webseite besuchen"
+    },
+    "themes": {
+      "title": "Thema wählen",
+      "subtitle": "Wählen Sie eines der fertigen Themes"
+    },
+    "pageBuilder": {
+      "title": "Seitenlayout",
+      "subtitle": "Seitenlayouts per Drag & Drop anpassen",
+      "noLayouts": "Noch keine Layouts erstellt",
+      "createNew": "Neues Layout erstellen",
+      "editLayout": "Layout bearbeiten",
+      "deleteConfirm": "Sind Sie sicher, dass Sie dieses Layout löschen möchten?",
+      "saveSuccess": "Layout erfolgreich gespeichert",
+      "elements": "Elemente",
+      "preview": "Vorschau",
+      "settings": "Einstellungen",
+      "visibility": "Sichtbarkeit",
+      "width": "Breite",
+      "position": "Position",
+      "margin": "Außenabstand",
+      "padding": "Innenabstand",
+      "responsive": "Responsive Einstellungen"
+    }
   },
   "errors": {
     "notFound": {
@@ -508,5 +642,131 @@
     "url": "Geben Sie eine gültige URL ein",
     "number": "Geben Sie eine gültige Nummer ein",
     "date": "Geben Sie ein gültiges Datum ein"
+  },
+  "privacy": {
+    "title": "Datenschutzrichtlinie",
+    "subtitle": "Der Schutz Ihrer persönlichen Daten ist uns wichtig",
+    "lastUpdated": "Letzte Aktualisierung",
+    "intro": "Bei Page Builder legen wir Wert auf den Schutz Ihrer persönlichen Daten. Diese Datenschutzrichtlinie erklärt, wie die bei der Nutzung unserer Website gesammelten Informationen verarbeitet werden.",
+    "sections": {
+      "dataCollection": {
+        "title": "Datenerfassung",
+        "content": "Wenn Sie unsere Website besuchen, erfassen wir die Informationen, die Sie uns über Kontaktformulare bereitstellen (Name, E-Mail, Telefonnummer, Nachrichteninhalt). Darüber hinaus werden technische Informationen, die Ihr Browser sendet (IP-Adresse, Browsertyp, besuchte Seiten), automatisch aufgezeichnet."
+      },
+      "dataUsage": {
+        "title": "Datenverwendung",
+        "content": "Die von uns gesammelten Daten werden für folgende Zwecke verwendet:\n• Beantwortung Ihrer Anfragen\n• Verbesserung unserer Dienste\n• Kommunikation mit Ihnen\n• Erfüllung unserer gesetzlichen Verpflichtungen"
+      },
+      "dataSecurity": {
+        "title": "Datensicherheit",
+        "content": "Wir verwenden branchenübliche Sicherheitsmaßnahmen zum Schutz Ihrer persönlichen Daten. Ihre Daten werden über verschlüsselte Verbindungen übertragen und auf sicheren Servern gespeichert."
+      },
+      "userRights": {
+        "title": "Benutzerrechte",
+        "content": "Gemäß DSGVO haben Sie das Recht, Zugang, Berichtigung, Löschung und Einschränkung der Verarbeitung Ihrer persönlichen Daten zu verlangen. Um diese Rechte auszuüben, können Sie uns kontaktieren."
+      },
+      "cookies": {
+        "title": "Cookies",
+        "content": "Unsere Website verwendet Cookies zur Verbesserung der Benutzererfahrung. Cookies werden verwendet, um Ihre Präferenzen zu speichern und den Site-Traffic zu analysieren. Sie können Cookies in Ihren Browsereinstellungen deaktivieren."
+      },
+      "contact": {
+        "title": "Kontakt",
+        "content": "Bei Fragen zu unserer Datenschutzrichtlinie können Sie uns über unser Kontaktformular erreichen."
+      }
+    }
+  },
+  "terms": {
+    "title": "Nutzungsbedingungen",
+    "subtitle": "Bitte lesen Sie diese vor der Nutzung unserer Website",
+    "lastUpdated": "Letzte Aktualisierung",
+    "intro": "Diese Nutzungsbedingungen regeln Ihre Nutzung der Page Builder Website. Durch die Nutzung unserer Website stimmen Sie diesen Bedingungen zu.",
+    "sections": {
+      "acceptance": {
+        "title": "Annahme der Bedingungen",
+        "content": "Durch den Zugriff auf und die Nutzung dieser Website erklären Sie, dass Sie diese Nutzungsbedingungen gelesen, verstanden und akzeptiert haben. Wenn Sie diese Bedingungen nicht akzeptieren, nutzen Sie bitte unsere Website nicht."
+      },
+      "services": {
+        "title": "Dienstleistungen",
+        "content": "Page Builder bietet einen Service zur Erstellung moderner und flexibler Webseiten. Unsere Website ist dazu konzipiert, Informationen über unsere Dienste bereitzustellen und mit potenziellen Kunden zu kommunizieren."
+      },
+      "responsibilities": {
+        "title": "Benutzerverantwortlichkeiten",
+        "content": "Benutzer sind verpflichtet:\n• Genaue und aktuelle Informationen bereitzustellen\n• Die Website in Übereinstimmung mit dem Gesetz zu nutzen\n• Die Rechte anderer zu respektieren\n• Keine schädlichen Inhalte zu teilen"
+      },
+      "intellectualProperty": {
+        "title": "Geistiges Eigentum",
+        "content": "Alle Inhalte auf dieser Website (Texte, Bilder, Logos, Designs) gehören Page Builder und sind urheberrechtlich geschützt. Die unbefugte Nutzung, das Kopieren oder die Verbreitung von Inhalten ist untersagt."
+      },
+      "liability": {
+        "title": "Haftungsbeschränkung",
+        "content": "Page Builder garantiert nicht, dass die Website ohne Unterbrechung oder fehlerfrei funktioniert. Obwohl größte Sorgfalt auf die Richtigkeit der Informationen auf der Website gelegt wird, wird keine Verantwortung für mögliche Fehler übernommen."
+      },
+      "disputes": {
+        "title": "Streitigkeiten",
+        "content": "Auf Streitigkeiten aus diesen Bedingungen findet türkisches Recht Anwendung, und die Gerichte und Vollstreckungsbehörden von Istanbul sind zuständig."
+      }
+    }
+  },
+  "services": {
+    "title": "Unsere Dienstleistungen",
+    "subtitle": "Wir verwirklichen Ihre Träume mit umfassenden Baulösungen",
+    "residential": {
+      "title": "Wohnprojekte",
+      "description": "Wir entwerfen und bauen moderne und komfortable Wohnräume. Wir bieten qualitativ hochwertige Wohnlösungen für jedes Budget.",
+      "features": {
+        "design": "Architektonische Gestaltung",
+        "construction": "Schlüsselfertige Konstruktion",
+        "renovation": "Renovierung und Erneuerung",
+        "landscaping": "Landschaftsgestaltung"
+      }
+    },
+    "commercial": {
+      "title": "Gewerbeprojekte",
+      "description": "Wir bauen moderne und funktionale Gewerbebauten für die Bedürfnisse der Geschäftswelt.",
+      "features": {
+        "office": "Bürogebäude",
+        "retail": "Einkaufszentren",
+        "hotel": "Hotelprojekte",
+        "mixed": "Gemischte Nutzungsgebäude"
+      }
+    },
+    "industrial": {
+      "title": "Industrieprojekte",
+      "description": "Wir bauen zuverlässige und langlebige Strukturen für Industrie- und Produktionsanlagen.",
+      "features": {
+        "factory": "Fabrikgebäude",
+        "warehouse": "Lagerhäuser und Depots",
+        "logistics": "Logistikzentren",
+        "energy": "Energieanlagen"
+      }
+    },
+    "renovation": {
+      "title": "Restaurierung und Renovierung",
+      "description": "Wir restaurieren, modernisieren und verstärken bestehende Strukturen.",
+      "features": {
+        "restoration": "Historische Gebäuderestaurierung",
+        "modernization": "Modernisierung",
+        "expansion": "Erweiterungsprojekte",
+        "reinforcement": "Verstärkung"
+      }
+    },
+    "additionalTitle": "Zusätzliche Dienstleistungen",
+    "additionalSubtitle": "Wir begleiten Sie in jeder Phase Ihres Projekts",
+    "additional": {
+      "design": "Architektonisches Design",
+      "designDesc": "Kreative und funktionale architektonische Lösungen",
+      "planning": "Projektplanung",
+      "planningDesc": "Detaillierte Projektplanung und -management",
+      "supervision": "Bauüberwachung",
+      "supervisionDesc": "Professionelle Bauüberwachungsdienstleistungen",
+      "consulting": "Beratung",
+      "consultingDesc": "Fachkundige Ingenieurberatung"
+    },
+    "getQuote": "Angebot einholen",
+    "cta": {
+      "title": "Lassen Sie uns Ihr Projekt verwirklichen",
+      "description": "Lernen Sie unser Expertenteam kennen und besprechen Sie Ihr Projekt.",
+      "button": "Kontaktieren Sie uns"
+    }
   }
 }
