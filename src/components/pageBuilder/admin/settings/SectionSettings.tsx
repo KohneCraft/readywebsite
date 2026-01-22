@@ -632,6 +632,20 @@ export function SectionSettings({ sectionId, activeTab, onUpdate, onColumnUpdate
     if (!confirm('Bu kolonu silmek istediğinizden emin misiniz?')) return;
     try {
       await deleteColumn(colId);
+      // Kolonları state'den hemen kaldır (UI anında güncellensin)
+      setColumns(prev => prev.filter(c => c.id !== colId));
+      // İlgili blokları da kaldır
+      setBlocksMap(prev => {
+        const newMap = { ...prev };
+        delete newMap[colId];
+        return newMap;
+      });
+      // Nested kolonları da kaldır
+      setNestedColumnsMap(prev => {
+        const newMap = { ...prev };
+        delete newMap[colId];
+        return newMap;
+      });
       window.dispatchEvent(new CustomEvent('section-updated', { detail: { sectionId: section.id } }));
     } catch (error) {
       logger.pageBuilder.error('Kolon silme hatası', error);
@@ -642,12 +656,19 @@ export function SectionSettings({ sectionId, activeTab, onUpdate, onColumnUpdate
     if (!confirm('Bu bloğu silmek istediğinizden emin misiniz?')) return;
     try {
       await deleteBlock(blockId);
+      // Blokları state'den hemen kaldır (UI anında güncellensin)
+      setBlocksMap(prev => {
+        const newMap = { ...prev };
+        for (const key in newMap) {
+          newMap[key] = newMap[key].filter(b => b.id !== blockId);
+        }
+        return newMap;
+      });
       window.dispatchEvent(new CustomEvent('section-updated', { detail: { sectionId: section.id } }));
     } catch (error) {
       logger.pageBuilder.error('Blok silme hatası', error);
     }
   };
-
 
   // Kolon ve blok sayısını hesapla
   const totalColumns = columns.length;
@@ -700,14 +721,14 @@ export function SectionSettings({ sectionId, activeTab, onUpdate, onColumnUpdate
                   <div className="flex items-center gap-1">
                     <button
                       onClick={() => onSelectColumn?.(col.id)}
-                      className="p-1 text-gray-500 hover:text-primary-600 dark:hover:text-primary-400 transition-colors"
+                      className="p-1.5 text-gray-500 hover:text-primary-600 hover:bg-primary-100 dark:hover:text-primary-400 dark:hover:bg-primary-900/30 rounded transition-all"
                       title="Düzenle"
                     >
                       <Pencil className="w-3.5 h-3.5" />
                     </button>
                     <button
                       onClick={() => handleDeleteColumn(col.id)}
-                      className="p-1 text-gray-500 hover:text-red-600 dark:hover:text-red-400 transition-colors"
+                      className="p-1.5 text-gray-500 hover:text-red-600 hover:bg-red-100 dark:hover:text-red-400 dark:hover:bg-red-900/30 rounded transition-all"
                       title="Kaldır"
                     >
                       <Trash2 className="w-3.5 h-3.5" />
@@ -729,14 +750,14 @@ export function SectionSettings({ sectionId, activeTab, onUpdate, onColumnUpdate
                         <div className="flex items-center gap-1">
                           <button
                             onClick={() => onSelectBlock?.(block.id)}
-                            className="p-1 text-gray-400 hover:text-primary-600 dark:hover:text-primary-400 transition-colors"
+                            className="p-1.5 text-gray-400 hover:text-primary-600 hover:bg-primary-100 dark:hover:text-primary-400 dark:hover:bg-primary-900/30 rounded transition-all"
                             title="Düzenle"
                           >
                             <Pencil className="w-3 h-3" />
                           </button>
                           <button
                             onClick={() => handleDeleteBlock(block.id)}
-                            className="p-1 text-gray-400 hover:text-red-600 dark:hover:text-red-400 transition-colors"
+                            className="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-100 dark:hover:text-red-400 dark:hover:bg-red-900/30 rounded transition-all"
                             title="Kaldır"
                           >
                             <Trash2 className="w-3 h-3" />
@@ -760,14 +781,14 @@ export function SectionSettings({ sectionId, activeTab, onUpdate, onColumnUpdate
                           <div className="flex items-center gap-1">
                             <button
                               onClick={() => onSelectColumn?.(nestedCol.id)}
-                              className="p-1 text-gray-400 hover:text-primary-600 dark:hover:text-primary-400 transition-colors"
+                              className="p-1.5 text-gray-400 hover:text-primary-600 hover:bg-primary-100 dark:hover:text-primary-400 dark:hover:bg-primary-900/30 rounded transition-all"
                               title="Düzenle"
                             >
                               <Pencil className="w-3 h-3" />
                             </button>
                             <button
                               onClick={() => handleDeleteColumn(nestedCol.id)}
-                              className="p-1 text-gray-400 hover:text-red-600 dark:hover:text-red-400 transition-colors"
+                              className="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-100 dark:hover:text-red-400 dark:hover:bg-red-900/30 rounded transition-all"
                               title="Kaldır"
                             >
                               <Trash2 className="w-3 h-3" />
@@ -789,14 +810,14 @@ export function SectionSettings({ sectionId, activeTab, onUpdate, onColumnUpdate
                                 <div className="flex items-center gap-1">
                                   <button
                                     onClick={() => onSelectBlock?.(block.id)}
-                                    className="p-1 text-gray-400 hover:text-primary-600 dark:hover:text-primary-400 transition-colors"
+                                    className="p-1.5 text-gray-400 hover:text-primary-600 hover:bg-primary-100 dark:hover:text-primary-400 dark:hover:bg-primary-900/30 rounded transition-all"
                                     title="Düzenle"
                                   >
                                     <Pencil className="w-3 h-3" />
                                   </button>
                                   <button
                                     onClick={() => handleDeleteBlock(block.id)}
-                                    className="p-1 text-gray-400 hover:text-red-600 dark:hover:text-red-400 transition-colors"
+                                    className="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-100 dark:hover:text-red-400 dark:hover:bg-red-900/30 rounded transition-all"
                                     title="Kaldır"
                                   >
                                     <Trash2 className="w-3 h-3" />

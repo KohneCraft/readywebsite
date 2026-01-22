@@ -965,6 +965,14 @@ export function ColumnSettings({ columnId, activeTab, onUpdate, onSelectBlock, o
     if (!confirm('Bu iç kolonu silmek istediğinizden emin misiniz?')) return;
     try {
       await deleteColumn(nestedColumnId);
+      // Nested kolonları state'den hemen kaldır (UI anında güncellensin)
+      setNestedColumns(prev => prev.filter(c => c.id !== nestedColumnId));
+      // Nested blok map'inden de kaldır
+      setNestedBlocksMap(prev => {
+        const newMap = { ...prev };
+        delete newMap[nestedColumnId];
+        return newMap;
+      });
       window.dispatchEvent(new CustomEvent('section-updated', { detail: { sectionId: column?.sectionId || 'any' } }));
     } catch (error) {
       logger.pageBuilder.error('İç kolon silme hatası', error);
@@ -975,9 +983,37 @@ export function ColumnSettings({ columnId, activeTab, onUpdate, onSelectBlock, o
     if (!confirm('Bu bloğu silmek istediğinizden emin misiniz?')) return;
     try {
       await deleteBlock(blockId);
+      // Blokları state'den hemen kaldır (UI anında güncellensin)
+      setBlocks(prev => prev.filter(b => b.id !== blockId));
+      // Nested bloklardan da kaldır
+      setNestedBlocksMap(prev => {
+        const newMap = { ...prev };
+        for (const key in newMap) {
+          newMap[key] = newMap[key].filter(b => b.id !== blockId);
+        }
+        return newMap;
+      });
       window.dispatchEvent(new CustomEvent('section-updated', { detail: { sectionId: column?.sectionId || 'any' } }));
     } catch (error) {
       logger.pageBuilder.error('Blok silme hatası', error);
+    }
+  };
+
+  const handleEditBlock = (blockId: string) => {
+    if (onSelectBlock) {
+      onSelectBlock(blockId);
+    } else {
+      // Fallback: Global event dispatch
+      window.dispatchEvent(new CustomEvent('select-block', { detail: { blockId } }));
+    }
+  };
+
+  const handleEditColumn = (colId: string) => {
+    if (onSelectColumn) {
+      onSelectColumn(colId);
+    } else {
+      // Fallback: Global event dispatch
+      window.dispatchEvent(new CustomEvent('select-column', { detail: { columnId: colId } }));
     }
   };
 
@@ -1017,15 +1053,15 @@ export function ColumnSettings({ columnId, activeTab, onUpdate, onSelectBlock, o
                 </span>
                 <div className="flex items-center gap-1">
                   <button
-                    onClick={() => onSelectBlock?.(block.id)}
-                    className="p-1 text-gray-400 hover:text-primary-600 dark:hover:text-primary-400 transition-colors"
+                    onClick={() => handleEditBlock(block.id)}
+                    className="p-1.5 text-gray-400 hover:text-primary-600 hover:bg-primary-50 dark:hover:text-primary-400 dark:hover:bg-primary-900/30 rounded transition-all"
                     title="Düzenle"
                   >
                     <Pencil className="w-3.5 h-3.5" />
                   </button>
                   <button
                     onClick={() => handleDeleteBlock(block.id)}
-                    className="p-1 text-gray-400 hover:text-red-600 dark:hover:text-red-400 transition-colors"
+                    className="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 dark:hover:text-red-400 dark:hover:bg-red-900/30 rounded transition-all"
                     title="Kaldır"
                   >
                     <Trash2 className="w-3.5 h-3.5" />
@@ -1056,15 +1092,15 @@ export function ColumnSettings({ columnId, activeTab, onUpdate, onSelectBlock, o
                   </span>
                   <div className="flex items-center gap-1">
                     <button
-                      onClick={() => onSelectColumn?.(nestedCol.id)}
-                      className="p-1 text-gray-500 hover:text-primary-600 dark:hover:text-primary-400 transition-colors"
+                      onClick={() => handleEditColumn(nestedCol.id)}
+                      className="p-1.5 text-gray-500 hover:text-primary-600 hover:bg-primary-50 dark:hover:text-primary-400 dark:hover:bg-primary-900/30 rounded transition-all"
                       title="Düzenle"
                     >
                       <Pencil className="w-3.5 h-3.5" />
                     </button>
                     <button
                       onClick={() => handleDeleteNestedColumn(nestedCol.id)}
-                      className="p-1 text-gray-500 hover:text-red-600 dark:hover:text-red-400 transition-colors"
+                      className="p-1.5 text-gray-500 hover:text-red-600 hover:bg-red-50 dark:hover:text-red-400 dark:hover:bg-red-900/30 rounded transition-all"
                       title="Kaldır"
                     >
                       <Trash2 className="w-3.5 h-3.5" />
@@ -1085,15 +1121,15 @@ export function ColumnSettings({ columnId, activeTab, onUpdate, onSelectBlock, o
                         </span>
                         <div className="flex items-center gap-1">
                           <button
-                            onClick={() => onSelectBlock?.(block.id)}
-                            className="p-1 text-gray-400 hover:text-primary-600 dark:hover:text-primary-400 transition-colors"
+                            onClick={() => handleEditBlock(block.id)}
+                            className="p-1.5 text-gray-400 hover:text-primary-600 hover:bg-primary-50 dark:hover:text-primary-400 dark:hover:bg-primary-900/30 rounded transition-all"
                             title="Düzenle"
                           >
                             <Pencil className="w-3 h-3" />
                           </button>
                           <button
                             onClick={() => handleDeleteBlock(block.id)}
-                            className="p-1 text-gray-400 hover:text-red-600 dark:hover:text-red-400 transition-colors"
+                            className="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 dark:hover:text-red-400 dark:hover:bg-red-900/30 rounded transition-all"
                             title="Kaldır"
                           >
                             <Trash2 className="w-3 h-3" />
