@@ -55,16 +55,17 @@ export function CenterCanvas({
   const [baseSections, setBaseSections] = useState<Section[]>([]);
   const [loading, setLoading] = useState(true);
   
-  // Pan (sürükleme) için state
+  // Pan (sürükleme) için state - transform based
   const [isPanning, setIsPanning] = useState(false);
   const [panStart, setPanStart] = useState({ x: 0, y: 0 });
-  const [scrollStart, setScrollStart] = useState({ x: 0, y: 0 });
+  const [panOffset, setPanOffset] = useState({ x: 0, y: 0 });
+  const [panOffsetStart, setPanOffsetStart] = useState({ x: 0, y: 0 });
   const canvasRef = useRef<HTMLDivElement>(null);
 
-  // Pan özelliği için scroll offset tracking (reset butonu için)
+  // Pan özelliği için offset tracking (reset butonu için)
   const [hasScrollOffset, setHasScrollOffset] = useState(false);
 
-  // Pan event handlers
+  // Pan event handlers - transform based
   const handleMouseDown = useCallback((e: React.MouseEvent) => {
     // Sadece boş alana tıklanırsa pan başlat
     const target = e.target as HTMLElement;
@@ -78,38 +79,34 @@ export function CenterCanvas({
       target.closest('[data-no-pan]');
     
     // Sol tık ve interaktif element değilse
-    if (!isInteractiveElement && e.button === 0 && canvasRef.current) {
+    if (!isInteractiveElement && e.button === 0) {
       setIsPanning(true);
       setPanStart({ x: e.clientX, y: e.clientY });
-      setScrollStart({ 
-        x: canvasRef.current.scrollLeft, 
-        y: canvasRef.current.scrollTop 
-      });
+      setPanOffsetStart({ x: panOffset.x, y: panOffset.y });
       e.preventDefault();
     }
-  }, []);
+  }, [panOffset]);
 
   const handleMouseMove = useCallback((e: React.MouseEvent) => {
-    if (!isPanning || !canvasRef.current) return;
+    if (!isPanning) return;
     
     const dx = e.clientX - panStart.x;
     const dy = e.clientY - panStart.y;
     
-    canvasRef.current.scrollLeft = scrollStart.x - dx;
-    canvasRef.current.scrollTop = scrollStart.y - dy;
+    const newOffset = {
+      x: panOffsetStart.x + dx,
+      y: panOffsetStart.y + dy
+    };
     
-    // Scroll offset kontrolü
-    const hasOffset = canvasRef.current.scrollLeft !== 0 || canvasRef.current.scrollTop !== 0;
+    setPanOffset(newOffset);
+    
+    // Offset kontrolü
+    const hasOffset = newOffset.x !== 0 || newOffset.y !== 0;
     setHasScrollOffset(hasOffset);
-  }, [isPanning, panStart, scrollStart]);
+  }, [isPanning, panStart, panOffsetStart]);
 
   const handleMouseUp = useCallback(() => {
     setIsPanning(false);
-    // Scroll offset kontrolü
-    if (canvasRef.current) {
-      const hasOffset = canvasRef.current.scrollLeft !== 0 || canvasRef.current.scrollTop !== 0;
-      setHasScrollOffset(hasOffset);
-    }
   }, []);
 
   // Mouse leave durumunda da pan'ı durdur
@@ -119,11 +116,8 @@ export function CenterCanvas({
 
   // Canvas'ı ortala (reset)
   const handleResetScroll = useCallback(() => {
-    if (canvasRef.current) {
-      canvasRef.current.scrollLeft = 0;
-      canvasRef.current.scrollTop = 0;
-      setHasScrollOffset(false);
-    }
+    setPanOffset({ x: 0, y: 0 });
+    setHasScrollOffset(false);
   }, []);
 
   // Reset fonksiyonunu parent'a expose et
@@ -202,7 +196,7 @@ export function CenterCanvas({
       <div 
         ref={canvasRef}
         className={cn(
-          "flex-1 overflow-auto p-8 canvas-scroll-area",
+          "flex-1 overflow-hidden p-8 canvas-scroll-area",
           isPanning ? "cursor-grabbing select-none" : "cursor-grab"
         )}
         onMouseDown={handleMouseDown}
@@ -210,26 +204,34 @@ export function CenterCanvas({
         onMouseUp={handleMouseUp}
         onMouseLeave={handleMouseLeave}
       >
-        <div className="mx-auto" style={{ width: deviceWidths[device] }}>
-          <div
-            className={cn(
-              "bg-white dark:bg-gray-800 shadow-xl min-h-screen section-editor",
-              device === 'mobile' && "canvas-mobile-view",
-              device === 'tablet' && "canvas-tablet-view"
-            )}
-            style={{
-              transform: `scale(${zoom / 100})`,
-              transformOrigin: 'top center',
-            }}
-          >
-            {loading ? (
-              <div className="flex items-center justify-center min-h-[400px]">
-                <div className="text-center">
-                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600 mx-auto mb-2"></div>
-                  <p className="text-sm text-gray-500 dark:text-gray-400">Yükleniyor...</p>
+        {/* Pan için wrapper - transform translate ile hareket */}
+        <div 
+          className="w-full h-full"
+          style={{ 
+            transform: `translate(${panOffset.x}px, ${panOffset.y}px)`,
+            transition: isPanning ? 'none' : 'transform 0.2s ease-out'
+          }}
+        >
+          <div className="mx-auto" style={{ width: deviceWidths[device] }}>
+            <div
+              className={cn(
+                "bg-white dark:bg-gray-800 shadow-xl min-h-screen section-editor",
+                device === 'mobile' && "canvas-mobile-view",
+                device === 'tablet' && "canvas-tablet-view"
+              )}
+              style={{
+                transform: `scale(${zoom / 100})`,
+                transformOrigin: 'top center',
+              }}
+            >
+              {loading ? (
+                <div className="flex items-center justify-center min-h-[400px]">
+                  <div className="text-center">
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600 mx-auto mb-2"></div>
+                    <p className="text-sm text-gray-500 dark:text-gray-400">Yükleniyor...</p>
+                  </div>
                 </div>
-              </div>
-            ) : sections.length > 0 ? (
+              ) : sections.length > 0 ? (
               (() => {
                 // Section'ları rowOrder'a göre grupla
                 const rows = sections.reduce((acc, section) => {
@@ -343,6 +345,7 @@ export function CenterCanvas({
                 }}
               />
             )}
+            </div>
           </div>
         </div>
       </div>
