@@ -77,14 +77,14 @@ const settingsSchema = z.object({
     youtube: z.string().optional(),
   }),
   seo: z.object({
-    metaTitle: z.string().optional(),
-    metaDescription: z.string().optional(),
-    metaKeywords: z.string().optional(),
+    metaTitle: z.record(z.string(), z.string()).optional(), // Çoklu dil
+    metaDescription: z.record(z.string(), z.string()).optional(), // Çoklu dil
+    metaKeywords: z.record(z.string(), z.string()).optional(), // Çoklu dil
     googleAnalyticsId: z.string().optional(),
   }),
   maintenance: z.object({
     enabled: z.boolean(),
-    message: z.string().optional(),
+    message: z.record(z.string(), z.string()).optional(), // Çoklu dil
     allowedIPs: z.string().optional(),
   }),
 });
@@ -120,14 +120,14 @@ const defaultSettings: SettingsFormData = {
     youtube: '',
   },
   seo: {
-    metaTitle: 'X Şirketi | Y',
-    metaDescription: 'X açıklaması burada yer alır.',
-    metaKeywords: 'x, şirket, hizmetler',
+    metaTitle: { tr: 'X Şirketi | Y', en: 'X Company | Y' },
+    metaDescription: { tr: 'X açıklaması burada yer alır.', en: 'X description here.' },
+    metaKeywords: { tr: 'x, şirket, hizmetler', en: 'x, company, services' },
     googleAnalyticsId: '',
   },
   maintenance: {
     enabled: false,
-    message: 'Site bakım modundadır. Kısa süre içinde geri döneceğiz.',
+    message: { tr: 'Site bakım modundadır. Kısa süre içinde geri döneceğiz.', en: 'Site is under maintenance. We will be back shortly.' },
     allowedIPs: '',
   },
 };
@@ -307,14 +307,19 @@ export default function AdminSettingsPage() {
             youtube: settings.socialLinks?.youtube || themeDefaults.social.youtube || '',
           },
           seo: {
-            metaTitle: settings.seo?.titleTemplate?.tr || themeDefaults.seo.metaTitle,
-            metaDescription: settings.seo?.defaultDescription?.tr || themeDefaults.seo.metaDescription,
-            metaKeywords: settings.seo?.keywords?.tr?.join(', ') || themeDefaults.seo.metaKeywords,
+            metaTitle: settings.seo?.titleTemplate || { tr: themeDefaults.seo.metaTitle, en: '' },
+            metaDescription: settings.seo?.defaultDescription || { tr: themeDefaults.seo.metaDescription, en: '' },
+            metaKeywords: settings.seo?.keywords ? {
+              tr: settings.seo.keywords.tr?.join(', ') || '',
+              en: settings.seo.keywords.en?.join(', ') || '',
+              de: settings.seo.keywords.de?.join(', ') || '',
+              fr: settings.seo.keywords.fr?.join(', ') || '',
+            } : { tr: themeDefaults.seo.metaKeywords, en: '' },
             googleAnalyticsId: settings.seo?.googleAnalyticsId || themeDefaults.seo.googleAnalyticsId,
           },
           maintenance: {
             enabled: settings.maintenance?.enabled || themeDefaults.maintenance.enabled,
-            message: settings.maintenance?.message?.tr || themeDefaults.maintenance.message,
+            message: settings.maintenance?.message || { tr: themeDefaults.maintenance.message, en: '' },
             allowedIPs: settings.maintenance?.allowedIPs?.join(', ') || themeDefaults.maintenance.allowedIPs,
           },
         };
@@ -375,18 +380,28 @@ export default function AdminSettingsPage() {
   const handleSaveApiKeysSettings = async () => {
     setIsApiKeysSaving(true);
     try {
+      const payload: any = {
+        // Translation settings
+        translationProvider,
+        // Map settings
+        mapProvider,
+      };
+
+      // Sadece doldurulmuş key'leri gönder
+      if (googleTranslateKey && googleTranslateKey.trim()) {
+        payload.googleTranslateKey = googleTranslateKey.trim();
+      }
+      if (deeplApiKey && deeplApiKey.trim()) {
+        payload.deeplApiKey = deeplApiKey.trim();
+      }
+      if (googleMapsKey && googleMapsKey.trim()) {
+        payload.googleMapsKey = googleMapsKey.trim();
+      }
+
       const response = await fetch('/api/settings/api-keys', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          // Translation settings
-          translationProvider,
-          ...(googleTranslateKey && { googleTranslateKey }),
-          ...(deeplApiKey && { deeplApiKey }),
-          // Map settings
-          mapProvider,
-          ...(googleMapsKey && { googleMapsKey }),
-        }),
+        body: JSON.stringify(payload),
       });
 
       if (response.ok) {
@@ -491,35 +506,28 @@ export default function AdminSettingsPage() {
         // SEO
         seo: {
           ...currentSettings.seo,
-          titleTemplate: {
-            tr: data.seo.metaTitle || '',
-            en: data.seo.metaTitle || '',
-            de: data.seo.metaTitle || '',
-            fr: data.seo.metaTitle || '',
-          },
-          defaultDescription: {
-            tr: data.seo.metaDescription || '',
-            en: data.seo.metaDescription || '',
-            de: data.seo.metaDescription || '',
-            fr: data.seo.metaDescription || '',
-          },
+          titleTemplate: data.seo.metaTitle || { tr: '', en: '', de: '', fr: '' },
+          defaultDescription: data.seo.metaDescription || { tr: '', en: '', de: '', fr: '' },
           keywords: {
-            tr: data.seo.metaKeywords ? data.seo.metaKeywords.split(',').map(k => k.trim()) : [],
-            en: data.seo.metaKeywords ? data.seo.metaKeywords.split(',').map(k => k.trim()) : [],
-            de: data.seo.metaKeywords ? data.seo.metaKeywords.split(',').map(k => k.trim()) : [],
-            fr: data.seo.metaKeywords ? data.seo.metaKeywords.split(',').map(k => k.trim()) : [],
+            tr: (typeof data.seo.metaKeywords === 'object' && data.seo.metaKeywords.tr)
+              ? data.seo.metaKeywords.tr.split(',').map(k => k.trim())
+              : (typeof data.seo.metaKeywords === 'string' ? data.seo.metaKeywords.split(',').map(k => k.trim()) : []),
+            en: (typeof data.seo.metaKeywords === 'object' && data.seo.metaKeywords.en)
+              ? data.seo.metaKeywords.en.split(',').map(k => k.trim())
+              : [],
+            de: (typeof data.seo.metaKeywords === 'object' && data.seo.metaKeywords.de)
+              ? data.seo.metaKeywords.de.split(',').map(k => k.trim())
+              : [],
+            fr: (typeof data.seo.metaKeywords === 'object' && data.seo.metaKeywords.fr)
+              ? data.seo.metaKeywords.fr.split(',').map(k => k.trim())
+              : [],
           },
           googleAnalyticsId: data.seo.googleAnalyticsId || '',
         },
         // Bakım modu
         maintenance: {
           enabled: data.maintenance.enabled,
-          message: {
-            tr: data.maintenance.message || '',
-            en: data.maintenance.message || '',
-            de: data.maintenance.message || '',
-            fr: data.maintenance.message || '',
-          },
+          message: data.maintenance.message || { tr: '', en: '', de: '', fr: '' },
           allowedIPs: data.maintenance.allowedIPs ? data.maintenance.allowedIPs.split(',').map(ip => ip.trim()) : [],
         },
       } as any, user.uid);
@@ -1283,8 +1291,9 @@ export default function AdminSettingsPage() {
                       <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                         {t('form.metaTitle')}
                       </label>
-                      <Input
-                        {...register('seo.metaTitle')}
+                      <MultiLangInput
+                        value={watch('seo.metaTitle') || { tr: '', en: '' }}
+                        onChange={(value) => setValue('seo.metaTitle', value, { shouldDirty: true })}
                         placeholder="Sayfa başlığı"
                       />
                       <p className="mt-1 text-xs text-gray-500">
@@ -1297,11 +1306,12 @@ export default function AdminSettingsPage() {
                       <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                         {t('form.metaDescription')}
                       </label>
-                      <textarea
-                        {...register('seo.metaDescription')}
+                      <MultiLangInput
+                        value={watch('seo.metaDescription') || { tr: '', en: '' }}
+                        onChange={(value) => setValue('seo.metaDescription', value, { shouldDirty: true })}
+                        type="textarea"
                         rows={3}
                         placeholder="Sayfa açıklaması"
-                        className="w-full px-4 py-3 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary-500"
                       />
                       <p className="mt-1 text-xs text-gray-500">
                         {t('seoHints.descLength')}
@@ -1313,8 +1323,9 @@ export default function AdminSettingsPage() {
                       <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                         {t('form.metaKeywords')}
                       </label>
-                      <Input
-                        {...register('seo.metaKeywords')}
+                      <MultiLangInput
+                        value={watch('seo.metaKeywords') || { tr: '', en: '' }}
+                        onChange={(value) => setValue('seo.metaKeywords', value, { shouldDirty: true })}
                         placeholder="anahtar, kelimeler, virgülle, ayrılmış"
                       />
                     </div>
@@ -1377,11 +1388,12 @@ export default function AdminSettingsPage() {
                       <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                         {t('maintenanceMode.message')}
                       </label>
-                      <textarea
-                        {...register('maintenance.message')}
+                      <MultiLangInput
+                        value={watch('maintenance.message') || { tr: '', en: '' }}
+                        onChange={(value) => setValue('maintenance.message', value, { shouldDirty: true })}
+                        type="textarea"
                         rows={3}
                         placeholder={t('maintenanceMode.messagePlaceholder')}
-                        className="w-full px-4 py-3 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary-500"
                       />
                     </div>
 

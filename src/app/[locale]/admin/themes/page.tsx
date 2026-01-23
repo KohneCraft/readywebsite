@@ -7,7 +7,7 @@
 
 import { useState, useEffect, useCallback, useRef } from 'react';
 import Image from 'next/image';
-import { useLocale } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Palette,
@@ -36,6 +36,7 @@ interface InstallLog {
 
 export default function ThemesPage() {
   const locale = useLocale() as Locale;
+  const t = useTranslations('admin.themes');
 
   const [themes, setThemes] = useState<ThemePreview[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -52,7 +53,7 @@ export default function ThemesPage() {
 
   // Log ekleme fonksiyonu
   const addLog = useCallback((message: string, type: InstallLog['type'] = 'info') => {
-    const time = new Date().toLocaleTimeString('tr-TR');
+    const time = new Date().toLocaleTimeString(locale === 'tr' ? 'tr-TR' : locale === 'de' ? 'de-DE' : locale === 'fr' ? 'fr-FR' : 'en-US');
     setInstallLogs(prev => [...prev, { time, message, type }]);
 
     // Logger'a da yaz
@@ -63,7 +64,7 @@ export default function ThemesPage() {
     } else {
       logger.theme.debug(message);
     }
-  }, []);
+  }, [locale]);
 
   // Log paneli auto-scroll
   useEffect(() => {
@@ -150,7 +151,7 @@ export default function ThemesPage() {
       }
     } catch (error) {
       logger.theme.error('Temalar yüklenemedi', error);
-      setError('Temalar yüklenirken bir hata oluştu.');
+      setError(t('loadError'));
       const defaultThemes = getDefaultThemes();
       setThemes(defaultThemes.map(t => ({
         id: t.metadata.id,
@@ -177,9 +178,9 @@ export default function ThemesPage() {
       setProgress(0);
       setInstallLogs([]);
 
-      addLog('🚀 Tema yükleme işlemi başlatılıyor...', 'info');
+      addLog(t('logs.starting'), 'info');
       setProgress(5);
-      setProgressText('Kullanıcı doğrulanıyor...');
+      setProgressText(t('logs.authenticating'));
 
       // Kullanıcı bilgisini al
       let userId: string | null = null;
@@ -187,40 +188,40 @@ export default function ThemesPage() {
       if (tempSession) {
         const session = JSON.parse(tempSession);
         userId = session.id || 'temp-admin-001';
-        addLog('✓ Oturum doğrulandı (Temp Session)', 'success');
+        addLog(t('logs.authenticatedTemp'), 'success');
       } else {
         const user = getCurrentUser();
         if (user) {
           userId = user.uid;
-          addLog('✓ Oturum doğrulandı (Firebase Auth)', 'success');
+          addLog(t('logs.authenticatedFirebase'), 'success');
         }
       }
       setProgress(10);
 
       if (!userId) {
-        addLog('✗ Kullanıcı bulunamadı!', 'error');
-        throw new Error('Kullanıcı bulunamadı. Lütfen giriş yapın.');
+        addLog(t('logs.userNotFound'), 'error');
+        throw new Error(t('logs.userNotFound'));
       }
 
       // Mevcut temayı sil
-      addLog('🗑️ Mevcut tema ve sayfalar siliniyor...', 'info');
-      setProgressText('Mevcut içerik siliniyor...');
+      addLog(t('logs.deletingTheme'), 'info');
+      setProgressText(t('logs.deletingTheme'));
       setProgress(20);
 
       await deleteCurrentTheme();
-      addLog('✓ Mevcut tema silindi', 'success');
+      addLog(t('logs.themeDeleted'), 'success');
       setProgress(35);
 
       // Tema verilerini bul
-      addLog('🔍 Tema verileri aranıyor...', 'info');
-      setProgressText('Tema verileri hazırlanıyor...');
+      addLog(t('logs.searchingTheme'), 'info');
+      setProgressText(t('logs.preparingData'));
       const defaultThemes = getDefaultThemes();
 
       let themeToInstall = defaultThemes.find(t => t.metadata.id === themeId);
 
       if (!themeToInstall) {
         try {
-          addLog('⚠ Tema ID ile bulunamadı, Firestore\'dan eşleştiriliyor...', 'warning');
+          addLog(t('logs.themeNotFoundWarning'), 'warning');
           const firestoreThemes = await getAvailableThemes();
           const foundFirestoreTheme = firestoreThemes.find(t => t.id === themeId);
 
@@ -236,30 +237,30 @@ export default function ThemesPage() {
             });
           }
         } catch (error) {
-          addLog('⚠ Firestore\'dan tema bilgisi alınamadı', 'warning');
+          addLog(t('logs.firestoreWarning'), 'warning');
         }
       }
 
       if (!themeToInstall) {
-        addLog('✗ Tema bulunamadı!', 'error');
-        throw new Error(`Tema verileri bulunamadı. ID: ${themeId}`);
+        addLog(t('logs.themeNotFound'), 'error');
+        throw new Error(`${t('logs.themeNotFound')} ID: ${themeId}`);
       }
 
-      addLog(`✓ Tema bulundu: ${themeToInstall.metadata.name}`, 'success');
+      addLog(t('logs.themeFound', { name: themeToInstall.metadata.name }), 'success');
       setProgress(45);
 
       // Tema yükleme
-      addLog('📦 Tema yükleniyor...', 'info');
-      setProgressText('Sayfalar oluşturuluyor...');
+      addLog(t('logs.installingTheme'), 'info');
+      setProgressText(t('logs.creatingPages'));
       setProgress(50);
 
       // metadata.pages dizisinden sayfa sayısını al (bu dizideki sayfalar yüklenecek)
       const pageCount = themeToInstall.metadata.pages?.length || 0;
-      addLog(`📄 ${pageCount} sayfa oluşturulacak`, 'info');
+      addLog(t('logs.pagesCount', { count: pageCount }), 'info');
 
       // Sayfa isimlerini logla
       themeToInstall.metadata.pages?.forEach((page) => {
-        addLog(`📝 Sayfa oluşturuluyor: ${page.title}`, 'info');
+        addLog(t('logs.creatingPage', { title: page.title }), 'info');
       });
 
       // Progress tracking için sayaç
@@ -272,26 +273,26 @@ export default function ThemesPage() {
           pagesCreated++;
           const currentProgress = 50 + (pagesCreated * progressPerPage);
           setProgress(Math.min(90, Math.round(currentProgress)));
-          addLog(`✓ Sayfa oluşturuldu: ${event.title} (${event.sectionCount} section)`, 'success');
+          addLog(t('logs.pageCreated', { title: event.title, count: event.sectionCount }), 'success');
         }
       });
 
       setProgress(95);
-      addLog('✓ Tüm sayfalar oluşturuldu', 'success');
-      addLog('✓ Tema ayarları kaydedildi', 'success');
+      addLog(t('logs.allPagesCreated'), 'success');
+      addLog(t('logs.settingsSaved'), 'success');
 
       setProgress(100);
-      setProgressText('Tamamlandı!');
-      addLog('🎉 Tema başarıyla yüklendi!', 'success');
+      setProgressText(t('logs.completed'));
+      addLog(t('logs.success'), 'success');
 
-      setSuccess('Tema başarıyla yüklendi! Yönlendiriliyor...');
+      setSuccess(t('installSuccess'));
 
       setTimeout(() => {
         window.location.href = locale === 'tr' ? '/admin/page-builder' : `/${locale}/admin/page-builder`;
       }, 2000);
     } catch (error: any) {
-      addLog(`✗ HATA: ${error.message}`, 'error');
-      setError(error.message || 'Tema yüklenirken bir hata oluştu');
+      addLog(t('logs.error', { message: error.message }), 'error');
+      setError(error.message || t('loadError'));
       setProgress(0);
       setProgressText('');
     } finally {
@@ -317,10 +318,10 @@ export default function ThemesPage() {
       <div>
         <h1 className="text-3xl font-bold text-gray-900 dark:text-white flex items-center gap-3">
           <Palette className="w-8 h-8" />
-          Tema Seç
+          {t('title')}
         </h1>
         <p className="text-gray-600 dark:text-gray-400 mt-2">
-          Hazır temalardan birini seçerek hızlıca başlayın.
+          {t('subtitle')}
         </p>
       </div>
 
@@ -371,13 +372,11 @@ export default function ThemesPage() {
                 </div>
                 <div>
                   <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">
-                    ⚠️ Dikkat!
+                    {t('warning.title')}
                   </h3>
-                  <p className="text-gray-600 dark:text-gray-300 mb-2">
-                    Yeni bir tema yüklemek, <strong className="text-red-600 dark:text-red-400">mevcut tüm sayfa ve içeriklerinizi silecektir</strong>.
-                  </p>
+                  <p className="text-gray-600 dark:text-gray-300 mb-2" dangerouslySetInnerHTML={{ __html: t.raw('warning.message') }} />
                   <p className="text-sm text-gray-500 dark:text-gray-400">
-                    Bu işlem geri alınamaz!
+                    {t('warning.irreversible')}
                   </p>
                 </div>
               </div>
@@ -387,7 +386,7 @@ export default function ThemesPage() {
                   variant="outline"
                   className="flex-1"
                 >
-                  İptal
+                  {t('warning.cancel')}
                 </Button>
                 <Button
                   onClick={() => {
@@ -396,7 +395,7 @@ export default function ThemesPage() {
                   }}
                   className="flex-1 bg-red-600 hover:bg-red-700 text-white"
                 >
-                  Anladım, Devam Et
+                  {t('warning.confirm')}
                 </Button>
               </div>
             </motion.div>
@@ -426,10 +425,10 @@ export default function ThemesPage() {
                 </div>
                 <div>
                   <h3 className="text-lg font-bold text-gray-900 dark:text-white">
-                    Tema Yükleniyor
+                    {t('installing')}
                   </h3>
                   <p className="text-sm text-gray-500 dark:text-gray-400">
-                    {progressText || 'Lütfen bekleyin...'}
+                    {progressText || t('pleaseWait')}
                   </p>
                 </div>
               </div>
@@ -438,7 +437,7 @@ export default function ThemesPage() {
               <div className="mb-6">
                 <div className="flex items-center justify-between mb-2">
                   <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                    İlerleme
+                    {t('progress')}
                   </span>
                   <span className="text-sm font-bold text-primary-600 dark:text-primary-400">
                     %{progress}
@@ -457,7 +456,7 @@ export default function ThemesPage() {
               {/* Log Panel */}
               <div ref={logPanelRef} className="bg-gray-900 rounded-lg p-4 max-h-48 overflow-y-auto font-mono text-xs">
                 {installLogs.length === 0 ? (
-                  <p className="text-gray-500">Bekleniyor...</p>
+                  <p className="text-gray-500">{t('waiting')}</p>
                 ) : (
                   installLogs.map((log, index) => (
                     <div
@@ -488,7 +487,7 @@ export default function ThemesPage() {
                     className="mt-2"
                     size="sm"
                   >
-                    Kapat
+                    {t('warning.cancel')}
                   </Button>
                 </div>
               )}
@@ -503,10 +502,10 @@ export default function ThemesPage() {
           <CardContent className="py-12 text-center">
             <Palette className="w-16 h-16 mx-auto text-gray-400 mb-4" />
             <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
-              Henüz tema yok
+              {t('noThemes')}
             </h3>
             <p className="text-gray-600 dark:text-gray-400">
-              Şu anda yüklenebilecek hazır tema bulunmuyor.
+              {t('noThemesDescription')}
             </p>
           </CardContent>
         </Card>
@@ -550,10 +549,10 @@ export default function ThemesPage() {
                 <CardContent>
                   <div className="flex items-center justify-between mb-4">
                     <span className="text-xs text-gray-500 dark:text-gray-400">
-                      Kategori: {theme.category}
+                      {t('category')}: {theme.category}
                     </span>
                     <span className="text-xs text-gray-500 dark:text-gray-400">
-                      v{theme.version}
+                      {t('version', { version: theme.version })}
                     </span>
                   </div>
                   <div className="flex gap-2">
@@ -563,13 +562,13 @@ export default function ThemesPage() {
                       className="flex-1"
                     >
                       <Download className="w-4 h-4 mr-2" />
-                      Yükle
+                      {t('install')}
                     </Button>
                     <Button
                       variant="outline"
                       disabled={installingTheme !== null}
                       onClick={() => handlePreview(theme.id)}
-                      title="Tema Önizleme"
+                      title={t('preview')}
                     >
                       <Eye className="w-4 h-4" />
                     </Button>
