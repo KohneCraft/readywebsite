@@ -498,11 +498,66 @@
       "appearance": "Apparence",
       "maintenance": "Mode maintenance",
       "saved": "Paramètres enregistrés",
+      "save": "Enregistrer",
       "sections": {
         "company": "Informations de l'entreprise",
         "contact": "Coordonnées",
         "social": "Réseaux sociaux",
-        "seo": "SEO"
+        "seo": "SEO",
+        "maintenance": "Mode maintenance"
+      },
+      "descriptions": {
+        "company": "Informations de base de l'entreprise",
+        "contact": "Coordonnées",
+        "social": "Comptes de réseaux sociaux",
+        "seo": "Optimisation pour les moteurs de recherche",
+        "maintenance": "Paramètres du mode maintenance"
+      },
+      "browser": {
+        "title": "Paramètres de l'onglet du navigateur",
+        "description": "Le titre de l'onglet utilise le format \"Nom de l'entreprise | Slogan\".",
+        "favicon": "Icône d'onglet (Favicon)",
+        "faviconDesc": "Petite icône affichée dans l'onglet du navigateur (32x32px ou 64x64px recommandé). Le logo est utilisé si laissé vide."
+      },
+      "buttons": {
+        "selectFromMedia": "Sélectionner dans les médias",
+        "uploadFile": "Télécharger un fichier",
+        "remove": "Supprimer",
+        "uploading": "Téléchargement..."
+      },
+      "companyStyle": {
+        "title": "Paramètres de style du nom de l'entreprise",
+        "nameColorLight": "☀️ Couleur du nom (Thème clair)",
+        "nameColorDark": "🌙 Couleur du nom (Thème sombre)",
+        "nameFontSize": "Taille du nom (px)",
+        "autoCalculated": "Calculé automatiquement si vide"
+      },
+      "sloganStyle": {
+        "title": "Paramètres de style du slogan",
+        "colorLight": "☀️ Couleur du slogan (Thème clair)",
+        "colorDark": "🌙 Couleur du slogan (Thème sombre)",
+        "fontSize": "Taille du slogan (px)"
+      },
+      "adminPanel": {
+        "title": "Paramètres du panneau d'administration",
+        "panelTitle": "Titre du panneau d'administration",
+        "panelTitleDesc": "Titre affiché dans la barre latérale",
+        "icon": "Icône du panneau d'administration",
+        "iconDesc": "Icône pour le panneau d'administration (max 100KB, .ico, .png, .svg)",
+        "removeConfirm": "Êtes-vous sûr de vouloir supprimer l'icône d'administration?",
+        "iconRemoved": "Icône d'administration supprimée"
+      },
+      "seoHints": {
+        "titleLength": "Recommandé: 50-60 caractères",
+        "descLength": "Recommandé: 150-160 caractères"
+      },
+      "maintenanceMode": {
+        "title": "Mode maintenance",
+        "description": "Le site sera fermé aux visiteurs lorsqu'il est activé",
+        "message": "Message de maintenance",
+        "messagePlaceholder": "Message à afficher aux visiteurs",
+        "allowedIPs": "Adresses IP autorisées",
+        "allowedIPsHint": "Vous pouvez ajouter plusieurs IP séparées par des virgules"
       },
       "form": {
         "companyName": "Nom de l'entreprise",
@@ -567,6 +622,10 @@
       "activate": "Activer",
       "deactivate": "Désactiver",
       "remove": "Supprimer",
+      "add": "Ajouter",
+      "added": "Ajouté",
+      "closePreview": "Fermer l'aperçu",
+      "previewDescription": "L'aperçu de l'effet s'exécute en arrière-plan. Si vous l'aimez, vous pouvez l'ajouter à votre site en utilisant le bouton \"Ajouter\".",
       "scope": {
         "all": "Toutes les Pages",
         "home": "Page d'Accueil Uniquement",
@@ -580,6 +639,36 @@
         "party": "Fête",
         "nature": "Nature",
         "animations": "Animations"
+      },
+      "modal": {
+        "settingsTitle": "Paramètres",
+        "visibility": "Visibilité",
+        "enableEffect": "Activer l'effet",
+        "whereToShow": "Où afficher?",
+        "allPages": "Toutes les pages",
+        "homeOnly": "Page d'accueil uniquement",
+        "selectedPages": "Pages sélectionnées",
+        "excludePages": "Exclure les pages spécifiées",
+        "pages": "Pages",
+        "noPages": "Aucune page trouvée",
+        "effectSettings": "Paramètres de l'effet",
+        "cancel": "Annuler",
+        "save": "Enregistrer",
+        "intensity": "Intensité",
+        "speed": "Vitesse",
+        "size": "Taille",
+        "wind": "Vent",
+        "color": "Couleur",
+        "gravity": "Gravité",
+        "starCount": "Nombre d'étoiles",
+        "twinkleSpeed": "Vitesse de scintillement",
+        "transparency": "Transparence",
+        "frequency": "Fréquence (par seconde)",
+        "explosionSize": "Taille de l'explosion",
+        "rotationEffect": "Effet de rotation",
+        "lifetime": "Durée de vie (ms)",
+        "trail": "Effet de traînée",
+        "loadingSettings": "Chargement des paramètres pour cet effet..."
       },
       "templates": {
         "snow": {
@@ -631,6 +720,7 @@
       "uploadFile": "Télécharger un Fichier",
       "uploadFiles": "Télécharger des Fichiers",
       "dragDrop": "Glissez et déposez les fichiers ici ou cliquez",
+      "dragDropShort": "Glissez les fichiers ou cliquez",
       "selectFiles": "Sélectionner des Fichiers",
       "noMedia": "Aucun média ajouté",
       "deleteConfirm": "Êtes-vous sûr de vouloir supprimer ce fichier? Cette action est irréversible.",
@@ -643,10 +733,35 @@
       "loading": "Chargement...",
       "selected": "Sélectionné",
       "deleteSelected": "Supprimer la Sélection",
+      "selectAll": "Tout sélectionner",
+      "search": "Rechercher...",
+      "sortBy": "Trier par",
+      "sortAsc": "Croissant",
+      "sortDesc": "Décroissant",
+      "gridView": "Vue en grille",
+      "listView": "Vue en liste",
+      "copy": "Copier",
+      "copied": "Copié!",
+      "copyUrl": "Copier l'URL",
+      "download": "Télécharger",
+      "preview": "Aperçu",
+      "delete": "Supprimer",
+      "supportedFormatsImage": "Formats pris en charge: JPG, PNG, WebP, GIF, SVG",
+      "supportedFormatsVideo": "Formats pris en charge: MP4, WebM, MOV",
+      "loginRequired": "Vous devez vous connecter avec Firebase Auth pour télécharger des médias.",
+      "loginLink": "Cliquez pour vous connecter avec Firebase Auth",
+      "authFailed": "Échec de l'authentification utilisateur. Veuillez actualiser la page.",
+      "itemsDeleted": "éléments supprimés avec succès",
+      "deleteItemsError": "Erreur lors de la suppression des fichiers",
       "filters": {
         "all": "Tous",
         "images": "Photos",
         "videos": "Vidéos"
+      },
+      "sort": {
+        "uploadedAt": "Date de téléchargement",
+        "size": "Taille",
+        "name": "Nom"
       },
       "details": {
         "name": "Nom du Fichier",
@@ -660,14 +775,19 @@
       "title": "Messages de Contact",
       "subtitle": "Afficher et gérer les messages entrants",
       "noMessages": "Aucun message",
+      "total": "Total {count} messages",
       "markAsRead": "Marquer comme Lu",
       "markAsUnread": "Marquer comme Non Lu",
       "reply": "Répondre",
       "delete": "Supprimer",
       "deleteConfirm": "Êtes-vous sûr de vouloir supprimer ce message?",
+      "deleteSuccess": "Message supprimé",
+      "deleteError": "Impossible de supprimer le message",
       "from": "De",
       "date": "Date",
       "subject": "Sujet",
+      "fieldInfo": "Informations du champ",
+      "action": "Action",
       "status": {
         "read": "Lu",
         "unread": "Non lu",
@@ -773,7 +893,33 @@
       "position": "Position",
       "margin": "Marge extérieure",
       "padding": "Marge intérieure",
-      "responsive": "Paramètres responsive"
+      "responsive": "Paramètres responsive",
+      "noPages": "Aucune page n'a encore été créée",
+      "noPagesHint": "Utilisez le bouton ci-dessus pour créer une nouvelle page",
+      "createNewPage": "Créer une nouvelle page",
+      "createNewPageHint": "Créer une nouvelle page à partir de zéro",
+      "howItWorks": {
+        "title": "Comment fonctionne la mise en page ?",
+        "step1": "Sélectionnez une page et réorganisez les éléments par glisser-déposer",
+        "step2": "Définissez la largeur, les marges et les paramètres responsive pour chaque élément",
+        "step3": "Vérifiez vos modifications dans l'aperçu en direct",
+        "step4": "Appliquez les modifications avec le bouton Enregistrer"
+      },
+      "createPage": {
+        "title": "Créer une nouvelle page",
+        "pageTitle": "Titre de la page",
+        "pageTitlePlaceholder": "Ex: À propos de nous",
+        "parentPage": "Page parente (Optionnel)",
+        "noParent": "Aucune (Page principale)",
+        "parentPageHint": "Sélectionnez une page parente pour créer une sous-page",
+        "slug": "Slug (URL)",
+        "slugPlaceholder": "Ex: a-propos-de-nous",
+        "cancel": "Annuler",
+        "create": "Créer",
+        "validationError": "Veuillez entrer le titre et le slug de la page",
+        "loginRequired": "Vous devez vous connecter",
+        "createError": "Une erreur s'est produite lors de la création de la page"
+      }
     }
   },
   "errors": {

@@ -466,7 +466,33 @@
       "position": "Pozisyon",
       "margin": "Dış Boşluk",
       "padding": "İç Boşluk",
-      "responsive": "Responsive Ayarlar"
+      "responsive": "Responsive Ayarlar",
+      "noPages": "Henüz sayfa oluşturulmamış",
+      "noPagesHint": "Yeni sayfa oluşturmak için yukarıdaki butonu kullanın",
+      "createNewPage": "Yeni Sayfa Oluştur",
+      "createNewPageHint": "Sıfırdan yeni sayfa oluşturun",
+      "howItWorks": {
+        "title": "Sayfa Düzeni Nasıl Çalışır?",
+        "step1": "Bir sayfa seçin ve elementleri sürükle-bırak ile yeniden düzenleyin",
+        "step2": "Her element için genişlik, kenar boşlukları ve responsive ayarları yapın",
+        "step3": "Değişikliklerinizi canlı önizleme ile kontrol edin",
+        "step4": "Kaydet butonu ile değişiklikleri uygulayın"
+      },
+      "createPage": {
+        "title": "Yeni Sayfa Oluştur",
+        "pageTitle": "Sayfa Başlığı",
+        "pageTitlePlaceholder": "Örn: Hakkımızda",
+        "parentPage": "Üst Sayfa (Opsiyonel)",
+        "noParent": "Yok (Ana Sayfa)",
+        "parentPageHint": "Alt sayfa oluşturmak için üst sayfa seçin",
+        "slug": "Slug (URL)",
+        "slugPlaceholder": "Örn: hakkimizda",
+        "cancel": "İptal",
+        "create": "Oluştur",
+        "validationError": "Lütfen sayfa başlığı ve slug girin",
+        "loginRequired": "Giriş yapmanız gerekiyor",
+        "createError": "Sayfa oluşturulurken bir hata oluştu"
+      }
     },
     "projects": {
       "title": "Projeler",
@@ -573,12 +599,66 @@
       "appearance": "Görünüm",
       "maintenance": "Bakım Modu",
       "saved": "Ayarlar kaydedildi",
+      "save": "Kaydet",
       "sections": {
         "company": "Firma Bilgileri",
         "contact": "İletişim Bilgileri",
         "social": "Sosyal Medya",
         "seo": "SEO",
         "maintenance": "Bakım Modu"
+      },
+      "descriptions": {
+        "company": "Firma temel bilgileri",
+        "contact": "İletişim bilgileri",
+        "social": "Sosyal medya hesapları",
+        "seo": "Arama motoru optimizasyonu",
+        "maintenance": "Bakım modu ayarları"
+      },
+      "browser": {
+        "title": "Tarayıcı Sekmesi Ayarları",
+        "description": "Sekme başlığı olarak \"Firma Adı | Slogan\" kullanılır.",
+        "favicon": "Sekme İkonu (Favicon)",
+        "faviconDesc": "Tarayıcı sekmesinde görünen küçük ikon (32x32px veya 64x64px önerilir). Boş bırakılırsa logo kullanılır."
+      },
+      "buttons": {
+        "selectFromMedia": "Medyadan Seç",
+        "uploadFile": "Dosya Yükle",
+        "remove": "Kaldır",
+        "uploading": "Yükleniyor..."
+      },
+      "companyStyle": {
+        "title": "Firma Adı Stil Ayarları",
+        "nameColorLight": "☀️ Firma Adı Rengi (Açık Tema)",
+        "nameColorDark": "🌙 Firma Adı Rengi (Koyu Tema)",
+        "nameFontSize": "Firma Adı Boyutu (px)",
+        "autoCalculated": "Boş bırakılırsa otomatik hesaplanır"
+      },
+      "sloganStyle": {
+        "title": "Slogan Stil Ayarları",
+        "colorLight": "☀️ Slogan Rengi (Açık Tema)",
+        "colorDark": "🌙 Slogan Rengi (Koyu Tema)",
+        "fontSize": "Slogan Boyutu (px)"
+      },
+      "adminPanel": {
+        "title": "Admin Panel Ayarları",
+        "panelTitle": "Admin Panel Başlığı",
+        "panelTitleDesc": "Sidebar'da görünen admin panel başlığı",
+        "icon": "Admin Panel Icon",
+        "iconDesc": "Admin panelinde görünecek icon (max 100KB, .ico, .png, .svg)",
+        "removeConfirm": "Admin icon'u kaldırmak istediğinize emin misiniz?",
+        "iconRemoved": "Admin icon kaldırıldı"
+      },
+      "seoHints": {
+        "titleLength": "Önerilen: 50-60 karakter",
+        "descLength": "Önerilen: 150-160 karakter"
+      },
+      "maintenanceMode": {
+        "title": "Bakım Modu",
+        "description": "Aktif edildiğinde site ziyaretçilere kapalı olur",
+        "message": "Bakım Mesajı",
+        "messagePlaceholder": "Ziyaretçilere gösterilecek mesaj",
+        "allowedIPs": "İzin Verilen IP Adresleri",
+        "allowedIPsHint": "Virgülle ayırarak birden fazla IP ekleyebilirsiniz"
       },
       "form": {
         "companyName": "Firma Adı",
@@ -639,6 +719,10 @@
       "activate": "Aktif Yap",
       "deactivate": "Pasif Yap",
       "remove": "Kaldır",
+      "add": "Ekle",
+      "added": "Eklendi",
+      "closePreview": "Önizlemeyi Kapat",
+      "previewDescription": "Efekt önizlemesi arkaplanda çalışıyor. Beğendiyseniz \"Ekle\" butonunu kullanarak sitenize ekleyebilirsiniz.",
       "scope": {
         "all": "Tüm Sayfalarda",
         "home": "Sadece Anasayfada",
@@ -652,6 +736,36 @@
         "party": "Parti",
         "nature": "Doğa",
         "animations": "Animasyonlar"
+      },
+      "modal": {
+        "settingsTitle": "Ayarları",
+        "visibility": "Görünürlük",
+        "enableEffect": "Efekti Etkinleştir",
+        "whereToShow": "Nerede Gösterilsin?",
+        "allPages": "Tüm Sayfalarda",
+        "homeOnly": "Sadece Anasayfada",
+        "selectedPages": "Seçili Sayfalarda",
+        "excludePages": "Belirtilen Sayfalar Hariç",
+        "pages": "Sayfalar",
+        "noPages": "Sayfa bulunamadı",
+        "effectSettings": "Efekt Ayarları",
+        "cancel": "İptal",
+        "save": "Kaydet",
+        "intensity": "Yoğunluk",
+        "speed": "Hız",
+        "size": "Boyut",
+        "wind": "Rüzgar",
+        "color": "Renk",
+        "gravity": "Yerçekimi",
+        "starCount": "Yıldız Sayısı",
+        "twinkleSpeed": "Parıltı Hızı",
+        "transparency": "Şeffaflık",
+        "frequency": "Sıklık (saniyede)",
+        "explosionSize": "Patlama Boyutu",
+        "rotationEffect": "Döndürme Efekti",
+        "lifetime": "Ömür (ms)",
+        "trail": "İz Bırakma",
+        "loadingSettings": "Bu efekt için ayarlar yükleniyor..."
       },
       "templates": {
         "snow": {
@@ -703,6 +817,7 @@
       "uploadFile": "Dosya Yükle",
       "uploadFiles": "Dosyaları Yükle",
       "dragDrop": "Dosyaları sürükleyip bırakın veya tıklayın",
+      "dragDropShort": "Dosya sürükleyin veya tıklayın",
       "selectFiles": "Dosya Seç",
       "noMedia": "Henüz medya eklenmemiş",
       "deleteConfirm": "Bu dosyayı silmek istediğinizden emin misiniz? Bu işlem geri alınamaz.",
@@ -715,10 +830,35 @@
       "loading": "Yükleniyor...",
       "selected": "Seçili",
       "deleteSelected": "Seçilenleri Sil",
+      "selectAll": "Tümünü Seç",
+      "search": "Ara...",
+      "sortBy": "Sırala",
+      "sortAsc": "Artan",
+      "sortDesc": "Azalan",
+      "gridView": "Grid Görünümü",
+      "listView": "Liste Görünümü",
+      "copy": "Kopyala",
+      "copied": "Kopyalandı!",
+      "copyUrl": "URL Kopyala",
+      "download": "İndir",
+      "preview": "Önizle",
+      "delete": "Sil",
+      "supportedFormatsImage": "Desteklenen formatlar: JPG, PNG, WebP, GIF, SVG",
+      "supportedFormatsVideo": "Desteklenen formatlar: MP4, WebM, MOV",
+      "loginRequired": "Medya yüklemek için Firebase Auth ile giriş yapmanız gerekiyor.",
+      "loginLink": "Firebase Auth ile giriş yapmak için tıklayın",
+      "authFailed": "Kullanıcı doğrulaması başarısız. Lütfen sayfayı yenileyin.",
+      "itemsDeleted": "öğe başarıyla silindi",
+      "deleteItemsError": "Dosyalar silinirken hata oluştu",
       "filters": {
         "all": "Tümü",
         "images": "Fotoğraflar",
         "videos": "Videolar"
+      },
+      "sort": {
+        "uploadedAt": "Yüklenme Tarihi",
+        "size": "Boyut",
+        "name": "İsim"
       },
       "details": {
         "name": "Dosya Adı",
@@ -732,14 +872,19 @@
       "title": "İletişim Mesajları",
       "subtitle": "Gelen mesajları görüntüleyin ve yönetin",
       "noMessages": "Henüz mesaj yok",
+      "total": "Toplam {count} mesaj",
       "markAsRead": "Okundu İşaretle",
       "markAsUnread": "Okunmadı İşaretle",
       "reply": "Yanıtla",
       "delete": "Sil",
       "deleteConfirm": "Bu mesajı silmek istediğinizden emin misiniz?",
+      "deleteSuccess": "Mesaj silindi",
+      "deleteError": "Mesaj silinemedi",
       "from": "Gönderen",
       "date": "Tarih",
       "subject": "Konu",
+      "fieldInfo": "Alan Bilgileri",
+      "action": "İşlem",
       "status": {
         "read": "Okundu",
         "unread": "Okunmadı",

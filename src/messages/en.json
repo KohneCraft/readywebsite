@@ -531,7 +531,33 @@
       "position": "Position",
       "margin": "Margin",
       "padding": "Padding",
-      "responsive": "Responsive Settings"
+      "responsive": "Responsive Settings",
+      "noPages": "No pages created yet",
+      "noPagesHint": "Use the button above to create a new page",
+      "createNewPage": "Create New Page",
+      "createNewPageHint": "Create a new page from scratch",
+      "howItWorks": {
+        "title": "How Does Page Layout Work?",
+        "step1": "Select a page and rearrange elements with drag and drop",
+        "step2": "Set width, margins and responsive settings for each element",
+        "step3": "Preview your changes in real-time",
+        "step4": "Apply changes with the save button"
+      },
+      "createPage": {
+        "title": "Create New Page",
+        "pageTitle": "Page Title",
+        "pageTitlePlaceholder": "E.g.: About Us",
+        "parentPage": "Parent Page (Optional)",
+        "noParent": "None (Main Page)",
+        "parentPageHint": "Select a parent page to create a subpage",
+        "slug": "Slug (URL)",
+        "slugPlaceholder": "E.g.: about-us",
+        "cancel": "Cancel",
+        "create": "Create",
+        "validationError": "Please enter page title and slug",
+        "loginRequired": "You need to log in",
+        "createError": "An error occurred while creating the page"
+      }
     },
     "settings": {
       "title": "Settings",
@@ -541,11 +567,66 @@
       "appearance": "Appearance",
       "maintenance": "Maintenance Mode",
       "saved": "Settings saved",
+      "save": "Save",
       "sections": {
         "company": "Company Info",
         "contact": "Contact Info",
         "social": "Social Media",
-        "seo": "SEO"
+        "seo": "SEO",
+        "maintenance": "Maintenance Mode"
+      },
+      "descriptions": {
+        "company": "Basic company information",
+        "contact": "Contact information",
+        "social": "Social media accounts",
+        "seo": "Search engine optimization",
+        "maintenance": "Maintenance mode settings"
+      },
+      "browser": {
+        "title": "Browser Tab Settings",
+        "description": "Tab title uses \"Company Name | Slogan\" format.",
+        "favicon": "Tab Icon (Favicon)",
+        "faviconDesc": "Small icon shown in browser tab (32x32px or 64x64px recommended). Logo is used if left empty."
+      },
+      "buttons": {
+        "selectFromMedia": "Select from Media",
+        "uploadFile": "Upload File",
+        "remove": "Remove",
+        "uploading": "Uploading..."
+      },
+      "companyStyle": {
+        "title": "Company Name Style Settings",
+        "nameColorLight": "☀️ Company Name Color (Light Theme)",
+        "nameColorDark": "🌙 Company Name Color (Dark Theme)",
+        "nameFontSize": "Company Name Size (px)",
+        "autoCalculated": "Auto-calculated if left empty"
+      },
+      "sloganStyle": {
+        "title": "Slogan Style Settings",
+        "colorLight": "☀️ Slogan Color (Light Theme)",
+        "colorDark": "🌙 Slogan Color (Dark Theme)",
+        "fontSize": "Slogan Size (px)"
+      },
+      "adminPanel": {
+        "title": "Admin Panel Settings",
+        "panelTitle": "Admin Panel Title",
+        "panelTitleDesc": "Title shown in sidebar",
+        "icon": "Admin Panel Icon",
+        "iconDesc": "Icon for admin panel (max 100KB, .ico, .png, .svg)",
+        "removeConfirm": "Are you sure you want to remove the admin icon?",
+        "iconRemoved": "Admin icon removed"
+      },
+      "seoHints": {
+        "titleLength": "Recommended: 50-60 characters",
+        "descLength": "Recommended: 150-160 characters"
+      },
+      "maintenanceMode": {
+        "title": "Maintenance Mode",
+        "description": "Site will be closed to visitors when enabled",
+        "message": "Maintenance Message",
+        "messagePlaceholder": "Message to show visitors",
+        "allowedIPs": "Allowed IP Addresses",
+        "allowedIPsHint": "You can add multiple IPs separated by commas"
       },
       "form": {
         "companyName": "Company Name",
@@ -610,6 +691,10 @@
       "activate": "Activate",
       "deactivate": "Deactivate",
       "remove": "Remove",
+      "add": "Add",
+      "added": "Added",
+      "closePreview": "Close Preview",
+      "previewDescription": "The effect preview is running in the background. If you like it, you can add it to your site using the \"Add\" button.",
       "scope": {
         "all": "All Pages",
         "home": "Homepage Only",
@@ -623,6 +708,36 @@
         "party": "Party",
         "nature": "Nature",
         "animations": "Animations"
+      },
+      "modal": {
+        "settingsTitle": "Settings",
+        "visibility": "Visibility",
+        "enableEffect": "Enable Effect",
+        "whereToShow": "Where to Display?",
+        "allPages": "All Pages",
+        "homeOnly": "Homepage Only",
+        "selectedPages": "Selected Pages",
+        "excludePages": "Exclude Specified Pages",
+        "pages": "Pages",
+        "noPages": "No pages found",
+        "effectSettings": "Effect Settings",
+        "cancel": "Cancel",
+        "save": "Save",
+        "intensity": "Intensity",
+        "speed": "Speed",
+        "size": "Size",
+        "wind": "Wind",
+        "color": "Color",
+        "gravity": "Gravity",
+        "starCount": "Star Count",
+        "twinkleSpeed": "Twinkle Speed",
+        "transparency": "Transparency",
+        "frequency": "Frequency (per second)",
+        "explosionSize": "Explosion Size",
+        "rotationEffect": "Rotation Effect",
+        "lifetime": "Lifetime (ms)",
+        "trail": "Trail Effect",
+        "loadingSettings": "Loading settings for this effect..."
       },
       "templates": {
         "snow": {
@@ -674,6 +789,7 @@
       "uploadFile": "Upload File",
       "uploadFiles": "Upload Files",
       "dragDrop": "Drag and drop files here or click",
+      "dragDropShort": "Drag files or click",
       "selectFiles": "Select Files",
       "noMedia": "No media added yet",
       "deleteConfirm": "Are you sure you want to delete this file? This action cannot be undone.",
@@ -686,10 +802,35 @@
       "loading": "Loading...",
       "selected": "Selected",
       "deleteSelected": "Delete Selected",
+      "selectAll": "Select All",
+      "search": "Search...",
+      "sortBy": "Sort by",
+      "sortAsc": "Ascending",
+      "sortDesc": "Descending",
+      "gridView": "Grid View",
+      "listView": "List View",
+      "copy": "Copy",
+      "copied": "Copied!",
+      "copyUrl": "Copy URL",
+      "download": "Download",
+      "preview": "Preview",
+      "delete": "Delete",
+      "supportedFormatsImage": "Supported formats: JPG, PNG, WebP, GIF, SVG",
+      "supportedFormatsVideo": "Supported formats: MP4, WebM, MOV",
+      "loginRequired": "You need to login with Firebase Auth to upload media.",
+      "loginLink": "Click to login with Firebase Auth",
+      "authFailed": "User authentication failed. Please refresh the page.",
+      "itemsDeleted": "items deleted successfully",
+      "deleteItemsError": "Error deleting files",
       "filters": {
         "all": "All",
         "images": "Images",
         "videos": "Videos"
+      },
+      "sort": {
+        "uploadedAt": "Upload Date",
+        "size": "Size",
+        "name": "Name"
       },
       "details": {
         "name": "File Name",
@@ -703,14 +844,19 @@
       "title": "Contact Messages",
       "subtitle": "View and manage incoming messages",
       "noMessages": "No messages yet",
+      "total": "Total {count} messages",
       "markAsRead": "Mark as Read",
       "markAsUnread": "Mark as Unread",
       "reply": "Reply",
       "delete": "Delete",
       "deleteConfirm": "Are you sure you want to delete this message?",
+      "deleteSuccess": "Message deleted",
+      "deleteError": "Could not delete message",
       "from": "From",
       "date": "Date",
       "subject": "Subject",
+      "fieldInfo": "Field Information",
+      "action": "Action",
       "status": {
         "read": "Read",
         "unread": "Unread",

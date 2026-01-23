@@ -498,11 +498,66 @@
       "appearance": "Aussehen",
       "maintenance": "Wartungsmodus",
       "saved": "Einstellungen gespeichert",
+      "save": "Speichern",
       "sections": {
         "company": "Firmeninformationen",
         "contact": "Kontaktinformationen",
         "social": "Soziale Medien",
-        "seo": "SEO"
+        "seo": "SEO",
+        "maintenance": "Wartungsmodus"
+      },
+      "descriptions": {
+        "company": "Grundlegende Firmeninformationen",
+        "contact": "Kontaktinformationen",
+        "social": "Social-Media-Konten",
+        "seo": "Suchmaschinenoptimierung",
+        "maintenance": "Wartungsmodus-Einstellungen"
+      },
+      "browser": {
+        "title": "Browser-Tab-Einstellungen",
+        "description": "Der Tab-Titel verwendet das Format \"Firmenname | Slogan\".",
+        "favicon": "Tab-Symbol (Favicon)",
+        "faviconDesc": "Kleines Symbol im Browser-Tab (32x32px oder 64x64px empfohlen). Bei leerem Feld wird das Logo verwendet."
+      },
+      "buttons": {
+        "selectFromMedia": "Aus Medien Auswählen",
+        "uploadFile": "Datei Hochladen",
+        "remove": "Entfernen",
+        "uploading": "Wird hochgeladen..."
+      },
+      "companyStyle": {
+        "title": "Firmenname-Stileinstellungen",
+        "nameColorLight": "☀️ Firmenname Farbe (Helles Theme)",
+        "nameColorDark": "🌙 Firmenname Farbe (Dunkles Theme)",
+        "nameFontSize": "Firmenname Größe (px)",
+        "autoCalculated": "Automatisch berechnet wenn leer"
+      },
+      "sloganStyle": {
+        "title": "Slogan-Stileinstellungen",
+        "colorLight": "☀️ Slogan Farbe (Helles Theme)",
+        "colorDark": "🌙 Slogan Farbe (Dunkles Theme)",
+        "fontSize": "Slogan Größe (px)"
+      },
+      "adminPanel": {
+        "title": "Admin-Panel-Einstellungen",
+        "panelTitle": "Admin-Panel-Titel",
+        "panelTitleDesc": "In der Seitenleiste angezeigter Titel",
+        "icon": "Admin-Panel-Symbol",
+        "iconDesc": "Symbol für das Admin-Panel (max 100KB, .ico, .png, .svg)",
+        "removeConfirm": "Sind Sie sicher, dass Sie das Admin-Symbol entfernen möchten?",
+        "iconRemoved": "Admin-Symbol entfernt"
+      },
+      "seoHints": {
+        "titleLength": "Empfohlen: 50-60 Zeichen",
+        "descLength": "Empfohlen: 150-160 Zeichen"
+      },
+      "maintenanceMode": {
+        "title": "Wartungsmodus",
+        "description": "Die Website wird für Besucher geschlossen, wenn aktiviert",
+        "message": "Wartungsnachricht",
+        "messagePlaceholder": "Nachricht für Besucher",
+        "allowedIPs": "Erlaubte IP-Adressen",
+        "allowedIPsHint": "Sie können mehrere IPs durch Kommas getrennt hinzufügen"
       },
       "form": {
         "companyName": "Firmenname",
@@ -567,6 +622,10 @@
       "activate": "Aktivieren",
       "deactivate": "Deaktivieren",
       "remove": "Entfernen",
+      "add": "Hinzufügen",
+      "added": "Hinzugefügt",
+      "closePreview": "Vorschau schließen",
+      "previewDescription": "Die Effektvorschau läuft im Hintergrund. Wenn es Ihnen gefällt, können Sie es mit der Schaltfläche \"Hinzufügen\" zu Ihrer Website hinzufügen.",
       "scope": {
         "all": "Alle Seiten",
         "home": "Nur Startseite",
@@ -580,6 +639,36 @@
         "party": "Party",
         "nature": "Natur",
         "animations": "Animationen"
+      },
+      "modal": {
+        "settingsTitle": "Einstellungen",
+        "visibility": "Sichtbarkeit",
+        "enableEffect": "Effekt aktivieren",
+        "whereToShow": "Wo anzeigen?",
+        "allPages": "Alle Seiten",
+        "homeOnly": "Nur Startseite",
+        "selectedPages": "Ausgewählte Seiten",
+        "excludePages": "Angegebene Seiten ausschließen",
+        "pages": "Seiten",
+        "noPages": "Keine Seiten gefunden",
+        "effectSettings": "Effekteinstellungen",
+        "cancel": "Abbrechen",
+        "save": "Speichern",
+        "intensity": "Intensität",
+        "speed": "Geschwindigkeit",
+        "size": "Größe",
+        "wind": "Wind",
+        "color": "Farbe",
+        "gravity": "Schwerkraft",
+        "starCount": "Sternanzahl",
+        "twinkleSpeed": "Funkelgeschwindigkeit",
+        "transparency": "Transparenz",
+        "frequency": "Häufigkeit (pro Sekunde)",
+        "explosionSize": "Explosionsgröße",
+        "rotationEffect": "Dreheffekt",
+        "lifetime": "Lebensdauer (ms)",
+        "trail": "Spur-Effekt",
+        "loadingSettings": "Einstellungen für diesen Effekt werden geladen..."
       },
       "templates": {
         "snow": {
@@ -631,6 +720,7 @@
       "uploadFile": "Datei Hochladen",
       "uploadFiles": "Dateien Hochladen",
       "dragDrop": "Dateien hierher ziehen oder klicken",
+      "dragDropShort": "Dateien ziehen oder klicken",
       "selectFiles": "Dateien Auswählen",
       "noMedia": "Noch keine Medien hinzugefügt",
       "deleteConfirm": "Sind Sie sicher, dass Sie diese Datei löschen möchten? Diese Aktion kann nicht rückgängig gemacht werden.",
@@ -643,10 +733,35 @@
       "loading": "Laden...",
       "selected": "Ausgewählt",
       "deleteSelected": "Ausgewählte Löschen",
+      "selectAll": "Alle auswählen",
+      "search": "Suchen...",
+      "sortBy": "Sortieren nach",
+      "sortAsc": "Aufsteigend",
+      "sortDesc": "Absteigend",
+      "gridView": "Rasteransicht",
+      "listView": "Listenansicht",
+      "copy": "Kopieren",
+      "copied": "Kopiert!",
+      "copyUrl": "URL kopieren",
+      "download": "Herunterladen",
+      "preview": "Vorschau",
+      "delete": "Löschen",
+      "supportedFormatsImage": "Unterstützte Formate: JPG, PNG, WebP, GIF, SVG",
+      "supportedFormatsVideo": "Unterstützte Formate: MP4, WebM, MOV",
+      "loginRequired": "Sie müssen sich mit Firebase Auth anmelden, um Medien hochzuladen.",
+      "loginLink": "Klicken Sie hier, um sich mit Firebase Auth anzumelden",
+      "authFailed": "Benutzerauthentifizierung fehlgeschlagen. Bitte aktualisieren Sie die Seite.",
+      "itemsDeleted": "Elemente erfolgreich gelöscht",
+      "deleteItemsError": "Fehler beim Löschen der Dateien",
       "filters": {
         "all": "Alle",
         "images": "Fotos",
         "videos": "Videos"
+      },
+      "sort": {
+        "uploadedAt": "Hochladedatum",
+        "size": "Größe",
+        "name": "Name"
       },
       "details": {
         "name": "Dateiname",
@@ -660,14 +775,19 @@
       "title": "Kontaktnachrichten",
       "subtitle": "Eingehende Nachrichten anzeigen und verwalten",
       "noMessages": "Noch keine Nachrichten",
+      "total": "Insgesamt {count} Nachrichten",
       "markAsRead": "Als Gelesen Markieren",
       "markAsUnread": "Als Ungelesen Markieren",
       "reply": "Antworten",
       "delete": "Löschen",
       "deleteConfirm": "Sind Sie sicher, dass Sie diese Nachricht löschen möchten?",
+      "deleteSuccess": "Nachricht gelöscht",
+      "deleteError": "Nachricht konnte nicht gelöscht werden",
       "from": "Von",
       "date": "Datum",
       "subject": "Betreff",
+      "fieldInfo": "Feldinformationen",
+      "action": "Aktion",
       "status": {
         "read": "Gelesen",
         "unread": "Ungelesen",
@@ -773,7 +893,33 @@
       "position": "Position",
       "margin": "Außenabstand",
       "padding": "Innenabstand",
-      "responsive": "Responsive Einstellungen"
+      "responsive": "Responsive Einstellungen",
+      "noPages": "Noch keine Seiten erstellt",
+      "noPagesHint": "Verwenden Sie die Schaltfläche oben, um eine neue Seite zu erstellen",
+      "createNewPage": "Neue Seite erstellen",
+      "createNewPageHint": "Erstellen Sie eine neue Seite von Grund auf",
+      "howItWorks": {
+        "title": "Wie funktioniert das Seitenlayout?",
+        "step1": "Wählen Sie eine Seite und ordnen Sie Elemente per Drag & Drop neu an",
+        "step2": "Legen Sie Breite, Abstände und responsive Einstellungen für jedes Element fest",
+        "step3": "Überprüfen Sie Ihre Änderungen in der Live-Vorschau",
+        "step4": "Wenden Sie Änderungen mit der Speichern-Schaltfläche an"
+      },
+      "createPage": {
+        "title": "Neue Seite erstellen",
+        "pageTitle": "Seitentitel",
+        "pageTitlePlaceholder": "Z.B.: Über uns",
+        "parentPage": "Übergeordnete Seite (Optional)",
+        "noParent": "Keine (Hauptseite)",
+        "parentPageHint": "Wählen Sie eine übergeordnete Seite, um eine Unterseite zu erstellen",
+        "slug": "Slug (URL)",
+        "slugPlaceholder": "Z.B.: ueber-uns",
+        "cancel": "Abbrechen",
+        "create": "Erstellen",
+        "validationError": "Bitte geben Sie Seitentitel und Slug ein",
+        "loginRequired": "Sie müssen sich anmelden",
+        "createError": "Beim Erstellen der Seite ist ein Fehler aufgetreten"
+      }
     }
   },
   "errors": {
