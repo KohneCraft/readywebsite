@@ -79,11 +79,7 @@ export default function ThemesPage() {
     window.open(previewUrl, '_blank');
   };
 
-  useEffect(() => {
-    loadThemes();
-  }, []);
-
-  const loadThemes = async () => {
+  const loadThemes = useCallback(async () => {
     try {
       setIsLoading(true);
       setError(null);
@@ -164,7 +160,11 @@ export default function ThemesPage() {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [t]);
+
+  useEffect(() => {
+    loadThemes();
+  }, [loadThemes]);
 
   const handleThemeInstall = (themeIdOrName: string) => {
     setShowWarning(themeIdOrName);

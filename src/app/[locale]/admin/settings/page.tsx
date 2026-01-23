@@ -508,20 +508,21 @@ export default function AdminSettingsPage() {
           ...currentSettings.seo,
           titleTemplate: data.seo.metaTitle || { tr: '', en: '', de: '', fr: '' },
           defaultDescription: data.seo.metaDescription || { tr: '', en: '', de: '', fr: '' },
-          keywords: {
-            tr: (typeof data.seo.metaKeywords === 'object' && data.seo.metaKeywords.tr)
-              ? data.seo.metaKeywords.tr.split(',').map(k => k.trim())
-              : (typeof data.seo.metaKeywords === 'string' ? data.seo.metaKeywords.split(',').map(k => k.trim()) : []),
-            en: (typeof data.seo.metaKeywords === 'object' && data.seo.metaKeywords.en)
-              ? data.seo.metaKeywords.en.split(',').map(k => k.trim())
-              : [],
-            de: (typeof data.seo.metaKeywords === 'object' && data.seo.metaKeywords.de)
-              ? data.seo.metaKeywords.de.split(',').map(k => k.trim())
-              : [],
-            fr: (typeof data.seo.metaKeywords === 'object' && data.seo.metaKeywords.fr)
-              ? data.seo.metaKeywords.fr.split(',').map(k => k.trim())
-              : [],
-          },
+          keywords: (() => {
+            const keywords = data.seo.metaKeywords;
+            if (typeof keywords === 'object' && keywords !== null) {
+              return {
+                tr: keywords?.tr ? (Array.isArray(keywords.tr) ? keywords.tr : keywords.tr.split(',').map(k => k.trim())) : [],
+                en: keywords?.en ? (Array.isArray(keywords.en) ? keywords.en : keywords.en.split(',').map(k => k.trim())) : [],
+                de: keywords?.de ? (Array.isArray(keywords.de) ? keywords.de : keywords.de.split(',').map(k => k.trim())) : [],
+                fr: keywords?.fr ? (Array.isArray(keywords.fr) ? keywords.fr : keywords.fr.split(',').map(k => k.trim())) : [],
+              };
+            } else if (typeof keywords === 'string') {
+              const arr = (keywords as string).split(',').map(k => k.trim());
+              return { tr: arr, en: [], de: [], fr: [] };
+            }
+            return { tr: [], en: [], de: [], fr: [] };
+          })(),
           googleAnalyticsId: data.seo.googleAnalyticsId || '',
         },
         // Bakım modu
