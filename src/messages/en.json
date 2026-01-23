@@ -573,14 +573,16 @@
         "contact": "Contact Info",
         "social": "Social Media",
         "seo": "SEO",
-        "maintenance": "Maintenance Mode"
+        "maintenance": "Maintenance Mode",
+        "apiKeys": "API Keys"
       },
       "descriptions": {
         "company": "Basic company information",
         "contact": "Contact information",
         "social": "Social media accounts",
         "seo": "Search engine optimization",
-        "maintenance": "Maintenance mode settings"
+        "maintenance": "Maintenance mode settings",
+        "apiKeys": "Manage API keys for translation, maps, and other external services"
       },
       "browser": {
         "title": "Browser Tab Settings",
@@ -627,6 +629,29 @@
         "messagePlaceholder": "Message to show visitors",
         "allowedIPs": "Allowed IP Addresses",
         "allowedIPsHint": "You can add multiple IPs separated by commas"
+      },
+      "apiKeys": {
+        "translationTitle": "Translation API",
+        "translationDesc": "Select the API service for automatic translation",
+        "mapsTitle": "Maps API",
+        "mapsDesc": "Select the service to use for map display",
+        "disabled": "Disabled",
+        "translationDisabledDesc": "Automatic translation is disabled",
+        "mapsDisabledDesc": "Map feature is disabled",
+        "googleTranslateDesc": "Google Cloud Translation API",
+        "deeplDesc": "DeepL Pro/Free API",
+        "googleMapsDesc": "Google Maps Platform API",
+        "openStreetMapDesc": "Free and open source map service",
+        "configured": "Configured",
+        "free": "Free - No API key required",
+        "enterApiKey": "Enter API key...",
+        "googleTranslateHint": "Get your Translation API key from Google Cloud Console",
+        "deeplHint": "Get your API key from DeepL account. Free plans end with ':fx'.",
+        "googleMapsHint": "Get your Maps JavaScript API key from Google Cloud Console",
+        "openStreetMapInfo": "OpenStreetMap is free and requires no API key. Used with Leaflet.",
+        "futureApisNote": "Future APIs (payment, analytics, etc.) will be manageable from here.",
+        "save": "Save API Settings",
+        "saved": "API settings saved"
       },
       "form": {
         "companyName": "Company Name",

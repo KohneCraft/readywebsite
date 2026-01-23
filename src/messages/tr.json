@@ -605,14 +605,16 @@
         "contact": "İletişim Bilgileri",
         "social": "Sosyal Medya",
         "seo": "SEO",
-        "maintenance": "Bakım Modu"
+        "maintenance": "Bakım Modu",
+        "apiKeys": "API Anahtarları"
       },
       "descriptions": {
         "company": "Firma temel bilgileri",
         "contact": "İletişim bilgileri",
         "social": "Sosyal medya hesapları",
         "seo": "Arama motoru optimizasyonu",
-        "maintenance": "Bakım modu ayarları"
+        "maintenance": "Bakım modu ayarları",
+        "apiKeys": "Çeviri, harita ve diğer harici servislerin API anahtarlarını yönetin"
       },
       "browser": {
         "title": "Tarayıcı Sekmesi Ayarları",
@@ -659,6 +661,29 @@
         "messagePlaceholder": "Ziyaretçilere gösterilecek mesaj",
         "allowedIPs": "İzin Verilen IP Adresleri",
         "allowedIPsHint": "Virgülle ayırarak birden fazla IP ekleyebilirsiniz"
+      },
+      "apiKeys": {
+        "translationTitle": "Çeviri API",
+        "translationDesc": "Otomatik çeviri için kullanılacak API servisini seçin",
+        "mapsTitle": "Harita API",
+        "mapsDesc": "Harita gösterimi için kullanılacak servisi seçin",
+        "disabled": "Kapalı",
+        "translationDisabledDesc": "Otomatik çeviri devre dışı",
+        "mapsDisabledDesc": "Harita özelliği devre dışı",
+        "googleTranslateDesc": "Google Cloud Translation API",
+        "deeplDesc": "DeepL Pro/Free API",
+        "googleMapsDesc": "Google Maps Platform API",
+        "openStreetMapDesc": "Ücretsiz ve açık kaynak harita servisi",
+        "configured": "Yapılandırıldı",
+        "free": "Ücretsiz - API anahtarı gerekmez",
+        "enterApiKey": "API anahtarını girin...",
+        "googleTranslateHint": "Google Cloud Console'dan Translation API anahtarınızı alın",
+        "deeplHint": "DeepL hesabınızdan API anahtarınızı alın. Free planlar ':fx' ile biter.",
+        "googleMapsHint": "Google Cloud Console'dan Maps JavaScript API anahtarınızı alın",
+        "openStreetMapInfo": "OpenStreetMap ücretsizdir ve API anahtarı gerektirmez. Leaflet ile kullanılır.",
+        "futureApisNote": "İleride eklenecek API'ler (ödeme, analitik vb.) buradan yönetilebilecektir.",
+        "save": "API Ayarlarını Kaydet",
+        "saved": "API ayarları kaydedildi"
       },
       "form": {
         "companyName": "Firma Adı",

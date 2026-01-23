@@ -504,14 +504,16 @@
         "contact": "Coordonnées",
         "social": "Réseaux sociaux",
         "seo": "SEO",
-        "maintenance": "Mode maintenance"
+        "maintenance": "Mode maintenance",
+        "apiKeys": "Clés API"
       },
       "descriptions": {
         "company": "Informations de base de l'entreprise",
         "contact": "Coordonnées",
         "social": "Comptes de réseaux sociaux",
         "seo": "Optimisation pour les moteurs de recherche",
-        "maintenance": "Paramètres du mode maintenance"
+        "maintenance": "Paramètres du mode maintenance",
+        "apiKeys": "Gérez les clés API pour la traduction, les cartes et autres services externes"
       },
       "browser": {
         "title": "Paramètres de l'onglet du navigateur",
@@ -558,6 +560,29 @@
         "messagePlaceholder": "Message à afficher aux visiteurs",
         "allowedIPs": "Adresses IP autorisées",
         "allowedIPsHint": "Vous pouvez ajouter plusieurs IP séparées par des virgules"
+      },
+      "apiKeys": {
+        "translationTitle": "API de Traduction",
+        "translationDesc": "Sélectionnez le service API pour la traduction automatique",
+        "mapsTitle": "API de Cartes",
+        "mapsDesc": "Sélectionnez le service à utiliser pour l'affichage des cartes",
+        "disabled": "Désactivé",
+        "translationDisabledDesc": "La traduction automatique est désactivée",
+        "mapsDisabledDesc": "La fonctionnalité de carte est désactivée",
+        "googleTranslateDesc": "API Google Cloud Translation",
+        "deeplDesc": "API DeepL Pro/Free",
+        "googleMapsDesc": "API Google Maps Platform",
+        "openStreetMapDesc": "Service de carte gratuit et open source",
+        "configured": "Configuré",
+        "free": "Gratuit - Aucune clé API requise",
+        "enterApiKey": "Entrez la clé API...",
+        "googleTranslateHint": "Obtenez votre clé API Translation depuis Google Cloud Console",
+        "deeplHint": "Obtenez votre clé API depuis votre compte DeepL. Les plans Free se terminent par ':fx'.",
+        "googleMapsHint": "Obtenez votre clé API Maps JavaScript depuis Google Cloud Console",
+        "openStreetMapInfo": "OpenStreetMap est gratuit et ne nécessite pas de clé API. Utilisé avec Leaflet.",
+        "futureApisNote": "Les futures API (paiement, analytique, etc.) seront gérables depuis ici.",
+        "save": "Enregistrer les Paramètres API",
+        "saved": "Paramètres API enregistrés"
       },
       "form": {
         "companyName": "Nom de l'entreprise",

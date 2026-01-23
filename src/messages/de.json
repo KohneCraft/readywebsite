@@ -504,14 +504,16 @@
         "contact": "Kontaktinformationen",
         "social": "Soziale Medien",
         "seo": "SEO",
-        "maintenance": "Wartungsmodus"
+        "maintenance": "Wartungsmodus",
+        "apiKeys": "API-Schlüssel"
       },
       "descriptions": {
         "company": "Grundlegende Firmeninformationen",
         "contact": "Kontaktinformationen",
         "social": "Social-Media-Konten",
         "seo": "Suchmaschinenoptimierung",
-        "maintenance": "Wartungsmodus-Einstellungen"
+        "maintenance": "Wartungsmodus-Einstellungen",
+        "apiKeys": "Verwalten Sie API-Schlüssel für Übersetzung, Karten und andere externe Dienste"
       },
       "browser": {
         "title": "Browser-Tab-Einstellungen",
@@ -558,6 +560,29 @@
         "messagePlaceholder": "Nachricht für Besucher",
         "allowedIPs": "Erlaubte IP-Adressen",
         "allowedIPsHint": "Sie können mehrere IPs durch Kommas getrennt hinzufügen"
+      },
+      "apiKeys": {
+        "translationTitle": "Übersetzungs-API",
+        "translationDesc": "Wählen Sie den API-Dienst für automatische Übersetzung",
+        "mapsTitle": "Karten-API",
+        "mapsDesc": "Wählen Sie den Dienst für die Kartenanzeige",
+        "disabled": "Deaktiviert",
+        "translationDisabledDesc": "Automatische Übersetzung ist deaktiviert",
+        "mapsDisabledDesc": "Kartenfunktion ist deaktiviert",
+        "googleTranslateDesc": "Google Cloud Translation API",
+        "deeplDesc": "DeepL Pro/Free API",
+        "googleMapsDesc": "Google Maps Platform API",
+        "openStreetMapDesc": "Kostenloser und Open-Source-Kartendienst",
+        "configured": "Konfiguriert",
+        "free": "Kostenlos - Kein API-Schlüssel erforderlich",
+        "enterApiKey": "API-Schlüssel eingeben...",
+        "googleTranslateHint": "Holen Sie Ihren Translation-API-Schlüssel von der Google Cloud Console",
+        "deeplHint": "Holen Sie Ihren API-Schlüssel aus Ihrem DeepL-Konto. Free-Pläne enden mit ':fx'.",
+        "googleMapsHint": "Holen Sie Ihren Maps JavaScript API-Schlüssel von der Google Cloud Console",
+        "openStreetMapInfo": "OpenStreetMap ist kostenlos und erfordert keinen API-Schlüssel. Wird mit Leaflet verwendet.",
+        "futureApisNote": "Zukünftige APIs (Zahlung, Analytik usw.) werden von hier aus verwaltbar sein.",
+        "save": "API-Einstellungen Speichern",
+        "saved": "API-Einstellungen gespeichert"
       },
       "form": {
         "companyName": "Firmenname",
