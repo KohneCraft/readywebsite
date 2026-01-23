@@ -144,7 +144,6 @@ export function EffectCard({ effect, isActive, onAdd, translations }: EffectCard
                     >
                         {isActive ? `✓ ${translations.added}` : `+ ${translations.add}`}
                     </button>
-                    </button>
                 </div>
             </div>
 
