@@ -124,7 +124,7 @@ export function Footer() {
       }
     }
     return label;
-  }, [tNav]);
+  }, [tNav, labelToNavKey]);
 
   // Tema ayarlarından quick links'i al ve çevir
   const quickLinks = useMemo(() => {

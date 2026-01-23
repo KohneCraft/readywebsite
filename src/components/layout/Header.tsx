@@ -116,7 +116,7 @@ export function Header() {
       }
     }
     return label; // Mapping'de yoksa orijinal label'ı döndür
-  }, [t]);
+  }, [t, labelToNavKey]);
 
   // NavItem'ları recursive olarak çevir
   const translateNavItems = useCallback((items: NavItem[]): NavItem[] => {
