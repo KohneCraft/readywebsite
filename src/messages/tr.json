@@ -34,7 +34,59 @@
     "contactUs": "Bize Ulaşın",
     "getInTouch": "İletişime Geç",
     "required": "Zorunlu alan",
-    "optional": "Opsiyonel"
+    "optional": "Opsiyonel",
+    "multiLangInput": {
+      "languagesCompleted": "{filled}/{total} dil tamamlandı",
+      "missing": "Eksik",
+      "autoTranslate": "Otomatik çevir",
+      "translating": "Çeviriliyor...",
+      "translateError": "Çeviri hatası",
+      "translateSuccess": "Başarıyla çevrildi"
+    },
+    "toast": {
+      "loginRequired": "Lütfen giriş yapın",
+      "saveSuccess": "Başarıyla kaydedildi",
+      "saveError": "Kaydedilemedi",
+      "deleteSuccess": "Başarıyla silindi",
+      "deleteError": "Silinemedi",
+      "uploadSuccess": "Dosya yüklendi",
+      "uploadError": "Dosya yüklenemedi",
+      "copySuccess": "Kopyalandı",
+      "copyError": "Kopyalanamadı",
+      "fileTooLarge": "Dosya boyutu çok büyük",
+      "invalidFormat": "Geçersiz format",
+      "networkError": "Bağlantı hatası",
+      "unknownError": "Bir hata oluştu",
+      "themeRequired": "Lütfen önce bir tema yükleyin",
+      "headerSaved": "Header ayarları kaydedildi",
+      "headerSaveError": "Header ayarları kaydedilemedi",
+      "footerSaved": "Footer ayarları kaydedildi",
+      "footerSaveError": "Footer ayarları kaydedilemedi",
+      "iconUploadError": "Icon yüklenirken hata oluştu",
+      "iconSaveError": "Icon kaydedilirken hata oluştu",
+      "iconRemoveError": "Icon kaldırılırken hata oluştu",
+      "titleSaveError": "Başlık kaydedilirken hata oluştu",
+      "settingsSaved": "Ayarlar kaydedildi",
+      "settingsSaveError": "Ayarlar kaydedilemedi",
+      "apiKeysSaved": "API anahtarları kaydedildi",
+      "apiKeysSaveError": "API anahtarları kaydedilemedi",
+      "formSuccess": "Form başarıyla gönderildi",
+      "formError": "Form gönderilemedi",
+      "contactSuccess": "Mesajınız gönderildi",
+      "contactError": "Mesaj gönderilemedi"
+    },
+    "colorPicker": {
+      "hexCode": "Hex Kodu",
+      "transparent": "Şeffaf (Transparent)",
+      "presetColors": "Önceden Tanımlı Renkler",
+      "lightTheme": "Açık Tema",
+      "darkTheme": "Koyu Tema",
+      "lightThemeColor": "Açık Tema Rengi",
+      "darkThemeColor": "Koyu Tema Rengi",
+      "differentColorForDark": "Koyu tema için farklı renk",
+      "autoColor": "Otomatik",
+      "autoColorHint": "Koyu temada bu renk kullanılacak"
+    }
   },
   "nav": {
     "home": "Ana Sayfa",
@@ -461,6 +513,26 @@
       "waiting": "Bekleniyor...",
       "loadError": "Tema yüklenirken bir hata oluştu",
       "installSuccess": "Tema başarıyla yüklendi! Yönlendiriliyor...",
+      "themeNames": {
+        "theme-modern-is": "Modern İş",
+        "theme-minimal": "Minimal Tema",
+        "theme-corporate": "Kurumsal Tema",
+        "theme-construction": "İnşaat Teması",
+        "theme-restoran": "Restoran Teması",
+        "theme-saglik": "Sağlık Teması",
+        "theme-egitim": "Eğitim Teması",
+        "theme-eticaret": "E-Ticaret Teması"
+      },
+      "themeDescriptions": {
+        "theme-modern-is": "Dinamik ve modern iş web sitesi teması",
+        "theme-minimal": "Sade ve minimalist tasarım teması",
+        "theme-corporate": "Profesyonel kurumsal web sitesi teması",
+        "theme-construction": "İnşaat ve mühendislik firmaları için tema",
+        "theme-restoran": "Restoran ve yeme-içme işletmeleri için tema",
+        "theme-saglik": "Sağlık ve medikal kurumlar için tema",
+        "theme-egitim": "Eğitim kurumları ve okullar için tema",
+        "theme-eticaret": "Online mağaza ve e-ticaret için tema"
+      },
       "warning": {
         "title": "⚠️ Dikkat!",
         "message": "Yeni bir tema yüklemek, <strong>mevcut tüm sayfa ve içeriklerinizi silecektir</strong>.",
@@ -516,6 +588,12 @@
       "noPagesHint": "Yeni sayfa oluşturmak için yukarıdaki butonu kullanın",
       "createNewPage": "Yeni Sayfa Oluştur",
       "createNewPageHint": "Sıfırdan yeni sayfa oluşturun",
+      "blocks": {
+        "map": {
+          "apiKeyRequired": "Google Maps API key gerekli",
+          "addApiKeyHint": "Yönetim Paneli → Ayarlar → API Anahtarları bölümünden ekleyin"
+        }
+      },
       "howItWorks": {
         "title": "Sayfa Düzeni Nasıl Çalışır?",
         "step1": "Bir sayfa seçin ve elementleri sürükle-bırak ile yeniden düzenleyin",

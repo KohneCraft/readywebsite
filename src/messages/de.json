@@ -34,7 +34,59 @@
     "contactUs": "Kontaktieren Sie uns",
     "getInTouch": "Kontakt aufnehmen",
     "required": "Pflichtfeld",
-    "optional": "Optional"
+    "optional": "Optional",
+    "multiLangInput": {
+      "languagesCompleted": "{filled}/{total} Sprachen abgeschlossen",
+      "missing": "Fehlend",
+      "autoTranslate": "Automatisch übersetzen",
+      "translating": "Übersetze...",
+      "translateError": "Übersetzungsfehler",
+      "translateSuccess": "Erfolgreich übersetzt"
+    },
+    "toast": {
+      "loginRequired": "Bitte anmelden",
+      "saveSuccess": "Erfolgreich gespeichert",
+      "saveError": "Konnte nicht gespeichert werden",
+      "deleteSuccess": "Erfolgreich gelöscht",
+      "deleteError": "Konnte nicht gelöscht werden",
+      "uploadSuccess": "Datei hochgeladen",
+      "uploadError": "Datei konnte nicht hochgeladen werden",
+      "copySuccess": "Kopiert",
+      "copyError": "Konnte nicht kopiert werden",
+      "fileTooLarge": "Dateigröße ist zu groß",
+      "invalidFormat": "Ungültiges Format",
+      "networkError": "Verbindungsfehler",
+      "unknownError": "Ein Fehler ist aufgetreten",
+      "themeRequired": "Bitte installieren Sie zuerst ein Theme",
+      "headerSaved": "Header-Einstellungen gespeichert",
+      "headerSaveError": "Header-Einstellungen konnten nicht gespeichert werden",
+      "footerSaved": "Footer-Einstellungen gespeichert",
+      "footerSaveError": "Footer-Einstellungen konnten nicht gespeichert werden",
+      "iconUploadError": "Fehler beim Hochladen des Icons",
+      "iconSaveError": "Fehler beim Speichern des Icons",
+      "iconRemoveError": "Fehler beim Entfernen des Icons",
+      "titleSaveError": "Fehler beim Speichern des Titels",
+      "settingsSaved": "Einstellungen gespeichert",
+      "settingsSaveError": "Einstellungen konnten nicht gespeichert werden",
+      "apiKeysSaved": "API-Schlüssel gespeichert",
+      "apiKeysSaveError": "API-Schlüssel konnten nicht gespeichert werden",
+      "formSuccess": "Formular erfolgreich gesendet",
+      "formError": "Formular konnte nicht gesendet werden",
+      "contactSuccess": "Ihre Nachricht wurde gesendet",
+      "contactError": "Nachricht konnte nicht gesendet werden"
+    },
+    "colorPicker": {
+      "hexCode": "Hex-Code",
+      "transparent": "Transparent",
+      "presetColors": "Vordefinierte Farben",
+      "lightTheme": "Helles Theme",
+      "darkTheme": "Dunkles Theme",
+      "lightThemeColor": "Helle Theme-Farbe",
+      "darkThemeColor": "Dunkle Theme-Farbe",
+      "differentColorForDark": "Andere Farbe für dunkles Theme",
+      "autoColor": "Automatisch",
+      "autoColorHint": "Diese Farbe wird im dunklen Theme verwendet"
+    }
   },
   "nav": {
     "home": "Startseite",
@@ -641,6 +693,26 @@
       "waiting": "Warten...",
       "loadError": "Beim Laden des Themes ist ein Fehler aufgetreten",
       "installSuccess": "Theme erfolgreich installiert! Weiterleitung...",
+      "themeNames": {
+        "theme-modern-is": "Modernes Geschäft",
+        "theme-minimal": "Minimalistisches Theme",
+        "theme-corporate": "Unternehmensthema",
+        "theme-construction": "Bauthema",
+        "theme-restoran": "Restaurant-Theme",
+        "theme-saglik": "Gesundheitsthema",
+        "theme-egitim": "Bildungsthema",
+        "theme-eticaret": "E-Commerce-Theme"
+      },
+      "themeDescriptions": {
+        "theme-modern-is": "Dynamisches und modernes Geschäftswebsite-Theme",
+        "theme-minimal": "Sauberes und minimalistisches Design-Theme",
+        "theme-corporate": "Professionelles Unternehmenswebsite-Theme",
+        "theme-construction": "Theme für Bau- und Ingenieurunternehmen",
+        "theme-restoran": "Theme für Restaurants und Gastronomiebetriebe",
+        "theme-saglik": "Theme für Gesundheits- und medizinische Einrichtungen",
+        "theme-egitim": "Theme für Bildungseinrichtungen und Schulen",
+        "theme-eticaret": "Theme für Online-Shops und E-Commerce"
+      },
       "warning": {
         "title": "⚠️ Warnung!",
         "message": "Die Installation eines neuen Themes wird <strong>alle Ihre aktuellen Seiten und Inhalte löschen</strong>.",
@@ -968,6 +1040,12 @@
       "noPagesHint": "Verwenden Sie die Schaltfläche oben, um eine neue Seite zu erstellen",
       "createNewPage": "Neue Seite erstellen",
       "createNewPageHint": "Erstellen Sie eine neue Seite von Grund auf",
+      "blocks": {
+        "map": {
+          "apiKeyRequired": "Google Maps API-Schlüssel erforderlich",
+          "addApiKeyHint": "Hinzufügen unter Admin-Panel → Einstellungen → API-Schlüssel"
+        }
+      },
       "howItWorks": {
         "title": "Wie funktioniert das Seitenlayout?",
         "step1": "Wählen Sie eine Seite und ordnen Sie Elemente per Drag & Drop neu an",

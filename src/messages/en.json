@@ -34,7 +34,59 @@
     "contactUs": "Contact Us",
     "getInTouch": "Get in Touch",
     "required": "Required field",
-    "optional": "Optional"
+    "optional": "Optional",
+    "multiLangInput": {
+      "languagesCompleted": "{filled}/{total} languages completed",
+      "missing": "Missing",
+      "autoTranslate": "Auto translate",
+      "translating": "Translating...",
+      "translateError": "Translation error",
+      "translateSuccess": "Successfully translated"
+    },
+    "toast": {
+      "loginRequired": "Please log in",
+      "saveSuccess": "Saved successfully",
+      "saveError": "Could not save",
+      "deleteSuccess": "Deleted successfully",
+      "deleteError": "Could not delete",
+      "uploadSuccess": "File uploaded",
+      "uploadError": "Could not upload file",
+      "copySuccess": "Copied",
+      "copyError": "Could not copy",
+      "fileTooLarge": "File size is too large",
+      "invalidFormat": "Invalid format",
+      "networkError": "Connection error",
+      "unknownError": "An error occurred",
+      "themeRequired": "Please install a theme first",
+      "headerSaved": "Header settings saved",
+      "headerSaveError": "Could not save header settings",
+      "footerSaved": "Footer settings saved",
+      "footerSaveError": "Could not save footer settings",
+      "iconUploadError": "Error uploading icon",
+      "iconSaveError": "Error saving icon",
+      "iconRemoveError": "Error removing icon",
+      "titleSaveError": "Error saving title",
+      "settingsSaved": "Settings saved",
+      "settingsSaveError": "Could not save settings",
+      "apiKeysSaved": "API keys saved",
+      "apiKeysSaveError": "Could not save API keys",
+      "formSuccess": "Form submitted successfully",
+      "formError": "Could not submit form",
+      "contactSuccess": "Your message has been sent",
+      "contactError": "Could not send message"
+    },
+    "colorPicker": {
+      "hexCode": "Hex Code",
+      "transparent": "Transparent",
+      "presetColors": "Preset Colors",
+      "lightTheme": "Light Theme",
+      "darkTheme": "Dark Theme",
+      "lightThemeColor": "Light Theme Color",
+      "darkThemeColor": "Dark Theme Color",
+      "differentColorForDark": "Different color for dark theme",
+      "autoColor": "Automatic",
+      "autoColorHint": "This color will be used in dark theme"
+    }
   },
   "nav": {
     "home": "Home",
@@ -536,6 +588,12 @@
       "noPagesHint": "Use the button above to create a new page",
       "createNewPage": "Create New Page",
       "createNewPageHint": "Create a new page from scratch",
+      "blocks": {
+        "map": {
+          "apiKeyRequired": "Google Maps API key required",
+          "addApiKeyHint": "Add it from Admin Panel → Settings → API Keys"
+        }
+      },
       "howItWorks": {
         "title": "How Does Page Layout Work?",
         "step1": "Select a page and rearrange elements with drag and drop",
@@ -710,6 +768,26 @@
       "waiting": "Waiting...",
       "loadError": "An error occurred while loading the theme",
       "installSuccess": "Theme installed successfully! Redirecting...",
+      "themeNames": {
+        "theme-modern-is": "Modern Business",
+        "theme-minimal": "Minimal Theme",
+        "theme-corporate": "Corporate Theme",
+        "theme-construction": "Construction Theme",
+        "theme-restoran": "Restaurant Theme",
+        "theme-saglik": "Healthcare Theme",
+        "theme-egitim": "Education Theme",
+        "theme-eticaret": "E-Commerce Theme"
+      },
+      "themeDescriptions": {
+        "theme-modern-is": "Dynamic and modern business website theme",
+        "theme-minimal": "Clean and minimalist design theme",
+        "theme-corporate": "Professional corporate website theme",
+        "theme-construction": "Theme for construction and engineering companies",
+        "theme-restoran": "Theme for restaurants and food businesses",
+        "theme-saglik": "Theme for healthcare and medical institutions",
+        "theme-egitim": "Theme for educational institutions and schools",
+        "theme-eticaret": "Theme for online stores and e-commerce"
+      },
       "warning": {
         "title": "⚠️ Warning!",
         "message": "Installing a new theme will <strong>delete all your current pages and content</strong>.",

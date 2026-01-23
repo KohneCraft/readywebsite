@@ -34,7 +34,59 @@
     "contactUs": "Contactez-nous",
     "getInTouch": "Prendre contact",
     "required": "Champ obligatoire",
-    "optional": "Optionnel"
+    "optional": "Optionnel",
+    "multiLangInput": {
+      "languagesCompleted": "{filled}/{total} langues complétées",
+      "missing": "Manquant",
+      "autoTranslate": "Traduire automatiquement",
+      "translating": "Traduction en cours...",
+      "translateError": "Erreur de traduction",
+      "translateSuccess": "Traduit avec succès"
+    },
+    "toast": {
+      "loginRequired": "Veuillez vous connecter",
+      "saveSuccess": "Enregistré avec succès",
+      "saveError": "Impossible d'enregistrer",
+      "deleteSuccess": "Supprimé avec succès",
+      "deleteError": "Impossible de supprimer",
+      "uploadSuccess": "Fichier téléchargé",
+      "uploadError": "Impossible de télécharger le fichier",
+      "copySuccess": "Copié",
+      "copyError": "Impossible de copier",
+      "fileTooLarge": "La taille du fichier est trop grande",
+      "invalidFormat": "Format invalide",
+      "networkError": "Erreur de connexion",
+      "unknownError": "Une erreur s'est produite",
+      "themeRequired": "Veuillez d'abord installer un thème",
+      "headerSaved": "Paramètres d'en-tête enregistrés",
+      "headerSaveError": "Impossible d'enregistrer les paramètres d'en-tête",
+      "footerSaved": "Paramètres de pied de page enregistrés",
+      "footerSaveError": "Impossible d'enregistrer les paramètres de pied de page",
+      "iconUploadError": "Erreur lors du téléchargement de l'icône",
+      "iconSaveError": "Erreur lors de l'enregistrement de l'icône",
+      "iconRemoveError": "Erreur lors de la suppression de l'icône",
+      "titleSaveError": "Erreur lors de l'enregistrement du titre",
+      "settingsSaved": "Paramètres enregistrés",
+      "settingsSaveError": "Impossible d'enregistrer les paramètres",
+      "apiKeysSaved": "Clés API enregistrées",
+      "apiKeysSaveError": "Impossible d'enregistrer les clés API",
+      "formSuccess": "Formulaire envoyé avec succès",
+      "formError": "Impossible d'envoyer le formulaire",
+      "contactSuccess": "Votre message a été envoyé",
+      "contactError": "Impossible d'envoyer le message"
+    },
+    "colorPicker": {
+      "hexCode": "Code Hex",
+      "transparent": "Transparent",
+      "presetColors": "Couleurs prédéfinies",
+      "lightTheme": "Thème clair",
+      "darkTheme": "Thème sombre",
+      "lightThemeColor": "Couleur du thème clair",
+      "darkThemeColor": "Couleur du thème sombre",
+      "differentColorForDark": "Couleur différente pour le thème sombre",
+      "autoColor": "Automatique",
+      "autoColorHint": "Cette couleur sera utilisée dans le thème sombre"
+    }
   },
   "nav": {
     "home": "Accueil",
@@ -641,6 +693,26 @@
       "waiting": "En attente...",
       "loadError": "Une erreur s'est produite lors du chargement du thème",
       "installSuccess": "Thème installé avec succès! Redirection...",
+      "themeNames": {
+        "theme-modern-is": "Entreprise Moderne",
+        "theme-minimal": "Thème Minimal",
+        "theme-corporate": "Thème Corporatif",
+        "theme-construction": "Thème Construction",
+        "theme-restoran": "Thème Restaurant",
+        "theme-saglik": "Thème Santé",
+        "theme-egitim": "Thème Éducation",
+        "theme-eticaret": "Thème E-Commerce"
+      },
+      "themeDescriptions": {
+        "theme-modern-is": "Thème de site web d'entreprise dynamique et moderne",
+        "theme-minimal": "Thème au design épuré et minimaliste",
+        "theme-corporate": "Thème de site web d'entreprise professionnel",
+        "theme-construction": "Thème pour les entreprises de construction et d'ingénierie",
+        "theme-restoran": "Thème pour les restaurants et les entreprises alimentaires",
+        "theme-saglik": "Thème pour les établissements de santé et médicaux",
+        "theme-egitim": "Thème pour les établissements d'enseignement et les écoles",
+        "theme-eticaret": "Thème pour les boutiques en ligne et le e-commerce"
+      },
       "warning": {
         "title": "⚠️ Attention!",
         "message": "L'installation d'un nouveau thème <strong>supprimera toutes vos pages et contenus actuels</strong>.",
@@ -989,6 +1061,13 @@
         "validationError": "Veuillez entrer le titre et le slug de la page",
         "loginRequired": "Vous devez vous connecter",
         "createError": "Une erreur s'est produite lors de la création de la page"
+      },
+      "mapBlock": {
+        "noCoordinates": "Coordonnées de la carte non spécifiées",
+        "setInEditor": "Définissez l'emplacement de la carte dans l'éditeur",
+        "googleApiRequired": "Clé API Google Maps requise",
+        "configureInSettings": "Configurer dans Panneau d'administration → Paramètres → Clés API",
+        "loadingApiKey": "Chargement de la clé API..."
       }
     }
   },
