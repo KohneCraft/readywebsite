@@ -3,7 +3,9 @@
 import { Plus, Trash2 } from 'lucide-react';
 import { SpacingControl } from '../../controls/SpacingControl';
 import { DualColorPicker } from '../../controls/DualColorPicker';
+import { MultiLangInput } from '@/components/ui/MultiLangInput';
 import type { Block, FormField } from '@/types/pageBuilder';
+import type { LocalizedString } from '@/types/localization';
 
 interface FormBlockSettingsProps {
   block: Block;
@@ -18,18 +20,14 @@ export function FormBlockSettings({ block, activeTab, onUpdate }: FormBlockSetti
   if (activeTab === 'style') {
     return (
       <div className="space-y-4">
-        <div>
-          <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
-            Form Başlığı
-          </label>
-          <input
-            type="text"
-            value={props.title || ''}
-            onChange={(e) => onUpdate({ title: e.target.value })}
-            className="w-full px-3 py-2 text-sm border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-white"
-            placeholder="İletişim Formu"
-          />
-        </div>
+        {/* Çoklu Dil Destekli Form Başlığı */}
+        <MultiLangInput
+          label="Form Başlığı"
+          value={props.title}
+          onChange={(value: LocalizedString) => onUpdate({ title: value })}
+          type="input"
+          placeholder="İletişim Formu"
+        />
 
         <div>
           <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">

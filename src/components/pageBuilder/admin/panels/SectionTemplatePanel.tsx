@@ -193,7 +193,7 @@ function TemplateCard({
 }) {
     return (
         <div
-            className={`group relative p-3 bg-gray-50 dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 hover:border-primary-500 dark:hover:border-primary-500 transition-all cursor-pointer ${disabled ? 'opacity-50 pointer-events-none' : ''
+            className={`group relative p-3 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 hover:border-primary-500 dark:hover:border-primary-500 transition-all cursor-pointer ${disabled ? 'opacity-50 pointer-events-none' : ''
                 }`}
             onClick={onSelect}
         >
@@ -210,17 +210,17 @@ function TemplateCard({
                 </div>
 
                 <div className="flex-1 min-w-0">
-                    <h4 className="text-sm font-medium text-gray-800 dark:text-gray-200 truncate">
+                    <h4 className="text-sm font-medium text-gray-900 dark:text-gray-200 truncate">
                         {template.name}
                     </h4>
-                    <p className="text-xs text-gray-500 dark:text-gray-400 line-clamp-2 mt-0.5">
+                    <p className="text-xs text-gray-600 dark:text-gray-400 line-clamp-2 mt-0.5">
                         {template.description}
                     </p>
                     <div className="flex items-center gap-2 mt-1.5">
-                        <span className="text-xs bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-400 px-1.5 py-0.5 rounded">
+                        <span className="text-xs bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 px-1.5 py-0.5 rounded">
                             {template.sections.length} Section
                         </span>
-                        <span className="text-xs text-primary-500 capitalize">
+                        <span className="text-xs text-primary-600 dark:text-primary-400 capitalize">
                             {template.category}
                         </span>
                     </div>

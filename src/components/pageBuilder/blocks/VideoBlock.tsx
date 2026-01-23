@@ -1,9 +1,11 @@
 'use client';
 
-import { useState, memo, useEffect } from 'react';
+import { useState, memo, useEffect, useMemo } from 'react';
+import { useLocale } from 'next-intl';
 import { useDeviceType } from '@/hooks/useDeviceType';
 import { sanitizeCSS } from '@/lib/sanitize';
 import type { BlockProps } from '@/types/pageBuilder';
+import { getLocalizedValue, type Locale } from '@/types/localization';
 
 interface VideoBlockProps {
   props: BlockProps;
@@ -13,6 +15,10 @@ function VideoBlockComponent({ props }: VideoBlockProps) {
   const [loaded, setLoaded] = useState(false);
   const [error, setError] = useState(false);
   const deviceType = useDeviceType();
+  const locale = useLocale() as Locale;
+
+  // Locale-aware alt text
+  const altText = useMemo(() => getLocalizedValue(props.alt, locale), [props.alt, locale]);
 
   // Responsive padding
   const getPadding = () => {
@@ -113,8 +119,8 @@ function VideoBlockComponent({ props }: VideoBlockProps) {
         ) : (
           <video
             src={props.src}
-            title={props.alt || ''}
-            aria-label={props.alt || 'Video'}
+            title={altText || ''}
+            aria-label={altText || 'Video'}
             style={videoStyle}
             onLoadedData={() => setLoaded(true)}
             onError={() => setError(true)}

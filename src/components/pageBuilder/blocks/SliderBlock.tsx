@@ -8,11 +8,13 @@
 import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
+import { useLocale } from 'next-intl';
 import { ChevronLeft, ChevronRight, Play, Pause } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { sanitizeCSS } from '@/lib/sanitize';
 import { useThemeColor } from '@/hooks/useThemeColor';
 import type { BlockProps, SliderSlide } from '@/types/pageBuilder';
+import { getLocalizedValue, type Locale } from '@/types/localization';
 
 interface SliderBlockProps {
     props: BlockProps;
@@ -37,6 +39,7 @@ export function SliderBlock({ props }: SliderBlockProps) {
         customCSS,
     } = props;
 
+    const locale = useLocale() as Locale;
     const [currentIndex, setCurrentIndex] = useState(0);
     const [isPaused, setIsPaused] = useState(false);
     const [isHovered, setIsHovered] = useState(false);
@@ -134,6 +137,7 @@ export function SliderBlock({ props }: SliderBlockProps) {
                         isActive={index === currentIndex}
                         transitionSpeed={transitionSpeed}
                         transitionEffect={transitionEffect}
+                        locale={locale}
                     />
                 ))}
             </div>
@@ -206,9 +210,15 @@ interface SlideItemProps {
     isActive: boolean;
     transitionSpeed: number;
     transitionEffect: 'slide' | 'fade' | 'zoom' | 'flip';
+    locale: Locale;
 }
 
-function SlideItem({ slide, isActive, transitionSpeed, transitionEffect }: SlideItemProps) {
+function SlideItem({ slide, isActive, transitionSpeed, transitionEffect, locale }: SlideItemProps) {
+    // Locale-aware metinler
+    const slideTitle = useMemo(() => getLocalizedValue(slide.title, locale), [slide.title, locale]);
+    const slideDescription = useMemo(() => getLocalizedValue(slide.description, locale), [slide.description, locale]);
+    const slideAlt = useMemo(() => getLocalizedValue(slide.alt, locale), [slide.alt, locale]);
+
     // Tema renkleri
     const titleColor = useThemeColor({
         lightColor: slide.titleColor,
@@ -266,7 +276,7 @@ function SlideItem({ slide, isActive, transitionSpeed, transitionEffect }: Slide
                 <div className="relative w-full h-full">
                     <Image
                         src={slide.src}
-                        alt={slide.alt || 'Slider görseli'}
+                        alt={slideAlt || 'Slider görseli'}
                         fill
                         className="object-cover"
                         priority={isActive}
@@ -285,23 +295,23 @@ function SlideItem({ slide, isActive, transitionSpeed, transitionEffect }: Slide
             )}
 
             {/* Overlay Metin */}
-            {(slide.title || slide.description) && (
+            {(slideTitle || slideDescription) && (
                 <div className="absolute inset-0 flex items-center justify-center bg-black/30">
                     <div className="text-center px-8">
-                        {slide.title && (
+                        {slideTitle && (
                             <h2
                                 className="text-3xl md:text-4xl font-bold mb-4"
                                 style={{ color: titleColor || '#ffffff' }}
                             >
-                                {slide.title}
+                                {slideTitle}
                             </h2>
                         )}
-                        {slide.description && (
+                        {slideDescription && (
                             <p
                                 className="text-lg md:text-xl"
                                 style={{ color: descriptionColor || '#ffffff' }}
                             >
-                                {slide.description}
+                                {slideDescription}
                             </p>
                         )}
                     </div>

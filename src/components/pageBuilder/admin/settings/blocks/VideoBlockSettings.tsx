@@ -9,8 +9,10 @@ import { useState } from 'react';
 import { Video as VideoIcon, Upload, X, Play } from 'lucide-react';
 import { SpacingControl } from '../../controls/SpacingControl';
 import { MediaSelector } from '../../media/MediaSelector';
+import { MultiLangInput } from '@/components/ui/MultiLangInput';
 import type { Block } from '@/types/pageBuilder';
 import type { Media } from '@/types/media';
+import type { LocalizedString } from '@/types/localization';
 
 interface VideoBlockSettingsProps {
   block: Block;
@@ -101,18 +103,14 @@ export function VideoBlockSettings({ block, activeTab, onUpdate }: VideoBlockSet
           </p>
         </div>
 
-        <div>
-          <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
-            Alt Metin
-          </label>
-          <input
-            type="text"
-            value={props.alt || ''}
-            onChange={(e) => onUpdate({ alt: e.target.value })}
-            className="w-full px-3 py-2 text-sm border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-white"
-            placeholder="Video açıklaması"
-          />
-        </div>
+        {/* Çoklu Dil Destekli Alt Metin */}
+        <MultiLangInput
+          label="Alt Metin (SEO & Erişilebilirlik)"
+          value={props.alt}
+          onChange={(value: LocalizedString) => onUpdate({ alt: value })}
+          type="input"
+          placeholder="Video açıklaması"
+        />
 
         <div>
           <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">

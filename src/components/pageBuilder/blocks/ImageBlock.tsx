@@ -1,9 +1,12 @@
 'use client';
 
-import { useState, memo } from 'react';
+import { useState, memo, useMemo } from 'react';
 import Image from 'next/image';
+import { useLocale } from 'next-intl';
 import { useDeviceType } from '@/hooks/useDeviceType';
+import { getLocalizedValue } from '@/types/localization';
 import type { BlockProps } from '@/types/pageBuilder';
+import type { Locale } from '@/i18n';
 
 interface ImageBlockProps {
   props: BlockProps;
@@ -11,8 +14,15 @@ interface ImageBlockProps {
 }
 
 function ImageBlockComponent({ props, priority = false }: ImageBlockProps) {
+  const locale = useLocale() as Locale;
   const [loaded, setLoaded] = useState(false);
   const deviceType = useDeviceType();
+
+  // Locale'e göre alt text'i al
+  const altText = useMemo(() =>
+    getLocalizedValue(props.alt, locale),
+    [props.alt, locale]
+  );
 
   // Responsive padding
   const getPadding = () => {
@@ -94,7 +104,7 @@ function ImageBlockComponent({ props, priority = false }: ImageBlockProps) {
       <ImageWrapper {...wrapperProps} className="image-wrapper block">
         <Image
           src={props.src}
-          alt={props.alt || ''}
+          alt={altText || ''}
           width={800}
           height={600}
           style={imageStyle}

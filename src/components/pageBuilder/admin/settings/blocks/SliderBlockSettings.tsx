@@ -15,11 +15,14 @@ import {
     ArrowDown,
 } from 'lucide-react';
 import { Input } from '@/components/ui/Input';
+import { MultiLangInput } from '@/components/ui/MultiLangInput';
 import { DualColorPicker } from '../../controls/DualColorPicker';
 import { SpacingControl } from '../../controls/SpacingControl';
 import { MediaSelector } from '../../media/MediaSelector';
 import { cn } from '@/lib/utils';
 import type { BlockProps, SliderSlide, Spacing } from '@/types/pageBuilder';
+import type { LocalizedString } from '@/types/localization';
+import { getLocalizedValue, type Locale } from '@/types/localization';
 
 interface SliderBlockSettingsProps {
     block: { id: string; props: BlockProps };
@@ -154,7 +157,7 @@ export function SliderBlockSettings({ block, activeTab, onUpdate }: SliderBlockS
                                     {/* Bilgi */}
                                     <div className="flex-1 min-w-0">
                                         <p className="text-sm font-medium text-gray-900 dark:text-white truncate">
-                                            {slide.title || `Slayt ${index + 1}`}
+                                            {getLocalizedValue(slide.title, 'tr' as Locale) || `Slayt ${index + 1}`}
                                         </p>
                                         <p className="text-xs text-gray-500 dark:text-gray-400">
                                             {slide.type === 'image' ? 'Görsel' : 'Video'}
@@ -206,17 +209,13 @@ export function SliderBlockSettings({ block, activeTab, onUpdate }: SliderBlockS
                             </h4>
 
                             {/* Başlık */}
-                            <div>
-                                <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
-                                    Başlık
-                                </label>
-                                <Input
-                                    type="text"
-                                    value={selectedSlide.title || ''}
-                                    onChange={(e) => updateSlide(selectedSlide.id, { title: e.target.value })}
-                                    placeholder="Slayt başlığı"
-                                />
-                            </div>
+                            <MultiLangInput
+                                label="Başlık"
+                                value={selectedSlide.title}
+                                onChange={(value: LocalizedString) => updateSlide(selectedSlide.id, { title: value })}
+                                type="input"
+                                placeholder="Slayt başlığı"
+                            />
 
                             {/* Başlık Rengi */}
                             <div>
@@ -232,17 +231,13 @@ export function SliderBlockSettings({ block, activeTab, onUpdate }: SliderBlockS
                             </div>
 
                             {/* Açıklama */}
-                            <div>
-                                <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
-                                    Açıklama
-                                </label>
-                                <Input
-                                    type="text"
-                                    value={selectedSlide.description || ''}
-                                    onChange={(e) => updateSlide(selectedSlide.id, { description: e.target.value })}
-                                    placeholder="Slayt açıklaması"
-                                />
-                            </div>
+                            <MultiLangInput
+                                label="Açıklama"
+                                value={selectedSlide.description}
+                                onChange={(value: LocalizedString) => updateSlide(selectedSlide.id, { description: value })}
+                                type="input"
+                                placeholder="Slayt açıklaması"
+                            />
 
                             {/* Açıklama Rengi */}
                             <div>
@@ -287,17 +282,13 @@ export function SliderBlockSettings({ block, activeTab, onUpdate }: SliderBlockS
 
                             {/* Alt Text (sadece görsel için) */}
                             {selectedSlide.type === 'image' && (
-                                <div>
-                                    <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
-                                        Alt Metin
-                                    </label>
-                                    <Input
-                                        type="text"
-                                        value={selectedSlide.alt || ''}
-                                        onChange={(e) => updateSlide(selectedSlide.id, { alt: e.target.value })}
-                                        placeholder="Görsel açıklaması (SEO için)"
-                                    />
-                                </div>
+                                <MultiLangInput
+                                    label="Alt Metin"
+                                    value={selectedSlide.alt}
+                                    onChange={(value: LocalizedString) => updateSlide(selectedSlide.id, { alt: value })}
+                                    type="input"
+                                    placeholder="Görsel açıklaması (SEO için)"
+                                />
                             )}
                         </div>
                     )}

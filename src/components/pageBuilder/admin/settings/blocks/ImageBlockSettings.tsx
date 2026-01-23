@@ -10,9 +10,12 @@ import Image from 'next/image';
 import { Image as ImageIcon, Upload, X } from 'lucide-react';
 import { SpacingControl } from '../../controls/SpacingControl';
 import { MediaSelector } from '../../media/MediaSelector';
+import { MultiLangInput } from '@/components/ui/MultiLangInput';
 import { cn } from '@/lib/utils';
 import type { Block } from '@/types/pageBuilder';
 import type { Media } from '@/types/media';
+import type { LocalizedString } from '@/types/localization';
+import { getLocalizedValue, type Locale } from '@/types/localization';
 
 interface ImageBlockSettingsProps {
   block: Block;
@@ -47,7 +50,7 @@ export function ImageBlockSettings({ block, activeTab, onUpdate }: ImageBlockSet
               <div className="relative aspect-video bg-gray-100 dark:bg-gray-800 rounded-lg overflow-hidden mb-2">
                 <Image
                   src={props.src}
-                  alt={props.alt || 'Görsel önizleme'}
+                  alt={getLocalizedValue(props.alt, 'tr' as Locale) || 'Görsel önizleme'}
                   fill
                   className="object-cover"
                   unoptimized
@@ -101,18 +104,14 @@ export function ImageBlockSettings({ block, activeTab, onUpdate }: ImageBlockSet
           </p>
         </div>
 
-        <div>
-          <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
-            Alt Metin
-          </label>
-          <input
-            type="text"
-            value={props.alt || ''}
-            onChange={(e) => onUpdate({ alt: e.target.value })}
-            className="w-full px-3 py-2 text-sm border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-white"
-            placeholder="Görsel açıklaması"
-          />
-        </div>
+        {/* Çoklu Dil Destekli Alt Metin */}
+        <MultiLangInput
+          label="Alt Metin (SEO & Erişilebilirlik)"
+          value={props.alt}
+          onChange={(value: LocalizedString) => onUpdate({ alt: value })}
+          type="input"
+          placeholder="Görsel açıklaması"
+        />
 
         <div>
           <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">

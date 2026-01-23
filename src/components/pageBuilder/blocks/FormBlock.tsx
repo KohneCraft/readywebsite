@@ -1,19 +1,29 @@
 'use client';
 
-import { useState, memo, useEffect } from 'react';
+import { useState, memo, useEffect, useMemo } from 'react';
+import { useLocale } from 'next-intl';
 import { toast } from 'sonner';
 import { sanitizeCSS } from '@/lib/sanitize';
 import { logger } from '@/lib/logger';
 import { useThemeColors } from '@/hooks/useThemeColor';
+import { getLocalizedValue } from '@/types/localization';
 import type { BlockProps, FormField } from '@/types/pageBuilder';
+import type { Locale } from '@/i18n';
 
 interface FormBlockProps {
   props: BlockProps;
 }
 
 function FormBlockComponent({ props }: FormBlockProps) {
+  const locale = useLocale() as Locale;
   const [formData, setFormData] = useState<Record<string, string>>({});
   const [submitted, setSubmitted] = useState(false);
+
+  // Locale'e göre form başlığını al
+  const formTitle = useMemo(() =>
+    getLocalizedValue(props.title, locale),
+    [props.title, locale]
+  );
 
   // Tema renkleri
   const colors = useThemeColors({
@@ -103,9 +113,9 @@ function FormBlockComponent({ props }: FormBlockProps) {
       id={props.id}
       {...(props.dataAttributes || {})}
     >
-      {props.title && (
+      {formTitle && (
         <h3 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white">
-          {props.title}
+          {formTitle}
         </h3>
       )}
 
