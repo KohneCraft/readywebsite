@@ -28,6 +28,10 @@ import {
   AlertTriangle,
   Shield,
   X,
+  Key,
+  Eye,
+  EyeOff,
+  Map,
 } from 'lucide-react';
 import Image from 'next/image';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/Card';
@@ -128,7 +132,7 @@ const defaultSettings: SettingsFormData = {
   },
 };
 
-type TabKey = 'company' | 'contact' | 'social' | 'seo' | 'maintenance';
+type TabKey = 'company' | 'contact' | 'social' | 'seo' | 'maintenance' | 'apiKeys';
 
 export default function AdminSettingsPage() {
   const t = useTranslations('admin.settings');
@@ -148,6 +152,27 @@ export default function AdminSettingsPage() {
   const [adminTitle, setAdminTitle] = useState<string>('Modern');
   const [adminIconUrl, setAdminIconUrl] = useState<string>('');
   const [isAdminIconSelectorOpen, setIsAdminIconSelectorOpen] = useState(false);
+
+  // API Keys ayarları
+  const [translationProvider, setTranslationProvider] = useState<'google' | 'deepl' | 'none'>('none');
+  const [googleTranslateKey, setGoogleTranslateKey] = useState<string>('');
+  const [deeplApiKey, setDeeplApiKey] = useState<string>('');
+  const [showGoogleTranslateKey, setShowGoogleTranslateKey] = useState(false);
+  const [showDeeplKey, setShowDeeplKey] = useState(false);
+  const [hasGoogleTranslateKey, setHasGoogleTranslateKey] = useState(false);
+  const [hasDeeplKey, setHasDeeplKey] = useState(false);
+  
+  // Google Maps API
+  const [googleMapsKey, setGoogleMapsKey] = useState<string>('');
+  const [showGoogleMapsKey, setShowGoogleMapsKey] = useState(false);
+  const [hasGoogleMapsKey, setHasGoogleMapsKey] = useState(false);
+  
+  // Map Provider
+  const [mapProvider, setMapProvider] = useState<'google' | 'openstreetmap' | 'none'>('none');
+  
+  // API Settings Loading/Saving
+  const [isApiKeysSaving, setIsApiKeysSaving] = useState(false);
+  const [isApiKeysLoading, setIsApiKeysLoading] = useState(true);
 
   // Form dışı değişiklik takibi (logo, favicon, admin panel ayarları vb.)
   const [hasNonFormChanges, setHasNonFormChanges] = useState(false);
@@ -310,7 +335,30 @@ export default function AdminSettingsPage() {
       }
     };
 
+    // API Keys ayarlarını yükle
+    const loadApiKeysSettings = async () => {
+      try {
+        setIsApiKeysLoading(true);
+        const response = await fetch('/api/settings/api-keys');
+        if (response.ok) {
+          const data = await response.json();
+          // Translation settings
+          setTranslationProvider(data.translationProvider || 'none');
+          setHasGoogleTranslateKey(data.hasGoogleTranslateKey || false);
+          setHasDeeplKey(data.hasDeeplKey || false);
+          // Map settings
+          setMapProvider(data.mapProvider || 'none');
+          setHasGoogleMapsKey(data.hasGoogleMapsKey || false);
+        }
+      } catch (error) {
+        logger.api.error('API Keys ayarları yüklenirken hata', error);
+      } finally {
+        setIsApiKeysLoading(false);
+      }
+    };
+
     loadSettings();
+    loadApiKeysSettings();
 
     // Tema güncellemelerini dinle
     const handleThemeUpdate = () => {
@@ -322,6 +370,46 @@ export default function AdminSettingsPage() {
       window.removeEventListener('theme-updated', handleThemeUpdate);
     };
   }, [reset]);
+
+  // API Keys kaydetme fonksiyonu
+  const handleSaveApiKeysSettings = async () => {
+    setIsApiKeysSaving(true);
+    try {
+      const response = await fetch('/api/settings/api-keys', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          // Translation settings
+          translationProvider,
+          ...(googleTranslateKey && { googleTranslateKey }),
+          ...(deeplApiKey && { deeplApiKey }),
+          // Map settings
+          mapProvider,
+          ...(googleMapsKey && { googleMapsKey }),
+        }),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setHasGoogleTranslateKey(data.hasGoogleTranslateKey);
+        setHasDeeplKey(data.hasDeeplKey);
+        setHasGoogleMapsKey(data.hasGoogleMapsKey);
+        // Inputları temizle
+        setGoogleTranslateKey('');
+        setDeeplApiKey('');
+        setGoogleMapsKey('');
+        toast.success(t('apiKeys.saved'));
+      } else {
+        const error = await response.json();
+        toast.error(error.error || 'Hata oluştu');
+      }
+    } catch (error) {
+      logger.api.error('API Keys ayarları kaydedilirken hata', error);
+      toast.error('Ayarlar kaydedilirken hata oluştu');
+    } finally {
+      setIsApiKeysSaving(false);
+    }
+  };
 
   const onSubmit = async (data: SettingsFormData) => {
     setIsSaving(true);
@@ -581,6 +669,7 @@ export default function AdminSettingsPage() {
     { key: 'social', label: t('sections.social'), icon: Globe },
     { key: 'seo', label: t('sections.seo'), icon: Globe },
     { key: 'maintenance', label: t('sections.maintenance'), icon: Shield },
+    { key: 'apiKeys', label: t('sections.apiKeys'), icon: Key },
   ];
 
   if (isLoading) {
@@ -1309,6 +1398,312 @@ export default function AdminSettingsPage() {
                         {t('maintenanceMode.allowedIPsHint')}
                       </p>
                     </div>
+                  </CardContent>
+                </Card>
+              </motion.div>
+            )}
+
+            {/* API Keys Settings */}
+            {activeTab === 'apiKeys' && (
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+              >
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2">
+                      <Key className="w-5 h-5" />
+                      {t('sections.apiKeys')}
+                    </CardTitle>
+                    <CardDescription>{t('descriptions.apiKeys')}</CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-8">
+                    {isApiKeysLoading ? (
+                      <div className="flex justify-center py-8">
+                        <Spinner size="md" />
+                      </div>
+                    ) : (
+                      <>
+                        {/* ==================== TRANSLATION API SECTION ==================== */}
+                        <div className="pb-6 border-b border-gray-200 dark:border-gray-700">
+                          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
+                            🌐 {t('apiKeys.translationTitle')}
+                          </h3>
+                          <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
+                            {t('apiKeys.translationDesc')}
+                          </p>
+
+                          {/* Translation Provider Selection */}
+                          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                            {/* None Option */}
+                            <button
+                              type="button"
+                              onClick={() => setTranslationProvider('none')}
+                              className={cn(
+                                'p-4 rounded-xl border-2 transition-all text-left',
+                                translationProvider === 'none'
+                                  ? 'border-gray-500 bg-gray-50 dark:bg-gray-800'
+                                  : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600'
+                              )}
+                            >
+                              <div className="font-medium text-gray-900 dark:text-white">
+                                {t('apiKeys.disabled')}
+                              </div>
+                              <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                                {t('apiKeys.translationDisabledDesc')}
+                              </p>
+                            </button>
+
+                            {/* Google Translate Option */}
+                            <button
+                              type="button"
+                              onClick={() => setTranslationProvider('google')}
+                              className={cn(
+                                'p-4 rounded-xl border-2 transition-all text-left',
+                                translationProvider === 'google'
+                                  ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20'
+                                  : 'border-gray-200 dark:border-gray-700 hover:border-blue-300 dark:hover:border-blue-700'
+                              )}
+                            >
+                              <div className="flex items-center gap-2">
+                                <span className="text-2xl">🔵</span>
+                                <span className="font-medium text-gray-900 dark:text-white">Google Translate</span>
+                              </div>
+                              <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                                {t('apiKeys.googleTranslateDesc')}
+                              </p>
+                              {hasGoogleTranslateKey && (
+                                <span className="inline-flex items-center gap-1 text-xs text-green-600 dark:text-green-400 mt-2">
+                                  <CheckCircle className="w-3 h-3" /> {t('apiKeys.configured')}
+                                </span>
+                              )}
+                            </button>
+
+                            {/* DeepL Option */}
+                            <button
+                              type="button"
+                              onClick={() => setTranslationProvider('deepl')}
+                              className={cn(
+                                'p-4 rounded-xl border-2 transition-all text-left',
+                                translationProvider === 'deepl'
+                                  ? 'border-cyan-500 bg-cyan-50 dark:bg-cyan-900/20'
+                                  : 'border-gray-200 dark:border-gray-700 hover:border-cyan-300 dark:hover:border-cyan-700'
+                              )}
+                            >
+                              <div className="flex items-center gap-2">
+                                <span className="text-2xl">🔷</span>
+                                <span className="font-medium text-gray-900 dark:text-white">DeepL</span>
+                              </div>
+                              <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                                {t('apiKeys.deeplDesc')}
+                              </p>
+                              {hasDeeplKey && (
+                                <span className="inline-flex items-center gap-1 text-xs text-green-600 dark:text-green-400 mt-2">
+                                  <CheckCircle className="w-3 h-3" /> {t('apiKeys.configured')}
+                                </span>
+                              )}
+                            </button>
+                          </div>
+
+                          {/* Google Translate API Key Input */}
+                          {translationProvider === 'google' && (
+                            <div className="p-4 bg-blue-50 dark:bg-blue-900/10 rounded-xl border border-blue-200 dark:border-blue-800">
+                              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                Google Translate API Key
+                              </label>
+                              <div className="relative">
+                                <Input
+                                  type={showGoogleTranslateKey ? 'text' : 'password'}
+                                  value={googleTranslateKey}
+                                  onChange={(e) => setGoogleTranslateKey(e.target.value)}
+                                  placeholder={hasGoogleTranslateKey ? '••••••••••••' : t('apiKeys.enterApiKey')}
+                                  className="pr-10"
+                                />
+                                <button
+                                  type="button"
+                                  onClick={() => setShowGoogleTranslateKey(!showGoogleTranslateKey)}
+                                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                                >
+                                  {showGoogleTranslateKey ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                                </button>
+                              </div>
+                              <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
+                                {t('apiKeys.googleTranslateHint')}
+                              </p>
+                            </div>
+                          )}
+
+                          {/* DeepL API Key Input */}
+                          {translationProvider === 'deepl' && (
+                            <div className="p-4 bg-cyan-50 dark:bg-cyan-900/10 rounded-xl border border-cyan-200 dark:border-cyan-800">
+                              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                DeepL API Key
+                              </label>
+                              <div className="relative">
+                                <Input
+                                  type={showDeeplKey ? 'text' : 'password'}
+                                  value={deeplApiKey}
+                                  onChange={(e) => setDeeplApiKey(e.target.value)}
+                                  placeholder={hasDeeplKey ? '••••••••••••' : t('apiKeys.enterApiKey')}
+                                  className="pr-10"
+                                />
+                                <button
+                                  type="button"
+                                  onClick={() => setShowDeeplKey(!showDeeplKey)}
+                                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                                >
+                                  {showDeeplKey ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                                </button>
+                              </div>
+                              <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
+                                {t('apiKeys.deeplHint')}
+                              </p>
+                            </div>
+                          )}
+                        </div>
+
+                        {/* ==================== MAPS API SECTION ==================== */}
+                        <div className="pb-6 border-b border-gray-200 dark:border-gray-700">
+                          <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
+                            <Map className="w-5 h-5" /> {t('apiKeys.mapsTitle')}
+                          </h3>
+                          <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
+                            {t('apiKeys.mapsDesc')}
+                          </p>
+
+                          {/* Map Provider Selection */}
+                          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                            {/* None Option */}
+                            <button
+                              type="button"
+                              onClick={() => setMapProvider('none')}
+                              className={cn(
+                                'p-4 rounded-xl border-2 transition-all text-left',
+                                mapProvider === 'none'
+                                  ? 'border-gray-500 bg-gray-50 dark:bg-gray-800'
+                                  : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600'
+                              )}
+                            >
+                              <div className="font-medium text-gray-900 dark:text-white">
+                                {t('apiKeys.disabled')}
+                              </div>
+                              <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                                {t('apiKeys.mapsDisabledDesc')}
+                              </p>
+                            </button>
+
+                            {/* Google Maps Option */}
+                            <button
+                              type="button"
+                              onClick={() => setMapProvider('google')}
+                              className={cn(
+                                'p-4 rounded-xl border-2 transition-all text-left',
+                                mapProvider === 'google'
+                                  ? 'border-red-500 bg-red-50 dark:bg-red-900/20'
+                                  : 'border-gray-200 dark:border-gray-700 hover:border-red-300 dark:hover:border-red-700'
+                              )}
+                            >
+                              <div className="flex items-center gap-2">
+                                <span className="text-2xl">📍</span>
+                                <span className="font-medium text-gray-900 dark:text-white">Google Maps</span>
+                              </div>
+                              <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                                {t('apiKeys.googleMapsDesc')}
+                              </p>
+                              {hasGoogleMapsKey && (
+                                <span className="inline-flex items-center gap-1 text-xs text-green-600 dark:text-green-400 mt-2">
+                                  <CheckCircle className="w-3 h-3" /> {t('apiKeys.configured')}
+                                </span>
+                              )}
+                            </button>
+
+                            {/* OpenStreetMap Option */}
+                            <button
+                              type="button"
+                              onClick={() => setMapProvider('openstreetmap')}
+                              className={cn(
+                                'p-4 rounded-xl border-2 transition-all text-left',
+                                mapProvider === 'openstreetmap'
+                                  ? 'border-green-500 bg-green-50 dark:bg-green-900/20'
+                                  : 'border-gray-200 dark:border-gray-700 hover:border-green-300 dark:hover:border-green-700'
+                              )}
+                            >
+                              <div className="flex items-center gap-2">
+                                <span className="text-2xl">🗺️</span>
+                                <span className="font-medium text-gray-900 dark:text-white">OpenStreetMap</span>
+                              </div>
+                              <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                                {t('apiKeys.openStreetMapDesc')}
+                              </p>
+                              <span className="inline-flex items-center gap-1 text-xs text-blue-600 dark:text-blue-400 mt-2">
+                                {t('apiKeys.free')}
+                              </span>
+                            </button>
+                          </div>
+
+                          {/* Google Maps API Key Input */}
+                          {mapProvider === 'google' && (
+                            <div className="p-4 bg-red-50 dark:bg-red-900/10 rounded-xl border border-red-200 dark:border-red-800">
+                              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                Google Maps API Key
+                              </label>
+                              <div className="relative">
+                                <Input
+                                  type={showGoogleMapsKey ? 'text' : 'password'}
+                                  value={googleMapsKey}
+                                  onChange={(e) => setGoogleMapsKey(e.target.value)}
+                                  placeholder={hasGoogleMapsKey ? '••••••••••••' : t('apiKeys.enterApiKey')}
+                                  className="pr-10"
+                                />
+                                <button
+                                  type="button"
+                                  onClick={() => setShowGoogleMapsKey(!showGoogleMapsKey)}
+                                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                                >
+                                  {showGoogleMapsKey ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                                </button>
+                              </div>
+                              <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
+                                {t('apiKeys.googleMapsHint')}
+                              </p>
+                            </div>
+                          )}
+
+                          {/* OpenStreetMap Info */}
+                          {mapProvider === 'openstreetmap' && (
+                            <div className="p-4 bg-green-50 dark:bg-green-900/10 rounded-xl border border-green-200 dark:border-green-800">
+                              <p className="text-sm text-gray-700 dark:text-gray-300">
+                                ✅ {t('apiKeys.openStreetMapInfo')}
+                              </p>
+                            </div>
+                          )}
+                        </div>
+
+                        {/* ==================== FUTURE APIs INFO ==================== */}
+                        <div className="p-4 bg-gray-50 dark:bg-gray-800/50 rounded-xl border border-gray-200 dark:border-gray-700">
+                          <p className="text-sm text-gray-600 dark:text-gray-400 flex items-center gap-2">
+                            💡 {t('apiKeys.futureApisNote')}
+                          </p>
+                        </div>
+
+                        {/* Save API Keys Button */}
+                        <div className="flex justify-end">
+                          <Button
+                            type="button"
+                            variant="primary"
+                            onClick={handleSaveApiKeysSettings}
+                            disabled={isApiKeysSaving}
+                          >
+                            {isApiKeysSaving ? (
+                              <Spinner size="sm" className="mr-2" />
+                            ) : (
+                              <Save className="w-4 h-4 mr-2" />
+                            )}
+                            {t('apiKeys.save')}
+                          </Button>
+                        </div>
+                      </>
+                    )}
                   </CardContent>
                 </Card>
               </motion.div>
