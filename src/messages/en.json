@@ -588,7 +588,165 @@
       "loginSuccess": "Login successful",
       "logoutSuccess": "Logged out"
     },
-    "logout": "Logout"
+    "logout": "Logout",
+    "themes": {
+      "title": "Select Theme",
+      "subtitle": "Choose from ready-made themes"
+    },
+    "effects": {
+      "title": "Effects",
+      "subtitle": "Add visual effects to your site and customize them",
+      "noEffects": "No effects added yet",
+      "addEffect": "Add Effect",
+      "editEffect": "Edit Effect",
+      "deleteConfirm": "Are you sure you want to remove this effect?",
+      "enabled": "Enabled",
+      "disabled": "Disabled",
+      "settings": "Settings",
+      "preview": "Preview",
+      "activeEffects": "Active Effects",
+      "availableEffects": "Available Effects",
+      "noActiveEffects": "No active effects yet. You can add effects from below.",
+      "activate": "Activate",
+      "deactivate": "Deactivate",
+      "remove": "Remove",
+      "scope": {
+        "all": "All Pages",
+        "home": "Homepage Only",
+        "selected": "Selected Pages",
+        "exclude": "Exclude Selected Pages",
+        "unknown": "Unknown"
+      },
+      "categories": {
+        "all": "All",
+        "seasonal": "Seasonal",
+        "party": "Party",
+        "nature": "Nature",
+        "animations": "Animations"
+      },
+      "templates": {
+        "snow": {
+          "name": "Snowfall",
+          "description": "Realistic snowflakes"
+        },
+        "autumnLeaves": {
+          "name": "Autumn Leaves",
+          "description": "Falling autumn leaves"
+        },
+        "confetti": {
+          "name": "Confetti",
+          "description": "Colorful confetti shower"
+        },
+        "stars": {
+          "name": "Twinkling Stars",
+          "description": "Sparkling star effect"
+        },
+        "fireworks": {
+          "name": "Fireworks",
+          "description": "Explosions and light show"
+        },
+        "bubbles": {
+          "name": "Bubbles",
+          "description": "Rising soap bubbles"
+        },
+        "rain": {
+          "name": "Rain",
+          "description": "Raindrops effect"
+        },
+        "sakura": {
+          "name": "Cherry Blossom",
+          "description": "Floating cherry blossoms"
+        },
+        "sparkles": {
+          "name": "Sparkles",
+          "description": "Glittering lights"
+        },
+        "hearts": {
+          "name": "Flying Hearts",
+          "description": "Rising heart emojis"
+        }
+      }
+    },
+    "media": {
+      "title": "Media Management",
+      "subtitle": "Manage your photos and video files",
+      "upload": "Upload",
+      "uploadFile": "Upload File",
+      "uploadFiles": "Upload Files",
+      "dragDrop": "Drag and drop files here or click",
+      "selectFiles": "Select Files",
+      "noMedia": "No media added yet",
+      "deleteConfirm": "Are you sure you want to delete this file? This action cannot be undone.",
+      "deleteMultipleConfirm": "Are you sure you want to delete selected files? This action cannot be undone.",
+      "deleteSuccess": "File deleted successfully",
+      "deleteError": "Error deleting file",
+      "uploadSuccess": "File uploaded successfully",
+      "uploadError": "Error uploading file",
+      "invalidFileType": "Invalid file type",
+      "loading": "Loading...",
+      "selected": "Selected",
+      "deleteSelected": "Delete Selected",
+      "filters": {
+        "all": "All",
+        "images": "Images",
+        "videos": "Videos"
+      },
+      "details": {
+        "name": "File Name",
+        "type": "Type",
+        "size": "Size",
+        "dimensions": "Dimensions",
+        "uploadedAt": "Uploaded At"
+      }
+    },
+    "messages": {
+      "title": "Contact Messages",
+      "subtitle": "View and manage incoming messages",
+      "noMessages": "No messages yet",
+      "markAsRead": "Mark as Read",
+      "markAsUnread": "Mark as Unread",
+      "reply": "Reply",
+      "delete": "Delete",
+      "deleteConfirm": "Are you sure you want to delete this message?",
+      "from": "From",
+      "date": "Date",
+      "subject": "Subject",
+      "status": {
+        "read": "Read",
+        "unread": "Unread",
+        "replied": "Replied"
+      }
+    },
+    "logs": {
+      "title": "System Logs",
+      "subtitle": "View all system operation logs",
+      "noLogs": "No log records yet",
+      "refresh": "Refresh",
+      "clear": "Clear",
+      "export": "Export",
+      "filters": {
+        "level": "Log Level",
+        "context": "Context",
+        "dateRange": "Date Range",
+        "all": "All",
+        "today": "Today",
+        "week": "This Week",
+        "month": "This Month"
+      },
+      "levels": {
+        "debug": "Debug",
+        "info": "Info",
+        "warning": "Warning",
+        "error": "Error"
+      },
+      "table": {
+        "timestamp": "Timestamp",
+        "level": "Level",
+        "context": "Context",
+        "message": "Message",
+        "details": "Details"
+      }
+    }
   },
   "errors": {
     "notFound": {

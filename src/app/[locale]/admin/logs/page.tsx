@@ -6,6 +6,7 @@ import { db } from '@/lib/firebase/config';
 import { Card } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
 import { Spinner } from '@/components/ui/Spinner';
+import { useTranslations, useLocale } from 'next-intl';
 
 interface LogEntry {
   id: string;
@@ -24,6 +25,8 @@ const LOG_COLORS = {
 };
 
 export default function LogsPage() {
+  const t = useTranslations('admin.logs');
+  const locale = useLocale();
   const [logs, setLogs] = useState<LogEntry[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState<'all' | 'debug' | 'info' | 'warn' | 'error'>('all');
@@ -98,9 +101,9 @@ export default function LogsPage() {
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="mb-6">
-        <h1 className="text-3xl font-bold mb-2">Sistem Logları</h1>
+        <h1 className="text-3xl font-bold mb-2">{t('title')}</h1>
         <p className="text-gray-600 dark:text-gray-400">
-          Sistemdeki tüm işlem loglarını görüntüleyin
+          {t('subtitle')}
         </p>
       </div>
 
@@ -109,29 +112,29 @@ export default function LogsPage() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {/* Level Filter */}
           <div>
-            <label className="block text-sm font-medium mb-2">Log Seviyesi</label>
+            <label className="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">{t('filters.level')}</label>
             <select
               value={filter}
               onChange={(e) => setFilter(e.target.value as typeof filter)}
-              className="w-full px-3 py-2 border rounded-lg dark:bg-gray-800"
+              className="w-full px-3 py-2 border rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white border-gray-300 dark:border-gray-600"
             >
-              <option value="all">Tümü</option>
-              <option value="debug">Debug</option>
-              <option value="info">Info</option>
-              <option value="warn">Warning</option>
-              <option value="error">Error</option>
+              <option value="all">{t('filters.all')}</option>
+              <option value="debug">{t('levels.debug')}</option>
+              <option value="info">{t('levels.info')}</option>
+              <option value="warn">{t('levels.warning')}</option>
+              <option value="error">{t('levels.error')}</option>
             </select>
           </div>
 
           {/* Context Filter */}
           <div>
-            <label className="block text-sm font-medium mb-2">Context</label>
+            <label className="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">{t('filters.context')}</label>
             <select
               value={contextFilter}
               onChange={(e) => setContextFilter(e.target.value)}
-              className="w-full px-3 py-2 border rounded-lg dark:bg-gray-800"
+              className="w-full px-3 py-2 border rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white border-gray-300 dark:border-gray-600"
             >
-              <option value="all">Tümü</option>
+              <option value="all">{t('filters.all')}</option>
               {uniqueContexts.map(context => (
                 <option key={context} value={context}>{context}</option>
               ))}
@@ -140,16 +143,16 @@ export default function LogsPage() {
 
           {/* Date Filter */}
           <div>
-            <label className="block text-sm font-medium mb-2">Tarih Aralığı</label>
+            <label className="block text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">{t('filters.dateRange')}</label>
             <select
               value={dateFilter}
               onChange={(e) => setDateFilter(e.target.value as typeof dateFilter)}
-              className="w-full px-3 py-2 border rounded-lg dark:bg-gray-800"
+              className="w-full px-3 py-2 border rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white border-gray-300 dark:border-gray-600"
             >
-              <option value="today">Bugün</option>
-              <option value="week">Son 7 Gün</option>
-              <option value="month">Son 30 Gün</option>
-              <option value="all">Tümü</option>
+              <option value="today">{t('filters.today')}</option>
+              <option value="week">{t('filters.week')}</option>
+              <option value="month">{t('filters.month')}</option>
+              <option value="all">{t('filters.all')}</option>
             </select>
           </div>
         </div>
@@ -162,7 +165,7 @@ export default function LogsPage() {
         </div>
       ) : logs.length === 0 ? (
         <Card className="p-8 text-center text-gray-500">
-          Log kaydı bulunamadı
+          {t('noLogs')}
         </Card>
       ) : (
         <div className="space-y-2">
@@ -184,13 +187,13 @@ export default function LogsPage() {
                   </div>
                   
                   <div className="text-xs text-gray-500 dark:text-gray-400">
-                    {log.timestamp.toLocaleString('tr-TR')}
+                    {log.timestamp.toLocaleString(locale === 'tr' ? 'tr-TR' : locale)}
                   </div>
                   
                   {log.data && (
                     <details className="mt-2">
                       <summary className="text-xs text-blue-600 dark:text-blue-400 cursor-pointer">
-                        Detayları Göster
+                        {t('table.details')}
                       </summary>
                       <pre className="mt-2 p-2 bg-gray-100 dark:bg-gray-800 rounded text-xs overflow-x-auto">
                         {log.data}

@@ -34,6 +34,7 @@ import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/com
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Spinner } from '@/components/ui/Spinner';
+import { MultiLangInput } from '@/components/ui/MultiLangInput';
 import { cn } from '@/lib/utils';
 import { toast } from '@/components/providers';
 import { getSiteSettingsClient, updateSiteSettings } from '@/lib/firebase/firestore';
@@ -48,8 +49,8 @@ const settingsSchema = z.object({
     favicon: z.string().optional(),
   }),
   company: z.object({
-    name: z.string().min(1, 'Firma adı zorunludur'),
-    slogan: z.string().optional(),
+    name: z.record(z.string(), z.string()).optional(), // Çoklu dil: { tr: string, en: string, ... }
+    slogan: z.record(z.string(), z.string()).optional(), // Çoklu dil
     logo: z.string().optional(),
     nameColor: z.string().optional(),
     nameColorDark: z.string().optional(), // Koyu tema rengi
@@ -91,8 +92,8 @@ const defaultSettings: SettingsFormData = {
     favicon: '',
   },
   company: {
-    name: 'X Şirketi',
-    slogan: 'X',
+    name: { tr: 'X Şirketi', en: 'X Company' },
+    slogan: { tr: 'X', en: 'X' },
     logo: '',
     nameColor: '',
     nameColorDark: '', // Koyu tema
@@ -256,8 +257,8 @@ export default function AdminSettingsPage() {
             favicon: (settings as any).browserFavicon || themeDefaults.company.favicon,
           },
           company: {
-            name: settings.siteName?.tr || themeDefaults.company.name,
-            slogan: settings.siteSlogan?.tr || themeDefaults.company.slogan,
+            name: settings.siteName || { tr: themeDefaults.company.name?.tr || '', en: themeDefaults.company.name?.en || '' },
+            slogan: settings.siteSlogan || { tr: themeDefaults.company.slogan?.tr || '', en: themeDefaults.company.slogan?.en || '' },
             logo: settings.logo?.light?.url || themeDefaults.company.logo,
             // Renk ve font ayarları - undefined ise boş bırak (tema varsayılanları kullanılsın)
             nameColor: (settings as any).companyNameStyle?.color || '',
@@ -338,18 +339,18 @@ export default function AdminSettingsPage() {
         ...currentSettings,
         // Browser tab ayarları
         browserFavicon: data.browser.favicon || '',
-        // Company bilgileri
+        // Company bilgileri - çoklu dil desteği
         siteName: {
-          tr: data.company.name,
-          en: data.company.name,
-          de: data.company.name,
-          fr: data.company.name,
+          tr: data.company.name?.tr || '',
+          en: data.company.name?.en || '',
+          de: data.company.name?.de || data.company.name?.en || '',
+          fr: data.company.name?.fr || data.company.name?.en || '',
         },
         siteSlogan: {
-          tr: data.company.slogan || '',
-          en: data.company.slogan || '',
-          de: data.company.slogan || '',
-          fr: data.company.slogan || '',
+          tr: data.company.slogan?.tr || '',
+          en: data.company.slogan?.en || '',
+          de: data.company.slogan?.de || data.company.slogan?.en || '',
+          fr: data.company.slogan?.fr || data.company.slogan?.en || '',
         },
         companyNameStyle: data.company.nameColor || data.company.nameColorDark || data.company.nameFontSize ? {
           color: data.company.nameColor || undefined,
@@ -770,26 +771,28 @@ export default function AdminSettingsPage() {
                       </div>
                     </div>
 
-                    {/* Company Name */}
+                    {/* Company Name - Çoklu Dil */}
                     <div>
                       <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                         {t('form.companyName')} *
                       </label>
-                      <Input
-                        {...register('company.name')}
-                        className={errors.company?.name ? 'border-red-500' : ''}
+                      <MultiLangInput
+                        value={watch('company.name') || { tr: '', en: '' }}
+                        onChange={(value) => setValue('company.name', value, { shouldDirty: true })}
+                        placeholder="Şirket adını girin..."
                       />
-                      {errors.company?.name && (
-                        <p className="mt-1 text-sm text-red-500">{errors.company.name.message}</p>
-                      )}
                     </div>
 
-                    {/* Slogan */}
+                    {/* Slogan - Çoklu Dil */}
                     <div>
                       <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                         {t('form.slogan')}
                       </label>
-                      <Input {...register('company.slogan')} />
+                      <MultiLangInput
+                        value={watch('company.slogan') || { tr: '', en: '' }}
+                        onChange={(value) => setValue('company.slogan', value, { shouldDirty: true })}
+                        placeholder="Slogan girin..."
+                      />
                     </div>
 
                     {/* Firma Adı Stil Ayarları */}

@@ -389,10 +389,10 @@ export default function AdminLayout({
     { href: '/admin', icon: LayoutDashboard, label: t('dashboard.title') },
     { href: '/admin/page-builder', icon: Layers, label: t('pageBuilder.title') },
     { href: '/admin/themes', icon: Palette, label: t('themes.title') },
-    { href: '/admin/effects', icon: Sparkles, label: 'Efektler' },
-    { href: '/admin/media', icon: ImageIcon, label: 'Medya Yönetimi' },
-    { href: '/admin/messages', icon: Mail, label: 'İletişim Mesajları' },
-    { href: '/admin/logs', icon: ScrollText, label: 'Sistem Logları' },
+    { href: '/admin/effects', icon: Sparkles, label: t('effects.title') },
+    { href: '/admin/media', icon: ImageIcon, label: t('media.title') },
+    { href: '/admin/messages', icon: Mail, label: t('messages.title') },
+    { href: '/admin/logs', icon: ScrollText, label: t('logs.title') },
     { href: '/admin/settings', icon: Settings, label: t('settings.title') },
   ];
 

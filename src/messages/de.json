@@ -546,6 +546,164 @@
       "logoutSuccess": "Abgemeldet"
     },
     "logout": "Abmelden",
+    "themes": {
+      "title": "Theme Auswählen",
+      "subtitle": "Wählen Sie aus fertigen Themes"
+    },
+    "effects": {
+      "title": "Effekte",
+      "subtitle": "Fügen Sie visuelle Effekte zu Ihrer Website hinzu und passen Sie sie an",
+      "noEffects": "Noch keine Effekte hinzugefügt",
+      "addEffect": "Effekt Hinzufügen",
+      "editEffect": "Effekt Bearbeiten",
+      "deleteConfirm": "Sind Sie sicher, dass Sie diesen Effekt entfernen möchten?",
+      "enabled": "Aktiviert",
+      "disabled": "Deaktiviert",
+      "settings": "Einstellungen",
+      "preview": "Vorschau",
+      "activeEffects": "Aktive Effekte",
+      "availableEffects": "Verfügbare Effekte",
+      "noActiveEffects": "Noch keine aktiven Effekte. Sie können unten Effekte hinzufügen.",
+      "activate": "Aktivieren",
+      "deactivate": "Deaktivieren",
+      "remove": "Entfernen",
+      "scope": {
+        "all": "Alle Seiten",
+        "home": "Nur Startseite",
+        "selected": "Ausgewählte Seiten",
+        "exclude": "Ausgewählte Seiten ausschließen",
+        "unknown": "Unbekannt"
+      },
+      "categories": {
+        "all": "Alle",
+        "seasonal": "Saisonal",
+        "party": "Party",
+        "nature": "Natur",
+        "animations": "Animationen"
+      },
+      "templates": {
+        "snow": {
+          "name": "Schneefall",
+          "description": "Realistische Schneeflocken"
+        },
+        "autumnLeaves": {
+          "name": "Herbstblätter",
+          "description": "Fallende Herbstblätter"
+        },
+        "confetti": {
+          "name": "Konfetti",
+          "description": "Bunter Konfetti-Regen"
+        },
+        "stars": {
+          "name": "Funkelnde Sterne",
+          "description": "Funkelnder Sterneffekt"
+        },
+        "fireworks": {
+          "name": "Feuerwerk",
+          "description": "Explosionen und Lichtshow"
+        },
+        "bubbles": {
+          "name": "Seifenblasen",
+          "description": "Aufsteigende Seifenblasen"
+        },
+        "rain": {
+          "name": "Regen",
+          "description": "Regentropfen-Effekt"
+        },
+        "sakura": {
+          "name": "Kirschblüte",
+          "description": "Schwebende Kirschblüten"
+        },
+        "sparkles": {
+          "name": "Funkeln",
+          "description": "Glitzernde Lichter"
+        },
+        "hearts": {
+          "name": "Fliegende Herzen",
+          "description": "Aufsteigende Herz-Emojis"
+        }
+      }
+    },
+    "media": {
+      "title": "Medienverwaltung",
+      "subtitle": "Verwalten Sie Ihre Foto- und Videodateien",
+      "upload": "Hochladen",
+      "uploadFile": "Datei Hochladen",
+      "uploadFiles": "Dateien Hochladen",
+      "dragDrop": "Dateien hierher ziehen oder klicken",
+      "selectFiles": "Dateien Auswählen",
+      "noMedia": "Noch keine Medien hinzugefügt",
+      "deleteConfirm": "Sind Sie sicher, dass Sie diese Datei löschen möchten? Diese Aktion kann nicht rückgängig gemacht werden.",
+      "deleteMultipleConfirm": "Sind Sie sicher, dass Sie die ausgewählten Dateien löschen möchten? Diese Aktion kann nicht rückgängig gemacht werden.",
+      "deleteSuccess": "Datei erfolgreich gelöscht",
+      "deleteError": "Fehler beim Löschen der Datei",
+      "uploadSuccess": "Datei erfolgreich hochgeladen",
+      "uploadError": "Fehler beim Hochladen der Datei",
+      "invalidFileType": "Ungültiger Dateityp",
+      "loading": "Laden...",
+      "selected": "Ausgewählt",
+      "deleteSelected": "Ausgewählte Löschen",
+      "filters": {
+        "all": "Alle",
+        "images": "Fotos",
+        "videos": "Videos"
+      },
+      "details": {
+        "name": "Dateiname",
+        "type": "Typ",
+        "size": "Größe",
+        "dimensions": "Abmessungen",
+        "uploadedAt": "Hochgeladen am"
+      }
+    },
+    "messages": {
+      "title": "Kontaktnachrichten",
+      "subtitle": "Eingehende Nachrichten anzeigen und verwalten",
+      "noMessages": "Noch keine Nachrichten",
+      "markAsRead": "Als Gelesen Markieren",
+      "markAsUnread": "Als Ungelesen Markieren",
+      "reply": "Antworten",
+      "delete": "Löschen",
+      "deleteConfirm": "Sind Sie sicher, dass Sie diese Nachricht löschen möchten?",
+      "from": "Von",
+      "date": "Datum",
+      "subject": "Betreff",
+      "status": {
+        "read": "Gelesen",
+        "unread": "Ungelesen",
+        "replied": "Beantwortet"
+      }
+    },
+    "logs": {
+      "title": "Systemprotokolle",
+      "subtitle": "Alle Systemvorgänge anzeigen",
+      "noLogs": "Noch keine Protokolleinträge",
+      "refresh": "Aktualisieren",
+      "clear": "Löschen",
+      "export": "Exportieren",
+      "filters": {
+        "level": "Protokollebene",
+        "context": "Kontext",
+        "dateRange": "Datumsbereich",
+        "all": "Alle",
+        "today": "Heute",
+        "week": "Diese Woche",
+        "month": "Diesen Monat"
+      },
+      "levels": {
+        "debug": "Debug",
+        "info": "Info",
+        "warning": "Warnung",
+        "error": "Fehler"
+      },
+      "table": {
+        "timestamp": "Zeitstempel",
+        "level": "Ebene",
+        "context": "Kontext",
+        "message": "Nachricht",
+        "details": "Details"
+      }
+    },
     "edit": "Bearbeiten",
     "delete": "Löschen",
     "save": "Speichern",

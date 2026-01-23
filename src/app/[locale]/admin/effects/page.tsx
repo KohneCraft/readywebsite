@@ -10,16 +10,17 @@ import { db } from '@/lib/firebase/config';
 import { EffectCard } from '@/components/effects/EffectCard';
 import { EffectSettingsModal } from '@/components/effects/EffectSettingsModal';
 import { Sparkles, Settings, Trash2, ToggleLeft, ToggleRight } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 import type { Effect, EffectTemplate, EffectType } from '@/types/effects';
 
-// Hazır efekt şablonları
-const AVAILABLE_EFFECTS: EffectTemplate[] = [
+// Hazır efekt şablonları (displayName ve description dinamik olarak set edilecek)
+const getAvailableEffects = (t: (key: string) => string): EffectTemplate[] => [
     {
         id: 'snow',
-        displayName: 'Kar Yağışı',
+        displayName: t('templates.snow.name'),
         category: 'seasonal',
         icon: '❄️',
-        description: 'Gerçekçi kar taneleri',
+        description: t('templates.snow.description'),
         defaultSettings: {
             intensity: 100,
             speed: 1.5,
@@ -30,10 +31,10 @@ const AVAILABLE_EFFECTS: EffectTemplate[] = [
     },
     {
         id: 'autumn-leaves',
-        displayName: 'Sonbahar Yaprakları',
+        displayName: t('templates.autumnLeaves.name'),
         category: 'seasonal',
         icon: '🍂',
-        description: 'Düşen sonbahar yaprakları',
+        description: t('templates.autumnLeaves.description'),
         defaultSettings: {
             intensity: 50,
             speed: 2,
@@ -43,10 +44,10 @@ const AVAILABLE_EFFECTS: EffectTemplate[] = [
     },
     {
         id: 'confetti',
-        displayName: 'Konfeti',
+        displayName: t('templates.confetti.name'),
         category: 'party',
         icon: '🎊',
-        description: 'Renkli konfeti yağmuru',
+        description: t('templates.confetti.description'),
         defaultSettings: {
             intensity: 150,
             colors: ['#ff0000', '#00ff00', '#0000ff', '#ffff00'],
@@ -56,10 +57,10 @@ const AVAILABLE_EFFECTS: EffectTemplate[] = [
     },
     {
         id: 'stars',
-        displayName: 'Parlayan Yıldızlar',
+        displayName: t('templates.stars.name'),
         category: 'nature',
         icon: '⭐',
-        description: 'Parlayan yıldız efekti',
+        description: t('templates.stars.description'),
         defaultSettings: {
             intensity: 80,
             twinkleSpeed: 1,
@@ -69,10 +70,10 @@ const AVAILABLE_EFFECTS: EffectTemplate[] = [
     },
     {
         id: 'fireworks',
-        displayName: 'Havai Fişek',
+        displayName: t('templates.fireworks.name'),
         category: 'party',
         icon: '🎆',
-        description: 'Patlamalar ve ışık gösterisi',
+        description: t('templates.fireworks.description'),
         defaultSettings: {
             frequency: 2,
             colors: ['#ff0000', '#00ff00', '#0000ff'],
@@ -81,10 +82,10 @@ const AVAILABLE_EFFECTS: EffectTemplate[] = [
     },
     {
         id: 'bubbles',
-        displayName: 'Kabarcıklar',
+        displayName: t('templates.bubbles.name'),
         category: 'animations',
         icon: '🫧',
-        description: 'Yüzen sabun köpükleri',
+        description: t('templates.bubbles.description'),
         defaultSettings: {
             intensity: 60,
             speed: 1,
@@ -94,10 +95,10 @@ const AVAILABLE_EFFECTS: EffectTemplate[] = [
     },
     {
         id: 'sakura',
-        displayName: 'Kiraz Çiçekleri',
+        displayName: t('templates.sakura.name'),
         category: 'seasonal',
         icon: '🌸',
-        description: 'Düşen kiraz çiçek yaprakları',
+        description: t('templates.sakura.description'),
         defaultSettings: {
             intensity: 40,
             speed: 1.5,
@@ -107,10 +108,10 @@ const AVAILABLE_EFFECTS: EffectTemplate[] = [
     },
     {
         id: 'rain',
-        displayName: 'Yağmur',
+        displayName: t('templates.rain.name'),
         category: 'nature',
         icon: '🌧️',
-        description: 'Gerçekçi yağmur efekti',
+        description: t('templates.rain.description'),
         defaultSettings: {
             intensity: 200,
             speed: 5,
@@ -120,10 +121,10 @@ const AVAILABLE_EFFECTS: EffectTemplate[] = [
     },
     {
         id: 'sparkles',
-        displayName: 'Parıltılar',
+        displayName: t('templates.sparkles.name'),
         category: 'animations',
         icon: '✨',
-        description: 'Mouse takipli parıltı efekti',
+        description: t('templates.sparkles.description'),
         defaultSettings: {
             color: '#ffd700',
             size: 5,
@@ -133,10 +134,10 @@ const AVAILABLE_EFFECTS: EffectTemplate[] = [
     },
     {
         id: 'hearts',
-        displayName: 'Uçan Kalpler',
+        displayName: t('templates.hearts.name'),
         category: 'party',
         icon: '❤️',
-        description: 'Yükselen kalp emojileri',
+        description: t('templates.hearts.description'),
         defaultSettings: {
             intensity: 30,
             speed: 2,
@@ -145,32 +146,34 @@ const AVAILABLE_EFFECTS: EffectTemplate[] = [
     },
 ];
 
-const CATEGORIES = [
-    { id: 'all', label: 'Tümü', icon: '🎨' },
-    { id: 'seasonal', label: 'Mevsimsel', icon: '🍂' },
-    { id: 'party', label: 'Parti', icon: '🎉' },
-    { id: 'nature', label: 'Doğa', icon: '🌿' },
-    { id: 'animations', label: 'Animasyonlar', icon: '✨' },
+// Kategoriler (dinamik olarak alınacak)
+const getCategoryItems = (t: (key: string) => string) => [
+    { id: 'all', label: t('categories.all'), icon: '🎨' },
+    { id: 'seasonal', label: t('categories.seasonal'), icon: '🍂' },
+    { id: 'party', label: t('categories.party'), icon: '🎉' },
+    { id: 'nature', label: t('categories.nature'), icon: '🌿' },
+    { id: 'animations', label: t('categories.animations'), icon: '✨' },
 ];
 
-function getScopeLabel(visibility: Effect['visibility']): string {
-    if (!visibility.enabled) return 'Pasif';
+function getScopeLabel(visibility: Effect['visibility'], t: (key: string) => string): string {
+    if (!visibility.enabled) return t('disabled');
 
     switch (visibility.scope) {
         case 'all':
-            return 'Tüm Sayfalarda';
+            return t('scope.all');
         case 'home':
-            return 'Sadece Anasayfada';
+            return t('scope.home');
         case 'selected':
-            return `${visibility.pages.length} Sayfada`;
+            return `${visibility.pages.length} ${t('scope.selected')}`;
         case 'exclude':
-            return `${visibility.pages.length} Sayfa Hariç`;
+            return `${visibility.pages.length} ${t('scope.exclude')}`;
         default:
-            return 'Bilinmeyen';
+            return t('scope.unknown');
     }
 }
 
 export default function EffectsPage() {
+    const t = useTranslations('admin.effects');
     const [activeEffects, setActiveEffects] = useState<Effect[]>([]);
     const [availablePages, setAvailablePages] = useState<{ id: string; title: string }[]>([]);
     const [selectedCategory, setSelectedCategory] = useState<string>('all');
@@ -238,7 +241,7 @@ export default function EffectsPage() {
 
     // Efekt kaldır
     async function handleRemoveEffect(effectId: string) {
-        if (!confirm('Bu efekti kaldırmak istediğinizden emin misiniz?')) return;
+        if (!confirm(t('deleteConfirm'))) return;
 
         try {
             await deleteDoc(doc(db, 'effects', effectId));
@@ -274,6 +277,10 @@ export default function EffectsPage() {
         return activeEffects.some((e) => e.name === effectId);
     }
 
+    // Dinamik efekt ve kategori listeleri
+    const AVAILABLE_EFFECTS = getAvailableEffects(t);
+    const CATEGORIES = getCategoryItems(t);
+
     // Filtrelenmiş efektler
     const filteredEffects =
         selectedCategory === 'all'
@@ -294,24 +301,24 @@ export default function EffectsPage() {
             <div className="mb-8">
                 <div className="flex items-center gap-3 mb-2">
                     <Sparkles className="w-8 h-8 text-yellow-500" />
-                    <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Efektler</h1>
+                    <h1 className="text-3xl font-bold text-gray-900 dark:text-white">{t('title')}</h1>
                 </div>
                 <p className="text-gray-600 dark:text-gray-400">
-                    Sitenize görsel efektler ekleyin ve özelleştirin
+                    {t('subtitle')}
                 </p>
             </div>
 
             {/* Active Effects Section */}
             <div className="mb-12">
                 <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">
-                    Aktif Efektler ({activeEffects.length})
+                    {t('activeEffects')} ({activeEffects.length})
                 </h2>
 
                 {activeEffects.length === 0 ? (
                     <div className="text-center py-12 bg-gray-50 dark:bg-gray-800 rounded-xl">
                         <Sparkles className="w-12 h-12 text-gray-400 mx-auto mb-4" />
                         <p className="text-gray-500 dark:text-gray-400">
-                            Henüz aktif efekt yok. Aşağıdan efekt ekleyebilirsiniz.
+                            {t('noActiveEffects')}
                         </p>
                     </div>
                 ) : (
@@ -335,7 +342,7 @@ export default function EffectsPage() {
                                     <button
                                         onClick={() => handleToggleEffect(effect)}
                                         className={`p-1 rounded ${effect.visibility.enabled ? 'text-green-500' : 'text-gray-400'}`}
-                                        title={effect.visibility.enabled ? 'Pasif Yap' : 'Aktif Yap'}
+                                        title={effect.visibility.enabled ? t('deactivate') : t('activate')}
                                     >
                                         {effect.visibility.enabled ? (
                                             <ToggleRight size={28} />
@@ -346,7 +353,7 @@ export default function EffectsPage() {
                                 </div>
 
                                 <p className="text-sm text-gray-500 dark:text-gray-400 mb-3">
-                                    📍 {getScopeLabel(effect.visibility)}
+                                    📍 {getScopeLabel(effect.visibility, t)}
                                 </p>
 
                                 <div className="flex gap-2">
@@ -354,7 +361,7 @@ export default function EffectsPage() {
                                         onClick={() => setEditingEffect(effect)}
                                         className="flex-1 py-2 px-3 border border-gray-200 dark:border-gray-600 rounded-lg text-sm font-medium hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors flex items-center justify-center gap-2"
                                     >
-                                        <Settings size={16} /> Ayarlar
+                                        <Settings size={16} /> {t('settings')}
                                     </button>
                                     <button
                                         onClick={() => handleRemoveEffect(effect.id)}
@@ -372,7 +379,7 @@ export default function EffectsPage() {
             {/* Available Effects Section */}
             <div>
                 <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">
-                    Mevcut Efektler
+                    {t('availableEffects')}
                 </h2>
 
                 {/* Categories */}

@@ -5,6 +5,9 @@
 
 import type { Locale } from '@/i18n';
 
+// Re-export Locale type
+export type { Locale };
+
 /**
  * Çoklu dil destekli metin tipi
  * Her locale için opsiyonel değer tutar

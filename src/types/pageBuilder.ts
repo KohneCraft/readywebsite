@@ -152,9 +152,9 @@ export interface BlockProps {
   // Heading Block
   level?: 'h1' | 'h2' | 'h3' | 'h4' | 'h5' | 'h6';
 
-  // Image Block
+  // Image Block - çoklu dil destekli alt text
   src?: string;
-  alt?: string;
+  alt?: string | Record<string, string>;
   imageWidth?: string;
   imageHeight?: string;
   maxWidth?: number;
@@ -201,8 +201,8 @@ export interface BlockProps {
   dividerColorDark?: string | 'auto'; // Koyu tema ayırıcı rengi
   dividerStyle?: 'solid' | 'dashed' | 'dotted';
 
-  // Form Block
-  title?: string;
+  // Form Block - çoklu dil destekli
+  title?: string | Record<string, string>;
   fields?: FormField[];
   submitButton?: {
     text: string;
@@ -329,11 +329,11 @@ export interface SliderSlide {
   id: string;
   type: 'image' | 'video';
   src: string;
-  alt?: string;
-  title?: string;
+  alt?: string | Record<string, string>;
+  title?: string | Record<string, string>;
   titleColor?: string;
   titleColorDark?: string | 'auto';
-  description?: string;
+  description?: string | Record<string, string>;
   descriptionColor?: string;
   descriptionColorDark?: string | 'auto';
   link?: string;

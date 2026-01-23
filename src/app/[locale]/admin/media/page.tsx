@@ -13,10 +13,12 @@ import { getCurrentUser, onAuthStateChanged } from '@/lib/firebase/auth';
 import { MediaUploader, MediaFilters, MediaGrid, MediaPreview } from '@/components/media';
 import { toast } from '@/components/providers';
 import { logger } from '@/lib/logger';
+import { useTranslations } from 'next-intl';
 import type { Media, MediaType, MediaSortBy, MediaViewMode } from '@/types/media';
 import { cn } from '@/lib/utils';
 
 export default function MediaManagerPage() {
+  const t = useTranslations('admin.media');
   const [activeTab, setActiveTab] = useState<MediaType>('image');
   const [mediaItems, setMediaItems] = useState<Media[]>([]);
   const [selectedItems, setSelectedItems] = useState<string[]>([]);
@@ -112,23 +114,23 @@ export default function MediaManagerPage() {
           : file.type.startsWith('video/');
 
         if (!isValidType) {
-          errors.push(`${file.name}: Geçersiz dosya tipi`);
+          errors.push(`${file.name}: ${t('invalidFileType') || 'Invalid file type'}`);
           continue;
         }
 
         await uploadMedia(file, fileType, authUserId);
       } catch (error) {
         logger.ui.error('Yükleme hatası', error);
-        errors.push(`${file.name}: ${error instanceof Error ? error.message : 'Yükleme başarısız'}`);
+        errors.push(`${file.name}: ${error instanceof Error ? error.message : t('uploadError')}`);
       }
     }
 
     setUploading(false);
 
     if (errors.length > 0) {
-      toast.error(`Bazı dosyalar yüklenemedi: ${errors.join(', ')}`);
+      toast.error(`${t('uploadError')}: ${errors.join(', ')}`);
     } else {
-      toast.success(`${files.length} dosya başarıyla yüklendi`);
+      toast.success(t('uploadSuccess'));
     }
 
     // Listeyi yenile
@@ -137,7 +139,7 @@ export default function MediaManagerPage() {
 
   // Medya silme
   const handleDelete = async (itemId: string) => {
-    if (!confirm('Bu medyayı silmek istediğinizden emin misiniz? Bu işlem geri alınamaz.')) {
+    if (!confirm(t('deleteConfirm'))) {
       return;
     }
 
@@ -145,9 +147,10 @@ export default function MediaManagerPage() {
       await deleteMedia(itemId);
       setSelectedItems((prev) => prev.filter((id) => id !== itemId));
       await loadMedia();
+      toast.success(t('deleteSuccess'));
     } catch (error) {
       logger.ui.error('Silme hatası', error);
-      toast.error('Medya silinirken hata oluştu');
+      toast.error(t('deleteError') || 'Error deleting media');
     }
   };
 
@@ -155,7 +158,7 @@ export default function MediaManagerPage() {
   const handleDeleteMultiple = async () => {
     if (selectedItems.length === 0) return;
 
-    if (!confirm(`${selectedItems.length} öğeyi silmek istediğinizden emin misiniz? Bu işlem geri alınamaz.`)) {
+    if (!confirm(t('deleteMultipleConfirm') || t('deleteConfirm'))) {
       return;
     }
 
@@ -203,10 +206,10 @@ export default function MediaManagerPage() {
       {/* Header */}
       <div className="mb-6">
         <h1 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
-          Medya Yönetimi
+          {t('title')}
         </h1>
         <p className="text-gray-600 dark:text-gray-400">
-          Fotoğraf ve video dosyalarınızı yönetin
+          {t('subtitle')}
         </p>
         {authError && (
           <div className="mt-4 p-4 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg">
@@ -240,7 +243,7 @@ export default function MediaManagerPage() {
           )}
         >
           <ImageIcon className="w-5 h-5 inline-block mr-2" />
-          Fotoğraflar
+          {t('filters.images')}
         </button>
         <button
           onClick={() => {
@@ -255,7 +258,7 @@ export default function MediaManagerPage() {
           )}
         >
           <Video className="w-5 h-5 inline-block mr-2" />
-          Videolar
+          {t('filters.videos')}
         </button>
       </div>
 
@@ -284,7 +287,7 @@ export default function MediaManagerPage() {
       {/* Media Grid/List */}
       {loading ? (
         <div className="text-center py-12 text-gray-500 dark:text-gray-400">
-          Yükleniyor...
+          {t('loading') || 'Loading...'}
         </div>
       ) : (
         <MediaGrid
@@ -303,14 +306,14 @@ export default function MediaManagerPage() {
         <div className="fixed bottom-0 left-0 right-0 bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 p-4 shadow-lg z-40">
           <div className="container mx-auto flex items-center justify-between">
             <span className="text-sm text-gray-600 dark:text-gray-400">
-              Seçili: {selectedItems.length} öğe
+              {t('selected') || 'Selected'}: {selectedItems.length}
             </span>
             <button
               onClick={handleDeleteMultiple}
               className="flex items-center gap-2 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
             >
               <Trash2 className="w-4 h-4" />
-              Seçilenleri Sil
+              {t('deleteSelected') || 'Delete Selected'}
             </button>
           </div>
         </div>

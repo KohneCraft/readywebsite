@@ -621,7 +621,161 @@
       "loginSuccess": "Giriş başarılı",
       "logoutSuccess": "Çıkış yapıldı"
     },
-    "logout": "Çıkış Yap"
+    "logout": "Çıkış Yap",
+    "effects": {
+      "title": "Efektler",
+      "subtitle": "Sitenize görsel efektler ekleyin ve özelleştirin",
+      "noEffects": "Henüz efekt eklenmemiş",
+      "addEffect": "Efekt Ekle",
+      "editEffect": "Efekt Düzenle",
+      "deleteConfirm": "Bu efekti kaldırmak istediğinizden emin misiniz?",
+      "enabled": "Aktif",
+      "disabled": "Pasif",
+      "settings": "Ayarlar",
+      "preview": "Önizleme",
+      "activeEffects": "Aktif Efektler",
+      "availableEffects": "Kullanılabilir Efektler",
+      "noActiveEffects": "Henüz aktif efekt yok. Aşağıdan efekt ekleyebilirsiniz.",
+      "activate": "Aktif Yap",
+      "deactivate": "Pasif Yap",
+      "remove": "Kaldır",
+      "scope": {
+        "all": "Tüm Sayfalarda",
+        "home": "Sadece Anasayfada",
+        "selected": "Seçili Sayfalarda",
+        "exclude": "Seçili Sayfalar Hariç",
+        "unknown": "Bilinmeyen"
+      },
+      "categories": {
+        "all": "Tümü",
+        "seasonal": "Mevsimsel",
+        "party": "Parti",
+        "nature": "Doğa",
+        "animations": "Animasyonlar"
+      },
+      "templates": {
+        "snow": {
+          "name": "Kar Yağışı",
+          "description": "Gerçekçi kar taneleri"
+        },
+        "autumnLeaves": {
+          "name": "Sonbahar Yaprakları",
+          "description": "Düşen sonbahar yaprakları"
+        },
+        "confetti": {
+          "name": "Konfeti",
+          "description": "Renkli konfeti yağmuru"
+        },
+        "stars": {
+          "name": "Parlayan Yıldızlar",
+          "description": "Parlayan yıldız efekti"
+        },
+        "fireworks": {
+          "name": "Havai Fişek",
+          "description": "Patlamalar ve ışık gösterisi"
+        },
+        "bubbles": {
+          "name": "Baloncuklar",
+          "description": "Yükselen sabun baloncukları"
+        },
+        "rain": {
+          "name": "Yağmur",
+          "description": "Yağmur damlaları efekti"
+        },
+        "sakura": {
+          "name": "Kiraz Çiçeği",
+          "description": "Uçuşan kiraz çiçekleri"
+        },
+        "sparkles": {
+          "name": "Pırıltılar",
+          "description": "Parıldayan ışıklar"
+        },
+        "hearts": {
+          "name": "Uçan Kalpler",
+          "description": "Yükselen kalp emojileri"
+        }
+      }
+    },
+    "media": {
+      "title": "Medya Yönetimi",
+      "subtitle": "Fotoğraf ve video dosyalarınızı yönetin",
+      "upload": "Yükle",
+      "uploadFile": "Dosya Yükle",
+      "uploadFiles": "Dosyaları Yükle",
+      "dragDrop": "Dosyaları sürükleyip bırakın veya tıklayın",
+      "selectFiles": "Dosya Seç",
+      "noMedia": "Henüz medya eklenmemiş",
+      "deleteConfirm": "Bu dosyayı silmek istediğinizden emin misiniz? Bu işlem geri alınamaz.",
+      "deleteMultipleConfirm": "Seçili dosyaları silmek istediğinizden emin misiniz? Bu işlem geri alınamaz.",
+      "deleteSuccess": "Dosya başarıyla silindi",
+      "deleteError": "Dosya silinirken hata oluştu",
+      "uploadSuccess": "Dosya başarıyla yüklendi",
+      "uploadError": "Dosya yüklenirken hata oluştu",
+      "invalidFileType": "Geçersiz dosya tipi",
+      "loading": "Yükleniyor...",
+      "selected": "Seçili",
+      "deleteSelected": "Seçilenleri Sil",
+      "filters": {
+        "all": "Tümü",
+        "images": "Fotoğraflar",
+        "videos": "Videolar"
+      },
+      "details": {
+        "name": "Dosya Adı",
+        "type": "Tür",
+        "size": "Boyut",
+        "dimensions": "Boyutlar",
+        "uploadedAt": "Yüklenme Tarihi"
+      }
+    },
+    "messages": {
+      "title": "İletişim Mesajları",
+      "subtitle": "Gelen mesajları görüntüleyin ve yönetin",
+      "noMessages": "Henüz mesaj yok",
+      "markAsRead": "Okundu İşaretle",
+      "markAsUnread": "Okunmadı İşaretle",
+      "reply": "Yanıtla",
+      "delete": "Sil",
+      "deleteConfirm": "Bu mesajı silmek istediğinizden emin misiniz?",
+      "from": "Gönderen",
+      "date": "Tarih",
+      "subject": "Konu",
+      "status": {
+        "read": "Okundu",
+        "unread": "Okunmadı",
+        "replied": "Yanıtlandı"
+      }
+    },
+    "logs": {
+      "title": "Sistem Logları",
+      "subtitle": "Sistemdeki tüm işlem loglarını görüntüleyin",
+      "noLogs": "Henüz log kaydı yok",
+      "refresh": "Yenile",
+      "clear": "Temizle",
+      "export": "Dışa Aktar",
+      "filters": {
+        "level": "Log Seviyesi",
+        "context": "Context",
+        "dateRange": "Tarih Aralığı",
+        "all": "Tümü",
+        "today": "Bugün",
+        "week": "Bu Hafta",
+        "month": "Bu Ay"
+      },
+      "levels": {
+        "debug": "Debug",
+        "info": "Bilgi",
+        "warning": "Uyarı",
+        "error": "Hata"
+      },
+      "table": {
+        "timestamp": "Zaman",
+        "level": "Seviye",
+        "context": "Context",
+        "message": "Mesaj",
+        "details": "Detaylar"
+      }
+    }
   },
   "errors": {
     "notFound": {

@@ -546,6 +546,164 @@
       "logoutSuccess": "Déconnecté"
     },
     "logout": "Déconnexion",
+    "themes": {
+      "title": "Sélectionner le Thème",
+      "subtitle": "Choisissez parmi les thèmes prêts à l'emploi"
+    },
+    "effects": {
+      "title": "Effets",
+      "subtitle": "Ajoutez des effets visuels à votre site et personnalisez-les",
+      "noEffects": "Aucun effet ajouté",
+      "addEffect": "Ajouter un Effet",
+      "editEffect": "Modifier l'Effet",
+      "deleteConfirm": "Êtes-vous sûr de vouloir supprimer cet effet?",
+      "enabled": "Activé",
+      "disabled": "Désactivé",
+      "settings": "Paramètres",
+      "preview": "Aperçu",
+      "activeEffects": "Effets Actifs",
+      "availableEffects": "Effets Disponibles",
+      "noActiveEffects": "Aucun effet actif. Vous pouvez ajouter des effets ci-dessous.",
+      "activate": "Activer",
+      "deactivate": "Désactiver",
+      "remove": "Supprimer",
+      "scope": {
+        "all": "Toutes les Pages",
+        "home": "Page d'Accueil Uniquement",
+        "selected": "Pages Sélectionnées",
+        "exclude": "Exclure les Pages Sélectionnées",
+        "unknown": "Inconnu"
+      },
+      "categories": {
+        "all": "Tous",
+        "seasonal": "Saisonnier",
+        "party": "Fête",
+        "nature": "Nature",
+        "animations": "Animations"
+      },
+      "templates": {
+        "snow": {
+          "name": "Chute de Neige",
+          "description": "Flocons de neige réalistes"
+        },
+        "autumnLeaves": {
+          "name": "Feuilles d'Automne",
+          "description": "Feuilles d'automne tombantes"
+        },
+        "confetti": {
+          "name": "Confettis",
+          "description": "Pluie de confettis colorés"
+        },
+        "stars": {
+          "name": "Étoiles Scintillantes",
+          "description": "Effet d'étoiles brillantes"
+        },
+        "fireworks": {
+          "name": "Feux d'Artifice",
+          "description": "Explosions et spectacle de lumières"
+        },
+        "bubbles": {
+          "name": "Bulles",
+          "description": "Bulles de savon montantes"
+        },
+        "rain": {
+          "name": "Pluie",
+          "description": "Effet de gouttes de pluie"
+        },
+        "sakura": {
+          "name": "Fleurs de Cerisier",
+          "description": "Pétales de cerisier flottants"
+        },
+        "sparkles": {
+          "name": "Étincelles",
+          "description": "Lumières scintillantes"
+        },
+        "hearts": {
+          "name": "Cœurs Volants",
+          "description": "Emojis cœurs montants"
+        }
+      }
+    },
+    "media": {
+      "title": "Gestion des Médias",
+      "subtitle": "Gérez vos fichiers photos et vidéos",
+      "upload": "Télécharger",
+      "uploadFile": "Télécharger un Fichier",
+      "uploadFiles": "Télécharger des Fichiers",
+      "dragDrop": "Glissez et déposez les fichiers ici ou cliquez",
+      "selectFiles": "Sélectionner des Fichiers",
+      "noMedia": "Aucun média ajouté",
+      "deleteConfirm": "Êtes-vous sûr de vouloir supprimer ce fichier? Cette action est irréversible.",
+      "deleteMultipleConfirm": "Êtes-vous sûr de vouloir supprimer les fichiers sélectionnés? Cette action est irréversible.",
+      "deleteSuccess": "Fichier supprimé avec succès",
+      "deleteError": "Erreur lors de la suppression du fichier",
+      "uploadSuccess": "Fichier téléchargé avec succès",
+      "uploadError": "Erreur lors du téléchargement du fichier",
+      "invalidFileType": "Type de fichier invalide",
+      "loading": "Chargement...",
+      "selected": "Sélectionné",
+      "deleteSelected": "Supprimer la Sélection",
+      "filters": {
+        "all": "Tous",
+        "images": "Photos",
+        "videos": "Vidéos"
+      },
+      "details": {
+        "name": "Nom du Fichier",
+        "type": "Type",
+        "size": "Taille",
+        "dimensions": "Dimensions",
+        "uploadedAt": "Téléchargé le"
+      }
+    },
+    "messages": {
+      "title": "Messages de Contact",
+      "subtitle": "Afficher et gérer les messages entrants",
+      "noMessages": "Aucun message",
+      "markAsRead": "Marquer comme Lu",
+      "markAsUnread": "Marquer comme Non Lu",
+      "reply": "Répondre",
+      "delete": "Supprimer",
+      "deleteConfirm": "Êtes-vous sûr de vouloir supprimer ce message?",
+      "from": "De",
+      "date": "Date",
+      "subject": "Sujet",
+      "status": {
+        "read": "Lu",
+        "unread": "Non lu",
+        "replied": "Répondu"
+      }
+    },
+    "logs": {
+      "title": "Journaux Système",
+      "subtitle": "Afficher tous les journaux d'opérations système",
+      "noLogs": "Aucun enregistrement de journal",
+      "refresh": "Actualiser",
+      "clear": "Effacer",
+      "export": "Exporter",
+      "filters": {
+        "level": "Niveau de Journal",
+        "context": "Contexte",
+        "dateRange": "Plage de Dates",
+        "all": "Tous",
+        "today": "Aujourd'hui",
+        "week": "Cette Semaine",
+        "month": "Ce Mois"
+      },
+      "levels": {
+        "debug": "Debug",
+        "info": "Info",
+        "warning": "Avertissement",
+        "error": "Erreur"
+      },
+      "table": {
+        "timestamp": "Horodatage",
+        "level": "Niveau",
+        "context": "Contexte",
+        "message": "Message",
+        "details": "Détails"
+      }
+    },
     "edit": "Modifier",
     "delete": "Supprimer",
     "save": "Enregistrer",

@@ -194,11 +194,11 @@ export default function PageBuilderListPage() {
       </div>
 
       {/* Info Box */}
-      <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-100 dark:border-blue-800 rounded-xl p-6">
+      <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-xl p-6">
         <h3 className="font-semibold text-blue-900 dark:text-blue-100 mb-2">
           Sayfa Düzeni Nasıl Çalışır?
         </h3>
-        <ul className="text-sm text-blue-700 dark:text-blue-300 space-y-2">
+        <ul className="text-sm text-blue-800 dark:text-blue-300 space-y-2">
           <li>• Bir sayfa seçin ve elementleri sürükle-bırak ile yeniden düzenleyin</li>
           <li>• Her element için genişlik, kenar boşlukları ve responsive ayarları yapın</li>
           <li>• Değişikliklerinizi canlı önizleme ile kontrol edin</li>
