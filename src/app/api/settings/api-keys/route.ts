@@ -62,6 +62,8 @@ export async function GET() {
 export async function PUT(request: NextRequest) {
   try {
     const body = await request.json();
+    console.log('API Keys PUT - Received body:', JSON.stringify(body, null, 2));
+    
     const {
       translationProvider,
       googleTranslateKey,
@@ -70,9 +72,13 @@ export async function PUT(request: NextRequest) {
       googleMapsKey,
     } = body;
 
+    console.log('API Keys PUT - Connecting to Firestore...');
     const docRef = doc(db, SETTINGS_DOC, API_KEYS_DOC);
+    
+    console.log('API Keys PUT - Fetching existing document...');
     const docSnap = await getDoc(docRef);
     const existingData = docSnap.exists() ? docSnap.data() as ApiKeysSettings : {};
+    console.log('API Keys PUT - Existing data found:', docSnap.exists());
 
     // Build update object - only update provided fields
     const updateData: Partial<ApiKeysSettings> = {
@@ -99,7 +105,9 @@ export async function PUT(request: NextRequest) {
       updateData.googleMapsKey = googleMapsKey;
     }
 
+    console.log('API Keys PUT - Saving to Firestore...', updateData);
     await setDoc(docRef, updateData);
+    console.log('API Keys PUT - Save successful');
 
     return NextResponse.json({
       success: true,
@@ -109,10 +117,15 @@ export async function PUT(request: NextRequest) {
       mapProvider: updateData.mapProvider,
       hasGoogleMapsKey: !!updateData.googleMapsKey,
     });
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error updating API keys settings:', error);
+    console.error('Error details:', {
+      message: error?.message,
+      code: error?.code,
+      stack: error?.stack,
+    });
     return NextResponse.json(
-      { error: 'Failed to update settings' },
+      { error: 'Failed to update settings', details: error?.message || 'Unknown error' },
       { status: 500 }
     );
   }
