@@ -38,6 +38,39 @@ export default function ThemesPage() {
   const locale = useLocale() as Locale;
   const t = useTranslations('admin.themes');
 
+  // Tema adından çeviri key'i oluştur
+  const getThemeNameKey = (themeName: string): string => {
+    const nameMap: Record<string, string> = {
+      'modern iş': 'modernBusiness',
+      'modern is': 'modernBusiness',
+      'modern business': 'modernBusiness',
+      'sade tema': 'minimal',
+      'minimal tema': 'minimal',
+      'minimal': 'minimal',
+      'kurumsal': 'corporate',
+      'corporate': 'corporate',
+      'inşaat': 'construction',
+      'construction': 'construction',
+      'restoran': 'restaurant',
+      'restaurant': 'restaurant',
+      'sağlık': 'healthcare',
+      'healthcare': 'healthcare',
+      'eğitim': 'education',
+      'education': 'education',
+      'e-ticaret': 'ecommerce',
+      'ecommerce': 'ecommerce',
+    };
+    const normalized = themeName.toLowerCase().trim();
+    return nameMap[normalized] || normalized.replace(/\s+/g, '');
+  };
+
+  const getThemeTranslation = (type: 'name' | 'description', themeName: string, fallback: string): string => {
+    const key = getThemeNameKey(themeName);
+    const translationKey = type === 'name' ? `themeNames.${key}` : `themeDescriptions.${key}`;
+    const translated = t.raw(translationKey);
+    return typeof translated === 'string' ? translated : fallback;
+  };
+
   const [themes, setThemes] = useState<ThemePreview[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [installingTheme, setInstallingTheme] = useState<string | null>(null);
@@ -543,8 +576,8 @@ export default function ThemesPage() {
                   )}
                 </div>
                 <CardHeader>
-                  <CardTitle>{t(`themeNames.${theme.id}` as any) || theme.name}</CardTitle>
-                  <CardDescription>{t(`themeDescriptions.${theme.id}` as any) || theme.description}</CardDescription>
+                  <CardTitle>{getThemeTranslation('name', theme.name, theme.name)}</CardTitle>
+                  <CardDescription>{getThemeTranslation('description', theme.name, theme.description)}</CardDescription>
                 </CardHeader>
                 <CardContent>
                   <div className="flex items-center justify-between mb-4">
