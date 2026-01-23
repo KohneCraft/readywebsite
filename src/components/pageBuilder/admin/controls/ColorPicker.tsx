@@ -6,6 +6,7 @@
 // ============================================
 
 import { useState, useRef, useEffect } from 'react';
+import { useTranslations } from 'next-intl';
 import { cn } from '@/lib/utils';
 
 interface ColorPickerProps {
@@ -14,6 +15,7 @@ interface ColorPickerProps {
 }
 
 export function ColorPicker({ color, onChange }: ColorPickerProps) {
+  const t = useTranslations('common.colorPicker');
   const [isOpen, setIsOpen] = useState(false);
   const [hexColor, setHexColor] = useState(color || '#000000');
   const popupRef = useRef<HTMLDivElement>(null);
@@ -82,7 +84,7 @@ export function ColorPicker({ color, onChange }: ColorPickerProps) {
             {/* Hex Input */}
             <div>
               <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
-                Hex Kodu
+                {t('hexCode')}
               </label>
               <input
                 type="text"
@@ -118,14 +120,14 @@ export function ColorPicker({ color, onChange }: ColorPickerProps) {
                     backgroundPosition: '0 0, 0 4px, 4px -4px, -4px 0px'
                   }}
                 />
-                <span className="text-sm text-gray-700 dark:text-gray-300">Şeffaf (Transparent)</span>
+                <span className="text-sm text-gray-700 dark:text-gray-300">{t('transparent')}</span>
               </button>
             </div>
 
             {/* Preset Colors */}
             <div>
               <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-2">
-                Önceden Tanımlı Renkler
+                {t('presetColors')}
               </label>
               <div className="grid grid-cols-8 gap-2">
                 {[

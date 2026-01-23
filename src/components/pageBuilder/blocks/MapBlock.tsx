@@ -1,6 +1,7 @@
 'use client';
 
-import { useEffect, useRef, memo } from 'react';
+import { useEffect, useRef, memo, useState } from 'react';
+import { useTranslations } from 'next-intl';
 import { sanitizeCSS } from '@/lib/sanitize';
 import { logger } from '@/lib/logger';
 import type { BlockProps } from '@/types/pageBuilder';
@@ -11,6 +12,39 @@ interface MapBlockProps {
 
 function MapBlockComponent({ props }: MapBlockProps) {
   const mapRef = useRef<HTMLDivElement>(null);
+  const t = useTranslations('pageBuilder.blocks.map');
+  const [googleMapsKey, setGoogleMapsKey] = useState<string | null>(null);
+  const [isLoadingKey, setIsLoadingKey] = useState(true);
+
+  // API Key'i yeni sistemden çek
+  useEffect(() => {
+    const fetchMapsKey = async () => {
+      try {
+        // Önce environment variable kontrol et (geriye uyumluluk)
+        const envKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
+        if (envKey) {
+          setGoogleMapsKey(envKey);
+          setIsLoadingKey(false);
+          return;
+        }
+
+        // Yeni sistemden çek
+        const response = await fetch('/api/settings/maps-key');
+        if (response.ok) {
+          const data = await response.json();
+          if (data.mapProvider === 'google' && data.googleMapsKey) {
+            setGoogleMapsKey(data.googleMapsKey);
+          }
+        }
+      } catch (error) {
+        logger.pageBuilder.warn('Maps API key alınamadı', error);
+      } finally {
+        setIsLoadingKey(false);
+      }
+    };
+
+    fetchMapsKey();
+  }, []);
 
   // Harita genişliği responsive hesaplama
   const getMapWidth = () => {
@@ -85,17 +119,17 @@ function MapBlockComponent({ props }: MapBlockProps) {
   }, [props.customCSS, props.id]);
 
   useEffect(() => {
-    if (!mapRef.current || !props.latitude || !props.longitude) return;
+    if (!mapRef.current || !props.latitude || !props.longitude || isLoadingKey) return;
 
     const currentRef = mapRef.current;
     const showMarker = props.marker !== false; // Varsayılan true
 
     // Google Maps veya OpenStreetMap entegrasyonu
     if (props.mapProvider === 'google') {
-      // Google Maps API key'i environment variable'dan al
-      const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || '';
+      // Google Maps API key'i yeni sistemden veya environment variable'dan al
+      const apiKey = googleMapsKey || '';
       if (!apiKey) {
-        logger.pageBuilder.warn('Google Maps API key bulunamadı. Lütfen NEXT_PUBLIC_GOOGLE_MAPS_API_KEY environment variable\'ını ayarlayın.');
+        logger.pageBuilder.warn('Google Maps API key bulunamadı.');
         // React-safe DOM manipulation
         try {
           while (currentRef.firstChild) {
@@ -104,8 +138,8 @@ function MapBlockComponent({ props }: MapBlockProps) {
           const placeholder = document.createElement('div');
           placeholder.className = 'flex flex-col items-center justify-center h-full bg-gray-100 dark:bg-gray-800 rounded-lg gap-2 p-4';
           placeholder.innerHTML = `
-            <span class="text-gray-400 text-center">Google Maps API key gerekli</span>
-            <span class="text-gray-500 text-xs text-center">.env.local dosyasına NEXT_PUBLIC_GOOGLE_MAPS_API_KEY ekleyin</span>
+            <span class="text-gray-400 text-center">${t('apiKeyRequired')}</span>
+            <span class="text-gray-500 text-xs text-center">${t('addApiKeyHint')}</span>
           `;
           currentRef.appendChild(placeholder);
         } catch (error) {
@@ -180,7 +214,7 @@ function MapBlockComponent({ props }: MapBlockProps) {
         // Sessizce yoksay - ref zaten unmount olmuş olabilir
       }
     };
-  }, [props.latitude, props.longitude, props.zoom, props.mapProvider, props.marker, props.markerTitle]);
+  }, [props.latitude, props.longitude, props.zoom, props.mapProvider, props.marker, props.markerTitle, googleMapsKey, isLoadingKey, t]);
 
   if (!props.latitude || !props.longitude) {
     return (

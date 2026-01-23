@@ -6,6 +6,7 @@
 // ============================================
 
 import { useState, useEffect } from 'react';
+import { useTranslations } from 'next-intl';
 import { useTheme } from '@/contexts/ThemeContext';
 import { getCurrentUser } from '@/lib/firebase/auth';
 import { updateActiveThemeSettings } from '@/lib/firebase/firestore';
@@ -24,6 +25,7 @@ interface HeaderSettingsProps {
 
 export function HeaderSettings({ activeTab, onUpdate }: HeaderSettingsProps) {
   const { themeSettings, currentTheme } = useTheme();
+  const t = useTranslations('common.toast');
   const [loading, setLoading] = useState(false);
   const [expandedItems, setExpandedItems] = useState<number[]>([]); // Açık alt menü indexleri
   const [headerConfig, setHeaderConfig] = useState<{
@@ -57,7 +59,7 @@ export function HeaderSettings({ activeTab, onUpdate }: HeaderSettingsProps) {
 
   const handleSave = async () => {
     if (!currentTheme) {
-      toast.error('Tema yüklü değil. Lütfen önce bir tema yükleyin.');
+      toast.error(t('themeRequired'));
       logger.theme.error('currentTheme undefined - tema yüklenmemiş');
       return;
     }
@@ -66,7 +68,7 @@ export function HeaderSettings({ activeTab, onUpdate }: HeaderSettingsProps) {
       setLoading(true);
       const user = getCurrentUser();
       if (!user) {
-        toast.error('Giriş yapmanız gerekiyor');
+        toast.error(t('loginRequired'));
         return;
       }
 
@@ -92,10 +94,10 @@ export function HeaderSettings({ activeTab, onUpdate }: HeaderSettingsProps) {
           (onUpdate as (updates: any) => void)({});
         }
       }
-      toast.success('Header ayarları kaydedildi');
+      toast.success(t('headerSaved'));
     } catch (error) {
       logger.theme.error('Header ayarları kaydedilirken hata', error);
-      toast.error('Header ayarları kaydedilemedi');
+      toast.error(t('headerSaveError'));
     } finally {
       setLoading(false);
     }

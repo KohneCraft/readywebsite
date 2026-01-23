@@ -6,6 +6,7 @@
 // ============================================
 
 import { useState, useCallback } from 'react';
+import { useTranslations } from 'next-intl';
 import { cn } from '@/lib/utils';
 import { localeFlags, localeNames, type Locale } from '@/i18n';
 import { 
@@ -52,6 +53,9 @@ export function MultiLangInput({
   disabled = false,
   showAutoTranslate = true,
 }: MultiLangInputProps) {
+  // Çeviriler
+  const t = useTranslations('common.multiLangInput');
+  
   // Aktif dil tab'ı
   const [activeLocale, setActiveLocale] = useState<Locale>('tr');
   // Çeviri durumu
@@ -176,8 +180,8 @@ export function MultiLangInput({
           onClick={handleAutoTranslate}
           disabled={disabled || isTranslating || !localizedValue.tr?.trim()}
           className={cn(
-            'w-full flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-medium rounded-lg transition-all',
-            'bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400',
+            'w-full flex items-center justify-center gap-2 px-2 py-0.5 text-sm font-medium rounded-lg transition-all',
+            'bg-blue-50 dark:bg-blue-900/30 text-black-600 dark:text-blue-400',
             'hover:bg-blue-100 dark:hover:bg-blue-900/50',
             'border border-blue-200 dark:border-blue-800',
             'disabled:opacity-50 disabled:cursor-not-allowed'
@@ -243,11 +247,11 @@ export function MultiLangInput({
       {/* Dil Durumu Göstergesi */}
       <div className="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400">
         <span>
-          {filledLocales.length}/{activeLocales.length} dil tamamlandı
+          {t('languagesCompleted', { filled: filledLocales.length, total: activeLocales.length })}
         </span>
         {filledLocales.length < activeLocales.length && (
           <span className="text-amber-500">
-            • Eksik: {activeLocales.filter(l => !filledLocales.includes(l)).map(l => l.toUpperCase()).join(', ')}
+            • {t('missing')}: {activeLocales.filter(l => !filledLocales.includes(l)).map(l => l.toUpperCase()).join(', ')}
           </span>
         )}
       </div>

@@ -20,7 +20,7 @@ export const buttonVariants = cva(
         outline:
           'border-2 border-primary-600 text-primary-600 hover:bg-primary-600 hover:text-white focus-visible:ring-primary-500',
         ghost:
-          'hover:bg-gray-100 dark:hover:bg-gray-800 focus-visible:ring-gray-500',
+          'hover:bg-gray-100 dark:hover:bg-green-200 focus-visible:ring-gray-500',
         link: 'text-primary-600 underline-offset-4 hover:underline focus-visible:ring-primary-500',
         destructive:
           'bg-red-600 text-white hover:bg-red-700 focus-visible:ring-red-500',

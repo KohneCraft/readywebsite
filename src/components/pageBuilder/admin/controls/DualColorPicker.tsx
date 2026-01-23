@@ -6,6 +6,7 @@
 // ============================================
 
 import { useState } from 'react';
+import { useTranslations } from 'next-intl';
 import { ColorPicker } from './ColorPicker';
 import { getAutoInvertedColor } from '@/lib/themeColors';
 import { Sun, Moon } from 'lucide-react';
@@ -30,6 +31,7 @@ export function DualColorPicker({
     onDarkChange,
     label,
 }: DualColorPickerProps) {
+    const t = useTranslations('common.colorPicker');
     const [useDarkOverride, setUseDarkOverride] = useState(darkColor !== 'auto');
 
     // Otomatik hesaplanan koyu renk
@@ -52,7 +54,7 @@ export function DualColorPicker({
                 <div className="flex items-center gap-2 mb-1">
                     <Sun className="w-3.5 h-3.5 text-amber-500" />
                     <label className="text-xs font-medium text-gray-700 dark:text-gray-300">
-                        {label ? `${label} (Açık Tema)` : 'Açık Tema'}
+                        {label ? `${label} (${t('lightTheme')})` : t('lightTheme')}
                     </label>
                 </div>
                 <ColorPicker color={lightColor} onChange={onLightChange} />
@@ -69,7 +71,7 @@ export function DualColorPicker({
                     />
                     <Moon className="w-3.5 h-3.5 text-blue-500" />
                     <span className="text-xs text-gray-600 dark:text-gray-400">
-                        Koyu tema için farklı renk
+                        {t('differentColorForDark')}
                     </span>
                 </label>
             </div>
@@ -80,7 +82,7 @@ export function DualColorPicker({
                     <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
                         <span className="flex items-center gap-2">
                             <Moon className="w-3.5 h-3.5 text-blue-500" />
-                            Koyu Tema Rengi
+                            {t('darkThemeColor')}
                         </span>
                     </label>
                     <ColorPicker
@@ -96,10 +98,10 @@ export function DualColorPicker({
                     />
                     <div className="flex-1">
                         <p className="text-xs text-gray-600 dark:text-gray-400">
-                            Otomatik: <span className="font-mono">{autoInvertedColor}</span>
+                            {t('autoColor')}: <span className="font-mono">{autoInvertedColor}</span>
                         </p>
                         <p className="text-[10px] text-gray-400 dark:text-gray-500">
-                            Koyu temada bu renk kullanılacak
+                            {t('autoColorHint')}
                         </p>
                     </div>
                 </div>

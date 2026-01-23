@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, memo, useEffect, useMemo } from 'react';
-import { useLocale } from 'next-intl';
+import { useLocale, useTranslations } from 'next-intl';
 import { toast } from 'sonner';
 import { sanitizeCSS } from '@/lib/sanitize';
 import { logger } from '@/lib/logger';
@@ -16,6 +16,7 @@ interface FormBlockProps {
 
 function FormBlockComponent({ props }: FormBlockProps) {
   const locale = useLocale() as Locale;
+  const t = useTranslations('common.toast');
   const [formData, setFormData] = useState<Record<string, string>>({});
   const [submitted, setSubmitted] = useState(false);
 
@@ -87,16 +88,16 @@ function FormBlockComponent({ props }: FormBlockProps) {
 
       if (response.ok) {
         setSubmitted(true);
-        toast.success(props.successMessage || result.message || 'Mesajınız başarıyla gönderildi!');
+        toast.success(props.successMessage || result.message || t('formSuccess'));
         setTimeout(() => setSubmitted(false), 3000);
         form.reset();
         setFormData({});
       } else {
-        toast.error(props.errorMessage || result.error || 'Form gönderilirken bir hata oluştu.');
+        toast.error(props.errorMessage || result.error || t('formError'));
       }
     } catch (error) {
       logger.ui.error('Form gönderim hatası', error);
-      toast.error(props.errorMessage || 'Form gönderilirken bir hata oluştu.');
+      toast.error(props.errorMessage || t('formError'));
     }
   };
 

@@ -6,6 +6,7 @@
 // ============================================
 
 import { useState, useEffect } from 'react';
+import { useTranslations } from 'next-intl';
 import { useTheme } from '@/contexts/ThemeContext';
 import { getCurrentUser } from '@/lib/firebase/auth';
 import { updateActiveThemeSettings, getSiteSettingsClient, updateSiteSettings } from '@/lib/firebase/firestore';
@@ -22,6 +23,7 @@ interface FooterSettingsProps {
 
 export function FooterSettings({ activeTab, onUpdate }: FooterSettingsProps) {
   const { themeSettings, currentTheme } = useTheme();
+  const t = useTranslations('common.toast');
   const [loading, setLoading] = useState(false);
   const [footerConfig, setFooterConfig] = useState<{
     logo?: string;
@@ -94,7 +96,7 @@ export function FooterSettings({ activeTab, onUpdate }: FooterSettingsProps) {
 
   const handleSave = async () => {
     if (!currentTheme) {
-      toast.error('Tema yüklü değil. Lütfen önce bir tema yükleyin.');
+      toast.error(t('themeRequired'));
       logger.theme.error('currentTheme undefined - tema yüklenmemiş');
       return;
     }
@@ -103,7 +105,7 @@ export function FooterSettings({ activeTab, onUpdate }: FooterSettingsProps) {
       setLoading(true);
       const user = getCurrentUser();
       if (!user) {
-        toast.error('Giriş yapmanız gerekiyor');
+        toast.error(t('loginRequired'));
         return;
       }
 
@@ -140,10 +142,10 @@ export function FooterSettings({ activeTab, onUpdate }: FooterSettingsProps) {
           (onUpdate as (updates: any) => void)({});
         }
       }
-      toast.success('Footer ayarları kaydedildi');
+      toast.success(t('footerSaved'));
     } catch (error) {
       logger.theme.error('Footer ayarları kaydedilirken hata', error);
-      toast.error('Footer ayarları kaydedilemedi');
+      toast.error(t('footerSaveError'));
     } finally {
       setLoading(false);
     }
