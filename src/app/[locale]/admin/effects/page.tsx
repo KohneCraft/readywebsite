@@ -409,6 +409,19 @@ export default function EffectsPage() {
                             effect={effect}
                             isActive={isEffectActive(effect.id)}
                             onAdd={() => handleAddEffect(effect.id)}
+                            translations={{
+                                preview: t('preview'),
+                                add: t('add'),
+                                added: t('added'),
+                                closePreview: t('closePreview'),
+                                previewDescription: t('previewDescription'),
+                                categories: {
+                                    seasonal: t('categories.seasonal'),
+                                    party: t('categories.party'),
+                                    nature: t('categories.nature'),
+                                    animations: t('categories.animations'),
+                                }
+                            }}
                         />
                     ))}
                 </div>
@@ -423,6 +436,36 @@ export default function EffectsPage() {
                     onSave={(updates) => {
                         handleUpdateEffect(editingEffect.id, updates as Partial<Effect>);
                         setEditingEffect(null);
+                    }}
+                    translations={{
+                        settingsTitle: t('modal.settingsTitle'),
+                        visibility: t('modal.visibility'),
+                        enableEffect: t('modal.enableEffect'),
+                        whereToShow: t('modal.whereToShow'),
+                        allPages: t('modal.allPages'),
+                        homeOnly: t('modal.homeOnly'),
+                        selectedPages: t('modal.selectedPages'),
+                        excludePages: t('modal.excludePages'),
+                        pages: t('modal.pages'),
+                        noPages: t('modal.noPages'),
+                        effectSettings: t('modal.effectSettings'),
+                        cancel: t('modal.cancel'),
+                        save: t('modal.save'),
+                        intensity: t('modal.intensity'),
+                        speed: t('modal.speed'),
+                        size: t('modal.size'),
+                        wind: t('modal.wind'),
+                        color: t('modal.color'),
+                        gravity: t('modal.gravity'),
+                        starCount: t('modal.starCount'),
+                        twinkleSpeed: t('modal.twinkleSpeed'),
+                        transparency: t('modal.transparency'),
+                        frequency: t('modal.frequency'),
+                        explosionSize: t('modal.explosionSize'),
+                        rotationEffect: t('modal.rotationEffect'),
+                        lifetime: t('modal.lifetime'),
+                        trail: t('modal.trail'),
+                        loadingSettings: t('modal.loadingSettings'),
                     }}
                 />
             )}

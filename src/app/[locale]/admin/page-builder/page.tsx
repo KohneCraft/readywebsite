@@ -61,7 +61,7 @@ export default function PageBuilderListPage() {
 
   const handleCreatePage = async () => {
     if (!newPageTitle.trim() || !newPageSlug.trim()) {
-      toast.error('Lütfen sayfa başlığı ve slug girin');
+      toast.error(t('pageBuilder.createPage.validationError'));
       return;
     }
 
@@ -69,7 +69,7 @@ export default function PageBuilderListPage() {
       // Auth'dan user ID al
       const user = await getCurrentUser();
       if (!user) {
-        toast.error('Giriş yapmanız gerekiyor');
+        toast.error(t('pageBuilder.createPage.loginRequired'));
         return;
       }
 
@@ -92,7 +92,7 @@ export default function PageBuilderListPage() {
       setParentPageSlug('');
     } catch (error) {
       logger.api.error('Sayfa oluşturma hatası', error);
-      toast.error('Sayfa oluşturulurken bir hata oluştu');
+      toast.error(t('pageBuilder.createPage.createError'));
     }
   };
 
@@ -170,8 +170,8 @@ export default function PageBuilderListPage() {
           ))
         ) : (
           <div className="col-span-full text-center py-12 text-gray-500 dark:text-gray-400">
-            <p>Henüz sayfa oluşturulmamış</p>
-            <p className="text-sm mt-1">Yeni sayfa oluşturmak için yukarıdaki butonu kullanın</p>
+            <p>{t('pageBuilder.noPages')}</p>
+            <p className="text-sm mt-1">{t('pageBuilder.noPagesHint')}</p>
           </div>
         )}
 
@@ -183,10 +183,10 @@ export default function PageBuilderListPage() {
                 <Plus className="w-6 h-6 text-gray-400" />
               </div>
               <h3 className="text-lg font-semibold text-gray-600 dark:text-gray-400 mb-2">
-                Yeni Sayfa Oluştur
+                {t('pageBuilder.createNewPage')}
               </h3>
               <p className="text-sm text-gray-400 dark:text-gray-500">
-                Sıfırdan yeni sayfa oluşturun
+                {t('pageBuilder.createNewPageHint')}
               </p>
             </CardContent>
           </Card>
@@ -194,15 +194,15 @@ export default function PageBuilderListPage() {
       </div>
 
       {/* Info Box */}
-      <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-xl p-6">
+      <div className="bg-blue-100 dark:bg-blue-900/20 border border-blue-300 dark:border-blue-800 rounded-xl p-6">
         <h3 className="font-semibold text-blue-900 dark:text-blue-100 mb-2">
-          Sayfa Düzeni Nasıl Çalışır?
+          {t('pageBuilder.howItWorks.title')}
         </h3>
-        <ul className="text-sm text-blue-800 dark:text-blue-300 space-y-2">
-          <li>• Bir sayfa seçin ve elementleri sürükle-bırak ile yeniden düzenleyin</li>
-          <li>• Her element için genişlik, kenar boşlukları ve responsive ayarları yapın</li>
-          <li>• Değişikliklerinizi canlı önizleme ile kontrol edin</li>
-          <li>• Kaydet butonu ile değişiklikleri uygulayın</li>
+        <ul className="text-sm text-blue-900 dark:text-blue-300 space-y-2">
+          <li>• {t('pageBuilder.howItWorks.step1')}</li>
+          <li>• {t('pageBuilder.howItWorks.step2')}</li>
+          <li>• {t('pageBuilder.howItWorks.step3')}</li>
+          <li>• {t('pageBuilder.howItWorks.step4')}</li>
         </ul>
       </div>
 
@@ -212,7 +212,7 @@ export default function PageBuilderListPage() {
           <div className="bg-white dark:bg-gray-800 rounded-xl p-6 w-full max-w-lg mx-4 shadow-2xl">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-                Yeni Sayfa Oluştur
+                {t('pageBuilder.createPage.title')}
               </h3>
               <button
                 onClick={() => {
@@ -229,13 +229,13 @@ export default function PageBuilderListPage() {
             <div className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  Sayfa Başlığı
+                  {t('pageBuilder.createPage.pageTitle')}
                 </label>
                 <input
                   type="text"
                   value={newPageTitle}
                   onChange={(e) => setNewPageTitle(e.target.value)}
-                  placeholder="Örn: Hakkımızda"
+                  placeholder={t('pageBuilder.createPage.pageTitlePlaceholder')}
                   className="w-full px-3 py-2 border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-white"
                 />
               </div>
@@ -243,14 +243,14 @@ export default function PageBuilderListPage() {
               {/* Parent Page Selection */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  Üst Sayfa (Opsiyonel)
+                  {t('pageBuilder.createPage.parentPage')}
                 </label>
                 <select
                   value={parentPageSlug}
                   onChange={(e) => setParentPageSlug(e.target.value)}
                   className="w-full px-3 py-2 border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-white"
                 >
-                  <option value="">Yok (Ana Sayfa)</option>
+                  <option value="">{t('pageBuilder.createPage.noParent')}</option>
                   {pages.map((page) => (
                     <option key={page.id} value={page.slug}>
                       /{page.slug} - {page.title}
@@ -258,19 +258,19 @@ export default function PageBuilderListPage() {
                   ))}
                 </select>
                 <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                  Alt sayfa oluşturmak için üst sayfa seçin
+                  {t('pageBuilder.createPage.parentPageHint')}
                 </p>
               </div>
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                  Slug (URL)
+                  {t('pageBuilder.createPage.slug')}
                 </label>
                 <input
                   type="text"
                   value={newPageSlug}
                   onChange={(e) => setNewPageSlug(e.target.value.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, ''))}
-                  placeholder="Örn: hakkimizda"
+                  placeholder={t('pageBuilder.createPage.slugPlaceholder')}
                   className="w-full px-3 py-2 border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-white"
                 />
                 <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
@@ -289,14 +289,14 @@ export default function PageBuilderListPage() {
                   }}
                   className="flex-1"
                 >
-                  İptal
+                  {t('pageBuilder.createPage.cancel')}
                 </Button>
                 <Button
                   onClick={handleCreatePage}
                   className="flex-1"
                   disabled={!newPageTitle.trim() || !newPageSlug.trim()}
                 >
-                  Oluştur
+                  {t('pageBuilder.createPage.create')}
                 </Button>
               </div>
             </div>

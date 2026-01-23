@@ -269,6 +269,11 @@ export default function MediaManagerPage() {
           accept={activeTab === 'image' ? 'image/*' : 'video/*'}
           onUpload={handleUpload}
           disabled={uploading || !isFirebaseAuth}
+          translations={{
+            dragDropShort: t('dragDropShort'),
+            supportedFormatsImage: t('supportedFormatsImage'),
+            supportedFormatsVideo: t('supportedFormatsVideo'),
+          }}
         />
 
         {/* Filters */}
@@ -281,6 +286,19 @@ export default function MediaManagerPage() {
           onSortOrderChange={setSortOrder}
           viewMode={viewMode}
           onViewModeChange={setViewMode}
+          translations={{
+            search: t('search'),
+            sortBy: t('sortBy'),
+            sortAsc: t('sortAsc'),
+            sortDesc: t('sortDesc'),
+            gridView: t('gridView'),
+            listView: t('listView'),
+            sort: {
+              uploadedAt: t('sort.uploadedAt'),
+              size: t('sort.size'),
+              name: t('sort.name'),
+            },
+          }}
         />
       </div>
 
@@ -298,6 +316,21 @@ export default function MediaManagerPage() {
           viewMode={viewMode}
           onDelete={handleDelete}
           onPreview={setPreviewItem}
+          translations={{
+            selectAll: t('selectAll'),
+            noMedia: t('noMedia'),
+            copyUrl: t('copyUrl'),
+            download: t('download'),
+            delete: t('delete'),
+            copied: t('copied'),
+            preview: t('preview'),
+            details: {
+              name: t('details.name'),
+              size: t('details.size'),
+              dimensions: t('details.dimensions'),
+              uploadedAt: t('details.uploadedAt'),
+            },
+          }}
         />
       )}
 

@@ -654,22 +654,22 @@ export default function AdminSettingsPage() {
                 <Card>
                   <CardHeader>
                     <CardTitle>{t('sections.company')}</CardTitle>
-                    <CardDescription>Firma temel bilgileri</CardDescription>
+                    <CardDescription>{t('descriptions.company')}</CardDescription>
                   </CardHeader>
                   <CardContent className="space-y-6">
                     {/* Browser Tab Settings */}
                     <div className="pb-6 border-b border-gray-200 dark:border-gray-700">
                       <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-4">
-                        Tarayıcı Sekmesi Ayarları
+                        {t('browser.title')}
                       </h3>
                       <p className="text-xs text-gray-500 dark:text-gray-400 mb-4">
-                        Sekme başlığı olarak "Firma Adı | Slogan" kullanılır.
+                        {t('browser.description')}
                       </p>
 
                       {/* Browser Favicon */}
                       <div>
                         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                          Sekme İkonu (Favicon)
+                          {t('browser.favicon')}
                         </label>
                         <div className="flex items-center gap-4">
                           {browserFaviconPreview ? (
@@ -695,7 +695,7 @@ export default function AdminSettingsPage() {
                               onClick={handleBrowserFaviconUpload}
                             >
                               <Upload className="w-4 h-4 mr-2" />
-                              Medyadan Seç
+                              {t('buttons.selectFromMedia')}
                             </Button>
                             <label className="cursor-pointer">
                               <input
@@ -710,13 +710,13 @@ export default function AdminSettingsPage() {
                                 className="hidden"
                               />
                               <div className="px-3 py-1.5 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors text-sm font-medium text-gray-700 dark:text-gray-300">
-                                Dosya Yükle
+                                {t('buttons.uploadFile')}
                               </div>
                             </label>
                           </div>
                         </div>
                         <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
-                          Tarayıcı sekmesinde görünen küçük ikon (32x32px veya 64x64px önerilir). Boş bırakılırsa logo kullanılır.
+                          {t('browser.faviconDesc')}
                         </p>
                       </div>
                     </div>
@@ -749,7 +749,7 @@ export default function AdminSettingsPage() {
                             onClick={handleLogoUpload}
                           >
                             <Upload className="w-4 h-4 mr-2" />
-                            Medyadan Seç
+                            {t('buttons.selectFromMedia')}
                           </Button>
                           <label className="cursor-pointer">
                             <input
@@ -764,7 +764,7 @@ export default function AdminSettingsPage() {
                               className="hidden"
                             />
                             <div className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors text-sm font-medium text-gray-700 dark:text-gray-300">
-                              Dosya Yükle
+                              {t('buttons.uploadFile')}
                             </div>
                           </label>
                         </div>
@@ -798,13 +798,13 @@ export default function AdminSettingsPage() {
                     {/* Firma Adı Stil Ayarları */}
                     <div className="border-t border-gray-200 dark:border-gray-700 pt-4 mt-4">
                       <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">
-                        Firma Adı Stil Ayarları
+                        {t('companyStyle.title')}
                       </h3>
 
                       <div className="space-y-4">
                         <div>
                           <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
-                            ☀️ Firma Adı Rengi (Açık Tema)
+                            {t('companyStyle.nameColorLight')}
                           </label>
                           <div className="flex items-center gap-2">
                             <Input
@@ -826,7 +826,7 @@ export default function AdminSettingsPage() {
 
                         <div>
                           <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
-                            🌙 Firma Adı Rengi (Koyu Tema)
+                            {t('companyStyle.nameColorDark')}
                           </label>
                           <div className="flex items-center gap-2">
                             <Input
@@ -844,12 +844,12 @@ export default function AdminSettingsPage() {
                               className="flex-1"
                             />
                           </div>
-                          <p className="text-xs text-gray-500 mt-1">Boş bırakılırsa otomatik hesaplanır</p>
+                          <p className="text-xs text-gray-500 mt-1">{t('companyStyle.autoCalculated')}</p>
                         </div>
 
                         <div>
                           <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
-                            Firma Adı Boyutu (px)
+                            {t('companyStyle.nameFontSize')}
                           </label>
                           <Input
                             type="number"
@@ -865,13 +865,13 @@ export default function AdminSettingsPage() {
                     {/* Slogan Stil Ayarları */}
                     <div className="border-t border-gray-200 dark:border-gray-700 pt-4 mt-4">
                       <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">
-                        Slogan Stil Ayarları
+                        {t('sloganStyle.title')}
                       </h3>
 
                       <div className="space-y-4">
                         <div>
                           <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
-                            ☀️ Slogan Rengi (Açık Tema)
+                            {t('sloganStyle.colorLight')}
                           </label>
                           <div className="flex items-center gap-2">
                             <Input
@@ -893,7 +893,7 @@ export default function AdminSettingsPage() {
 
                         <div>
                           <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
-                            🌙 Slogan Rengi (Koyu Tema)
+                            {t('sloganStyle.colorDark')}
                           </label>
                           <div className="flex items-center gap-2">
                             <Input
@@ -911,12 +911,12 @@ export default function AdminSettingsPage() {
                               className="flex-1"
                             />
                           </div>
-                          <p className="text-xs text-gray-500 mt-1">Boş bırakılırsa otomatik hesaplanır</p>
+                          <p className="text-xs text-gray-500 mt-1">{t('companyStyle.autoCalculated')}</p>
                         </div>
 
                         <div>
                           <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
-                            Slogan Boyutu (px)
+                            {t('sloganStyle.fontSize')}
                           </label>
                           <Input
                             type="number"
@@ -933,13 +933,13 @@ export default function AdminSettingsPage() {
                     <div className="border-t border-gray-200 dark:border-gray-700 pt-6 mt-6">
                       <h3 className="text-sm font-semibold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
                         <Building2 className="w-4 h-4" />
-                        Admin Panel Ayarları
+                        {t('adminPanel.title')}
                       </h3>
 
                       {/* Admin Panel Başlık */}
                       <div className="space-y-2 mb-4">
                         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                          Admin Panel Başlığı
+                          {t('adminPanel.panelTitle')}
                         </label>
                         <Input
                           type="text"
@@ -949,14 +949,14 @@ export default function AdminSettingsPage() {
                           className="w-full"
                         />
                         <p className="text-xs text-gray-500 dark:text-gray-400">
-                          Sidebar'da görünen admin panel başlığı
+                          {t('adminPanel.panelTitleDesc')}
                         </p>
                       </div>
 
                       {/* Admin Panel Icon */}
                       <div className="space-y-2">
                         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                          Admin Panel Icon
+                          {t('adminPanel.icon')}
                         </label>
 
                         {adminIconUrl && (
@@ -976,15 +976,15 @@ export default function AdminSettingsPage() {
                               variant="outline"
                               size="sm"
                               onClick={() => {
-                                if (confirm('Admin icon\'u kaldırmak istediğinize emin misiniz?')) {
+                                if (confirm(t('adminPanel.removeConfirm'))) {
                                   setAdminIconUrl('');
-                                  toast.success('Admin icon kaldırıldı');
+                                  toast.success(t('adminPanel.iconRemoved'));
                                 }
                               }}
                               className="text-red-600 hover:text-red-700 hover:border-red-300"
                             >
                               <X className="w-4 h-4 mr-2" />
-                              Kaldır
+                              {t('buttons.remove')}
                             </Button>
                           </div>
                         )}
@@ -997,7 +997,7 @@ export default function AdminSettingsPage() {
                             className="w-full"
                           >
                             <Upload className="w-4 h-4 mr-2" />
-                            Medyadan Seç
+                            {t('buttons.selectFromMedia')}
                           </Button>
 
                           <label className="cursor-pointer">
@@ -1016,19 +1016,19 @@ export default function AdminSettingsPage() {
                               {isSaving ? (
                                 <>
                                   <Spinner size="sm" className="mr-2" />
-                                  Yükleniyor...
+                                  {t('buttons.uploading')}
                                 </>
                               ) : (
                                 <>
                                   <Upload className="w-4 h-4 mr-2" />
-                                  Dosya Yükle
+                                  {t('buttons.uploadFile')}
                                 </>
                               )}
                             </div>
                           </label>
                         </div>
                         <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
-                          Admin panelinde görünecek icon (max 100KB, .ico, .png, .svg)
+                          {t('adminPanel.iconDesc')}
                         </p>
                       </div>
                     </div>
@@ -1046,7 +1046,7 @@ export default function AdminSettingsPage() {
                 <Card>
                   <CardHeader>
                     <CardTitle>{t('sections.contact')}</CardTitle>
-                    <CardDescription>İletişim bilgileri</CardDescription>
+                    <CardDescription>{t('descriptions.contact')}</CardDescription>
                   </CardHeader>
                   <CardContent className="space-y-6">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -1108,7 +1108,7 @@ export default function AdminSettingsPage() {
                 <Card>
                   <CardHeader>
                     <CardTitle>{t('sections.social')}</CardTitle>
-                    <CardDescription>Sosyal medya hesapları</CardDescription>
+                    <CardDescription>{t('descriptions.social')}</CardDescription>
                   </CardHeader>
                   <CardContent className="space-y-6">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -1186,7 +1186,7 @@ export default function AdminSettingsPage() {
                 <Card>
                   <CardHeader>
                     <CardTitle>{t('sections.seo')}</CardTitle>
-                    <CardDescription>Arama motoru optimizasyonu</CardDescription>
+                    <CardDescription>{t('descriptions.seo')}</CardDescription>
                   </CardHeader>
                   <CardContent className="space-y-6">
                     {/* Meta Title */}
@@ -1199,7 +1199,7 @@ export default function AdminSettingsPage() {
                         placeholder="Sayfa başlığı"
                       />
                       <p className="mt-1 text-xs text-gray-500">
-                        Önerilen: 50-60 karakter
+                        {t('seoHints.titleLength')}
                       </p>
                     </div>
 
@@ -1215,7 +1215,7 @@ export default function AdminSettingsPage() {
                         className="w-full px-4 py-3 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary-500"
                       />
                       <p className="mt-1 text-xs text-gray-500">
-                        Önerilen: 150-160 karakter
+                        {t('seoHints.descLength')}
                       </p>
                     </div>
 
@@ -1257,7 +1257,7 @@ export default function AdminSettingsPage() {
                       <Shield className="w-5 h-5" />
                       {t('sections.maintenance')}
                     </CardTitle>
-                    <CardDescription>Bakım modu ayarları</CardDescription>
+                    <CardDescription>{t('descriptions.maintenance')}</CardDescription>
                   </CardHeader>
                   <CardContent className="space-y-6">
                     {/* Maintenance Toggle */}
@@ -1266,10 +1266,10 @@ export default function AdminSettingsPage() {
                         <AlertTriangle className="w-6 h-6 text-amber-600 dark:text-amber-400" />
                         <div>
                           <p className="font-medium text-gray-900 dark:text-white">
-                            Bakım Modu
+                            {t('maintenanceMode.title')}
                           </p>
                           <p className="text-sm text-gray-600 dark:text-gray-400">
-                            Aktif edildiğinde site ziyaretçilere kapalı olur
+                            {t('maintenanceMode.description')}
                           </p>
                         </div>
                       </div>
@@ -1286,12 +1286,12 @@ export default function AdminSettingsPage() {
                     {/* Maintenance Message */}
                     <div>
                       <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                        Bakım Mesajı
+                        {t('maintenanceMode.message')}
                       </label>
                       <textarea
                         {...register('maintenance.message')}
                         rows={3}
-                        placeholder="Ziyaretçilere gösterilecek mesaj"
+                        placeholder={t('maintenanceMode.messagePlaceholder')}
                         className="w-full px-4 py-3 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary-500"
                       />
                     </div>
@@ -1299,14 +1299,14 @@ export default function AdminSettingsPage() {
                     {/* Allowed IPs */}
                     <div>
                       <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                        İzin Verilen IP Adresleri
+                        {t('maintenanceMode.allowedIPs')}
                       </label>
                       <Input
                         {...register('maintenance.allowedIPs')}
                         placeholder="192.168.1.1, 10.0.0.1"
                       />
                       <p className="mt-1 text-xs text-gray-500">
-                        Virgülle ayırarak birden fazla IP ekleyebilirsiniz
+                        {t('maintenanceMode.allowedIPsHint')}
                       </p>
                     </div>
                   </CardContent>
@@ -1326,7 +1326,7 @@ export default function AdminSettingsPage() {
                 ) : (
                   <Save className="w-4 h-4 mr-2" />
                 )}
-                Kaydet
+                {t('save')}
               </Button>
             </div>
           </div>

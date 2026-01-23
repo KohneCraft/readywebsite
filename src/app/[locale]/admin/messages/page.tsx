@@ -6,6 +6,7 @@ import { db } from '@/lib/firebase';
 import { Trash2, Mail } from 'lucide-react';
 import { toast } from 'sonner';
 import { logger } from '@/lib/logger';
+import { useTranslations } from 'next-intl';
 
 interface Message {
   id: string;
@@ -15,6 +16,7 @@ interface Message {
 }
 
 export default function MessagesPage() {
+  const t = useTranslations('admin.messages');
   const [messages, setMessages] = useState<Message[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -51,15 +53,15 @@ export default function MessagesPage() {
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm('Bu mesajı silmek istediğinizden emin misiniz?')) return;
+    if (!confirm(t('deleteConfirm'))) return;
     
     try {
       await deleteDoc(doc(db, 'contact-messages', id));
       setMessages(messages.filter(msg => msg.id !== id));
-      toast.success('Mesaj silindi');
+      toast.success(t('deleteSuccess'));
     } catch (error) {
       logger.ui.error('Mesaj silinemedi', error);
-      toast.error('Mesaj silinemedi');
+      toast.error(t('deleteError'));
     }
   };
 
@@ -84,17 +86,17 @@ export default function MessagesPage() {
       <div className="mb-6">
         <h1 className="text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
           <Mail className="w-6 h-6" />
-          İletişim Mesajları
+          {t('title')}
         </h1>
         <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-          Toplam {messages.length} mesaj
+          {t('total', { count: messages.length })}
         </p>
       </div>
 
       {messages.length === 0 ? (
         <div className="text-center py-12 bg-gray-50 dark:bg-gray-800 rounded-lg">
           <Mail className="w-12 h-12 mx-auto text-gray-400 mb-3" />
-          <p className="text-gray-600 dark:text-gray-400">Henüz mesaj yok</p>
+          <p className="text-gray-600 dark:text-gray-400">{t('noMessages')}</p>
         </div>
       ) : (
         <div className="bg-white dark:bg-gray-800 rounded-lg shadow overflow-hidden">
@@ -103,13 +105,13 @@ export default function MessagesPage() {
               <thead className="bg-gray-50 dark:bg-gray-900">
                 <tr>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                    Tarih
+                    {t('date')}
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                    Alan Bilgileri
+                    {t('fieldInfo')}
                   </th>
                   <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
-                    İşlem
+                    {t('action')}
                   </th>
                 </tr>
               </thead>
