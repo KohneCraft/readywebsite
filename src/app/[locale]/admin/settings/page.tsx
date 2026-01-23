@@ -416,11 +416,13 @@ export default function AdminSettingsPage() {
         toast.success(t('apiKeys.saved'));
       } else {
         const error = await response.json();
-        toast.error(error.error || 'Hata oluştu');
+        console.error('API Keys save error response:', error);
+        toast.error(error.details || error.error || 'Hata oluştu');
       }
-    } catch (error) {
+    } catch (error: any) {
       logger.api.error('API Keys ayarları kaydedilirken hata', error);
-      toast.error('Ayarlar kaydedilirken hata oluştu');
+      console.error('API Keys save fetch error:', error);
+      toast.error(error?.message || 'Ayarlar kaydedilirken hata oluştu');
     } finally {
       setIsApiKeysSaving(false);
     }
