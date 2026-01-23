@@ -543,8 +543,8 @@ export default function ThemesPage() {
                   )}
                 </div>
                 <CardHeader>
-                  <CardTitle>{theme.name}</CardTitle>
-                  <CardDescription>{theme.description}</CardDescription>
+                  <CardTitle>{t(`themeNames.${theme.id}` as any) || theme.name}</CardTitle>
+                  <CardDescription>{t(`themeDescriptions.${theme.id}` as any) || theme.description}</CardDescription>
                 </CardHeader>
                 <CardContent>
                   <div className="flex items-center justify-between mb-4">
