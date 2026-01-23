@@ -694,24 +694,24 @@
       "loadError": "Une erreur s'est produite lors du chargement du thème",
       "installSuccess": "Thème installé avec succès! Redirection...",
       "themeNames": {
-        "theme-modern-is": "Entreprise Moderne",
-        "theme-minimal": "Thème Minimal",
-        "theme-corporate": "Thème Corporatif",
-        "theme-construction": "Thème Construction",
-        "theme-restoran": "Thème Restaurant",
-        "theme-saglik": "Thème Santé",
-        "theme-egitim": "Thème Éducation",
-        "theme-eticaret": "Thème E-Commerce"
+        "modernBusiness": "Entreprise Moderne",
+        "minimal": "Thème Minimal",
+        "corporate": "Thème Corporatif",
+        "construction": "Thème Construction",
+        "restaurant": "Thème Restaurant",
+        "healthcare": "Thème Santé",
+        "education": "Thème Éducation",
+        "ecommerce": "Thème E-Commerce"
       },
       "themeDescriptions": {
-        "theme-modern-is": "Thème de site web d'entreprise dynamique et moderne",
-        "theme-minimal": "Thème au design épuré et minimaliste",
-        "theme-corporate": "Thème de site web d'entreprise professionnel",
-        "theme-construction": "Thème pour les entreprises de construction et d'ingénierie",
-        "theme-restoran": "Thème pour les restaurants et les entreprises alimentaires",
-        "theme-saglik": "Thème pour les établissements de santé et médicaux",
-        "theme-egitim": "Thème pour les établissements d'enseignement et les écoles",
-        "theme-eticaret": "Thème pour les boutiques en ligne et le e-commerce"
+        "modernBusiness": "Thème de site web d'entreprise dynamique et moderne",
+        "minimal": "Thème au design épuré et minimaliste",
+        "corporate": "Thème de site web d'entreprise professionnel",
+        "construction": "Thème pour les entreprises de construction et d'ingénierie",
+        "restaurant": "Thème pour les restaurants et les entreprises alimentaires",
+        "healthcare": "Thème pour les établissements de santé et médicaux",
+        "education": "Thème pour les établissements d'enseignement et les écoles",
+        "ecommerce": "Thème pour les boutiques en ligne et le e-commerce"
       },
       "warning": {
         "title": "⚠️ Attention!",

@@ -769,24 +769,24 @@
       "loadError": "An error occurred while loading the theme",
       "installSuccess": "Theme installed successfully! Redirecting...",
       "themeNames": {
-        "theme-modern-is": "Modern Business",
-        "theme-minimal": "Minimal Theme",
-        "theme-corporate": "Corporate Theme",
-        "theme-construction": "Construction Theme",
-        "theme-restoran": "Restaurant Theme",
-        "theme-saglik": "Healthcare Theme",
-        "theme-egitim": "Education Theme",
-        "theme-eticaret": "E-Commerce Theme"
+        "modernBusiness": "Modern Business",
+        "minimal": "Minimal Theme",
+        "corporate": "Corporate Theme",
+        "construction": "Construction Theme",
+        "restaurant": "Restaurant Theme",
+        "healthcare": "Healthcare Theme",
+        "education": "Education Theme",
+        "ecommerce": "E-Commerce Theme"
       },
       "themeDescriptions": {
-        "theme-modern-is": "Dynamic and modern business website theme",
-        "theme-minimal": "Clean and minimalist design theme",
-        "theme-corporate": "Professional corporate website theme",
-        "theme-construction": "Theme for construction and engineering companies",
-        "theme-restoran": "Theme for restaurants and food businesses",
-        "theme-saglik": "Theme for healthcare and medical institutions",
-        "theme-egitim": "Theme for educational institutions and schools",
-        "theme-eticaret": "Theme for online stores and e-commerce"
+        "modernBusiness": "Dynamic and modern business website theme",
+        "minimal": "Clean and minimalist design theme",
+        "corporate": "Professional corporate website theme",
+        "construction": "Theme for construction and engineering companies",
+        "restaurant": "Theme for restaurants and food businesses",
+        "healthcare": "Theme for healthcare and medical institutions",
+        "education": "Theme for educational institutions and schools",
+        "ecommerce": "Theme for online stores and e-commerce"
       },
       "warning": {
         "title": "⚠️ Warning!",

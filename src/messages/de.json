@@ -694,24 +694,24 @@
       "loadError": "Beim Laden des Themes ist ein Fehler aufgetreten",
       "installSuccess": "Theme erfolgreich installiert! Weiterleitung...",
       "themeNames": {
-        "theme-modern-is": "Modernes Geschäft",
-        "theme-minimal": "Minimalistisches Theme",
-        "theme-corporate": "Unternehmensthema",
-        "theme-construction": "Bauthema",
-        "theme-restoran": "Restaurant-Theme",
-        "theme-saglik": "Gesundheitsthema",
-        "theme-egitim": "Bildungsthema",
-        "theme-eticaret": "E-Commerce-Theme"
+        "modernBusiness": "Modernes Geschäft",
+        "minimal": "Minimalistisches Theme",
+        "corporate": "Unternehmensthema",
+        "construction": "Bauthema",
+        "restaurant": "Restaurant-Theme",
+        "healthcare": "Gesundheitsthema",
+        "education": "Bildungsthema",
+        "ecommerce": "E-Commerce-Theme"
       },
       "themeDescriptions": {
-        "theme-modern-is": "Dynamisches und modernes Geschäftswebsite-Theme",
-        "theme-minimal": "Sauberes und minimalistisches Design-Theme",
-        "theme-corporate": "Professionelles Unternehmenswebsite-Theme",
-        "theme-construction": "Theme für Bau- und Ingenieurunternehmen",
-        "theme-restoran": "Theme für Restaurants und Gastronomiebetriebe",
-        "theme-saglik": "Theme für Gesundheits- und medizinische Einrichtungen",
-        "theme-egitim": "Theme für Bildungseinrichtungen und Schulen",
-        "theme-eticaret": "Theme für Online-Shops und E-Commerce"
+        "modernBusiness": "Dynamisches und modernes Geschäftswebsite-Theme",
+        "minimal": "Sauberes und minimalistisches Design-Theme",
+        "corporate": "Professionelles Unternehmenswebsite-Theme",
+        "construction": "Theme für Bau- und Ingenieurunternehmen",
+        "restaurant": "Theme für Restaurants und Gastronomiebetriebe",
+        "healthcare": "Theme für Gesundheits- und medizinische Einrichtungen",
+        "education": "Theme für Bildungseinrichtungen und Schulen",
+        "ecommerce": "Theme für Online-Shops und E-Commerce"
       },
       "warning": {
         "title": "⚠️ Warnung!",

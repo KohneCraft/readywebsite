@@ -514,24 +514,24 @@
       "loadError": "Tema yüklenirken bir hata oluştu",
       "installSuccess": "Tema başarıyla yüklendi! Yönlendiriliyor...",
       "themeNames": {
-        "theme-modern-is": "Modern İş",
-        "theme-minimal": "Minimal Tema",
-        "theme-corporate": "Kurumsal Tema",
-        "theme-construction": "İnşaat Teması",
-        "theme-restoran": "Restoran Teması",
-        "theme-saglik": "Sağlık Teması",
-        "theme-egitim": "Eğitim Teması",
-        "theme-eticaret": "E-Ticaret Teması"
+        "modernBusiness": "Modern İş",
+        "minimal": "Minimal Tema",
+        "corporate": "Kurumsal Tema",
+        "construction": "İnşaat Teması",
+        "restaurant": "Restoran Teması",
+        "healthcare": "Sağlık Teması",
+        "education": "Eğitim Teması",
+        "ecommerce": "E-Ticaret Teması"
       },
       "themeDescriptions": {
-        "theme-modern-is": "Dinamik ve modern iş web sitesi teması",
-        "theme-minimal": "Sade ve minimalist tasarım teması",
-        "theme-corporate": "Profesyonel kurumsal web sitesi teması",
-        "theme-construction": "İnşaat ve mühendislik firmaları için tema",
-        "theme-restoran": "Restoran ve yeme-içme işletmeleri için tema",
-        "theme-saglik": "Sağlık ve medikal kurumlar için tema",
-        "theme-egitim": "Eğitim kurumları ve okullar için tema",
-        "theme-eticaret": "Online mağaza ve e-ticaret için tema"
+        "modernBusiness": "Dinamik ve modern iş web sitesi teması",
+        "minimal": "Sade ve minimalist tasarım teması",
+        "corporate": "Profesyonel kurumsal web sitesi teması",
+        "construction": "İnşaat ve mühendislik firmaları için tema",
+        "restaurant": "Restoran ve yeme-içme işletmeleri için tema",
+        "healthcare": "Sağlık ve medikal kurumlar için tema",
+        "education": "Eğitim kurumları ve okullar için tema",
+        "ecommerce": "Online mağaza ve e-ticaret için tema"
       },
       "warning": {
         "title": "⚠️ Dikkat!",
