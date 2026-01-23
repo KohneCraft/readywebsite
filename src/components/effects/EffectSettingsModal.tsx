@@ -13,14 +13,46 @@ interface PageOption {
     title: string;
 }
 
+interface ModalTranslations {
+    settingsTitle: string;
+    visibility: string;
+    enableEffect: string;
+    whereToShow: string;
+    allPages: string;
+    homeOnly: string;
+    selectedPages: string;
+    excludePages: string;
+    pages: string;
+    noPages: string;
+    effectSettings: string;
+    cancel: string;
+    save: string;
+    intensity: string;
+    speed: string;
+    size: string;
+    wind: string;
+    color: string;
+    gravity: string;
+    starCount: string;
+    twinkleSpeed: string;
+    transparency: string;
+    frequency: string;
+    explosionSize: string;
+    rotationEffect: string;
+    lifetime: string;
+    trail: string;
+    loadingSettings: string;
+}
+
 interface EffectSettingsModalProps {
     effect: Effect;
     pages: PageOption[];
     onClose: () => void;
     onSave: (updates: { settings?: Partial<EffectSettings>; visibility?: Partial<EffectVisibility> }) => void;
+    translations: ModalTranslations;
 }
 
-export function EffectSettingsModal({ effect, pages, onClose, onSave }: EffectSettingsModalProps) {
+export function EffectSettingsModal({ effect, pages, onClose, onSave, translations }: EffectSettingsModalProps) {
     const [settings, setSettings] = useState<EffectSettings>({ ...effect.settings });
     const [visibility, setVisibility] = useState<EffectVisibility>({ ...effect.visibility });
 
@@ -42,7 +74,7 @@ export function EffectSettingsModal({ effect, pages, onClose, onSave }: EffectSe
                     <div className="flex items-center gap-3">
                         <span className="text-3xl">{effect.icon}</span>
                         <h2 className="text-xl font-bold text-gray-900 dark:text-white">
-                            {effect.displayName} Ayarları
+                            {effect.displayName} {translations.settingsTitle}
                         </h2>
                     </div>
                     <button
@@ -58,7 +90,7 @@ export function EffectSettingsModal({ effect, pages, onClose, onSave }: EffectSe
                     {/* Visibility Settings */}
                     <div>
                         <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-                            Görünürlük
+                            {translations.visibility}
                         </h3>
 
                         <div className="space-y-4">
@@ -69,12 +101,12 @@ export function EffectSettingsModal({ effect, pages, onClose, onSave }: EffectSe
                                     onChange={(e) => setVisibility({ ...visibility, enabled: e.target.checked })}
                                     className="w-5 h-5"
                                 />
-                                <span className="text-gray-700 dark:text-gray-300">Efekti Etkinleştir</span>
+                                <span className="text-gray-700 dark:text-gray-300">{translations.enableEffect}</span>
                             </label>
 
                             <div>
                                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                    Nerede Gösterilsin?
+                                    {translations.whereToShow}
                                 </label>
                                 <select
                                     value={visibility.scope}
@@ -85,21 +117,21 @@ export function EffectSettingsModal({ effect, pages, onClose, onSave }: EffectSe
                                     })}
                                     className="w-full p-3 border-2 border-gray-200 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                                 >
-                                    <option value="all">Tüm Sayfalarda</option>
-                                    <option value="home">Sadece Anasayfada</option>
-                                    <option value="selected">Seçili Sayfalarda</option>
-                                    <option value="exclude">Belirtilen Sayfalar Hariç</option>
+                                    <option value="all">{translations.allPages}</option>
+                                    <option value="home">{translations.homeOnly}</option>
+                                    <option value="selected">{translations.selectedPages}</option>
+                                    <option value="exclude">{translations.excludePages}</option>
                                 </select>
                             </div>
 
                             {(visibility.scope === 'selected' || visibility.scope === 'exclude') && (
                                 <div>
                                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                                        Sayfalar
+                                        {translations.pages}
                                     </label>
                                     <div className="max-h-48 overflow-y-auto border-2 border-gray-200 dark:border-gray-600 rounded-lg p-2 space-y-1">
                                         {pages.length === 0 ? (
-                                            <p className="text-gray-500 text-sm p-2">Sayfa bulunamadı</p>
+                                            <p className="text-gray-500 text-sm p-2">{translations.noPages}</p>
                                         ) : (
                                             pages.map((page) => (
                                                 <label key={page.id} className="flex items-center gap-3 p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg cursor-pointer">
@@ -134,10 +166,10 @@ export function EffectSettingsModal({ effect, pages, onClose, onSave }: EffectSe
                     {/* Effect-Specific Settings */}
                     <div>
                         <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-                            Efekt Ayarları
+                            {translations.effectSettings}
                         </h3>
 
-                        {renderEffectSettings(effect.name, settings as any, setSettings as any)}
+                        {renderEffectSettings(effect.name, settings as any, setSettings as any, translations)}
                     </div>
                 </div>
 
@@ -147,13 +179,13 @@ export function EffectSettingsModal({ effect, pages, onClose, onSave }: EffectSe
                         onClick={onClose}
                         className="flex-1 py-3 px-4 border-2 border-gray-200 dark:border-gray-600 rounded-lg font-semibold text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
                     >
-                        İptal
+                        {translations.cancel}
                     </button>
                     <button
                         onClick={handleSave}
                         className="flex-1 py-3 px-4 bg-blue-500 hover:bg-blue-600 rounded-lg font-semibold text-white transition-colors"
                     >
-                        Kaydet
+                        {translations.save}
                     </button>
                 </div>
             </div>
@@ -164,7 +196,8 @@ export function EffectSettingsModal({ effect, pages, onClose, onSave }: EffectSe
 function renderEffectSettings(
     effectName: string,
     settings: Record<string, any>,
-    setSettings: (settings: Record<string, any>) => void
+    setSettings: (settings: Record<string, any>) => void,
+    translations: ModalTranslations
 ) {
     const commonSlider = (label: string, key: string, min: number, max: number, step: number = 1) => (
         <div className="space-y-2">
@@ -201,66 +234,66 @@ function renderEffectSettings(
         case 'snow':
             return (
                 <div className="space-y-4">
-                    {commonSlider('Yoğunluk', 'intensity', 20, 200)}
-                    {commonSlider('Hız', 'speed', 0.5, 3, 0.1)}
-                    {commonSlider('Boyut', 'size', 2, 10)}
-                    {commonSlider('Rüzgar', 'wind', 0, 2, 0.1)}
-                    {colorPicker('Renk', 'color')}
+                    {commonSlider(translations.intensity, 'intensity', 20, 200)}
+                    {commonSlider(translations.speed, 'speed', 0.5, 3, 0.1)}
+                    {commonSlider(translations.size, 'size', 2, 10)}
+                    {commonSlider(translations.wind, 'wind', 0, 2, 0.1)}
+                    {colorPicker(translations.color, 'color')}
                 </div>
             );
 
         case 'confetti':
             return (
                 <div className="space-y-4">
-                    {commonSlider('Yoğunluk', 'intensity', 50, 300)}
-                    {commonSlider('Hız', 'speed', 1, 5, 0.1)}
-                    {commonSlider('Yerçekimi', 'gravity', 0.1, 1, 0.1)}
+                    {commonSlider(translations.intensity, 'intensity', 50, 300)}
+                    {commonSlider(translations.speed, 'speed', 1, 5, 0.1)}
+                    {commonSlider(translations.gravity, 'gravity', 0.1, 1, 0.1)}
                 </div>
             );
 
         case 'stars':
             return (
                 <div className="space-y-4">
-                    {commonSlider('Yıldız Sayısı', 'intensity', 30, 150)}
-                    {commonSlider('Parıltı Hızı', 'twinkleSpeed', 0.5, 3, 0.1)}
-                    {commonSlider('Boyut', 'size', 1, 5)}
-                    {colorPicker('Renk', 'color')}
+                    {commonSlider(translations.starCount, 'intensity', 30, 150)}
+                    {commonSlider(translations.twinkleSpeed, 'twinkleSpeed', 0.5, 3, 0.1)}
+                    {commonSlider(translations.size, 'size', 1, 5)}
+                    {colorPicker(translations.color, 'color')}
                 </div>
             );
 
         case 'bubbles':
             return (
                 <div className="space-y-4">
-                    {commonSlider('Yoğunluk', 'intensity', 20, 100)}
-                    {commonSlider('Hız', 'speed', 0.5, 2, 0.1)}
-                    {commonSlider('Boyut', 'size', 10, 50)}
-                    {commonSlider('Şeffaflık', 'opacity', 0.2, 1, 0.1)}
+                    {commonSlider(translations.intensity, 'intensity', 20, 100)}
+                    {commonSlider(translations.speed, 'speed', 0.5, 2, 0.1)}
+                    {commonSlider(translations.size, 'size', 10, 50)}
+                    {commonSlider(translations.transparency, 'opacity', 0.2, 1, 0.1)}
                 </div>
             );
 
         case 'rain':
             return (
                 <div className="space-y-4">
-                    {commonSlider('Yoğunluk', 'intensity', 100, 400)}
-                    {commonSlider('Hız', 'speed', 3, 10)}
-                    {commonSlider('Rüzgar', 'wind', -2, 2, 0.1)}
+                    {commonSlider(translations.intensity, 'intensity', 100, 400)}
+                    {commonSlider(translations.speed, 'speed', 3, 10)}
+                    {commonSlider(translations.wind, 'wind', -2, 2, 0.1)}
                 </div>
             );
 
         case 'fireworks':
             return (
                 <div className="space-y-4">
-                    {commonSlider('Sıklık (saniyede)', 'frequency', 0.5, 5, 0.1)}
-                    {commonSlider('Patlama Boyutu', 'explosionSize', 50, 200)}
+                    {commonSlider(translations.frequency, 'frequency', 0.5, 5, 0.1)}
+                    {commonSlider(translations.explosionSize, 'explosionSize', 50, 200)}
                 </div>
             );
 
         case 'sakura':
             return (
                 <div className="space-y-4">
-                    {commonSlider('Yoğunluk', 'intensity', 20, 80)}
-                    {commonSlider('Hız', 'speed', 0.5, 3, 0.1)}
-                    {colorPicker('Renk', 'color')}
+                    {commonSlider(translations.intensity, 'intensity', 20, 80)}
+                    {commonSlider(translations.speed, 'speed', 0.5, 3, 0.1)}
+                    {colorPicker(translations.color, 'color')}
                     <label className="flex items-center gap-3 cursor-pointer">
                         <input
                             type="checkbox"
@@ -268,7 +301,7 @@ function renderEffectSettings(
                             onChange={(e) => setSettings({ ...settings, rotation: e.target.checked })}
                             className="w-5 h-5"
                         />
-                        <span className="text-gray-700 dark:text-gray-300">Döndürme Efekti</span>
+                        <span className="text-gray-700 dark:text-gray-300">{translations.rotationEffect}</span>
                     </label>
                 </div>
             );
@@ -276,9 +309,9 @@ function renderEffectSettings(
         case 'sparkles':
             return (
                 <div className="space-y-4">
-                    {colorPicker('Renk', 'color')}
-                    {commonSlider('Boyut', 'size', 2, 10)}
-                    {commonSlider('Ömür (ms)', 'lifetime', 500, 2000, 100)}
+                    {colorPicker(translations.color, 'color')}
+                    {commonSlider(translations.size, 'size', 2, 10)}
+                    {commonSlider(translations.lifetime, 'lifetime', 500, 2000, 100)}
                     <label className="flex items-center gap-3 cursor-pointer">
                         <input
                             type="checkbox"
@@ -286,7 +319,7 @@ function renderEffectSettings(
                             onChange={(e) => setSettings({ ...settings, trail: e.target.checked })}
                             className="w-5 h-5"
                         />
-                        <span className="text-gray-700 dark:text-gray-300">İz Bırakma</span>
+                        <span className="text-gray-700 dark:text-gray-300">{translations.trail}</span>
                     </label>
                 </div>
             );
@@ -294,23 +327,23 @@ function renderEffectSettings(
         case 'hearts':
             return (
                 <div className="space-y-4">
-                    {commonSlider('Yoğunluk', 'intensity', 10, 50)}
-                    {commonSlider('Hız', 'speed', 0.5, 3, 0.1)}
+                    {commonSlider(translations.intensity, 'intensity', 10, 50)}
+                    {commonSlider(translations.speed, 'speed', 0.5, 3, 0.1)}
                 </div>
             );
 
         case 'autumn-leaves':
             return (
                 <div className="space-y-4">
-                    {commonSlider('Yoğunluk', 'intensity', 20, 100)}
-                    {commonSlider('Hız', 'speed', 0.5, 3, 0.1)}
-                    {commonSlider('Rüzgar', 'wind', 0, 2, 0.1)}
+                    {commonSlider(translations.intensity, 'intensity', 20, 100)}
+                    {commonSlider(translations.speed, 'speed', 0.5, 3, 0.1)}
+                    {commonSlider(translations.wind, 'wind', 0, 2, 0.1)}
                 </div>
             );
 
         default:
             return (
-                <p className="text-gray-500">Bu efekt için ayarlar yükleniyor...</p>
+                <p className="text-gray-500">{translations.loadingSettings}</p>
             );
     }
 }

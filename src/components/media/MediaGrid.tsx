@@ -12,6 +12,22 @@ import { cn } from '@/lib/utils';
 import { logger } from '@/lib/logger';
 import type { Media, MediaViewMode } from '@/types/media';
 
+interface MediaGridTranslations {
+  selectAll: string;
+  noMedia: string;
+  copyUrl: string;
+  download: string;
+  delete: string;
+  copied: string;
+  preview: string;
+  details: {
+    name: string;
+    size: string;
+    dimensions: string;
+    uploadedAt: string;
+  };
+}
+
 interface MediaGridProps {
   items: Media[];
   selectedItems: string[];
@@ -20,6 +36,7 @@ interface MediaGridProps {
   viewMode: MediaViewMode;
   onDelete: (itemId: string) => void;
   onPreview?: (item: Media) => void;
+  translations?: MediaGridTranslations;
 }
 
 export function MediaGrid({
@@ -30,7 +47,25 @@ export function MediaGrid({
   viewMode,
   onDelete,
   onPreview,
+  translations,
 }: MediaGridProps) {
+  // Default translations
+  const t = translations || {
+    selectAll: 'Tümünü Seç',
+    noMedia: 'Henüz medya yüklenmemiş',
+    copyUrl: 'URL Kopyala',
+    download: 'İndir',
+    delete: 'Sil',
+    copied: 'Kopyalandı!',
+    preview: 'Önizleme',
+    details: {
+      name: 'İsim',
+      size: 'Boyut',
+      dimensions: 'Boyutlar',
+      uploadedAt: 'Tarih',
+    },
+  };
+
   const [copiedId, setCopiedId] = useState<string | null>(null);
 
   function formatFileSize(bytes: number): string {
@@ -73,7 +108,7 @@ export function MediaGrid({
                 className="w-4 h-4 text-primary-600 rounded focus:ring-primary-500"
               />
               <span className="text-sm text-gray-600 dark:text-gray-400">
-                Tümünü Seç ({items.length})
+                {t.selectAll} ({items.length})
               </span>
             </label>
           </div>
@@ -140,7 +175,7 @@ export function MediaGrid({
                 <button
                   onClick={() => copyToClipboard(item.url, item.id)}
                   className="p-1.5 rounded hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-400"
-                  title="URL Kopyala"
+                  title={t.copyUrl}
                 >
                   <Copy className={cn('w-4 h-4', copiedId === item.id && 'text-green-500')} />
                 </button>
@@ -148,14 +183,14 @@ export function MediaGrid({
                   href={item.url}
                   download
                   className="p-1.5 rounded hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-400"
-                  title="İndir"
+                  title={t.download}
                 >
                   <Download className="w-4 h-4" />
                 </a>
                 <button
                   onClick={() => onDelete(item.id)}
                   className="p-1.5 rounded hover:bg-red-50 dark:hover:bg-red-900/20 text-red-600 dark:text-red-400"
-                  title="Sil"
+                  title={t.delete}
                 >
                   <Trash2 className="w-4 h-4" />
                 </button>
@@ -166,7 +201,7 @@ export function MediaGrid({
 
         {items.length === 0 && (
           <div className="text-center py-12 text-gray-500 dark:text-gray-400">
-            Henüz medya yüklenmemiş
+            {t.noMedia}
           </div>
         )}
       </div>
@@ -188,22 +223,22 @@ export function MediaGrid({
               />
             </th>
             <th className="p-3 text-left text-sm font-medium text-gray-700 dark:text-gray-300">
-              Önizleme
+              {t.preview}
             </th>
             <th className="p-3 text-left text-sm font-medium text-gray-700 dark:text-gray-300">
-              İsim
+              {t.details.name}
             </th>
             <th className="p-3 text-left text-sm font-medium text-gray-700 dark:text-gray-300">
-              Boyut
+              {t.details.size}
             </th>
             <th className="p-3 text-left text-sm font-medium text-gray-700 dark:text-gray-300">
-              Boyutlar
+              {t.details.dimensions}
             </th>
             <th className="p-3 text-left text-sm font-medium text-gray-700 dark:text-gray-300">
-              Tarih
+              {t.details.uploadedAt}
             </th>
             <th className="p-3 text-left text-sm font-medium text-gray-700 dark:text-gray-300">
-              İşlemler
+              
             </th>
           </tr>
         </thead>
@@ -265,7 +300,7 @@ export function MediaGrid({
                   <button
                     onClick={() => copyToClipboard(item.url, item.id)}
                     className="p-1.5 rounded hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-400"
-                    title="URL Kopyala"
+                    title={t.copyUrl}
                   >
                     <Copy className={cn('w-4 h-4', copiedId === item.id && 'text-green-500')} />
                   </button>
@@ -273,14 +308,14 @@ export function MediaGrid({
                     href={item.url}
                     download
                     className="p-1.5 rounded hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-400"
-                    title="İndir"
+                    title={t.download}
                   >
                     <Download className="w-4 h-4" />
                   </a>
                   <button
                     onClick={() => onDelete(item.id)}
                     className="p-1.5 rounded hover:bg-red-50 dark:hover:bg-red-900/20 text-red-600 dark:text-red-400"
-                    title="Sil"
+                    title={t.delete}
                   >
                     <Trash2 className="w-4 h-4" />
                   </button>
@@ -293,7 +328,7 @@ export function MediaGrid({
 
       {items.length === 0 && (
         <div className="text-center py-12 text-gray-500 dark:text-gray-400">
-          Henüz medya yüklenmemiş
+          {t.noMedia}
         </div>
       )}
     </div>

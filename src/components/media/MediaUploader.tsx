@@ -9,11 +9,18 @@ import { useRef, useState, useCallback } from 'react';
 import { Upload } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
+interface MediaUploaderTranslations {
+  dragDropShort: string;
+  supportedFormatsImage: string;
+  supportedFormatsVideo: string;
+}
+
 interface MediaUploaderProps {
   accept: string;
   onUpload: (files: File[]) => void;
   multiple?: boolean;
   disabled?: boolean;
+  translations?: MediaUploaderTranslations;
 }
 
 export function MediaUploader({
@@ -21,7 +28,15 @@ export function MediaUploader({
   onUpload,
   multiple = true,
   disabled = false,
+  translations,
 }: MediaUploaderProps) {
+  // Default translations
+  const t = translations || {
+    dragDropShort: 'Dosya sürükleyin veya tıklayın',
+    supportedFormatsImage: 'Desteklenen formatlar: JPG, PNG, WebP, GIF, SVG',
+    supportedFormatsVideo: 'Desteklenen formatlar: MP4, WebM, MOV',
+  };
+
   const [isDragging, setIsDragging] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -91,12 +106,12 @@ export function MediaUploader({
       >
         <Upload className="w-12 h-12 text-gray-400 mb-4" />
         <p className="text-gray-700 dark:text-gray-300 font-medium mb-2">
-          Dosya sürükleyin veya tıklayın
+          {t.dragDropShort}
         </p>
         <small className="text-gray-500 dark:text-gray-400 text-sm">
           {accept === 'image/*' 
-            ? 'Desteklenen formatlar: JPG, PNG, WebP, GIF, SVG'
-            : 'Desteklenen formatlar: MP4, WebM, MOV'}
+            ? t.supportedFormatsImage
+            : t.supportedFormatsVideo}
         </small>
       </div>
 

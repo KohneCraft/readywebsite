@@ -4,13 +4,28 @@ import type { EffectTemplate } from '@/types/effects';
 import { createEffectInstance } from './EffectRenderer';
 import type { IEffectInstance } from '@/lib/effects';
 
+interface EffectCardTranslations {
+    preview: string;
+    add: string;
+    added: string;
+    closePreview: string;
+    previewDescription: string;
+    categories: {
+        seasonal: string;
+        party: string;
+        nature: string;
+        animations: string;
+    };
+}
+
 interface EffectCardProps {
     effect: EffectTemplate;
     isActive: boolean;
     onAdd: () => void;
+    translations: EffectCardTranslations;
 }
 
-export function EffectCard({ effect, isActive, onAdd }: EffectCardProps) {
+export function EffectCard({ effect, isActive, onAdd, translations }: EffectCardProps) {
     const [isPreviewOpen, setIsPreviewOpen] = useState(false);
     const canvasRef = useRef<HTMLCanvasElement>(null);
     const instanceRef = useRef<IEffectInstance | null>(null);
@@ -84,11 +99,11 @@ export function EffectCard({ effect, isActive, onAdd }: EffectCardProps) {
                     <button
                         onClick={() => setIsPreviewOpen(true)}
                         className="absolute inset-0 bg-black/0 group-hover:bg-black/30 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all cursor-pointer"
-                        aria-label="Önizle"
+                        aria-label={translations.preview}
                     >
                         <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 px-4 py-2 rounded-lg flex items-center gap-2 font-medium text-gray-900 dark:text-white shadow-lg transform translate-y-2 group-hover:translate-y-0 transition-all">
                             <Play size={18} />
-                            Önizle
+                            {translations.preview}
                         </div>
                     </button>
                 </div>
@@ -108,10 +123,10 @@ export function EffectCard({ effect, isActive, onAdd }: EffectCardProps) {
 
                     <div className="mb-3">
                         <span className="inline-block px-2 py-1 text-xs bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 rounded capitalize">
-                            {effect.category === 'seasonal' && 'Mevsimsel'}
-                            {effect.category === 'party' && 'Parti'}
-                            {effect.category === 'nature' && 'Doğa'}
-                            {effect.category === 'animations' && 'Animasyonlar'}
+                            {effect.category === 'seasonal' && translations.categories.seasonal}
+                            {effect.category === 'party' && translations.categories.party}
+                            {effect.category === 'nature' && translations.categories.nature}
+                            {effect.category === 'animations' && translations.categories.animations}
                         </span>
                     </div>
 
@@ -127,7 +142,8 @@ export function EffectCard({ effect, isActive, onAdd }: EffectCardProps) {
                 disabled:opacity-60
               `}
                     >
-                        {isActive ? '✓ Eklendi' : '+ Ekle'}
+                        {isActive ? `✓ ${translations.added}` : `+ ${translations.add}`}
+                    </button>
                     </button>
                 </div>
             </div>
@@ -146,13 +162,13 @@ export function EffectCard({ effect, isActive, onAdd }: EffectCardProps) {
                         <div className="text-6xl mb-4">{effect.icon}</div>
                         <h3 className="text-2xl font-bold mb-2 text-gray-900 dark:text-white">{effect.displayName}</h3>
                         <p className="text-gray-500 dark:text-gray-400 mb-8">
-                            Efekt önizlemesi arkaplanda çalışıyor. Beğendiyseniz "Ekle" butonunu kullanarak sitenize ekleyebilirsiniz.
+                            {translations.previewDescription}
                         </p>
                         <button
                             onClick={() => setIsPreviewOpen(false)}
                             className="w-full px-6 py-3 bg-red-600 hover:bg-red-700 text-white rounded-xl font-bold shadow-lg shadow-red-500/20 transition-all"
                         >
-                            Önizlemeyi Kapat
+                            {translations.closePreview}
                         </button>
                     </div>
                 </div>

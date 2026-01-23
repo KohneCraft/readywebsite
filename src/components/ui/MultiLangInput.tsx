@@ -17,8 +17,8 @@ import {
 } from '@/types/localization';
 import { Languages, Loader2, Check, AlertCircle } from 'lucide-react';
 
-// Şimdilik sadece TR ve EN aktif
-const activeLocales: Locale[] = ['tr', 'en'];
+// Şimdilik sadece TR ve EN aktif (DE ve FR eklenebilir)
+const activeLocales: Locale[] = ['tr', 'en', 'de', 'fr'];
 
 interface MultiLangInputProps {
   /** Mevcut değer (string veya LocalizedString) */
@@ -70,7 +70,7 @@ export function MultiLangInput({
     onChange(updated);
   }, [localizedValue, activeLocale, onChange]);
 
-  // Otomatik çeviri (şimdilik placeholder - API entegrasyonu sonra)
+  // Otomatik çeviri (Google Translate API)
   const handleAutoTranslate = useCallback(async () => {
     const sourceText = localizedValue.tr || '';
     if (!sourceText.trim()) {
@@ -83,14 +83,28 @@ export function MultiLangInput({
     setTranslateError(null);
 
     try {
-      // TODO: Gerçek API entegrasyonu yapılacak
-      // Şimdilik simülasyon
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      // Google Translate API'yi çağır
+      const targetLanguages = activeLocales.filter(locale => locale !== 'tr');
       
-      // Basit placeholder çeviri (gerçek API'ye kadar)
-      const translations: Record<string, string> = {
-        en: `[EN] ${sourceText}`, // Placeholder
-      };
+      const response = await fetch('/api/translate', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          text: sourceText,
+          targetLanguages,
+          sourceLanguage: 'tr',
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Çeviri hatası');
+      }
+
+      const data = await response.json();
+      const translations = data.translations as Record<string, string>;
 
       // Tüm çevirileri uygula
       let updated = { ...localizedValue };
@@ -101,8 +115,9 @@ export function MultiLangInput({
       }
       
       onChange(updated);
-    } catch {
-      setTranslateError('Çeviri yapılamadı');
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Çeviri yapılamadı';
+      setTranslateError(message);
       setTimeout(() => setTranslateError(null), 3000);
     } finally {
       setIsTranslating(false);

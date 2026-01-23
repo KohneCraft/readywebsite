@@ -202,12 +202,12 @@ export function Footer() {
   }, [siteSettings, themeSettings]);
 
   const footerDescription = useMemo(() => {
-    return themeSettings?.footer?.description || 'Kod bilgisi olmadan profesyonel web sayfaları oluşturun.';
-  }, [themeSettings]);
+    return themeSettings?.footer?.description || t('description');
+  }, [themeSettings, t]);
 
   const footerCopyright = useMemo(() => {
-    return themeSettings?.footer?.copyright || `© ${new Date().getFullYear()} Page Builder. Tüm hakları saklıdır.`;
-  }, [themeSettings]);
+    return themeSettings?.footer?.copyright || t('copyright', { year: new Date().getFullYear() });
+  }, [themeSettings, t]);
 
   // next-themes'den koyu tema durumunu al
   const { resolvedTheme } = useNextTheme();
