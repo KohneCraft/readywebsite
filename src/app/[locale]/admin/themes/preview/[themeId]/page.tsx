@@ -6,7 +6,7 @@
 // ============================================
 
 import { useParams } from 'next/navigation';
-import { useMemo, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { getDefaultThemes } from '@/lib/themes/default/defaultThemes';
 import { getAvailableThemes } from '@/lib/firebase/firestore';
 import { ArrowLeft, Palette, Loader2 } from 'lucide-react';
