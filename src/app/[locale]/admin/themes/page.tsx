@@ -38,27 +38,47 @@ export default function ThemesPage() {
   const locale = useLocale() as Locale;
   const t = useTranslations('admin.themes');
 
+  // Türkçe karakterleri ASCII'ye dönüştür
+  const normalizeText = (text: string): string => {
+    return text
+      .toLowerCase()
+      .replace(/ı/g, 'i')
+      .replace(/i̇/g, 'i') // Unicode noktalı i
+      .replace(/İ/g, 'i')
+      .replace(/ş/g, 's')
+      .replace(/Ş/g, 's')
+      .replace(/ğ/g, 'g')
+      .replace(/Ğ/g, 'g')
+      .replace(/ü/g, 'u')
+      .replace(/Ü/g, 'u')
+      .replace(/ö/g, 'o')
+      .replace(/Ö/g, 'o')
+      .replace(/ç/g, 'c')
+      .replace(/Ç/g, 'c')
+      .trim();
+  };
+
   // Tema adından çeviri key'i oluştur
   const getThemeNameKey = (themeName: string): string => {
+    const normalized = normalizeText(themeName);
+    
     const nameMap: Record<string, string> = {
       // Modern Business
-      'modern iş': 'modernBusiness',
       'modern is': 'modernBusiness',
       'modern business': 'modernBusiness',
       // Minimal / Sade
-      'sade tasarım': 'minimal',
+      'sade tasarim': 'minimal',
       'sade tema': 'minimal',
       'minimal tema': 'minimal',
       'minimal': 'minimal',
       'sade': 'minimal',
       // Corporate / Kurumsal
-      'kurumsal işletme': 'corporate',
+      'kurumsal isletme': 'corporate',
       'kurumsal': 'corporate',
       'corporate': 'corporate',
       // Construction / İnşaat
-      'inşaat firması': 'construction',
-      'İnşaat firması': 'construction',
-      'inşaat': 'construction',
+      'insaat firmasi': 'construction',
+      'insaat': 'construction',
       'construction': 'construction',
       // Restaurant / Restoran
       'restoran & kafe': 'restaurant',
@@ -66,20 +86,20 @@ export default function ThemesPage() {
       'restoran': 'restaurant',
       'restaurant': 'restaurant',
       // Healthcare / Sağlık
-      'sağlık & klinik': 'healthcare',
-      'sağlık klinik': 'healthcare',
-      'sağlık': 'healthcare',
+      'saglik & klinik': 'healthcare',
+      'saglik klinik': 'healthcare',
+      'saglik': 'healthcare',
       'healthcare': 'healthcare',
       // Education / Eğitim
-      'eğitim kurumu': 'education',
-      'eğitim': 'education',
+      'egitim kurumu': 'education',
+      'egitim': 'education',
       'education': 'education',
       // E-commerce / E-ticaret
-      'online mağaza': 'ecommerce',
+      'online magaza': 'ecommerce',
       'e-ticaret': 'ecommerce',
       'ecommerce': 'ecommerce',
     };
-    const normalized = themeName.toLowerCase().trim();
+    
     return nameMap[normalized] || normalized.replace(/[^a-z0-9]/g, '');
   };
 
