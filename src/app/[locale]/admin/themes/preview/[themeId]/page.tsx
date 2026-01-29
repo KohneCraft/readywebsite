@@ -6,37 +6,97 @@
 // ============================================
 
 import { useParams } from 'next/navigation';
-import { useMemo } from 'react';
+import { useMemo, useEffect, useState } from 'react';
 import { getDefaultThemes } from '@/lib/themes/default/defaultThemes';
-import { ArrowLeft, Palette } from 'lucide-react';
+import { getAvailableThemes } from '@/lib/firebase/firestore';
+import { ArrowLeft, Palette, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import Link from 'next/link';
+import type { ThemeData } from '@/types/theme';
 
 export default function ThemePreviewPage() {
     const params = useParams();
     const themeId = params?.themeId as string;
+    const [loading, setLoading] = useState(true);
+    const [theme, setTheme] = useState<ThemeData | null>(null);
 
-    // Temayı bul - Esnek eşleştirme (ID veya name ile)
-    const theme = useMemo(() => {
-        const themes = getDefaultThemes();
+    // Temayı bul - Firestore ID veya varsayılan tema ID/name ile
+    useEffect(() => {
+        const findTheme = async () => {
+            setLoading(true);
+            const defaultThemes = getDefaultThemes();
 
-        // Önce direkt ID ile eşleştir
-        let found = themes.find(t => t.metadata.id === themeId);
-        if (found) return found;
-
-        // ID'den name çıkarmayı dene (ör: theme-egitim -> egitim)
-        const idBasedName = themeId.toLowerCase().replace('theme-', '').replace(/-/g, ' ');
-        found = themes.find(t => {
-            const themeName = t.metadata.name.toLowerCase();
-            // Kısmi eşleşme
-            if (themeName.includes(idBasedName) || idBasedName.includes(themeName.split(' ')[0].toLowerCase())) {
-                return true;
+            // 1. Önce varsayılan temalarda direkt ID ile eşleştir
+            let found = defaultThemes.find(t => t.metadata.id === themeId);
+            if (found) {
+                setTheme(found);
+                setLoading(false);
+                return;
             }
-            return false;
-        });
 
-        return found;
+            // 2. ID'den name çıkarmayı dene (ör: theme-egitim -> egitim)
+            const idBasedName = themeId.toLowerCase().replace('theme-', '').replace(/-/g, ' ');
+            found = defaultThemes.find(t => {
+                const themeName = t.metadata.name.toLowerCase();
+                if (themeName.includes(idBasedName) || idBasedName.includes(themeName.split(' ')[0].toLowerCase())) {
+                    return true;
+                }
+                return false;
+            });
+            if (found) {
+                setTheme(found);
+                setLoading(false);
+                return;
+            }
+
+            // 3. Firestore'dan tema bilgisi al ve name ile eşleştir
+            try {
+                const firestoreThemes = await getAvailableThemes();
+                const firestoreTheme = firestoreThemes.find(ft => ft.id === themeId);
+                
+                if (firestoreTheme) {
+                    // Firestore tema adını kullanarak varsayılan temada ara
+                    const firestoreName = firestoreTheme.name.toLowerCase().trim();
+                    found = defaultThemes.find(t => {
+                        const defaultName = t.metadata.name.toLowerCase().trim();
+                        // Tam eşleşme
+                        if (defaultName === firestoreName) return true;
+                        // Kısmi eşleşme
+                        if (defaultName.includes(firestoreName) || firestoreName.includes(defaultName)) return true;
+                        // İlk kelime eşleşmesi
+                        const firstWordDefault = defaultName.split(' ')[0];
+                        const firstWordFirestore = firestoreName.split(' ')[0];
+                        if (firstWordDefault === firstWordFirestore) return true;
+                        return false;
+                    });
+                    
+                    if (found) {
+                        setTheme(found);
+                        setLoading(false);
+                        return;
+                    }
+                }
+            } catch (error) {
+                console.warn('Firestore tema kontrolü başarısız:', error);
+            }
+
+            setTheme(null);
+            setLoading(false);
+        };
+
+        findTheme();
     }, [themeId]);
+
+    if (loading) {
+        return (
+            <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900">
+                <div className="text-center">
+                    <Loader2 className="w-12 h-12 mx-auto text-primary-500 animate-spin mb-4" />
+                    <p className="text-gray-600 dark:text-gray-400">Tema yükleniyor...</p>
+                </div>
+            </div>
+        );
+    }
 
     if (!theme) {
         return (

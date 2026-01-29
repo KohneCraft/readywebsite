@@ -41,27 +41,46 @@ export default function ThemesPage() {
   // Tema adından çeviri key'i oluştur
   const getThemeNameKey = (themeName: string): string => {
     const nameMap: Record<string, string> = {
+      // Modern Business
       'modern iş': 'modernBusiness',
       'modern is': 'modernBusiness',
       'modern business': 'modernBusiness',
+      // Minimal / Sade
+      'sade tasarım': 'minimal',
       'sade tema': 'minimal',
       'minimal tema': 'minimal',
       'minimal': 'minimal',
+      'sade': 'minimal',
+      // Corporate / Kurumsal
+      'kurumsal işletme': 'corporate',
       'kurumsal': 'corporate',
       'corporate': 'corporate',
+      // Construction / İnşaat
+      'inşaat firması': 'construction',
+      'İnşaat firması': 'construction',
       'inşaat': 'construction',
       'construction': 'construction',
+      // Restaurant / Restoran
+      'restoran & kafe': 'restaurant',
+      'restoran kafe': 'restaurant',
       'restoran': 'restaurant',
       'restaurant': 'restaurant',
+      // Healthcare / Sağlık
+      'sağlık & klinik': 'healthcare',
+      'sağlık klinik': 'healthcare',
       'sağlık': 'healthcare',
       'healthcare': 'healthcare',
+      // Education / Eğitim
+      'eğitim kurumu': 'education',
       'eğitim': 'education',
       'education': 'education',
+      // E-commerce / E-ticaret
+      'online mağaza': 'ecommerce',
       'e-ticaret': 'ecommerce',
       'ecommerce': 'ecommerce',
     };
     const normalized = themeName.toLowerCase().trim();
-    return nameMap[normalized] || normalized.replace(/\s+/g, '');
+    return nameMap[normalized] || normalized.replace(/[^a-z0-9]/g, '');
   };
 
   const getThemeTranslation = (type: 'name' | 'description', themeName: string, fallback: string): string => {
