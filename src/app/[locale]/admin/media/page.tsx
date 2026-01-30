@@ -7,10 +7,10 @@ import Link from 'next/link';
 // ============================================
 
 import { useState, useEffect, useCallback } from 'react';
-import { Image as ImageIcon, Video, Trash2, AlertTriangle, Info } from 'lucide-react';
+import { Image as ImageIcon, Video, Trash2 } from 'lucide-react';
 import { uploadMedia, getMediaList, deleteMedia, deleteMultipleMedia } from '@/lib/firebase/media';
 import { getCurrentUser, onAuthStateChanged } from '@/lib/firebase/auth';
-import { validateFile, FILE_SIZE_LIMITS, formatFileSize } from '@/lib/firebase/storage';
+import { validateFile } from '@/lib/firebase/storage';
 import { MediaUploader, MediaFilters, MediaGrid, MediaPreview } from '@/components/media';
 import { toast } from '@/components/providers';
 import { logger } from '@/lib/logger';
