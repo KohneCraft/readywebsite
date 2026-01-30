@@ -7,16 +7,20 @@
 
 import { useParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
+import { useLocale } from 'next-intl';
 import { getDefaultThemes } from '@/lib/themes/default/defaultThemes';
 import { getAvailableThemes } from '@/lib/firebase/firestore';
+import { getLocalizedValue } from '@/types/localization';
 import { ArrowLeft, Palette, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import Link from 'next/link';
 import type { ThemeData } from '@/types/theme';
+import type { Locale } from '@/i18n';
 
 export default function ThemePreviewPage() {
     const params = useParams();
     const themeId = params?.themeId as string;
+    const locale = useLocale() as Locale;
     const [loading, setLoading] = useState(true);
     const [theme, setTheme] = useState<ThemeData | null>(null);
 
@@ -229,7 +233,7 @@ export default function ThemePreviewPage() {
                                                             marginBottom: '0.5rem',
                                                         }}
                                                     >
-                                                        {block.props?.content}
+                                                        {getLocalizedValue(block.props?.content, locale)}
                                                     </Tag>
                                                 );
                                             }
@@ -244,7 +248,7 @@ export default function ThemePreviewPage() {
                                                             marginBottom: '1rem',
                                                         }}
                                                     >
-                                                        {block.props?.content}
+                                                        {getLocalizedValue(block.props?.content, locale)}
                                                     </p>
                                                 );
                                             }
@@ -259,7 +263,7 @@ export default function ThemePreviewPage() {
                                                             border: block.props?.style === 'outline' ? `2px solid ${block.props?.borderColor || '#ffffff'}` : 'none',
                                                         }}
                                                     >
-                                                        {block.props?.text}
+                                                        {getLocalizedValue(block.props?.text, locale)}
                                                     </button>
                                                 );
                                             }
