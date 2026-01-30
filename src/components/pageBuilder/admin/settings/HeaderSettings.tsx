@@ -6,7 +6,7 @@
 // ============================================
 
 import { useState, useEffect } from 'react';
-import { useTranslations } from 'next-intl';
+import { useTranslations, useLocale } from 'next-intl';
 import { useTheme } from '@/contexts/ThemeContext';
 import { getCurrentUser } from '@/lib/firebase/auth';
 import { updateActiveThemeSettings } from '@/lib/firebase/firestore';
@@ -15,8 +15,11 @@ import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { toast } from '@/components/providers';
 import { DualColorPicker } from '../controls/DualColorPicker';
+import { MultiLangInput } from '@/components/ui/MultiLangInput';
 import { ChevronDown, ChevronRight, Plus, Trash2 } from 'lucide-react';
 import type { NavItem } from '@/types/theme';
+import type { LocalizedString } from '@/types/localization';
+import type { Locale } from '@/i18n';
 
 interface HeaderSettingsProps {
   activeTab: 'style' | 'settings' | 'advanced';
@@ -26,11 +29,13 @@ interface HeaderSettingsProps {
 export function HeaderSettings({ activeTab, onUpdate }: HeaderSettingsProps) {
   const { themeSettings, currentTheme } = useTheme();
   const t = useTranslations('common.toast');
+  const locale = useLocale() as Locale;
   const [loading, setLoading] = useState(false);
   const [expandedItems, setExpandedItems] = useState<number[]>([]); // Açık alt menü indexleri
   const [headerConfig, setHeaderConfig] = useState<{
     logo?: string;
     logoText?: string;
+    logoTexts?: Record<string, string>;
     navItems?: NavItem[];
     backgroundColor?: string;
     backgroundColorDark?: string | 'auto';
@@ -42,7 +47,8 @@ export function HeaderSettings({ activeTab, onUpdate }: HeaderSettingsProps) {
   }>(themeSettings?.header || {
     logo: '',
     logoText: 'Page Builder',
-    navItems: [{ href: '/', label: 'Ana Sayfa' }],
+    logoTexts: { tr: 'Page Builder', en: '', de: '', fr: '' },
+    navItems: [{ href: '/', label: 'Ana Sayfa', labels: { tr: 'Ana Sayfa', en: 'Home', de: 'Startseite', fr: 'Accueil' } }],
     backgroundColor: '#FFFFFF',
     backgroundColorDark: 'auto',
     textColor: '#1a1a1a',
@@ -106,7 +112,11 @@ export function HeaderSettings({ activeTab, onUpdate }: HeaderSettingsProps) {
   const addNavItem = () => {
     setHeaderConfig({
       ...headerConfig,
-      navItems: [...(headerConfig.navItems || []), { href: '/', label: 'Yeni Link' }],
+      navItems: [...(headerConfig.navItems || []), { 
+        href: '/', 
+        label: 'Yeni Link',
+        labels: { tr: 'Yeni Link', en: 'New Link', de: 'Neuer Link', fr: 'Nouveau Lien' }
+      }],
     });
   };
 
@@ -130,13 +140,28 @@ export function HeaderSettings({ activeTab, onUpdate }: HeaderSettingsProps) {
     });
   };
 
+  // Nav item labels güncelleme (çoklu dil)
+  const updateNavItemLabels = (index: number, labels: LocalizedString) => {
+    const newNavItems = [...(headerConfig.navItems || [])];
+    const primaryLabel = labels[locale] || labels.tr || newNavItems[index].label;
+    newNavItems[index] = { ...newNavItems[index], label: primaryLabel, labels };
+    setHeaderConfig({
+      ...headerConfig,
+      navItems: newNavItems,
+    });
+  };
+
   // Alt link ekleme
   const addChildItem = (parentIndex: number) => {
     const newNavItems = [...(headerConfig.navItems || [])];
     const parent = newNavItems[parentIndex];
     newNavItems[parentIndex] = {
       ...parent,
-      children: [...(parent.children || []), { href: '/', label: 'Alt Link' }],
+      children: [...(parent.children || []), { 
+        href: '/', 
+        label: 'Alt Link',
+        labels: { tr: 'Alt Link', en: 'Sub Link', de: 'Unterlink', fr: 'Sous-lien' }
+      }],
     };
     setHeaderConfig({ ...headerConfig, navItems: newNavItems });
     // Parent'ı expanded yap
@@ -161,6 +186,17 @@ export function HeaderSettings({ activeTab, onUpdate }: HeaderSettingsProps) {
     const parent = newNavItems[parentIndex];
     const newChildren = [...(parent.children || [])];
     newChildren[childIndex] = { ...newChildren[childIndex], [field]: value };
+    newNavItems[parentIndex] = { ...parent, children: newChildren };
+    setHeaderConfig({ ...headerConfig, navItems: newNavItems });
+  };
+
+  // Alt link labels güncelleme (çoklu dil)
+  const updateChildItemLabels = (parentIndex: number, childIndex: number, labels: LocalizedString) => {
+    const newNavItems = [...(headerConfig.navItems || [])];
+    const parent = newNavItems[parentIndex];
+    const newChildren = [...(parent.children || [])];
+    const primaryLabel = labels[locale] || labels.tr || newChildren[childIndex].label;
+    newChildren[childIndex] = { ...newChildren[childIndex], label: primaryLabel, labels };
     newNavItems[parentIndex] = { ...parent, children: newChildren };
     setHeaderConfig({ ...headerConfig, navItems: newNavItems });
   };
@@ -191,11 +227,15 @@ export function HeaderSettings({ activeTab, onUpdate }: HeaderSettingsProps) {
           <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
             Logo Metni
           </label>
-          <Input
-            type="text"
-            value={headerConfig.logoText || ''}
-            onChange={(e) => setHeaderConfig({ ...headerConfig, logoText: e.target.value })}
+          <MultiLangInput
+            value={headerConfig.logoTexts || { tr: headerConfig.logoText || '', en: '', de: '', fr: '' }}
+            onChange={(labels: LocalizedString) => {
+              const primaryLabel = labels[locale] || labels.tr || headerConfig.logoText || '';
+              setHeaderConfig({ ...headerConfig, logoText: primaryLabel, logoTexts: labels });
+            }}
+            type="input"
             placeholder="Page Builder"
+            showAutoTranslate={true}
           />
         </div>
 
@@ -279,20 +319,26 @@ export function HeaderSettings({ activeTab, onUpdate }: HeaderSettingsProps) {
 
                 {/* Ana Link URL ve Label */}
                 <div className="space-y-2">
-                  <Input
-                    type="text"
-                    value={item.href}
-                    onChange={(e) => updateNavItem(index, 'href', e.target.value)}
-                    placeholder="/"
-                    className="text-sm"
-                  />
-                  <Input
-                    type="text"
-                    value={item.label}
-                    onChange={(e) => updateNavItem(index, 'label', e.target.value)}
-                    placeholder="Link Metni"
-                    className="text-sm"
-                  />
+                  <div>
+                    <label className="block text-xs text-gray-500 dark:text-gray-400 mb-1">URL</label>
+                    <Input
+                      type="text"
+                      value={item.href}
+                      onChange={(e) => updateNavItem(index, 'href', e.target.value)}
+                      placeholder="/"
+                      className="text-sm"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs text-gray-500 dark:text-gray-400 mb-1">Link Başlığı</label>
+                    <MultiLangInput
+                      value={item.labels || { tr: item.label || '', en: '', de: '', fr: '' }}
+                      onChange={(labels: LocalizedString) => updateNavItemLabels(index, labels)}
+                      type="input"
+                      placeholder="Link Metni"
+                      showAutoTranslate={true}
+                    />
+                  </div>
                 </div>
 
                 {/* Alt Link Ekle Butonu */}
@@ -309,21 +355,27 @@ export function HeaderSettings({ activeTab, onUpdate }: HeaderSettingsProps) {
                 <div className="border-t border-gray-200 dark:border-gray-700 bg-gray-100/50 dark:bg-gray-900/30 p-2 space-y-2">
                   {item.children.map((child, childIndex) => (
                     <div key={childIndex} className="flex items-start gap-2 p-2 bg-white dark:bg-gray-800 rounded border border-gray-200 dark:border-gray-600">
-                      <div className="flex-1 space-y-1">
-                        <Input
-                          type="text"
-                          value={child.href}
-                          onChange={(e) => updateChildItem(index, childIndex, 'href', e.target.value)}
-                          placeholder="/alt-sayfa"
-                          className="text-xs h-8"
-                        />
-                        <Input
-                          type="text"
-                          value={child.label}
-                          onChange={(e) => updateChildItem(index, childIndex, 'label', e.target.value)}
-                          placeholder="Alt Link Metni"
-                          className="text-xs h-8"
-                        />
+                      <div className="flex-1 space-y-2">
+                        <div>
+                          <label className="block text-xs text-gray-500 dark:text-gray-400 mb-1">URL</label>
+                          <Input
+                            type="text"
+                            value={child.href}
+                            onChange={(e) => updateChildItem(index, childIndex, 'href', e.target.value)}
+                            placeholder="/alt-sayfa"
+                            className="text-xs h-8"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-xs text-gray-500 dark:text-gray-400 mb-1">Alt Link Başlığı</label>
+                          <MultiLangInput
+                            value={child.labels || { tr: child.label || '', en: '', de: '', fr: '' }}
+                            onChange={(labels: LocalizedString) => updateChildItemLabels(index, childIndex, labels)}
+                            type="input"
+                            placeholder="Alt Link Metni"
+                            showAutoTranslate={true}
+                          />
+                        </div>
                       </div>
                       <button
                         onClick={() => removeChildItem(index, childIndex)}

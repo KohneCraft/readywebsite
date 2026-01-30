@@ -6,7 +6,7 @@
 // ============================================
 
 import { useState, useEffect } from 'react';
-import { useTranslations } from 'next-intl';
+import { useTranslations, useLocale } from 'next-intl';
 import { useTheme } from '@/contexts/ThemeContext';
 import { getCurrentUser } from '@/lib/firebase/auth';
 import { updateActiveThemeSettings, getSiteSettingsClient, updateSiteSettings } from '@/lib/firebase/firestore';
@@ -15,6 +15,9 @@ import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { toast } from '@/components/providers';
 import { DualColorPicker } from '../controls/DualColorPicker';
+import { MultiLangInput } from '@/components/ui/MultiLangInput';
+import type { LocalizedString } from '@/types/localization';
+import type { Locale } from '@/i18n';
 
 interface FooterSettingsProps {
   activeTab: 'style' | 'settings' | 'advanced';
@@ -24,14 +27,18 @@ interface FooterSettingsProps {
 export function FooterSettings({ activeTab, onUpdate }: FooterSettingsProps) {
   const { themeSettings, currentTheme } = useTheme();
   const t = useTranslations('common.toast');
+  const locale = useLocale() as Locale;
   const [loading, setLoading] = useState(false);
   const [footerConfig, setFooterConfig] = useState<{
     logo?: string;
     logoText?: string;
+    logoTexts?: Record<string, string>;
     description?: string;
-    quickLinks?: { href: string; label: string }[];
+    descriptions?: Record<string, string>;
+    quickLinks?: { href: string; label: string; labels?: Record<string, string> }[];
     socialLinks?: { platform: string; url: string }[];
     copyright?: string;
+    copyrights?: Record<string, string>;
     backgroundColor?: string;
     backgroundColorDark?: string | 'auto';
     textColor?: string;
@@ -154,7 +161,11 @@ export function FooterSettings({ activeTab, onUpdate }: FooterSettingsProps) {
   const addQuickLink = () => {
     setFooterConfig({
       ...footerConfig,
-      quickLinks: [...(footerConfig.quickLinks || []), { href: '/', label: 'Yeni Link' }],
+      quickLinks: [...(footerConfig.quickLinks || []), { 
+        href: '/', 
+        label: 'Yeni Link',
+        labels: { tr: 'Yeni Link', en: 'New Link', de: 'Neuer Link', fr: 'Nouveau Lien' }
+      }],
     });
   };
 
@@ -170,6 +181,15 @@ export function FooterSettings({ activeTab, onUpdate }: FooterSettingsProps) {
   const updateQuickLink = (index: number, field: 'href' | 'label', value: string) => {
     const newLinks = [...(footerConfig.quickLinks || [])];
     newLinks[index] = { ...newLinks[index], [field]: value };
+    setFooterConfig({
+      ...footerConfig,
+      quickLinks: newLinks,
+    });
+  };
+
+  const updateQuickLinkLabels = (index: number, labels: LocalizedString) => {
+    const newLinks = [...(footerConfig.quickLinks || [])];
+    newLinks[index] = { ...newLinks[index], labels, label: labels[locale] || labels.tr || '' };
     setFooterConfig({
       ...footerConfig,
       quickLinks: newLinks,
@@ -220,11 +240,16 @@ export function FooterSettings({ activeTab, onUpdate }: FooterSettingsProps) {
           <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
             Logo Metni
           </label>
-          <Input
-            type="text"
-            value={footerConfig.logoText || ''}
-            onChange={(e) => setFooterConfig({ ...footerConfig, logoText: e.target.value })}
+          <MultiLangInput
+            value={footerConfig.logoTexts || { tr: footerConfig.logoText || '', en: '', de: '', fr: '' }}
+            onChange={(logoTexts: LocalizedString) => setFooterConfig({ 
+              ...footerConfig, 
+              logoTexts, 
+              logoText: logoTexts[locale] || logoTexts.tr 
+            })}
+            type="input"
             placeholder="Page Builder"
+            showAutoTranslate={true}
           />
         </div>
 
@@ -232,12 +257,17 @@ export function FooterSettings({ activeTab, onUpdate }: FooterSettingsProps) {
           <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
             Açıklama
           </label>
-          <textarea
-            value={footerConfig.description || ''}
-            onChange={(e) => setFooterConfig({ ...footerConfig, description: e.target.value })}
+          <MultiLangInput
+            value={footerConfig.descriptions || { tr: footerConfig.description || '', en: '', de: '', fr: '' }}
+            onChange={(descriptions: LocalizedString) => setFooterConfig({ 
+              ...footerConfig, 
+              descriptions, 
+              description: descriptions[locale] || descriptions.tr 
+            })}
+            type="textarea"
             rows={3}
-            className="w-full px-3 py-2 text-sm border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-white"
             placeholder="Footer açıklaması"
+            showAutoTranslate={true}
           />
         </div>
 
@@ -298,20 +328,26 @@ export function FooterSettings({ activeTab, onUpdate }: FooterSettingsProps) {
                     Sil
                   </button>
                 </div>
-                <Input
-                  type="text"
-                  value={link.href}
-                  onChange={(e) => updateQuickLink(index, 'href', e.target.value)}
-                  placeholder="/"
-                  className="text-sm"
-                />
-                <Input
-                  type="text"
-                  value={link.label}
-                  onChange={(e) => updateQuickLink(index, 'label', e.target.value)}
-                  placeholder="Link Metni"
-                  className="text-sm"
-                />
+                <div>
+                  <label className="block text-xs text-gray-500 dark:text-gray-400 mb-1">URL</label>
+                  <Input
+                    type="text"
+                    value={link.href}
+                    onChange={(e) => updateQuickLink(index, 'href', e.target.value)}
+                    placeholder="/"
+                    className="text-sm"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs text-gray-500 dark:text-gray-400 mb-1">Link Başlığı</label>
+                  <MultiLangInput
+                    value={link.labels || { tr: link.label || '', en: '', de: '', fr: '' }}
+                    onChange={(labels: LocalizedString) => updateQuickLinkLabels(index, labels)}
+                    type="input"
+                    placeholder="Link Metni"
+                    showAutoTranslate={true}
+                  />
+                </div>
               </div>
             ))}
           </div>
@@ -377,11 +413,16 @@ export function FooterSettings({ activeTab, onUpdate }: FooterSettingsProps) {
         <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
           Copyright Metni
         </label>
-        <Input
-          type="text"
-          value={footerConfig.copyright || ''}
-          onChange={(e) => setFooterConfig({ ...footerConfig, copyright: e.target.value })}
+        <MultiLangInput
+          value={footerConfig.copyrights || { tr: footerConfig.copyright || '', en: '', de: '', fr: '' }}
+          onChange={(copyrights: LocalizedString) => setFooterConfig({ 
+            ...footerConfig, 
+            copyrights, 
+            copyright: copyrights[locale] || copyrights.tr 
+          })}
+          type="input"
           placeholder="© 2026 Page Builder. Tüm hakları saklıdır."
+          showAutoTranslate={true}
         />
       </div>
 

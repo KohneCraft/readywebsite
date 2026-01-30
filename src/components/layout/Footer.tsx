@@ -113,26 +113,31 @@ export function Footer() {
     'Pricing': 'pricing',
   } as Record<string, string>), []);
 
-  // Label'ı locale'e göre çevir
-  const translateLabel = useCallback((label: string): string => {
-    const navKey = labelToNavKey[label];
+  // Label'ı locale'e göre çevir - link item'a göre
+  const translateLabel = useCallback((link: { href: string; label: string; labels?: Record<string, string> }): string => {
+    // Önce çoklu dil desteğini kontrol et
+    if (link.labels && link.labels[locale]) {
+      return link.labels[locale];
+    }
+    // Fallback: translation key mapping
+    const navKey = labelToNavKey[link.label];
     if (navKey) {
       try {
         return tNav(navKey);
       } catch {
-        return label;
+        return link.label;
       }
     }
-    return label;
-  }, [tNav, labelToNavKey]);
+    return link.label;
+  }, [tNav, labelToNavKey, locale]);
 
   // Tema ayarlarından quick links'i al ve çevir
   const quickLinks = useMemo(() => {
     logger.ui.debug('Footer themeSettings', { footer: themeSettings?.footer?.quickLinks });
     if (themeSettings?.footer?.quickLinks && themeSettings.footer.quickLinks.length > 0) {
-      return themeSettings.footer.quickLinks.map((link: { href: string; label: string }) => ({
+      return themeSettings.footer.quickLinks.map((link: { href: string; label: string; labels?: Record<string, string> }) => ({
         ...link,
-        label: translateLabel(link.label),
+        label: translateLabel(link),
       }));
     }
     // Varsayılan links
@@ -191,6 +196,10 @@ export function Footer() {
     if (siteSettings?.siteName?.[locale as keyof typeof siteSettings.siteName]) {
       return siteSettings.siteName[locale as keyof typeof siteSettings.siteName];
     }
+    // Çoklu dil desteği için logoTexts kontrolü
+    if (themeSettings?.footer?.logoTexts?.[locale]) {
+      return themeSettings.footer.logoTexts[locale];
+    }
     return themeSettings?.footer?.logoText || 'Page Builder';
   }, [siteSettings, themeSettings, locale]);
 
@@ -202,12 +211,20 @@ export function Footer() {
   }, [siteSettings, themeSettings]);
 
   const footerDescription = useMemo(() => {
+    // Çoklu dil desteği için descriptions kontrolü
+    if (themeSettings?.footer?.descriptions?.[locale]) {
+      return themeSettings.footer.descriptions[locale];
+    }
     return themeSettings?.footer?.description || t('description');
-  }, [themeSettings, t]);
+  }, [themeSettings, t, locale]);
 
   const footerCopyright = useMemo(() => {
+    // Çoklu dil desteği için copyrights kontrolü
+    if (themeSettings?.footer?.copyrights?.[locale]) {
+      return themeSettings.footer.copyrights[locale];
+    }
     return themeSettings?.footer?.copyright || t('copyright', { year: new Date().getFullYear() });
-  }, [themeSettings, t]);
+  }, [themeSettings, t, locale]);
 
   // next-themes'den koyu tema durumunu al
   const { resolvedTheme } = useNextTheme();

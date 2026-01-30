@@ -105,24 +105,29 @@ export function Header() {
   } as Record<string, string>), []);
 
   // NavItem label'ını locale'e göre çevir
-  const translateLabel = useCallback((label: string): string => {
-    const navKey = labelToNavKey[label];
+  const translateLabel = useCallback((item: NavItem): string => {
+    // Önce çoklu dil desteğini kontrol et
+    if (item.labels && item.labels[locale]) {
+      return item.labels[locale];
+    }
+    // Fallback: translation key mapping
+    const navKey = labelToNavKey[item.label];
     if (navKey) {
       try {
         // next-intl çevirisini kullan
         return t(navKey);
       } catch {
-        return label; // Çeviri yoksa orijinal label'ı döndür
+        return item.label; // Çeviri yoksa orijinal label'ı döndür
       }
     }
-    return label; // Mapping'de yoksa orijinal label'ı döndür
-  }, [t, labelToNavKey]);
+    return item.label; // Mapping'de yoksa orijinal label'ı döndür
+  }, [t, labelToNavKey, locale]);
 
   // NavItem'ları recursive olarak çevir
   const translateNavItems = useCallback((items: NavItem[]): NavItem[] => {
     return items.map(item => ({
       ...item,
-      label: translateLabel(item.label),
+      label: translateLabel(item),
       children: item.children ? translateNavItems(item.children) : undefined,
     }));
   }, [translateLabel]);
@@ -143,6 +148,10 @@ export function Header() {
   const logoText = useMemo(() => {
     if (siteSettings?.siteName?.[locale as keyof typeof siteSettings.siteName]) {
       return siteSettings.siteName[locale as keyof typeof siteSettings.siteName];
+    }
+    // Çoklu dil desteği için logoTexts kontrolü
+    if (themeSettings?.header?.logoTexts?.[locale]) {
+      return themeSettings.header.logoTexts[locale];
     }
     return themeSettings?.header?.logoText || 'Page Builder';
   }, [siteSettings, themeSettings, locale]);

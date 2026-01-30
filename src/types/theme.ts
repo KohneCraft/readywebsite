@@ -54,6 +54,7 @@ export interface ThemePageConfig {
 export interface NavItem {
   href: string;
   label: string;
+  labels?: Record<string, string>; // Çoklu dil için: { tr: "...", en: "...", de: "...", fr: "..." }
   children?: NavItem[]; // Alt linkler (dropdown menü için)
 }
 
@@ -68,6 +69,7 @@ export interface ThemeSettings {
   header?: {
     logo?: string;
     logoText?: string;
+    logoTexts?: Record<string, string>; // Çoklu dil için logo metni
     navItems?: NavItem[];
     backgroundColor?: string;
     textColor?: string;
@@ -78,10 +80,13 @@ export interface ThemeSettings {
   footer?: {
     logo?: string;
     logoText?: string;
+    logoTexts?: Record<string, string>; // Çoklu dil için logo metni
     description?: string;
-    quickLinks?: Array<{ href: string; label: string }>;
+    descriptions?: Record<string, string>; // Çoklu dil için açıklama
+    quickLinks?: Array<{ href: string; label: string; labels?: Record<string, string> }>;
     socialLinks?: Array<{ platform: string; url: string; icon?: string }>;
     copyright?: string;
+    copyrights?: Record<string, string>; // Çoklu dil için copyright
     backgroundColor?: string;
     textColor?: string;
   };
@@ -126,6 +131,7 @@ export interface ThemeSettings {
 export interface ThemePageData {
   slug: string;
   title: string;
+  titles?: Record<string, string>; // Çoklu dil desteği: { tr: '...', en: '...', de: '...', fr: '...' }
   sections: ThemeSectionData[];
 }
 
