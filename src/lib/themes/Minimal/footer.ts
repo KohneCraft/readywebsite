@@ -1,19 +1,31 @@
 // ============================================
 // Sade Tema - Footer
-// Minimal footer tasarımı
+// Minimal footer tasarımı - Çoklu dil desteği
 // ============================================
 
 export const sadeFooter = {
   logo: '/themes/minimal/logo.svg',
   logoText: 'Sade',
+  logoTexts: {
+    tr: 'Sade',
+    en: 'Minimal',
+    de: 'Minimal',
+    fr: 'Minimal'
+  },
   description: 'Minimalist tasarım stüdyosu.',
+  descriptions: {
+    tr: 'Minimalist tasarım stüdyosu.',
+    en: 'Minimalist design studio.',
+    de: 'Minimalistisches Designstudio.',
+    fr: 'Studio de design minimaliste.'
+  },
 
-  // Tek kolon - minimal
+  // Tek kolon - minimal - çoklu dil desteği
   quickLinks: [
-    { href: '/', label: 'Ana Sayfa' },
-    { href: '/portfolio', label: 'Portfolyo' },
-    { href: '/about', label: 'Hakkımda' },
-    { href: '/contact', label: 'İletişim' },
+    { href: '/', label: 'Ana Sayfa', labels: { tr: 'Ana Sayfa', en: 'Home', de: 'Startseite', fr: 'Accueil' } },
+    { href: '/portfolio', label: 'Portfolyo', labels: { tr: 'Portfolyo', en: 'Portfolio', de: 'Portfolio', fr: 'Portfolio' } },
+    { href: '/about', label: 'Hakkımda', labels: { tr: 'Hakkımda', en: 'About', de: 'Über mich', fr: 'À propos' } },
+    { href: '/contact', label: 'İletişim', labels: { tr: 'İletişim', en: 'Contact', de: 'Kontakt', fr: 'Contact' } },
   ],
 
   // İletişim
@@ -36,8 +48,14 @@ export const sadeFooter = {
   },
 
   copyright: '© 2026 Sade. Tüm hakları saklıdır.',
+  copyrights: {
+    tr: '© 2026 Sade. Tüm hakları saklıdır.',
+    en: '© 2026 Minimal. All rights reserved.',
+    de: '© 2026 Minimal. Alle Rechte vorbehalten.',
+    fr: '© 2026 Minimal. Tous droits réservés.'
+  },
   legalLinks: [
-    { href: '/privacy', label: 'Gizlilik' },
+    { href: '/privacy', label: 'Gizlilik', labels: { tr: 'Gizlilik', en: 'Privacy', de: 'Datenschutz', fr: 'Confidentialité' } },
   ],
 
   // Minimal siyah-beyaz
@@ -61,21 +79,6 @@ export const sadeFooter = {
     paddingY: 60,
     borderTop: '1px solid #262626',
   },
-};
-
-export const sadeFooterEN = {
-  ...sadeFooter,
-  description: 'Minimalist design studio.',
-  quickLinks: [
-    { href: '/', label: 'Home' },
-    { href: '/portfolio', label: 'Portfolio' },
-    { href: '/about', label: 'About' },
-    { href: '/contact', label: 'Contact' },
-  ],
-  copyright: '© 2026 Minimal. All rights reserved.',
-  legalLinks: [
-    { href: '/privacy', label: 'Privacy' },
-  ],
 };
 
 // Geriye uyumluluk

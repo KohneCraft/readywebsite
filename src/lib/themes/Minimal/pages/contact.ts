@@ -1,5 +1,6 @@
 // ============================================
 // Minimal Tema - İletişim Sayfası
+// Çoklu dil desteği ile (TR/EN/DE/FR)
 // ============================================
 
 import type { ThemePageData } from '@/types/theme';
@@ -7,6 +8,7 @@ import type { ThemePageData } from '@/types/theme';
 export const contactPage: ThemePageData = {
     slug: 'contact',
     title: 'İletişim',
+    titles: { tr: 'İletişim', en: 'Contact', de: 'Kontakt', fr: 'Contact' },
     sections: [
         {
             name: 'Contact Hero',
@@ -22,7 +24,12 @@ export const contactPage: ThemePageData = {
                         {
                             type: 'heading',
                             props: {
-                                content: 'Birlikte Çalışalım',
+                                content: {
+                                    tr: 'Birlikte Çalışalım',
+                                    en: 'Let\'s Work Together',
+                                    de: 'Lassen Sie uns zusammenarbeiten',
+                                    fr: 'Travaillons Ensemble'
+                                },
                                 level: 'h1',
                                 fontSize: '56px',
                                 fontWeight: '300',
@@ -32,7 +39,12 @@ export const contactPage: ThemePageData = {
                         {
                             type: 'text',
                             props: {
-                                content: 'Projeniz için iletişime geçin',
+                                content: {
+                                    tr: 'Projeniz için iletişime geçin',
+                                    en: 'Get in touch for your project',
+                                    de: 'Kontaktieren Sie uns für Ihr Projekt',
+                                    fr: 'Contactez-nous pour votre projet'
+                                },
                                 fontSize: '20px',
                                 color: '#737373',
                             },
@@ -55,7 +67,12 @@ export const contactPage: ThemePageData = {
                         {
                             type: 'heading',
                             props: {
-                                content: 'İletişim Bilgileri',
+                                content: {
+                                    tr: 'İletişim Bilgileri',
+                                    en: 'Contact Information',
+                                    de: 'Kontaktinformationen',
+                                    fr: 'Informations de Contact'
+                                },
                                 level: 'h2',
                                 fontSize: '32px',
                                 fontWeight: '400',
@@ -65,7 +82,12 @@ export const contactPage: ThemePageData = {
                         {
                             type: 'text',
                             props: {
-                                content: 'Email\nmerhaba@sade.design',
+                                content: {
+                                    tr: 'Email\nmerhaba@sade.design',
+                                    en: 'Email\nhello@sade.design',
+                                    de: 'E-Mail\nhallo@sade.design',
+                                    fr: 'Email\nbonjour@sade.design'
+                                },
                                 fontSize: '18px',
                                 color: '#525252',
                                 lineHeight: '1.8',
@@ -74,7 +96,12 @@ export const contactPage: ThemePageData = {
                         {
                             type: 'text',
                             props: {
-                                content: 'Telefon\n+90 212 123 4567',
+                                content: {
+                                    tr: 'Telefon\n+90 212 123 4567',
+                                    en: 'Phone\n+90 212 123 4567',
+                                    de: 'Telefon\n+90 212 123 4567',
+                                    fr: 'Téléphone\n+90 212 123 4567'
+                                },
                                 fontSize: '18px',
                                 color: '#525252',
                                 lineHeight: '1.8',
@@ -83,7 +110,12 @@ export const contactPage: ThemePageData = {
                         {
                             type: 'text',
                             props: {
-                                content: 'Adres\nBeyoğlu, İstanbul',
+                                content: {
+                                    tr: 'Adres\nBeyoğlu, İstanbul',
+                                    en: 'Address\nBeyoğlu, Istanbul',
+                                    de: 'Adresse\nBeyoğlu, Istanbul',
+                                    fr: 'Adresse\nBeyoğlu, Istanbul'
+                                },
                                 fontSize: '18px',
                                 color: '#525252',
                                 lineHeight: '1.8',
@@ -100,11 +132,11 @@ export const contactPage: ThemePageData = {
                             props: {
                                 title: '',
                                 fields: [
-                                    { id: 'name', type: 'text', name: 'name', label: 'Adınız', required: true },
+                                    { id: 'name', type: 'text', name: 'name', label: { tr: 'Adınız', en: 'Your Name', de: 'Ihr Name', fr: 'Votre Nom' }, required: true },
                                     { id: 'email', type: 'email', name: 'email', label: 'Email', required: true },
-                                    { id: 'message', type: 'textarea', name: 'message', label: 'Mesajınız', required: true },
+                                    { id: 'message', type: 'textarea', name: 'message', label: { tr: 'Mesajınız', en: 'Your Message', de: 'Ihre Nachricht', fr: 'Votre Message' }, required: true },
                                 ],
-                                buttonText: 'Gönder',
+                                buttonText: { tr: 'Gönder', en: 'Send', de: 'Senden', fr: 'Envoyer' },
                                 buttonColor: '#0a0a0a',
                                 buttonTextColor: '#fafafa',
                             },

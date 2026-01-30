@@ -1,6 +1,7 @@
 // ============================================
 // İnşaat Teması - Gelişmiş Header
 // Animasyonlu, glassmorphism efektli header
+// Çoklu dil desteği ile
 // ============================================
 
 import type { NavItem } from '@/types/theme';
@@ -8,30 +9,50 @@ import type { NavItem } from '@/types/theme';
 export const insaatHeader = {
   logo: '/themes/construction/logo.svg',
   logoText: 'Vav İnşaat',
-  // Gelişmiş navigasyon
+  logoTexts: {
+    tr: 'Vav İnşaat',
+    en: 'Vav Construction',
+    de: 'Vav Bau',
+    fr: 'Vav Construction'
+  },
+  // Gelişmiş navigasyon - Çoklu dil destekli
   navItems: [
-    { href: '/', label: 'Ana Sayfa' },
+    { 
+      href: '/', 
+      label: 'Ana Sayfa',
+      labels: { tr: 'Ana Sayfa', en: 'Home', de: 'Startseite', fr: 'Accueil' }
+    },
     {
       href: '/about',
       label: 'Hakkımızda',
+      labels: { tr: 'Hakkımızda', en: 'About Us', de: 'Über uns', fr: 'À propos' },
       children: [
-        { href: '/about#history', label: 'Tarihçemiz' },
-        { href: '/about#team', label: 'Ekibimiz' },
-        { href: '/about#values', label: 'Değerlerimiz' },
+        { href: '/about#history', label: 'Tarihçemiz', labels: { tr: 'Tarihçemiz', en: 'Our History', de: 'Unsere Geschichte', fr: 'Notre histoire' } },
+        { href: '/about#team', label: 'Ekibimiz', labels: { tr: 'Ekibimiz', en: 'Our Team', de: 'Unser Team', fr: 'Notre équipe' } },
+        { href: '/about#values', label: 'Değerlerimiz', labels: { tr: 'Değerlerimiz', en: 'Our Values', de: 'Unsere Werte', fr: 'Nos valeurs' } },
       ]
     },
     {
       href: '/services',
       label: 'Hizmetlerimiz',
+      labels: { tr: 'Hizmetlerimiz', en: 'Services', de: 'Dienstleistungen', fr: 'Services' },
       children: [
-        { href: '/services#residential', label: 'Konut İnşaatı' },
-        { href: '/services#commercial', label: 'Ticari İnşaat' },
-        { href: '/services#renovation', label: 'Renovasyon' },
-        { href: '/services#consulting', label: 'Danışmanlık' },
+        { href: '/services#residential', label: 'Konut İnşaatı', labels: { tr: 'Konut İnşaatı', en: 'Residential', de: 'Wohnungsbau', fr: 'Résidentiel' } },
+        { href: '/services#commercial', label: 'Ticari İnşaat', labels: { tr: 'Ticari İnşaat', en: 'Commercial', de: 'Gewerbebau', fr: 'Commercial' } },
+        { href: '/services#renovation', label: 'Renovasyon', labels: { tr: 'Renovasyon', en: 'Renovation', de: 'Renovierung', fr: 'Rénovation' } },
+        { href: '/services#consulting', label: 'Danışmanlık', labels: { tr: 'Danışmanlık', en: 'Consulting', de: 'Beratung', fr: 'Conseil' } },
       ]
     },
-    { href: '/projects', label: 'Projelerimiz' },
-    { href: '/contact', label: 'İletişim' },
+    { 
+      href: '/projects', 
+      label: 'Projelerimiz',
+      labels: { tr: 'Projelerimiz', en: 'Projects', de: 'Projekte', fr: 'Projets' }
+    },
+    { 
+      href: '/contact', 
+      label: 'İletişim',
+      labels: { tr: 'İletişim', en: 'Contact', de: 'Kontakt', fr: 'Contact' }
+    },
   ] as NavItem[],
   // Stil ayarları
   backgroundColor: '#ffffff',
@@ -54,12 +75,13 @@ export const insaatHeader = {
     blur: 12,
     opacity: 0.85,
   },
-  // CTA butonu
+  // CTA butonu - çoklu dil desteği
   ctaButton: {
     enabled: true,
     text: 'Teklif Al',
+    texts: { tr: 'Teklif Al', en: 'Get Quote', de: 'Angebot anfordern', fr: 'Demander un devis' },
     href: '/contact',
-    className: 'bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white px-6 py-2 rounded-full font-medium transition-all duration-300 hover:scale-105 hover:shadow-lg',
+    className: 'bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600text-white px-6 py-2 rounded-full font-medium transition-all duration-300 hover:scale-105 hover:shadow-lg',
   },
   // İletişim bilgisi
   topBar: {
@@ -67,38 +89,5 @@ export const insaatHeader = {
     phone: '+90 212 123 4567',
     email: 'info@vavinsaat.com',
     social: ['facebook', 'instagram', 'linkedin'],
-  },
-};
-
-// İngilizce header
-export const insaatHeaderEN = {
-  ...insaatHeader,
-  navItems: [
-    { href: '/', label: 'Home' },
-    {
-      href: '/about',
-      label: 'About Us',
-      children: [
-        { href: '/about#history', label: 'Our History' },
-        { href: '/about#team', label: 'Our Team' },
-        { href: '/about#values', label: 'Our Values' },
-      ]
-    },
-    {
-      href: '/services',
-      label: 'Services',
-      children: [
-        { href: '/services#residential', label: 'Residential' },
-        { href: '/services#commercial', label: 'Commercial' },
-        { href: '/services#renovation', label: 'Renovation' },
-        { href: '/services#consulting', label: 'Consulting' },
-      ]
-    },
-    { href: '/projects', label: 'Projects' },
-    { href: '/contact', label: 'Contact' },
-  ] as NavItem[],
-  ctaButton: {
-    ...insaatHeader.ctaButton,
-    text: 'Get Quote',
   },
 };

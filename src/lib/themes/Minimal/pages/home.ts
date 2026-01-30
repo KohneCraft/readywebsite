@@ -1,5 +1,6 @@
 // ============================================
 // Minimal Theme - Home Page
+// Çoklu dil desteği ile (TR/EN/DE/FR)
 // ============================================
 
 import type { ThemePageData } from '@/types/theme';
@@ -7,6 +8,7 @@ import type { ThemePageData } from '@/types/theme';
 export const homePage: ThemePageData = {
   slug: 'home',
   title: 'Ana Sayfa',
+  titles: { tr: 'Ana Sayfa', en: 'Home', de: 'Startseite', fr: 'Accueil' },
   sections: [
     {
       name: 'Hero',
@@ -23,7 +25,12 @@ export const homePage: ThemePageData = {
               type: 'heading',
               props: {
                 level: 'h1',
-                content: 'Minimal Tasarım',
+                content: {
+                  tr: 'Minimal Tasarım',
+                  en: 'Minimal Design',
+                  de: 'Minimalistisches Design',
+                  fr: 'Design Minimal'
+                },
                 fontSize: 64,
                 color: '#000000',
               },
@@ -31,7 +38,12 @@ export const homePage: ThemePageData = {
             {
               type: 'text',
               props: {
-                content: 'Sade ve etkili',
+                content: {
+                  tr: 'Sade ve etkili',
+                  en: 'Simple and effective',
+                  de: 'Schlicht und effektiv',
+                  fr: 'Simple et efficace'
+                },
                 fontSize: 20,
                 color: '#666',
               },

@@ -1,6 +1,6 @@
 // ============================================
 // Sade Tema - Header
-// Minimalist navigasyon
+// Minimalist navigasyon - Çoklu dil desteği
 // ============================================
 
 import type { NavItem } from '@/types/theme';
@@ -8,11 +8,17 @@ import type { NavItem } from '@/types/theme';
 export const sadeHeader = {
   logo: '/themes/minimal/logo.svg',
   logoText: 'Sade',
+  logoTexts: {
+    tr: 'Sade',
+    en: 'Minimal',
+    de: 'Minimal',
+    fr: 'Minimal'
+  },
   navItems: [
-    { href: '/', label: 'Ana Sayfa' },
-    { href: '/portfolio', label: 'Portfolyo' },
-    { href: '/about', label: 'Hakkımda' },
-    { href: '/contact', label: 'İletişim' },
+    { href: '/', label: 'Ana Sayfa', labels: { tr: 'Ana Sayfa', en: 'Home', de: 'Startseite', fr: 'Accueil' } },
+    { href: '/portfolio', label: 'Portfolyo', labels: { tr: 'Portfolyo', en: 'Portfolio', de: 'Portfolio', fr: 'Portfolio' } },
+    { href: '/about', label: 'Hakkımda', labels: { tr: 'Hakkımda', en: 'About', de: 'Über mich', fr: 'À propos' } },
+    { href: '/contact', label: 'İletişim', labels: { tr: 'İletişim', en: 'Contact', de: 'Kontakt', fr: 'Contact' } },
   ] as NavItem[],
   backgroundColor: '#fafafa',
   textColor: '#0a0a0a',
@@ -38,16 +44,6 @@ export const sadeHeader = {
     paddingY: 24,
     borderBottom: '1px solid #e5e5e5',
   },
-};
-
-export const sadeHeaderEN = {
-  ...sadeHeader,
-  navItems: [
-    { href: '/', label: 'Home' },
-    { href: '/portfolio', label: 'Portfolio' },
-    { href: '/about', label: 'About' },
-    { href: '/contact', label: 'Contact' },
-  ] as NavItem[],
 };
 
 // Geriye uyumluluk
