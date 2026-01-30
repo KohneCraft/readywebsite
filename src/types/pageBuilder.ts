@@ -570,6 +570,7 @@ export interface BlockCreateInput {
  */
 export interface PageUpdateInput {
   title?: string;
+  titles?: Record<string, string>; // Çoklu dil için: { tr: "...", en: "...", de: "...", fr: "..." }
   slug?: string;
   settings?: Partial<PageSettings>;
   status?: 'draft' | 'published' | 'archived';
