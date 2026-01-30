@@ -475,6 +475,7 @@ export interface SectionSettings {
 export interface Page {
   id: string;
   title: string;
+  titles?: Record<string, string>; // Çoklu dil için: { tr: "...", en: "...", de: "...", fr: "..." }
   slug: string;
   sections: string[]; // Section ID'leri
   globalPanels?: string[]; // Global panel block ID'leri (section dışında)
