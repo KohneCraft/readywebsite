@@ -123,8 +123,18 @@ export async function uploadMedia(
     const storagePath = `media/${type}s/${userId}/${fileName}`;
     const storageRef = ref(storage, storagePath);
 
-    // Dosyayı yükle
-    const uploadResult: UploadResult = await uploadBytes(storageRef, file);
+    // Cache-Control metadata (1 yıl cache - bandwidth tasarrufu için)
+    const metadata = {
+      contentType: file.type,
+      cacheControl: 'public, max-age=31536000, immutable',
+      customMetadata: {
+        uploadedAt: new Date().toISOString(),
+        originalName: file.name,
+      },
+    };
+
+    // Dosyayı yükle (cache metadata ile)
+    const uploadResult: UploadResult = await uploadBytes(storageRef, file, metadata);
 
     // Download URL al
     const downloadURL = await getDownloadURL(uploadResult.ref);
