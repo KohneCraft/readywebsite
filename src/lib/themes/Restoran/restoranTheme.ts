@@ -337,7 +337,7 @@ export const restoranTheme: ThemeData = {
         name: 'Restoran & Kafe',
         description: 'Restoran, kafe ve yeme-içme işletmeleri için profesyonel tema - TR/EN destekli',
         version: '1.0.0',
-        thumbnail: '/themes/restaurant/preview.jpg',
+        thumbnail: '/themes/restoran.png',
         author: 'Page Builder',
         category: 'food',
         pages: [

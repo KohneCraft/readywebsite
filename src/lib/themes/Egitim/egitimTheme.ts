@@ -401,7 +401,7 @@ export const egitimTheme: ThemeData = {
         name: 'Eğitim Kurumu',
         description: 'Okul, üniversite ve kurs merkezleri için profesyonel tema - TR/EN destekli',
         version: '1.0.0',
-        thumbnail: '/themes/education/preview.jpg',
+        thumbnail: '/themes/egitim.png',
         author: 'Page Builder',
         category: 'education',
         pages: [

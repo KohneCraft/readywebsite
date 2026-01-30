@@ -428,7 +428,7 @@ export const eticaretTheme: ThemeData = {
         name: 'Online Mağaza',
         description: 'E-ticaret ve online mağaza siteleri için profesyonel tema - TR/EN destekli',
         version: '1.0.0',
-        thumbnail: '/themes/ecommerce/preview.jpg',
+        thumbnail: '/themes/eticaret.png',
         author: 'Page Builder',
         category: 'ecommerce',
         pages: [

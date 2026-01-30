@@ -393,7 +393,7 @@ export const saglikTheme: ThemeData = {
         name: 'Sağlık & Klinik',
         description: 'Hastane, klinik ve sağlık kuruluşları için profesyonel tema - TR/EN destekli',
         version: '1.0.0',
-        thumbnail: '/themes/healthcare/preview.jpg',
+        thumbnail: '/themes/saglik.png',
         author: 'Page Builder',
         category: 'medical',
         pages: [

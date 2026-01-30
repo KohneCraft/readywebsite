@@ -378,7 +378,7 @@ export const constructionTheme: ThemeData = {
     name: 'İnşaat Firması',
     description: 'Gelişmiş inşaat firma teması - Modern, profesyonel ve kapsamlı, TR/EN destekli',
     version: '2.0.0',
-    thumbnail: '/themes/construction/preview.jpg',
+    thumbnail: '/themes/construction.png',
     author: 'Page Builder',
     category: 'construction',
     pages: [
