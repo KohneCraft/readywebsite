@@ -120,7 +120,7 @@ export default function PageBuilderListPage() {
         {isLoading ? (
           <div className="col-span-full text-center py-12">
             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600 mx-auto mb-2"></div>
-            <p className="text-sm text-gray-500 dark:text-gray-400">Yükleniyor...</p>
+            <p className="text-sm text-gray-500 dark:text-gray-400">{t('pageBuilder.loading')}</p>
           </div>
         ) : pages.length > 0 ? (
           pages.map((page) => (
@@ -144,24 +144,24 @@ export default function PageBuilderListPage() {
                 </div>
 
                 <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
-                  {page.title || 'İsimsiz Sayfa'}
+                  {page.titles?.[locale] || page.title || t('pageBuilder.untitledPage')}
                 </h3>
                 <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
-                  /{page.slug || 'slug-yok'}
+                  /{page.slug || t('pageBuilder.noSlug')}
                 </p>
 
                 <div className="flex items-center gap-4 pt-4 border-t border-gray-100 dark:border-gray-700">
                   <div className="flex items-center gap-1.5 text-xs text-gray-500 dark:text-gray-400">
                     <Layers className="w-4 h-4" />
-                    <span>{page.sections?.length || 0} section</span>
+                    <span>{page.sections?.length || 0} {t('pageBuilder.sections')}</span>
                   </div>
                   {page.status === 'published' ? (
                     <span className="px-2 py-1 text-xs bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 rounded-full">
-                      Yayında
+                      {t('pageBuilder.statusPublished')}
                     </span>
                   ) : (
                     <span className="px-2 py-1 text-xs bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400 rounded-full">
-                      Taslak
+                      {t('pageBuilder.statusDraft')}
                     </span>
                   )}
                 </div>

@@ -106,8 +106,16 @@ export default function ThemesPage() {
   const getThemeTranslation = (type: 'name' | 'description', themeName: string, fallback: string): string => {
     const key = getThemeNameKey(themeName);
     const translationKey = type === 'name' ? `themeNames.${key}` : `themeDescriptions.${key}`;
-    const translated = t.raw(translationKey);
-    return typeof translated === 'string' ? translated : fallback;
+    
+    try {
+      // t.has() ile key var mı kontrol et
+      if (t.has(translationKey)) {
+        return t(translationKey);
+      }
+      return fallback;
+    } catch {
+      return fallback;
+    }
   };
 
   const [themes, setThemes] = useState<ThemePreview[]>([]);
