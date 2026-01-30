@@ -502,6 +502,7 @@ export function PageBuilderEditor({ pageId }: PageBuilderEditorProps) {
       if (hasChanges) {
         const updateData: Partial<Page> = {
           title: page.title,
+          titles: page.titles, // Çoklu dil desteği
           slug: page.slug,
           sections: page.sections,
           settings: page.settings,
