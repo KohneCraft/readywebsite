@@ -9,10 +9,10 @@
 import { useState, useEffect, useCallback } from 'react';
 import Image from 'next/image';
 import { toast } from 'sonner';
-import { X, Image as ImageIcon, Video, Upload, Check, AlertTriangle } from 'lucide-react';
+import { X, Image as ImageIcon, Video, Upload, Check } from 'lucide-react';
 import { getMediaList, uploadMedia } from '@/lib/firebase/media';
 import { getCurrentUser } from '@/lib/firebase/auth';
-import { validateFile, FILE_SIZE_LIMITS, formatFileSize } from '@/lib/firebase/storage';
+import { validateFile } from '@/lib/firebase/storage';
 import { logger } from '@/lib/logger';
 import type { Media, MediaType } from '@/types/media';
 import { cn } from '@/lib/utils';

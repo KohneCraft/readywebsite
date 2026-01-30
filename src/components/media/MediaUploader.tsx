@@ -9,7 +9,7 @@
 import { useRef, useState, useCallback } from 'react';
 import { Upload, AlertTriangle, Info } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { FILE_SIZE_LIMITS, formatFileSize } from '@/lib/firebase/storage';
+import { FILE_SIZE_LIMITS } from '@/lib/firebase/storage';
 
 interface MediaUploaderTranslations {
   dragDropShort: string;

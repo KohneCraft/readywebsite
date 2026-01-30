@@ -8,11 +8,11 @@
 
 import { useState, useEffect } from 'react';
 import { toast } from 'sonner';
-import { Image as ImageIcon, Upload, X, Info, Edit2, AlertTriangle } from 'lucide-react';
+import { Image as ImageIcon, Upload, X, Info, Edit2 } from 'lucide-react';
 import Image from 'next/image';
 import { MediaSelector } from '../media/MediaSelector';
 import { uploadMedia } from '@/lib/firebase/media';
-import { validateFile, FILE_SIZE_LIMITS } from '@/lib/firebase/storage';
+import { validateFile } from '@/lib/firebase/storage';
 import { getSiteSettingsClient, updateSiteSettings } from '@/lib/firebase/firestore';
 import { getCurrentUser } from '@/lib/firebase/auth';
 import { logger } from '@/lib/logger';
