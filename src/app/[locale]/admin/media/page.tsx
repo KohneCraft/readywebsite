@@ -7,13 +7,14 @@ import Link from 'next/link';
 // ============================================
 
 import { useState, useEffect, useCallback } from 'react';
-import { Image as ImageIcon, Video, Trash2 } from 'lucide-react';
+import { Image as ImageIcon, Video, Trash2, AlertTriangle, Info } from 'lucide-react';
 import { uploadMedia, getMediaList, deleteMedia, deleteMultipleMedia } from '@/lib/firebase/media';
 import { getCurrentUser, onAuthStateChanged } from '@/lib/firebase/auth';
+import { validateFile, FILE_SIZE_LIMITS, formatFileSize } from '@/lib/firebase/storage';
 import { MediaUploader, MediaFilters, MediaGrid, MediaPreview } from '@/components/media';
 import { toast } from '@/components/providers';
 import { logger } from '@/lib/logger';
-import { useTranslations } from 'next-intl';
+import { useTranslations, useLocale } from 'next-intl';
 import type { Media, MediaType, MediaSortBy, MediaViewMode } from '@/types/media';
 import { cn } from '@/lib/utils';
 
@@ -85,6 +86,9 @@ export default function MediaManagerPage() {
     loadMedia();
   }, [loadMedia]);
 
+  // Locale al
+  const locale = useLocale();
+
   // Dosya yükleme
   const handleUpload = async (files: File[]) => {
     // Firebase Auth kontrolü - ZORUNLU
@@ -104,21 +108,29 @@ export default function MediaManagerPage() {
 
     setUploading(true);
     const errors: string[] = [];
+    const warnings: string[] = [];
+    let successCount = 0;
 
     for (const file of files) {
       try {
-        // Dosya tipi kontrolü
+        // Dosya tipi belirleme
         const fileType = activeTab === 'image' ? 'image' : 'video';
-        const isValidType = fileType === 'image'
-          ? file.type.startsWith('image/')
-          : file.type.startsWith('video/');
-
-        if (!isValidType) {
-          errors.push(`${file.name}: ${t('invalidFileType') || 'Invalid file type'}`);
+        
+        // Kapsamlı validasyon - boyut ve format kontrolü
+        const validation = validateFile(file, fileType, locale === 'tr' ? 'tr' : 'en');
+        
+        if (!validation.valid) {
+          errors.push(`${file.name}: ${validation.error}`);
           continue;
+        }
+        
+        // Uyarı varsa kaydet ama yüklemeye devam et
+        if (validation.warning) {
+          warnings.push(`${file.name}: ${validation.warning}`);
         }
 
         await uploadMedia(file, fileType, authUserId);
+        successCount++;
       } catch (error) {
         logger.ui.error('Yükleme hatası', error);
         errors.push(`${file.name}: ${error instanceof Error ? error.message : t('uploadError')}`);
@@ -127,10 +139,20 @@ export default function MediaManagerPage() {
 
     setUploading(false);
 
+    // Sonuç bildirimleri
     if (errors.length > 0) {
       toast.error(`${t('uploadError')}: ${errors.join(', ')}`);
-    } else {
-      toast.success(t('uploadSuccess'));
+    }
+    
+    if (warnings.length > 0) {
+      // Uyarıları sarı toast ile göster
+      warnings.forEach(warning => {
+        toast.warning ? toast.warning(warning) : toast.error(`⚠️ ${warning}`);
+      });
+    }
+    
+    if (successCount > 0) {
+      toast.success(`${successCount} dosya yüklendi`);
     }
 
     // Listeyi yenile
