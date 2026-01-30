@@ -108,11 +108,13 @@ export default function ThemesPage() {
     const translationKey = type === 'name' ? `themeNames.${key}` : `themeDescriptions.${key}`;
     
     try {
-      // t.has() ile key var mı kontrol et
-      if (t.has(translationKey)) {
-        return t(translationKey);
+      // Çeviri al ve fallback kullan
+      const translation = t(translationKey);
+      // Eğer çeviri key ile aynıysa veya admin.themes ile başlıyorsa, fallback kullan
+      if (translation === translationKey || translation.startsWith('admin.themes.')) {
+        return fallback;
       }
-      return fallback;
+      return translation;
     } catch {
       return fallback;
     }

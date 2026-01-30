@@ -295,6 +295,10 @@ export default function MediaManagerPage() {
             dragDropShort: t('dragDropShort'),
             supportedFormatsImage: t('supportedFormatsImage'),
             supportedFormatsVideo: t('supportedFormatsVideo'),
+            maxSizeLabel: t('maxSizeLabel', { max: activeTab === 'image' ? '2' : '50' }),
+            recommendedLabel: t('recommendedLabel', { recommended: activeTab === 'image' ? '0.5' : '20' }),
+            webpTip: t('webpTip'),
+            compressedVideoTip: t('compressedVideoTip'),
           }}
         />
 
