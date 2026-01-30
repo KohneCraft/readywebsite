@@ -17,6 +17,10 @@ interface MediaUploaderTranslations {
   supportedFormatsVideo: string;
   maxFileSize?: string;
   optimizationTip?: string;
+  maxSizeLabel?: string;
+  recommendedLabel?: string;
+  webpTip?: string;
+  compressedVideoTip?: string;
 }
 
 interface MediaUploaderProps {
@@ -52,6 +56,10 @@ export function MediaUploader({
     optimizationTip: isImage 
       ? 'Daha hızlı yükleme için WebP formatı önerilir'
       : 'Daha hızlı yükleme için görseli sıkıştırın',
+    maxSizeLabel: `Maks: ${limits.max}MB`,
+    recommendedLabel: `Önerilen: ${limits.recommended}MB altı`,
+    webpTip: 'WebP formatı bandwidth tasarrufu sağlar',
+    compressedVideoTip: 'Sıkıştırılmış videolar önerilir',
   };
 
   const [isDragging, setIsDragging] = useState(false);
@@ -134,11 +142,11 @@ export function MediaUploader({
           <div className="mt-3 space-y-1">
             <div className="flex items-center justify-center gap-1 text-xs text-amber-600 dark:text-amber-400">
               <AlertTriangle className="w-3 h-3" />
-              <span>Maks: {limits.max}MB | Önerilen: {limits.recommended}MB altı</span>
+              <span>{t.maxSizeLabel} | {t.recommendedLabel}</span>
             </div>
             <div className="flex items-center justify-center gap-1 text-xs text-blue-500 dark:text-blue-400">
               <Info className="w-3 h-3" />
-              <span>{isImage ? 'WebP formatı bandwidth tasarrufu sağlar' : 'Sıkıştırılmış videolar önerilir'}</span>
+              <span>{isImage ? t.webpTip : t.compressedVideoTip}</span>
             </div>
           </div>
         )}
