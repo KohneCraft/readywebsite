@@ -3,14 +3,16 @@
 // ============================================
 // Page Builder - Media Selector Modal
 // Medya yönetiminden görsel/video seçimi
+// Bandwidth tasarrufu için boyut limitleri
 // ============================================
 
 import { useState, useEffect, useCallback } from 'react';
 import Image from 'next/image';
 import { toast } from 'sonner';
-import { X, Image as ImageIcon, Video, Upload, Check } from 'lucide-react';
+import { X, Image as ImageIcon, Video, Upload, Check, AlertTriangle } from 'lucide-react';
 import { getMediaList, uploadMedia } from '@/lib/firebase/media';
 import { getCurrentUser } from '@/lib/firebase/auth';
+import { validateFile, FILE_SIZE_LIMITS, formatFileSize } from '@/lib/firebase/storage';
 import { logger } from '@/lib/logger';
 import type { Media, MediaType } from '@/types/media';
 import { cn } from '@/lib/utils';
@@ -83,13 +85,18 @@ export function MediaSelector({
     for (const file of files) {
       try {
         const fileType = type === 'image' ? 'image' : 'video';
-        const isValidType = fileType === 'image'
-          ? file.type.startsWith('image/')
-          : file.type.startsWith('video/');
-
-        if (!isValidType) {
-          errors.push(`${file.name}: Geçersiz dosya tipi`);
+        
+        // Kapsamlı validasyon - boyut ve format kontrolü
+        const validation = validateFile(file, fileType, 'tr');
+        
+        if (!validation.valid) {
+          errors.push(`${file.name}: ${validation.error}`);
           continue;
+        }
+        
+        // Uyarı varsa göster ama devam et
+        if (validation.warning) {
+          toast.warning ? toast.warning(validation.warning) : toast.error(`⚠️ ${validation.warning}`);
         }
 
         const uploadedMedia = await uploadMedia(file, fileType, user.uid);

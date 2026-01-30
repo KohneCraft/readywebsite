@@ -70,8 +70,11 @@ export function DualColorPicker({
                     <ColorPicker color={lightColor} onChange={onLightChange} />
                 </div>
 
+                {/* Dikey Ayırıcı Çizgi */}
+                <div className="absolute left-1/2 top-0 bottom-0 w-px bg-gray-200 dark:bg-gray-700 hidden" />
+
                 {/* SAĞ: Koyu Tema */}
-                <div className="space-y-1.5">
+                <div className="space-y-1.5 border-l border-gray-200 dark:border-gray-700 pl-3">
                     {/* Koyu tema toggle ve başlık */}
                     <label className="flex items-center gap-1.5 cursor-pointer">
                         <input
@@ -82,7 +85,7 @@ export function DualColorPicker({
                         />
                         <Moon className="w-3.5 h-3.5 text-blue-500" />
                         <span className="text-xs text-gray-600 dark:text-gray-400">
-                            {t('differentColorForDark')}
+                            {t('darkTheme')}
                         </span>
                     </label>
 

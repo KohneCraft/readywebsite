@@ -228,38 +228,6 @@ export function FormBlockSettings({ block, activeTab, onUpdate }: FormBlockSetti
 
         <div>
           <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
-            Gönder Butonu Metni
-          </label>
-          <input
-            type="text"
-            value={props.submitButton?.text || 'Gönder'}
-            onChange={(e) => onUpdate({
-              submitButton: {
-                ...props.submitButton,
-                text: e.target.value,
-                style: props.submitButton?.style || 'primary',
-                size: props.submitButton?.size || 'medium'
-              }
-            })}
-            className="w-full px-3 py-2 text-sm border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-white"
-          />
-        </div>
-
-        <div>
-          <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
-            Başarı Mesajı
-          </label>
-          <input
-            type="text"
-            value={props.successMessage || ''}
-            onChange={(e) => onUpdate({ successMessage: e.target.value })}
-            className="w-full px-3 py-2 text-sm border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-white"
-            placeholder="Form başarıyla gönderildi"
-          />
-        </div>
-
-        <div>
-          <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
             Padding
           </label>
           <SpacingControl
@@ -496,6 +464,19 @@ export function FormBlockSettings({ block, activeTab, onUpdate }: FormBlockSetti
             onChange={(e) => onUpdate({ buttonText: e.target.value })}
             className="w-full px-3 py-2 text-sm border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-white"
             placeholder="Gönder"
+          />
+        </div>
+
+        <div>
+          <label className="block text-xs font-medium text-gray-700 dark:text-gray-300 mb-1">
+            Başarı Mesajı
+          </label>
+          <input
+            type="text"
+            value={props.successMessage || ''}
+            onChange={(e) => onUpdate({ successMessage: e.target.value })}
+            className="w-full px-3 py-2 text-sm border border-gray-200 dark:border-gray-700 rounded-lg bg-white dark:bg-gray-900 text-gray-900 dark:text-white"
+            placeholder="Form başarıyla gönderildi"
           />
         </div>
 

@@ -3,14 +3,16 @@
 // ============================================
 // Icon Settings Component
 // Site favicon/icon seçme ve yükleme
+// Bandwidth tasarrufu için boyut limitleri
 // ============================================
 
 import { useState, useEffect } from 'react';
 import { toast } from 'sonner';
-import { Image as ImageIcon, Upload, X, Info, Edit2 } from 'lucide-react';
+import { Image as ImageIcon, Upload, X, Info, Edit2, AlertTriangle } from 'lucide-react';
 import Image from 'next/image';
 import { MediaSelector } from '../media/MediaSelector';
 import { uploadMedia } from '@/lib/firebase/media';
+import { validateFile, FILE_SIZE_LIMITS } from '@/lib/firebase/storage';
 import { getSiteSettingsClient, updateSiteSettings } from '@/lib/firebase/firestore';
 import { getCurrentUser } from '@/lib/firebase/auth';
 import { logger } from '@/lib/logger';
@@ -73,6 +75,19 @@ export function IconSettings({ onUpdate }: IconSettingsProps) {
       if (!user) {
         toast.error('Lütfen giriş yapın');
         return;
+      }
+
+      // Favicon için özel validasyon - daha küçük boyut limiti
+      const validation = validateFile(file, 'favicon', 'tr');
+      
+      if (!validation.valid) {
+        toast.error(validation.error || 'Geçersiz dosya');
+        setIsSaving(false);
+        return;
+      }
+      
+      if (validation.warning) {
+        toast.warning ? toast.warning(validation.warning) : toast.error(`⚠️ ${validation.warning}`);
       }
 
       // Upload to Firebase Storage

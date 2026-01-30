@@ -44,6 +44,7 @@ function FormBlockComponent({ props }: FormBlockProps) {
       ? `${props.padding.top || 0}px ${props.padding.right || 0}px ${props.padding.bottom || 0}px ${props.padding.left || 0}px`
       : '20px',
     backgroundColor: colors.formBg || 'transparent',
+    borderRadius: props.borderRadius ? `${props.borderRadius}px` : '0',
   };
 
   // Custom CSS cleanup
