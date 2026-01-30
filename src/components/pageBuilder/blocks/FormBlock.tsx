@@ -127,13 +127,19 @@ function FormBlockComponent({ props }: FormBlockProps) {
         method={props.method || 'POST'}
         className="space-y-4"
       >
-        {fields.map((field) => (
+        {fields.map((field) => {
+          // Field label'ı için çoklu dil desteği
+          const fieldLabel = typeof field.label === 'object' && field.label !== null
+            ? getLocalizedValue(field.label, locale)
+            : field.label;
+
+          return (
           <div key={field.id} style={{ width: field.width || '100%' }}>
             <label
               className="block text-sm font-medium mb-1"
               style={{ color: colors.formLabel || '#4B5563' }}
             >
-              {field.label}
+              {fieldLabel}
               {field.required && <span className="text-red-500 ml-1">*</span>}
             </label>
 
@@ -143,7 +149,7 @@ function FormBlockComponent({ props }: FormBlockProps) {
                 name={field.name}
                 value={formData[field.name] || ''}
                 onChange={(e) => handleChange(field.name, e.target.value)}
-                placeholder={field.placeholder}
+                placeholder={typeof field.placeholder === 'object' ? getLocalizedValue(field.placeholder, locale) : field.placeholder}
                 required={field.required}
                 className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg"
                 style={{
@@ -156,7 +162,7 @@ function FormBlockComponent({ props }: FormBlockProps) {
                 name={field.name}
                 value={formData[field.name] || ''}
                 onChange={(e) => handleChange(field.name, e.target.value)}
-                placeholder={field.placeholder}
+                placeholder={typeof field.placeholder === 'object' ? getLocalizedValue(field.placeholder, locale) : field.placeholder}
                 required={field.required}
                 rows={field.rows || 4}
                 className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg"
@@ -181,7 +187,7 @@ function FormBlockComponent({ props }: FormBlockProps) {
                   <option value="">Seçiniz</option>
                   {field.options.map((option) => (
                     <option key={option.value} value={option.value}>
-                      {option.label}
+                      {typeof option.label === 'object' ? getLocalizedValue(option.label, locale) : option.label}
                     </option>
                   ))}
                 </select>
@@ -198,7 +204,7 @@ function FormBlockComponent({ props }: FormBlockProps) {
                   required={field.required}
                   className="mr-2"
                 />
-                <span style={{ color: colors.formLabel || '#4B5563' }}>{field.label}</span>
+                <span style={{ color: colors.formLabel || '#4B5563' }}>{fieldLabel}</span>
               </label>
             ) : field.type === 'radio' ? (
               field.options && field.options.length > 0 ? (
@@ -214,7 +220,9 @@ function FormBlockComponent({ props }: FormBlockProps) {
                         required={field.required}
                         className="mr-2"
                       />
-                      <span style={{ color: colors.formLabel || '#4B5563' }}>{option.label}</span>
+                      <span style={{ color: colors.formLabel || '#4B5563' }}>
+                        {typeof option.label === 'object' ? getLocalizedValue(option.label, locale) : option.label}
+                      </span>
                     </label>
                   ))}
                 </div>
@@ -223,7 +231,8 @@ function FormBlockComponent({ props }: FormBlockProps) {
               )
             ) : null}
           </div>
-        ))}
+          );
+        })}
 
         <button
           type="submit"
@@ -233,7 +242,7 @@ function FormBlockComponent({ props }: FormBlockProps) {
             color: colors.buttonText || '#FFFFFF'
           }}
         >
-          {props.buttonText || 'Gönder'}
+          {typeof props.buttonText === 'object' ? getLocalizedValue(props.buttonText, locale) : (props.buttonText || 'Gönder')}
         </button>
       </form>
 
